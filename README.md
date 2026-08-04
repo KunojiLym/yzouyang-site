@@ -21,11 +21,14 @@ Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via 
 python scripts/preview.py
 
 python scripts/lint.py
-python scripts/build.py
-npx pagefind@1.3.0 --site dist
+python scripts/build.py          # includes Pagefind (use --skip-pagefind to omit)
+python scripts/test_site_build.py
+npm install
+npx playwright install chromium
+npm run test:e2e
 ```
 
-CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty).
+CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty). Contract tests + Playwright usability e2e run on every PR.
 
 Refresh export:
 

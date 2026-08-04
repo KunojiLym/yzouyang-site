@@ -85,6 +85,22 @@ def main() -> None:
             if not collect.startswith(("https://", "http://")):
                 fail("analytics.diy.collect_url must be http(s)")
 
+    platforms = (site.get("person") or {}).get("platforms")
+    if platforms is not None and not isinstance(platforms, list):
+        fail("site.person.platforms must be a list when set")
+
+    dist = ROOT / "dist"
+    if dist.is_dir():
+        needs_search = (dist / "portfolio" / "index.html").is_file() or (
+            dist / "credentials" / "index.html"
+        ).is_file()
+        pf = dist / "pagefind" / "pagefind-ui.js"
+        if needs_search and not pf.is_file():
+            fail(
+                "dist has Portfolio/Credentials but missing pagefind/pagefind-ui.js "
+                "(run python scripts/build.py without --skip-pagefind)"
+            )
+
     print("lint ok")
 
 

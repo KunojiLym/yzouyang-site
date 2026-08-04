@@ -1,0 +1,12 @@
+{
+  "name": "yzouyang-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "qa:shots": "node scripts/qa-screenshot.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.0"
+  }
+}

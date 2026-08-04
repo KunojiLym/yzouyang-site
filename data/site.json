@@ -6,6 +6,7 @@
     "headline": "Data and AI Transformation Specialist",
     "tagline": "Driving value in cloud, data and generative AI solutions for enterprises",
     "location": "Singapore",
+    "platforms": ["Azure", "GCP", "AWS", "Databricks"],
     "photo": "/assets/profile.jpg",
     "photo_alt": "Portrait of Yingzhao Ouyang"
   },

@@ -12,7 +12,10 @@ python scripts/preview.py
 python scripts/preview.py --base-path /yzouyang-site
 ```
 
-Runs lint → build → Pagefind → local server. No network deploy.
+Runs lint → build (Pagefind included) → local server. No network deploy.
+
+Contract checks: `python scripts/test_site_build.py` after build. Usability: `npm run test:e2e` (serves `dist/`).
+
 
 ## 2. PR artifact (downloadable dist)
 

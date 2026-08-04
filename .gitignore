@@ -8,3 +8,7 @@ data/diy-events*.ndjson
 collect/.wrangler/
 docs/_about-wp*
 scripts/_extract_about.py
+qa-shots/
+test-results/
+playwright-report/
+playwright/.cache/

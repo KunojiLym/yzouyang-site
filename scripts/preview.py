@@ -67,10 +67,11 @@ def main() -> None:
 
     run([sys.executable, "scripts/lint.py"])
     # Prefer env override so empty base_path works on Windows shells.
-    run(
-        [sys.executable, "scripts/build.py"],
-        env={"SITE_BASE_PATH": args.base_path},
-    )
+    build_cmd = [sys.executable, "scripts/build.py"]
+    if args.skip_pagefind:
+        build_cmd.append("--skip-pagefind")
+    run(build_cmd, env={"SITE_BASE_PATH": args.base_path})
+    # Pagefind runs inside build.py; keep an idempotent re-index when not skipped.
     if not args.skip_pagefind:
         run_pagefind()
 
