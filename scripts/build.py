@@ -213,16 +213,27 @@ def write(path: Path, content: str) -> None:
 
 def build_home(site: dict) -> str:
     person = site["person"]
+    photo = person.get("photo") or ""
+    photo_html = ""
+    if photo:
+        src = esc(with_base(site, str(photo)))
+        alt = esc(person.get("photo_alt") or person.get("full_name") or "Profile photo")
+        photo_html = f"""
+      <div class="hero-visual">
+        <img class="hero-photo" src="{src}" alt="{alt}" width="720" height="935" decoding="async" fetchpriority="high" />
+      </div>"""
     return f"""    <section class="hero">
-      <h1>{esc(person['full_name'])}</h1>
-      <p class="subtitle">{esc(person['headline'])}</p>
-      <p class="lede">{esc(person['tagline'])}</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="{esc(with_base(site, '/contact/'))}">Contact</a>
-        <a class="btn" href="{esc(with_base(site, '/about/'))}">About</a>
-        <a class="btn" href="{esc(with_base(site, '/credentials/'))}">Credentials</a>
-        <a class="btn" href="{esc(with_base(site, '/portfolio/'))}">Portfolio</a>
-      </div>
+      <div class="hero-copy">
+        <h1>{esc(person['full_name'])}</h1>
+        <p class="subtitle">{esc(person['headline'])}</p>
+        <p class="lede">{esc(person['tagline'])}</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="{esc(with_base(site, '/contact/'))}">Contact</a>
+          <a class="btn" href="{esc(with_base(site, '/about/'))}">About</a>
+          <a class="btn" href="{esc(with_base(site, '/credentials/'))}">Credentials</a>
+          <a class="btn" href="{esc(with_base(site, '/portfolio/'))}">Portfolio</a>
+        </div>
+      </div>{photo_html}
     </section>
 """
 
@@ -258,6 +269,44 @@ def build_about(site: dict, export: dict) -> str:
 def build_portfolio(site: dict, export: dict) -> str:
     short = esc(site["external"].get("portfolio_short", ""))
     items = []
+
+    for extra in site.get("portfolio_extras") or []:
+        if not isinstance(extra, dict):
+            continue
+        name = esc(extra.get("name") or "Project")
+        desc = esc(extra.get("description") or "")
+        meta = esc(extra.get("meta") or "")
+        link = extra.get("link") or ""
+        link_label = esc(extra.get("link_label") or "Open")
+        embed = extra.get("embed") or ""
+        link_html = ""
+        if link:
+            link_html = (
+                f'<p class="links"><a href="{esc(link)}" target="_blank" '
+                f'rel="noopener noreferrer">{link_label}</a></p>'
+            )
+        embed_html = ""
+        if embed:
+            embed_html = f"""
+        <div class="embed-frame">
+          <iframe
+            title="{name} — Figma"
+            src="{esc(embed)}"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>"""
+        items.append(
+            f"      <li>\n"
+            f"        <h2>{name}</h2>\n"
+            f'        <p class="meta">{meta}</p>\n'
+            f"        <p>{desc}</p>\n"
+            f"        {link_html}\n"
+            f"        {embed_html}\n"
+            f"      </li>"
+        )
+
     for row in export.get("projects") or []:
         if not isinstance(row, dict):
             continue
@@ -286,7 +335,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         )
     return f"""    <div id="search"></div>
     <h1>Portfolio</h1>
-    <p class="page-lede">Selected PUBLIC projects from the personal-content export. Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
+    <p class="page-lede">Selected PUBLIC projects from the personal-content export, plus featured UX work. Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
     <ul class="item-list">
 {chr(10).join(items) if items else "      <li>No PUBLIC projects in export.</li>"}
     </ul>
@@ -401,6 +450,9 @@ def main() -> None:
         write(DIST / rel, layout(site, title, active, body, pagefind=pf))
 
     shutil.copyfile(SRC / "styles.css", DIST / "styles.css")
+    assets_src = ROOT / "assets"
+    if assets_src.is_dir():
+        shutil.copytree(assets_src, DIST / "assets", dirs_exist_ok=True)
     diy = (site.get("analytics") or {}).get("diy") or {}
     if diy.get("enabled") and (SRC / "track.js").is_file():
         shutil.copyfile(SRC / "track.js", DIST / "track.js")

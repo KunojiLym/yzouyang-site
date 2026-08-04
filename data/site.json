@@ -5,7 +5,9 @@
     "brand": "yzouyang",
     "headline": "Data and AI Transformation Specialist",
     "tagline": "Driving value in cloud, data and generative AI solutions for enterprises",
-    "location": "Singapore"
+    "location": "Singapore",
+    "photo": "/assets/profile.jpg",
+    "photo_alt": "Portrait of Yingzhao Ouyang"
   },
   "contact": {
     "email": "kunojilym@gmail.com",
@@ -29,8 +31,17 @@
       "Public writing on AI disruption, industrial playbooks, and building analytics products in the open."
     ]
   },
-  "analytics": {
-    "ga_measurement_id": "",
+  "portfolio_extras": [
+    {
+      "name": "Klook Travel Planner Capstone",
+      "description": "End-to-end UX research and Figma prototyping for the NTU Advanced Certificate in UI/UX & Digital Product Management.",
+      "meta": "2025 · Figma, UX Research, Product Design",
+      "link": "https://www.figma.com/deck/KzoFrRv4ZmF60Ouqen318Q/Klook-Travel-Planner",
+      "link_label": "Figma deck (read-only)",
+      "embed": "https://embed.figma.com/deck/KzoFrRv4ZmF60Ouqen318Q/Klook-Travel-Planner?embed-host=share"
+    }
+  ],
+  "analytics": {    "ga_measurement_id": "",
     "jetpack": {
       "enabled": true,
       "blog_id": "34802711",
