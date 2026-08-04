@@ -410,6 +410,13 @@ main.page h2 {
   margin: 2.5rem 0 1rem;
 }
 
+main.page h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 550;
+  margin: 1.75rem 0 0.75rem;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

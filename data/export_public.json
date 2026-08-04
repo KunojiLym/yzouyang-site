@@ -92,21 +92,25 @@
   ],
   "education": [
     {
+      "id": "mtech-ais",
       "institution": "National University of Singapore (Institute of Systems Science)",
       "credential": "MTech, Artificial Intelligence Systems",
       "start": "2026-01",
       "end": "2027-12",
       "visibility_policy": "PUBLIC",
+      "category": "academic",
       "bullets": [
         "Intelligent Reasoning Systems; Pattern Recognition Systems; Capstone (in progress)."
       ]
     },
     {
+      "id": "bsc-bis",
       "institution": "Murdoch University",
       "credential": "BSc, Business Information Systems",
       "start": "2020-01",
       "end": "2021-08",
       "visibility_policy": "PUBLIC",
+      "category": "academic",
       "bullets": [
         "Databases (Distinction)",
         "Introduction to ICT Research Methods (High Distinction)",
@@ -119,54 +123,191 @@
       ]
     },
     {
+      "id": "mba",
       "institution": "Murdoch University",
       "credential": "MBA",
       "start": "2012-07",
       "end": "2013-09",
       "visibility_policy": "PUBLIC",
+      "category": "academic",
       "bullets": []
+    },
+    {
+      "id": "ba-english",
+      "institution": "National University of Singapore",
+      "credential": "BA, English Literature",
+      "start": "2005-01",
+      "end": "2009-12",
+      "visibility_policy": "PUBLIC",
+      "category": "academic",
+      "bullets": []
+    },
+    {
+      "id": "metis-bootcamp",
+      "institution": "Metis",
+      "credential": "Data Science Bootcamp (12-week accredited program)",
+      "start": "2020-04",
+      "end": "2020-07",
+      "visibility_policy": "PUBLIC",
+      "category": "training",
+      "bullets": [
+        "https://medium.com/@kunojilym/list/my-metis-data-science-bootcamp-projects-2020-9f7b8996c3d9",
+        "https://bit.ly/4f7ubAr"
+      ]
     }
   ],
   "projects": [
     {
       "id": "linkedin-analytics-databricks",
-      "name": "Personal LinkedIn Analytics on Databricks",
+      "name": "Build Your Own LinkedIn Analytics",
       "visibility_policy": "PUBLIC",
-      "description": "End-to-end LinkedIn analytics data product with Medium blog series and open-source release.",
+      "section": "featured_tutorial",
+      "description": "An end-to-end data product for personal LinkedIn Analytics, detailed for educational purposes in an ongoing blog series.\n",
       "start": "2025-10",
       "end": null,
+      "tools": [
+        "Databricks",
+        "Python",
+        "Spark",
+        "SQL",
+        "Data Engineering",
+        "Data Analytics",
+        "Data Architecture",
+        "Dashboarding",
+        "Technical Documentation"
+      ],
       "bullets": [
-        "https://www.yzouyang.com/category/blog-series/build-your-own-linkedin-analytics/"
+        "https://www.yzouyang.com/category/blog-series/build-your-own-linkedin-analytics/",
+        "https://github.com/KunojiLym/databricks-linkedin-analytics/tree/main/databricks_linkedin_analytics"
       ]
+    },
+    {
+      "id": "metis-mta-edaproject",
+      "name": "NYC MTA Turnstile Data Analysis",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Exploratory data analysis, station usage patterns, recommendation system for optimal campaign placement.\n",
+      "start": "2020-04",
+      "end": "2020-04",
+      "tools": [
+        "Python",
+        "Pandas",
+        "Seaborn"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/nyc-mta-turnstile-data-analysis-project-1-c1602b6de9d7",
+        "https://towardsdatascience.com/mta-turstile-data-my-first-taste-of-a-data-science-project-493b03f1708a"
+      ]
+    },
+    {
+      "id": "metis-animelist-score-prediction",
+      "name": "MyAnimeList Score Prediction",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Web scraping, feature engineering, regression modeling, and bias analysis for crowd-sourced entertainment scores.\n",
+      "start": "2020-05",
+      "end": "2020-05",
+      "tools": [
+        "Python",
+        "Scikit-learn",
+        "BeautifulSoup"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/animelist-score-prediction-project-2-cdc196ab46b0"
+      ]
+    },
+    {
+      "id": "metis-global-fishing-watch",
+      "name": "Global Fishing Watch Classification",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Classification of maritime traffic; supervised ML for vessel activity using Random Forest (F1=0.90, AUC=0.98).\n",
+      "start": "2020-06",
+      "end": "2020-06",
+      "tools": [
+        "Python",
+        "PostgreSQL",
+        "Random Forest"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/global-fishing-watch-machine-learning-project-3-d3f0c33b5642"
+      ]
+    },
+    {
+      "id": "metis-fake-news-detection",
+      "name": "Fake News Detection (LIAR Dataset)",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Advanced NLP, topic modeling, and word embeddings for automated fact-checking and claim classification.\n",
+      "start": "2020-06",
+      "end": "2020-07",
+      "tools": [
+        "Python",
+        "NLP",
+        "GloVe",
+        "LDA"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/fake-news-detection-nlp-topic-modeling-project-4-4c54c2598fc6"
+      ]
+    },
+    {
+      "id": "metis-generative-poetry-lstm",
+      "name": "Generative Poetry with LSTM Neural Nets",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Deep learning model for creative text generation, full-stack integration with Flask and PostgreSQL.\n",
+      "start": "2020-07",
+      "end": "2020-07",
+      "tools": [
+        "Python",
+        "Keras",
+        "LSTM",
+        "Flask"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/generative-poetry-lstm-deep-learning-project-5-d341418fae16"
+      ]
+    },
+    {
+      "id": "klook-travel-planner-capstone",
+      "name": "Klook Travel Planner Capstone",
+      "visibility_policy": "PUBLIC",
+      "section": "product_ux",
+      "description": "End-to-end UX research and Figma prototyping for the NTU Advanced Certificate in UI/UX & Digital Product Management.\n",
+      "start": "2025-01",
+      "end": "2025-04",
+      "tools": [
+        "Figma",
+        "UX Research",
+        "Product Design"
+      ],
+      "bullets": [
+        "https://www.figma.com/deck/KzoFrRv4ZmF60Ouqen318Q/Klook-Travel-Planner"
+      ],
+      "embed": "https://embed.figma.com/deck/KzoFrRv4ZmF60Ouqen318Q/Klook-Travel-Planner?embed-host=share"
     },
     {
       "id": "skillup-mtech-capstone",
       "name": "SkillUP — AI-Powered Personalised Learning Path Coach",
       "visibility_policy": "PUBLIC",
+      "section": "other",
       "description": "NUS-ISS MTech AIS capstone — course recommendation engine with CSP, fuzzy logic, and RAG explainability.",
       "start": "2026-03",
       "end": "2026-05",
+      "tools": [],
       "bullets": []
     },
     {
       "id": "risk-assistant-hackathon",
       "name": "Risk Assistant — Automated Reputational Screening Agent",
       "visibility_policy": "PUBLIC",
+      "section": "other",
       "description": "Agent Forge hackathon finalist — FastAPI + Streamlit reputational screening pipeline.",
       "start": "2026-06",
       "end": "2026-06",
+      "tools": [],
       "bullets": []
-    },
-    {
-      "id": "metis-mta-edaproject",
-      "name": "MTA Turnstile Exploratory Data Analysis",
-      "visibility_policy": "PUBLIC",
-      "description": "Metis bootcamp project — NYC MTA turnstile EDA published on Towards Data Science.",
-      "start": "2020-04",
-      "end": "2020-04",
-      "bullets": [
-        "https://towardsdatascience.com/mta-turstile-data-my-first-taste-of-a-data-science-project-493b03f1708a"
-      ]
     }
   ],
   "certifications": [
@@ -184,7 +325,8 @@
       "bullets": [
         "https://www.credly.com/badges/73b32658-3fe5-4ebc-a911-9610bfaf334c/public_url",
         "https://bit.ly/4c0sG6P"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "gcp-professional-ml-engineer",
@@ -200,7 +342,8 @@
       "bullets": [
         "https://www.credly.com/badges/2654ea74-30b7-4a86-a85b-1bccf04e6e70/public_url",
         "https://bit.ly/45iCW7w"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "databricks-data-engineer-associate",
@@ -215,7 +358,8 @@
       "bullets": [
         "https://credentials.databricks.com/597dd3da-2d98-4e97-a4fd-70d2a6ffc054",
         "https://bit.ly/46fWg5j"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "gcp-associate-cloud-engineer",
@@ -231,7 +375,8 @@
       "bullets": [
         "https://www.credly.com/badges/ab136dbc-daed-4e5b-8d78-dcbf9f4115ed/public_url",
         "https://bit.ly/3U79azk"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "ms-fabric-analytics-engineer",
@@ -246,7 +391,8 @@
       "bullets": [
         "https://learn.microsoft.com/api/credentials/share/en-sg/YingzhaoOuyang-3447/6141298ECD3F5E27",
         "https://bit.ly/4memBqg"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "ms-fabric-data-engineer",
@@ -261,7 +407,8 @@
       "bullets": [
         "https://learn.microsoft.com/api/credentials/share/en-sg/YingzhaoOuyang-3447/9E9F38EA00C2E4B9",
         "https://bit.ly/3Hd72jF"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "ms-azure-ai-engineer",
@@ -276,7 +423,8 @@
       "bullets": [
         "https://learn.microsoft.com/api/credentials/share/en-sg/YingzhaoOuyang-3447/FAB101C9176957D6",
         "https://bit.ly/4kPWx3r"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "databricks-genai-engineer-associate",
@@ -291,7 +439,8 @@
       "bullets": [
         "https://credentials.databricks.com/8ea043e0-8509-43cc-b7bd-a7b2540300e1#acc.y3wFDGCU",
         "https://bit.ly/3lKqCEj"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "csm-scrum-alliance",
@@ -300,6 +449,7 @@
       "issued": "2022-02",
       "expires": "2028-02",
       "visibility_policy": "PUBLIC",
+      "category": "leadership",
       "aliases": [
         "Certified Scrum Master",
         "Certified ScrumMaster"
@@ -322,7 +472,8 @@
       "bullets": [
         "https://www.credly.com/badges/8c17608b-9bfd-4d9c-987e-4951dd7c274b",
         "https://bit.ly/4kTwNDq"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "genos-ei-practitioner",
@@ -334,7 +485,8 @@
       "bullets": [
         "https://badges.credsvault.io/api/badgeitem/2bd409c5-2408-4a44-9201-d08cee2a7f7d/metadata",
         "https://bit.ly/49SKy2Y"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "claude-architect-foundations",
@@ -346,7 +498,8 @@
       "bullets": [
         "https://www.credly.com/badges/c3935a0e-b01b-4398-9b3d-808a386eb1ce/public_url",
         "https://bit.ly/4fHoNVj"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "aws-cloud-practitioner",
@@ -360,7 +513,8 @@
       ],
       "bullets": [
         "https://www.credly.com/badges/7c2d9c5f-ea7f-403a-974c-c4f05171f671"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "ms-azure-data-engineer",
@@ -375,7 +529,8 @@
       "bullets": [
         "https://learn.microsoft.com/en-us/users/YingzhaoOuyang-3447/credentials/863B0A450000D46",
         "https://bit.ly/46WbTA2"
-      ]
+      ],
+      "category": "professional"
     },
     {
       "id": "nus-cdaio-programme",
@@ -390,7 +545,21 @@
       "bullets": [
         "https://certificates.emeritus.org/fb370cc4-32cd-4eb3-b40e-b783f6afe04a",
         "https://bit.ly/44NCYUR"
-      ]
+      ],
+      "category": "leadership"
+    },
+    {
+      "id": "ntu-fleximaster-accounting-analytics",
+      "name": "NTU FlexiMaster in Accounting Analytics and Digital Forensics",
+      "issuer": "Nanyang Technological University",
+      "issued": "2024-06",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "bullets": [
+        "https://www.opencerts.io/?q={\"type\":\"DOCUMENT\",\"payload\":{\"uri\":\"https://gist.githubusercontent.com/KunojiLym/22567f6e2412a8364aa8d01e9acc1928/raw/794d01199505f1b534ee90de2758f0e0a911d187/gistfile1.txt\"}}#{\"key\":\"b53053fce414fe680ec3ab01f3e5823accb2889b20518b0333738a01cf644ad3\"}",
+        "https://bit.ly/3LAqENi"
+      ],
+      "category": "leadership"
     },
     {
       "id": "ntu-uxpm-certificate",
@@ -402,7 +571,21 @@
       "bullets": [
         "https://www.opencerts.io/?q={\"type\":\"DOCUMENT\",\"payload\":{\"uri\":\"https://gist.githubusercontent.com/KunojiLym/bec70dca8b964381f2ddfd2b59914e43/raw/236f4b983cfa1c88d522df3b4ed242525b41970d/gistfile1.txt\"}}#{\"key\":\"c21301522e2d44ff46d836e3ba02c45f1c677b78f3489528e1279c6026dd76ea\"}",
         "https://bit.ly/4konyuY"
-      ]
+      ],
+      "category": "leadership"
+    },
+    {
+      "id": "pru-leap-programme",
+      "name": "Leadership Excellence At Prudential (LEAP) Programme",
+      "issuer": "Prudential",
+      "issued": "2025-06",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "bullets": [
+        "https://www.linkedin.com/posts/yzouyang_leadership-learningjourney-neverstoplearning-activity-7397442379278016512-OInj",
+        "https://bit.ly/4pJHU4S"
+      ],
+      "category": "leadership"
     }
   ],
   "writing": [
@@ -462,6 +645,130 @@
       "link": "https://www.figma.com/deck/0nKvFiourL6ya4HCTEN0AL/Career-Journey-2025",
       "link_label": "Open Figma deck",
       "embed": "https://embed.figma.com/deck/0nKvFiourL6ya4HCTEN0AL/Career-Journey-2025?embed-host=share"
+    }
+  },
+  "portfolio": {
+    "visibility_policy": "PUBLIC",
+    "lede": "Selected technical, data science, and product/UX work — with verification links for deeper reading.\n",
+    "sections": [
+      {
+        "id": "featured_tutorial",
+        "title": "Featured Tutorial Projects",
+        "parent": "Technical & Data Science Projects"
+      },
+      {
+        "id": "metis_bootcamp",
+        "title": "Metis Data Science Bootcamp (2020): Project Portfolio",
+        "parent": "Technical & Data Science Projects",
+        "intro": "End-to-end projects from the Metis Data Science Bootcamp (2020), across machine learning, NLP, deep learning, and data engineering.\n",
+        "footer_link": "https://medium.com/@kunojilym/list/my-metis-data-science-bootcamp-projects-2020-9f7b8996c3d9",
+        "footer_label": "Full Metis bootcamp project list"
+      },
+      {
+        "id": "product_ux",
+        "title": "Featured Product & UX Projects",
+        "parent": "Technical & Data Science Projects",
+        "outro": "These projects show how UI/UX principles inform building intuitive data products — technical excellence meeting user-centric design.\n"
+      },
+      {
+        "id": "other",
+        "title": "Other public projects",
+        "parent": null
+      }
+    ],
+    "enterprise_summaries": {
+      "title": "Enterprise Data & AI Solutioning (Selected Work Summaries)",
+      "items": [
+        {
+          "title": "Prudential (Singapore) — Senior Data Engineer, Solutioning & Architecture",
+          "bullets": [
+            "Established medallion architecture and standardized cross-team documentation for scalable data lakehouse infrastructure.",
+            "Led proof-of-concept and solutioning for GenAI and MLOps workflows, delivering increased operational efficiency and cost reduction.",
+            "Guided technical development of AI/ML projects on Google Cloud and Databricks."
+          ]
+        },
+        {
+          "title": "SPH Media — Lead Data Engineer",
+          "bullets": [
+            "Architected and delivered cost-saving, resilient data pipelines in AWS; implemented robust batch and streaming data solutions.",
+            "Drove team-wide technical upskilling, process improvement, and documentation standardization.",
+            "Managed analytics platform migration and integration for enterprise media operations."
+          ]
+        }
+      ]
+    },
+    "verify": {
+      "title": "How to Verify & Learn More",
+      "items": [
+        {
+          "label": "Comprehensive certifications, with public verification links",
+          "href": "/credentials/"
+        },
+        {
+          "label": "Digital business card and latest contact",
+          "href": "https://bit.ly/m/yzouyang"
+        },
+        {
+          "label": "LinkedIn profile",
+          "href": "https://www.linkedin.com/in/yzouyang/"
+        }
+      ],
+      "note": "For further detail or code samples, selected repositories or extended case studies are available upon request.\n"
+    }
+  },
+  "credentials": {
+    "visibility_policy": "PUBLIC",
+    "lede": "Public credentials and verifications — canonical verify links first, Bitly optional.\n",
+    "sections": [
+      {
+        "id": "professional",
+        "title": "Professional Certifications"
+      },
+      {
+        "id": "leadership",
+        "title": "Leadership & Professional Programs"
+      },
+      {
+        "id": "academic",
+        "title": "Academic Qualifications"
+      },
+      {
+        "id": "training",
+        "title": "Additional Training & Bootcamps"
+      }
+    ],
+    "notes": [
+      "Available upon request: credentials without public links can be verified for prospective employers or collaborators.",
+      "Portfolio access: major ML, NLP, analytics, and UX/UI projects are linked from the Portfolio page and Metis bootcamp collection.",
+      "Continuous professional development: this page is updated as cloud, data/AI, and leadership credentials change."
+    ],
+    "order": {
+      "professional": [
+        "gcp-professional-data-engineer",
+        "gcp-professional-ml-engineer",
+        "databricks-genai-engineer-associate",
+        "databricks-data-engineer-associate",
+        "ms-fabric-data-engineer",
+        "ms-fabric-analytics-engineer",
+        "ms-azure-ai-engineer",
+        "gcp-associate-cloud-engineer"
+      ],
+      "leadership": [
+        "nus-cdaio-programme",
+        "csm-scrum-alliance",
+        "pru-leap-programme",
+        "ntu-fleximaster-accounting-analytics",
+        "ntu-uxpm-certificate"
+      ],
+      "academic": [
+        "mtech-ais",
+        "bsc-bis",
+        "mba",
+        "ba-english"
+      ],
+      "training": [
+        "metis-bootcamp"
+      ]
     }
   }
 }

@@ -342,118 +342,307 @@ def build_about(site: dict, export: dict) -> str:
 """
 
 
-def build_portfolio(site: dict, export: dict) -> str:
-    short = esc(site["external"].get("portfolio_short", ""))
-    items = []
+def _link_label(url: str) -> str:
+    u = url.lower()
+    if "github.com" in u:
+        return "GitHub"
+    if "medium.com" in u or "towardsdatascience.com" in u:
+        return "Article"
+    if "figma.com" in u:
+        return "Figma deck"
+    if "yzouyang.com" in u:
+        return "Article archive"
+    if "bit.ly" in u:
+        return url
+    return "Link"
 
-    for extra in site.get("portfolio_extras") or []:
-        if not isinstance(extra, dict):
-            continue
-        name = esc(extra.get("name") or "Project")
-        desc = esc(extra.get("description") or "")
-        meta = esc(extra.get("meta") or "")
-        link = extra.get("link") or ""
-        link_label = esc(extra.get("link_label") or "Open")
-        embed = extra.get("embed") or ""
-        link_html = ""
-        if link:
-            link_html = (
-                f'<p class="links"><a href="{esc(link)}" target="_blank" '
-                f'rel="noopener noreferrer">{link_label}</a></p>'
+
+def _project_item_html(row: dict) -> str:
+    name = esc(row.get("name") or row.get("id") or "Project")
+    desc = esc((row.get("description") or "").strip())
+    start = esc(row.get("start") or "")
+    end = esc(row.get("end") or "present")
+    tools = row.get("tools") or []
+    tools_html = ""
+    if tools:
+        tools_html = f'<p class="meta">Tools: {esc(", ".join(str(t) for t in tools))}</p>'
+    links = urls_from_bullets(row.get("bullets"))
+    link_html = ""
+    if links:
+        link_html = (
+            '<p class="links">'
+            + " · ".join(
+                f'<a href="{esc(u)}" target="_blank" rel="noopener noreferrer">{esc(_link_label(u))}</a>'
+                for u in links
             )
-        embed_html = ""
-        if embed:
-            embed_html = f"""
+            + "</p>"
+        )
+    embed = row.get("embed") or ""
+    embed_html = ""
+    if embed:
+        embed_html = f"""
         <div class="embed-frame">
           <iframe
-            title="{name} — Figma"
+            title="{name}"
             src="{esc(embed)}"
             allowfullscreen
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
           ></iframe>
         </div>"""
-        items.append(
-            f"      <li>\n"
-            f"        <h2>{name}</h2>\n"
-            f'        <p class="meta">{meta}</p>\n'
-            f"        <p>{desc}</p>\n"
-            f"        {link_html}\n"
-            f"        {embed_html}\n"
-            f"      </li>"
+    return (
+        f"      <li>\n"
+        f"        <h3>{name}</h3>\n"
+        f'        <p class="meta">{start} – {end}</p>\n'
+        f"        <p>{desc}</p>\n"
+        f"        {tools_html}\n"
+        f"        {link_html}\n"
+        f"        {embed_html}\n"
+        f"      </li>"
+    )
+
+
+def build_portfolio(site: dict, export: dict) -> str:
+    short = esc(site["external"].get("portfolio_short", ""))
+    page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
+    lede = (page.get("lede") or "Selected PUBLIC projects.").strip()
+    projects = [p for p in (export.get("projects") or []) if isinstance(p, dict)]
+    by_section: dict[str, list] = {}
+    for p in projects:
+        by_section.setdefault(str(p.get("section") or "other"), []).append(p)
+
+    sections_html: list[str] = []
+    seen_parents: set[str] = set()
+    for section in page.get("sections") or []:
+        if not isinstance(section, dict):
+            continue
+        sid = str(section.get("id") or "")
+        rows = by_section.pop(sid, [])
+        if not rows and sid != "other":
+            continue
+        parent = section.get("parent")
+        if parent and parent not in seen_parents:
+            sections_html.append(f"    <h2>{esc(parent)}</h2>")
+            seen_parents.add(str(parent))
+        sections_html.append(f"    <h3>{esc(section.get('title') or sid)}</h3>")
+        intro = (section.get("intro") or "").strip()
+        if intro:
+            sections_html.append(f'    <p class="page-lede">{esc(intro)}</p>')
+        sections_html.append(
+            '    <ul class="item-list">\n'
+            + "\n".join(_project_item_html(r) for r in rows)
+            + "\n    </ul>"
+        )
+        footer_link = section.get("footer_link") or ""
+        if footer_link:
+            sections_html.append(
+                f'    <p class="links"><a href="{esc(footer_link)}" target="_blank" '
+                f'rel="noopener noreferrer">{esc(section.get("footer_label") or footer_link)}</a></p>'
+            )
+        outro = (section.get("outro") or "").strip()
+        if outro:
+            sections_html.append(f"    <p><em>{esc(outro)}</em></p>")
+
+    # Any remaining projects not mapped to a declared section.
+    for sid, rows in by_section.items():
+        if not rows:
+            continue
+        sections_html.append(f"    <h3>{esc(sid.replace('_', ' ').title())}</h3>")
+        sections_html.append(
+            '    <ul class="item-list">\n'
+            + "\n".join(_project_item_html(r) for r in rows)
+            + "\n    </ul>"
         )
 
-    for row in export.get("projects") or []:
-        if not isinstance(row, dict):
-            continue
-        name = esc(row.get("name") or row.get("id") or "Project")
-        desc = esc(row.get("description") or "")
-        start = esc(row.get("start") or "")
-        end = esc(row.get("end") or "present")
-        links = urls_from_bullets(row.get("bullets"))
-        link_html = ""
-        if links:
-            link_html = (
-                '<p class="links">'
-                + " · ".join(
-                    f'<a href="{esc(u)}" target="_blank" rel="noopener noreferrer">{esc(u)}</a>'
-                    for u in links
-                )
-                + "</p>"
+    enterprise = page.get("enterprise_summaries") or {}
+    if isinstance(enterprise, dict) and enterprise.get("items"):
+        sections_html.append(f"    <h2>{esc(enterprise.get('title') or 'Enterprise summaries')}</h2>")
+        for item in enterprise.get("items") or []:
+            if not isinstance(item, dict):
+                continue
+            bullets = "\n".join(
+                f"        <li>{esc(b)}</li>" for b in (item.get("bullets") or [])
             )
-        items.append(
-            f"      <li>\n"
-            f"        <h2>{name}</h2>\n"
-            f'        <p class="meta">{start} – {end}</p>\n'
-            f"        <p>{desc}</p>\n"
-            f"        {link_html}\n"
-            f"      </li>"
-        )
+            sections_html.append(
+                f"    <h3>{esc(item.get('title') or '')}</h3>\n"
+                f"    <ul class=\"competency-list\">\n{bullets}\n    </ul>"
+            )
+
+    verify = page.get("verify") or {}
+    if isinstance(verify, dict) and verify.get("items"):
+        sections_html.append(f"    <h2>{esc(verify.get('title') or 'Verify')}</h2>")
+        vitems = []
+        for item in verify.get("items") or []:
+            if not isinstance(item, dict):
+                continue
+            href = item.get("href") or "#"
+            if str(href).startswith("/"):
+                href = with_base(site, href)
+            external = not str(item.get("href") or "").startswith("/")
+            attrs = f' href="{esc(href)}"'
+            if external:
+                attrs += ' target="_blank" rel="noopener noreferrer"'
+            vitems.append(f"      <li><a{attrs}>{esc(item.get('label') or href)}</a></li>")
+        sections_html.append("    <ul class=\"competency-list\">\n" + "\n".join(vitems) + "\n    </ul>")
+        note = (verify.get("note") or "").strip()
+        if note:
+            sections_html.append(f"    <p><em>{esc(note)}</em></p>")
+
+    body = "\n".join(sections_html) if sections_html else "    <p>No PUBLIC projects in export.</p>"
     return f"""    <div id="search"></div>
     <h1>Portfolio</h1>
-    <p class="page-lede">Selected PUBLIC projects from the personal-content export, plus featured UX work. Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
-    <ul class="item-list">
-{chr(10).join(items) if items else "      <li>No PUBLIC projects in export.</li>"}
-    </ul>
+    <p class="page-lede">{esc(lede)} Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
+{body}
 """
+
+
+def _cert_item_html(row: dict) -> str:
+    name = esc(row.get("name") or "")
+    issuer = esc(row.get("issuer") or "")
+    issued = esc(row.get("issued") or "")
+    expires = esc(row.get("expires") or "")
+    primary, bitly = primary_and_short(urls_from_bullets(row.get("bullets")))
+    links = []
+    if primary:
+        links.append(
+            f'<a href="{esc(primary)}" target="_blank" rel="noopener noreferrer">Verify</a>'
+        )
+    if bitly:
+        links.append(
+            f'<a href="{esc(bitly)}" target="_blank" rel="noopener noreferrer">{esc(bitly)}</a>'
+        )
+    link_html = f'<p class="links">{" · ".join(links)}</p>' if links else ""
+    validity = f"issued {issued}" if issued else ""
+    if expires:
+        validity += f" · expires {expires}" if validity else f"expires {expires}"
+    return (
+        f"      <li>\n"
+        f"        <h3>{name}</h3>\n"
+        f'        <p class="meta">{issuer}'
+        + (f" · {validity}" if validity else "")
+        + "</p>\n"
+        f"        {link_html}\n"
+        f"      </li>"
+    )
+
+
+def _edu_item_html(row: dict) -> str:
+    cred = esc(row.get("credential") or "")
+    inst = esc(row.get("institution") or "")
+    start = esc(row.get("start") or "")
+    end = esc(row.get("end") or "")
+    period = " – ".join(x for x in (start, end or "present") if x)
+    links = urls_from_bullets(row.get("bullets"))
+    link_html = ""
+    if links:
+        link_html = (
+            '<p class="links">'
+            + " · ".join(
+                f'<a href="{esc(u)}" target="_blank" rel="noopener noreferrer">{esc(_link_label(u))}</a>'
+                for u in links
+            )
+            + "</p>"
+        )
+    return (
+        f"      <li>\n"
+        f"        <h3>{cred}</h3>\n"
+        f'        <p class="meta">{inst}'
+        + (f" · {period}" if period else "")
+        + "</p>\n"
+        f"        {link_html}\n"
+        f"      </li>"
+    )
 
 
 def build_credentials(site: dict, export: dict) -> str:
     short = esc(site["external"].get("credentials_short", ""))
-    items = []
-    for row in export.get("certifications") or []:
-        if not isinstance(row, dict):
+    page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
+    lede = (page.get("lede") or "PUBLIC certifications and qualifications.").strip()
+    order = page.get("order") or {}
+    certs = [c for c in (export.get("certifications") or []) if isinstance(c, dict)]
+    education = [e for e in (export.get("education") or []) if isinstance(e, dict)]
+
+    certs_by_cat: dict[str, list] = {}
+    for c in certs:
+        certs_by_cat.setdefault(str(c.get("category") or "professional"), []).append(c)
+
+    edu_by_cat: dict[str, list] = {}
+    for e in education:
+        edu_by_cat.setdefault(str(e.get("category") or "academic"), []).append(e)
+
+    def ordered(rows: list, ids: list | None, id_key: str = "id") -> list:
+        if not ids:
+            return rows
+        index = {str(r.get(id_key)): r for r in rows}
+        out = [index[i] for i in ids if i in index]
+        seen = set(ids)
+        out.extend(r for r in rows if str(r.get(id_key)) not in seen)
+        return out
+
+    blocks: list[str] = []
+    for section in page.get("sections") or [
+        {"id": "professional", "title": "Professional Certifications"},
+        {"id": "leadership", "title": "Leadership & Professional Programs"},
+        {"id": "academic", "title": "Academic Qualifications"},
+        {"id": "training", "title": "Additional Training & Bootcamps"},
+    ]:
+        if not isinstance(section, dict):
             continue
-        name = esc(row.get("name") or "")
-        issuer = esc(row.get("issuer") or "")
-        issued = esc(row.get("issued") or "")
-        expires = esc(row.get("expires") or "")
-        primary, bitly = primary_and_short(urls_from_bullets(row.get("bullets")))
-        links = []
-        if primary:
-            links.append(
-                f'<a href="{esc(primary)}" target="_blank" rel="noopener noreferrer">Verify</a>'
+        sid = str(section.get("id") or "")
+        title = esc(section.get("title") or sid)
+        if sid in ("academic", "training"):
+            rows = ordered(edu_by_cat.pop(sid, []), order.get(sid))
+            if not rows:
+                continue
+            blocks.append(f"    <h2>{title}</h2>")
+            blocks.append(
+                '    <ul class="item-list">\n'
+                + "\n".join(_edu_item_html(r) for r in rows)
+                + "\n    </ul>"
             )
-        if bitly:
-            links.append(
-                f'<a href="{esc(bitly)}" target="_blank" rel="noopener noreferrer">{esc(bitly)}</a>'
+        else:
+            rows = ordered(certs_by_cat.pop(sid, []), order.get(sid))
+            if not rows:
+                continue
+            blocks.append(f"    <h2>{title}</h2>")
+            blocks.append(
+                '    <ul class="item-list">\n'
+                + "\n".join(_cert_item_html(r) for r in rows)
+                + "\n    </ul>"
             )
-        link_html = f'<p class="links">{" · ".join(links)}</p>' if links else ""
-        items.append(
-            f"      <li>\n"
-            f"        <h2>{name}</h2>\n"
-            f'        <p class="meta">{issuer} · issued {issued}'
-            + (f" · expires {expires}" if expires else "")
-            + "</p>\n"
-            f"        {link_html}\n"
-            f"      </li>"
+
+    # Leftover PUBLIC certs/education not in declared sections.
+    for sid, rows in list(certs_by_cat.items()):
+        if rows:
+            blocks.append(f"    <h2>{esc(sid.replace('_', ' ').title())}</h2>")
+            blocks.append(
+                '    <ul class="item-list">\n'
+                + "\n".join(_cert_item_html(r) for r in rows)
+                + "\n    </ul>"
+            )
+    for sid, rows in list(edu_by_cat.items()):
+        if rows:
+            blocks.append(f"    <h2>{esc(sid.replace('_', ' ').title())}</h2>")
+            blocks.append(
+                '    <ul class="item-list">\n'
+                + "\n".join(_edu_item_html(r) for r in rows)
+                + "\n    </ul>"
+            )
+
+    notes = page.get("notes") or []
+    if notes:
+        blocks.append("    <h2>Notes</h2>")
+        blocks.append(
+            "    <ul class=\"competency-list\">\n"
+            + "\n".join(f"      <li>{esc(n)}</li>" for n in notes)
+            + "\n    </ul>"
         )
+
+    body = "\n".join(blocks) if blocks else "    <p>No PUBLIC credentials in export.</p>"
     return f"""    <div id="search"></div>
     <h1>Credentials &amp; Verifications</h1>
-    <p class="page-lede">PUBLIC certifications with canonical verify URLs. Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
-    <ul class="item-list">
-{chr(10).join(items) if items else "      <li>No PUBLIC certifications in export.</li>"}
-    </ul>
+    <p class="page-lede">{esc(lede)} Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
+{body}
 """
 
 
