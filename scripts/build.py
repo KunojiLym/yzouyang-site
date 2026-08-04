@@ -430,8 +430,16 @@ def main() -> None:
 
     export = load_json(DATA / "export_public.json")
     if DIST.exists():
-        shutil.rmtree(DIST)
-    DIST.mkdir(parents=True)
+        # On Windows, a running preview server may lock the dist directory itself.
+        for child in DIST.iterdir():
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                try:
+                    child.unlink()
+                except OSError:
+                    pass
+    DIST.mkdir(parents=True, exist_ok=True)
 
     pages = [
         ("index.html", "Home", "Home", build_home(site), False),
