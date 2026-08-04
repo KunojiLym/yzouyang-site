@@ -42,6 +42,11 @@
         "Credentials": "45",
         "Contact": "0"
       }
+    },
+    "diy": {
+      "enabled": true,
+      "collect_url": "",
+      "honor_dnt": true
     }
   },
   "nav": [

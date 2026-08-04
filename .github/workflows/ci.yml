@@ -28,6 +28,9 @@ jobs:
       - name: Lint
         run: python scripts/lint.py
 
+      - name: DIY collect smoke
+        run: python scripts/test_diy_collect.py
+
       - name: Build
         run: python scripts/build.py
 

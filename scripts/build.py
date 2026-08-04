@@ -92,20 +92,18 @@ def analytics_head(site: dict) -> str:
 
 def analytics_body(site: dict, active: str) -> str:
     analytics = site.get("analytics") or {}
+    chunks: list[str] = []
+
     jetpack = analytics.get("jetpack") or {}
-    if not jetpack.get("enabled"):
-        return ""
-
-    blog_id = esc(str(jetpack.get("blog_id") or ""))
-    if not blog_id:
-        return ""
-
-    pages = jetpack.get("pages") or {}
-    post_id = esc(str(pages.get(active, "0")))
-    tz = esc(str(jetpack.get("timezone", "8")))
-    script = esc(str(jetpack.get("script") or "https://stats.wp.com/e-202632.js"))
-
-    return f"""  <script>
+    if jetpack.get("enabled"):
+        blog_id = esc(str(jetpack.get("blog_id") or ""))
+        if blog_id:
+            pages = jetpack.get("pages") or {}
+            post_id = esc(str(pages.get(active, "0")))
+            tz = esc(str(jetpack.get("timezone", "8")))
+            script = esc(str(jetpack.get("script") or "https://stats.wp.com/e-202632.js"))
+            chunks.append(
+                f"""  <script>
     window._stq = window._stq || [];
     window._stq.push([
       "view",
@@ -120,8 +118,19 @@ def analytics_body(site: dict, active: str) -> str:
     ]);
     window._stq.push(["clickTrackerInit", "{blog_id}", "{post_id}"]);
   </script>
-  <script defer src="{script}"></script>
-"""
+  <script defer src="{script}"></script>"""
+            )
+
+    diy = analytics.get("diy") or {}
+    if diy.get("enabled"):
+        collect = esc(str(diy.get("collect_url") or "").strip())
+        honor = "true" if diy.get("honor_dnt", True) else "false"
+        chunks.append(
+            f'  <script defer src="/track.js" data-collect-url="{collect}" '
+            f'data-honor-dnt="{honor}"></script>'
+        )
+
+    return "\n".join(chunks)
 
 
 def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = False) -> str:
@@ -351,6 +360,9 @@ def main() -> None:
         write(DIST / rel, layout(site, title, active, body, pagefind=pf))
 
     shutil.copyfile(SRC / "styles.css", DIST / "styles.css")
+    diy = (site.get("analytics") or {}).get("diy") or {}
+    if diy.get("enabled") and (SRC / "track.js").is_file():
+        shutil.copyfile(SRC / "track.js", DIST / "track.js")
     # Keep source data in dist for transparency / future client use
     (DIST / "data").mkdir(exist_ok=True)
     shutil.copyfile(DATA / "export_public.json", DIST / "data" / "export_public.json")

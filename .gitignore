@@ -4,3 +4,6 @@ node_modules/
 .DS_Store
 *.pyc
 __pycache__/
+data/diy-events*.ndjson
+collect/.wrangler/
+collect/node_modules/

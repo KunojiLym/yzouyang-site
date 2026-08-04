@@ -73,6 +73,18 @@ def main() -> None:
             if label not in pages:
                 fail(f"analytics.jetpack.pages missing {label}")
 
+    diy = analytics.get("diy") or {}
+    if diy.get("enabled"):
+        track = ROOT / "src" / "track.js"
+        if not track.is_file():
+            fail("analytics.diy.enabled but src/track.js missing")
+        collect = diy.get("collect_url")
+        if collect is not None and not isinstance(collect, str):
+            fail("analytics.diy.collect_url must be a string")
+        if isinstance(collect, str) and collect.strip():
+            if not collect.startswith(("https://", "http://")):
+                fail("analytics.diy.collect_url must be http(s)")
+
     print("lint ok")
 
 

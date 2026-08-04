@@ -37,13 +37,15 @@ Configured in `data/site.json` → `analytics`:
 
 | Provider | Status | Notes |
 |---|---|---|
+| **DIY** (supplement) | on | First-party beacon → your collector; see [docs/diy-tracking.md](docs/diy-tracking.md) |
 | **Jetpack Stats** | on (default) | Same WordPress.com blog id as live WP (`34802711`); page ids mapped from WP REST |
 | **GA4** | optional | Set `ga_measurement_id` to `G-…` to inject gtag (IP anonymized) |
 
-Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hosts report with `srv = location.hostname`.
+Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hosts report with `srv = location.hostname`. DIY is additive — set `analytics.diy.collect_url` after deploying `collect/` Worker or local `diy_collect.py`.
 
 ## Docs
 
+- [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map
 - [docs/cutover.md](docs/cutover.md) — DNS operator gate
 - [docs/c2b-writing-inventory.md](docs/c2b-writing-inventory.md) — deferred writing corpus
