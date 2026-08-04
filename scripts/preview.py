@@ -13,6 +13,7 @@ import argparse
 import functools
 import http.server
 import os
+import shutil
 import socketserver
 import subprocess
 import sys
@@ -29,6 +30,27 @@ def run(cmd: list[str], env: dict | None = None) -> None:
     if env:
         merged.update(env)
     subprocess.run(cmd, cwd=str(ROOT), check=True, env=merged)
+
+
+def resolve_npx() -> str | None:
+    """Windows CreateProcess cannot run bare 'npx' (needs npx.cmd)."""
+    for name in ("npx.cmd", "npx.exe", "npx"):
+        found = shutil.which(name)
+        if found:
+            return found
+    return None
+
+
+def run_pagefind() -> None:
+    npx = resolve_npx()
+    if not npx:
+        print(
+            "warning: npx not found on PATH — skipping Pagefind "
+            "(search UI will 404 until you install Node or pass --skip-pagefind)",
+            file=sys.stderr,
+        )
+        return
+    run([npx, "--yes", "pagefind@1.3.0", "--site", "dist"])
 
 
 def main() -> None:
@@ -50,7 +72,7 @@ def main() -> None:
         env={"SITE_BASE_PATH": args.base_path},
     )
     if not args.skip_pagefind:
-        run(["npx", "--yes", "pagefind@1.3.0", "--site", "dist"])
+        run_pagefind()
 
     base = (args.base_path or "").rstrip("/")
     # Serve repository root so /yzouyang-site/... can map via a tiny handler when needed.
