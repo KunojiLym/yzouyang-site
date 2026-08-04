@@ -239,30 +239,106 @@ def build_home(site: dict) -> str:
 
 
 def build_about(site: dict, export: dict) -> str:
-    about = site["about"]
-    bullets = "\n".join(f"        <li>{esc(b)}</li>" for b in about.get("bullets") or [])
-    exp = export.get("experiences") or []
-    exp_items = []
-    for row in exp[:3]:
+    about = export.get("about") if isinstance(export.get("about"), dict) else None
+    if not about:
+        about = site.get("about") or {}
+
+    lede = about.get("lede") or (site.get("about") or {}).get("lede") or ""
+    philosophy = (about.get("philosophy") or "").strip()
+    competencies = about.get("competencies") or []
+    highlights = about.get("career_highlights") or []
+    journey = about.get("career_journey") or {}
+
+    comp_html = []
+    for row in competencies:
         if not isinstance(row, dict):
             continue
-        org = esc(row.get("organization") or row.get("org") or "")
-        title = esc(row.get("title") or "")
-        start = esc(row.get("start") or "")
-        end = esc(row.get("end") or "present")
-        exp_items.append(
-            f'      <li><h2>{title}</h2><p class="meta">{org} · {start} – {end}</p>'
-            f"<p>{esc(row.get('summary') or '')}</p></li>"
+        comp_html.append(
+            f"      <li><strong>{esc(row.get('title') or '')}</strong> — "
+            f"{esc((row.get('body') or '').strip())}</li>"
         )
+    if not comp_html:
+        for b in (site.get("about") or {}).get("bullets") or []:
+            comp_html.append(f"      <li>{esc(b)}</li>")
+
+    highlight_html = []
+    for row in highlights:
+        if not isinstance(row, dict):
+            continue
+        link = row.get("link") or ""
+        link_html = ""
+        if link:
+            href = with_base(site, link) if str(link).startswith("/") else link
+            label = esc(row.get("link_label") or "Learn more")
+            link_html = (
+                f'<p class="links"><a href="{esc(href)}"'
+                + (
+                    ' target="_blank" rel="noopener noreferrer"'
+                    if not str(link).startswith("/")
+                    else ""
+                )
+                + f">{label}</a></p>"
+            )
+        highlight_html.append(
+            f"      <li>\n"
+            f"        <h3>{esc(row.get('title') or '')}</h3>\n"
+            f"        <p>{esc((row.get('body') or '').strip())}</p>\n"
+            f"        {link_html}\n"
+            f"      </li>"
+        )
+
+    journey_html = ""
+    if isinstance(journey, dict) and (journey.get("embed") or journey.get("link")):
+        title = esc(journey.get("title") or "Career Journey")
+        link = journey.get("link") or ""
+        embed = journey.get("embed") or ""
+        link_label = esc(journey.get("link_label") or "Open deck")
+        link_bit = ""
+        if link:
+            link_bit = (
+                f'<p class="links"><a href="{esc(link)}" target="_blank" '
+                f'rel="noopener noreferrer">{link_label}</a></p>'
+            )
+        embed_bit = ""
+        if embed:
+            embed_bit = f"""
+      <div class="embed-frame embed-frame-tall">
+        <iframe
+          title="{title}"
+          src="{esc(embed)}"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>"""
+        journey_html = f"""
+    <h2>Career Journey</h2>
+    {link_bit}
+    {embed_bit}
+"""
+
+    philosophy_html = ""
+    if philosophy:
+        philosophy_html = f"""
+    <h2>Philosophy</h2>
+    <blockquote class="philosophy">
+      <p>{esc(philosophy)}</p>
+    </blockquote>
+"""
+
+    creds = esc(with_base(site, "/credentials/"))
     return f"""    <h1>About</h1>
-    <p class="page-lede">{esc(about.get('lede', ''))}</p>
-    <ul>
-{bullets}
+    <p class="page-lede">{esc(lede.strip())}</p>
+    <h2>Core Competencies</h2>
+    <ul class="competency-list">
+{chr(10).join(comp_html) if comp_html else "      <li>No competencies listed.</li>"}
     </ul>
-    <h2 style="font-family:var(--font-display);margin-top:2.5rem">Recent experience</h2>
-    <ul class="item-list">
-{chr(10).join(exp_items) if exp_items else "      <li>No PUBLIC experiences in export.</li>"}
+    <h2>Career Highlights</h2>
+    <ul class="item-list highlight-list">
+{chr(10).join(highlight_html) if highlight_html else "      <li>No highlights listed.</li>"}
     </ul>
+    <p class="links"><a href="{creds}">View full credentials list</a></p>
+{journey_html}{philosophy_html}
 """
 
 

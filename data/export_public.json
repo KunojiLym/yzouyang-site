@@ -414,5 +414,54 @@
       "source_file": "2019-09-writing-sample.docx",
       "bullets": []
     }
-  ]
+  ],
+  "about": {
+    "visibility_policy": "PUBLIC",
+    "lede": "I design and lead cloud data platforms and generative AI solutions for enterprises — with a bias toward governance, cost visibility, and systems that operators can trust.\n",
+    "philosophy": "I believe in bridging the gap between business questions and technical delivery—empowering organizations through scalable data, AI, and analytics capabilities, and developing people as the foundation for lasting transformation.\n",
+    "competencies": [
+      {
+        "title": "Data Engineering Leadership",
+        "body": "Architecting and operating complex cloud data platforms (Google Cloud, Microsoft Azure, Databricks, AWS) since 2020, leading robust ETL/ELT pipeline development and data governance at scale.\n"
+      },
+      {
+        "title": "AI & Analytics Expertise",
+        "body": "Skilled in developing and integrating generative AI, machine learning, NLP and analytics solutions for modern product development, consistently delivering measurable operational improvements.\n"
+      },
+      {
+        "title": "Cloud Platform Mastery",
+        "body": "Multi-certified on Google Cloud, Microsoft Azure and Databricks; hands-on with MLOps, medallion/lakehouse architectures, and cloud-native solutions on AWS.\n"
+      },
+      {
+        "title": "Cross-Functional Leadership",
+        "body": "Formal management training, documentation standardization, and technical mentorship spanning business and technology teams.\n"
+      },
+      {
+        "title": "Product & User Focus",
+        "body": "Educated in UX/UI and digital product management, with proven success launching analytics tools and business dashboards for diverse stakeholders.\n"
+      }
+    ],
+    "career_highlights": [
+      {
+        "title": "Data Solutioning and Architecture",
+        "body": "Established medallion architecture, standardized cross-functional documentation, and guided data/AI/ML project delivery on Google Cloud and Microsoft Azure.\n"
+      },
+      {
+        "title": "Lead Data Engineer",
+        "body": "Architected resilient, cost-saving data pipelines on AWS and championed technical upskilling and collaboration.\n"
+      },
+      {
+        "title": "Technical Portfolio",
+        "body": "Comprehensive technical portfolio from Metis Data Science Bootcamp, including end-to-end ML, AI and analytics projects.\n",
+        "link": "/portfolio/",
+        "link_label": "Portfolio highlights"
+      }
+    ],
+    "career_journey": {
+      "title": "Career Journey",
+      "link": "https://www.figma.com/deck/0nKvFiourL6ya4HCTEN0AL/Career-Journey-2025",
+      "link_label": "Open Figma deck",
+      "embed": "https://embed.figma.com/deck/0nKvFiourL6ya4HCTEN0AL/Career-Journey-2025?embed-host=share"
+    }
+  }
 }

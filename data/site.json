@@ -24,12 +24,7 @@
     "credentials_short": "https://bit.ly/4m4fqki"
   },
   "about": {
-    "lede": "I design and lead cloud data platforms and generative AI solutions for enterprises — with a bias toward governance, cost visibility, and systems that operators can trust.",
-    "bullets": [
-      "Senior data platform leadership across cloud economics, Unity Catalog, and medallion architectures.",
-      "Hands-on engineering background on GCP, AWS, and Azure — batch, streaming, and ML ops.",
-      "Public writing on AI disruption, industrial playbooks, and building analytics products in the open."
-    ]
+    "note": "Prefer export_public.json about (from personal-content data/about.yaml). site.about is fallback only."
   },
   "portfolio_extras": [
     {
@@ -41,7 +36,8 @@
       "embed": "https://embed.figma.com/deck/KzoFrRv4ZmF60Ouqen318Q/Klook-Travel-Planner?embed-host=share"
     }
   ],
-  "analytics": {    "ga_measurement_id": "",
+  "analytics": {
+    "ga_measurement_id": "",
     "jetpack": {
       "enabled": true,
       "blog_id": "34802711",

@@ -6,4 +6,5 @@ node_modules/
 __pycache__/
 data/diy-events*.ndjson
 collect/.wrangler/
-collect/node_modules/
+docs/_about-wp*
+scripts/_extract_about.py
