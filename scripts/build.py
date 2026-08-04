@@ -13,6 +13,23 @@ DIST = ROOT / "dist"
 SRC = ROOT / "src"
 
 
+def normalize_base(base: object) -> str:
+    text = ("" if base is None else str(base)).strip()
+    if not text or text == "/":
+        return ""
+    return "/" + text.strip("/")
+
+
+def with_base(site: dict, path: str) -> str:
+    """Prefix site-root paths with base_path (for GitHub project Pages)."""
+    if not path or path.startswith(("http://", "https://", "#", "mailto:", "tel:")):
+        return path
+    base = normalize_base(site.get("base_path", ""))
+    if not path.startswith("/"):
+        path = "/" + path
+    return base + path
+
+
 def esc(value: object) -> str:
     text = "" if value is None else str(value)
     return (
@@ -53,8 +70,9 @@ def nav_html(site: dict, active: str) -> str:
     parts: list[str] = []
     for item in site.get("nav") or []:
         label = esc(item.get("label", ""))
-        href = esc(item.get("href", "#"))
+        raw_href = str(item.get("href", "#"))
         external = bool(item.get("external"))
+        href = esc(raw_href if external else with_base(site, raw_href))
         classes = []
         if external:
             classes.append("external")
@@ -125,8 +143,9 @@ def analytics_body(site: dict, active: str) -> str:
     if diy.get("enabled"):
         collect = esc(str(diy.get("collect_url") or "").strip())
         honor = "true" if diy.get("honor_dnt", True) else "false"
+        track_src = esc(with_base(site, "/track.js"))
         chunks.append(
-            f'  <script defer src="/track.js" data-collect-url="{collect}" '
+            f'  <script defer src="{track_src}" data-collect-url="{collect}" '
             f'data-honor-dnt="{honor}"></script>'
         )
 
@@ -140,6 +159,10 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
     pf_attr = ' data-pagefind-body' if pagefind else ""
     head_analytics = analytics_head(site)
     body_analytics = analytics_body(site, active)
+    css = esc(with_base(site, "/styles.css"))
+    pf_css = esc(with_base(site, "/pagefind/pagefind-ui.css"))
+    pf_js = esc(with_base(site, "/pagefind/pagefind-ui.js"))
+    home = esc(with_base(site, "/"))
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,13 +173,13 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css" />
-  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+  <link rel="stylesheet" href="{css}" />
+  <link rel="stylesheet" href="{pf_css}" />
 {head_analytics}
 </head>
 <body>
   <header class="site-header">
-    <p class="brand"><a href="/">{brand}</a></p>
+    <p class="brand"><a href="{home}">{brand}</a></p>
     <nav class="site-nav" aria-label="Primary">
       {nav_html(site, active)}
     </nav>
@@ -168,7 +191,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
     <p>Static migration of yzouyang.com — Phase 1 pages from PUBLIC export.</p>
     <p>Writing remains on WordPress / Medium / LinkedIn until C2b.</p>
   </footer>
-  <script src="/pagefind/pagefind-ui.js" type="text/javascript"></script>
+  <script src="{pf_js}" type="text/javascript"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {{
       const mount = document.querySelector("#search");
@@ -195,10 +218,10 @@ def build_home(site: dict) -> str:
       <p class="subtitle">{esc(person['headline'])}</p>
       <p class="lede">{esc(person['tagline'])}</p>
       <div class="cta-row">
-        <a class="btn btn-primary" href="/contact/">Contact</a>
-        <a class="btn" href="/about/">About</a>
-        <a class="btn" href="/credentials/">Credentials</a>
-        <a class="btn" href="/portfolio/">Portfolio</a>
+        <a class="btn btn-primary" href="{esc(with_base(site, '/contact/'))}">Contact</a>
+        <a class="btn" href="{esc(with_base(site, '/about/'))}">About</a>
+        <a class="btn" href="{esc(with_base(site, '/credentials/'))}">Credentials</a>
+        <a class="btn" href="{esc(with_base(site, '/portfolio/'))}">Portfolio</a>
       </div>
     </section>
 """
@@ -337,7 +360,25 @@ def build_contact(site: dict) -> str:
 
 
 def main() -> None:
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--base-path",
+        default=None,
+        help='Site root prefix for GitHub project Pages (e.g. /yzouyang-site). '
+        "Overrides site.json and SITE_BASE_PATH.",
+    )
+    args = parser.parse_args()
+
     site = load_json(DATA / "site.json")
+    if args.base_path is not None:
+        site["base_path"] = args.base_path
+    elif os.environ.get("SITE_BASE_PATH") is not None:
+        site["base_path"] = os.environ["SITE_BASE_PATH"]
+    site["base_path"] = normalize_base(site.get("base_path", ""))
+
     export = load_json(DATA / "export_public.json")
     if DIST.exists():
         shutil.rmtree(DIST)
@@ -366,17 +407,19 @@ def main() -> None:
     # Keep source data in dist for transparency / future client use
     (DIST / "data").mkdir(exist_ok=True)
     shutil.copyfile(DATA / "export_public.json", DIST / "data" / "export_public.json")
-    shutil.copyfile(DATA / "site.json", DIST / "data" / "site.json")
+    # Persist effective base_path used for this build
+    site_out = dict(site)
+    write(DIST / "data" / "site.json", json.dumps(site_out, indent=2) + "\n")
 
-    # SPA-style trailing-slash helpers for Pages
-    redirects = """/about /about/ 301
-/portfolio /portfolio/ 301
-/credentials /credentials/ 301
-/contact /contact/ 301
+    base = site["base_path"]
+    redirects = f"""{base}/about {base}/about/ 301
+{base}/portfolio {base}/portfolio/ 301
+{base}/credentials {base}/credentials/ 301
+{base}/contact {base}/contact/ 301
 """
     write(DIST / "_redirects", redirects)
 
-    print(f"built {len(pages)} pages -> {DIST}")
+    print(f"built {len(pages)} pages -> {DIST} (base_path={base or '/'})")
 
 
 if __name__ == "__main__":

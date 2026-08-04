@@ -2,22 +2,35 @@ name: ci
 
 on:
   push:
-    branches: [main]
+    branches: [main, uat]
   pull_request:
   workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "Deploy built site to GitHub Pages (overwrites the single Pages URL)"
+        type: choice
+        options:
+          - none
+          - uat
+          - production
+        default: none
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
-  group: pages-${{ github.ref }}
+  group: pages-deploy
   cancel-in-progress: true
 
 jobs:
   lint-build:
     runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.meta.outputs.should_deploy }}
+      deploy_env: ${{ steps.meta.outputs.deploy_env }}
     steps:
       - uses: actions/checkout@v4
 
@@ -25,30 +38,64 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Resolve deploy target
+        id: meta
+        run: |
+          TARGET="none"
+          ENV_NAME=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET="${{ github.event.inputs.deploy_target }}"
+          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/uat" ]; then
+            TARGET="uat"
+          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            TARGET="production"
+          fi
+          if [ "$TARGET" = "uat" ]; then
+            ENV_NAME="uat"
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          elif [ "$TARGET" = "production" ]; then
+            ENV_NAME="github-pages"
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "deploy_env=$ENV_NAME" >> "$GITHUB_OUTPUT"
+          echo "deploy_target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Resolved deploy_target=$TARGET env=$ENV_NAME"
+
       - name: Lint
         run: python scripts/lint.py
 
       - name: DIY collect smoke
         run: python scripts/test_diy_collect.py
 
-      - name: Build
+      - name: Build (GitHub Pages base path)
+        env:
+          SITE_BASE_PATH: /yzouyang-site
         run: python scripts/build.py
 
       - name: Pagefind
         run: npx --yes pagefind@1.3.0 --site dist
 
+      - name: Upload offline preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: dist
+          retention-days: 14
+
       - name: Upload Pages artifact
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+        if: steps.meta.outputs.should_deploy == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    if: needs.lint-build.outputs.should_deploy == 'true'
     needs: lint-build
     runs-on: ubuntu-latest
     environment:
-      name: github-pages
+      name: ${{ needs.lint-build.outputs.deploy_env }}
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment

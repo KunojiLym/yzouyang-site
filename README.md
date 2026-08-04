@@ -12,16 +12,20 @@ Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/
 
 **Writing** (Blog / Medium / LinkedIn articles & newsletter) stays on existing hosts until **C2b**. Nav links out with an external marker.
 
-Preview: GitHub Pages (Actions deploy) while WordPress remains on the apex until operator cutover. See [docs/cutover.md](docs/cutover.md).
+Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 
 ## Develop
 
 ```bash
+# Offline preview (lint + build + Pagefind + local server)
+python scripts/preview.py
+
 python scripts/lint.py
 python scripts/build.py
 npx pagefind@1.3.0 --site dist
-# optional: python -m http.server -d dist 8080
 ```
+
+CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty).
 
 Refresh export:
 
@@ -45,6 +49,7 @@ Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hos
 
 ## Docs
 
+- [docs/preview-uat.md](docs/preview-uat.md) — offline preview + UAT branch publish
 - [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map
 - [docs/cutover.md](docs/cutover.md) — DNS operator gate

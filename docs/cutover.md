@@ -1,10 +1,13 @@
 # Operator cutover checklist
 
-**Gate:** only after Phase 1 **preview** parity is signed off. Until then, WordPress on Bluehost shared (`yzouyang.com` / `www` → `162.241.24.224`, `host-header` → `shared.bluehost.com`) stays authoritative on the apex.
+**Gate:** only after Phase 1 **UAT / preview** parity is signed off (see [preview-uat.md](preview-uat.md)). Until then, WordPress on Bluehost shared (`yzouyang.com` / `www` → `162.241.24.224`, `host-header` → `shared.bluehost.com`) stays authoritative on the apex.
 
 ## Before DNS
 
-- [ ] Preview URL (GitHub Pages / Cloudflare Pages) serves `/`, `/about/`, `/portfolio/`, `/credentials/`, `/contact/` from PUBLIC export
+- [ ] Offline `python scripts/preview.py` looks right
+- [ ] UAT on GitHub Pages (`uat` branch deploy) signed off: https://kunojilym.github.io/yzouyang-site/
+- [ ] Promoted to `main` Pages deploy matches UAT
+- [ ] Preview URL serves `/`, `/about/`, `/portfolio/`, `/credentials/`, `/contact/` from PUBLIC export
 - [ ] Pagefind works on portfolio or credentials
 - [ ] Blog / Medium / LinkedIn still reachable from nav (external)
 - [ ] Bitly shorts still resolve: portfolio `bit.ly/3GGyiXF`, credentials `bit.ly/4m4fqki`
