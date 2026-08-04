@@ -69,11 +69,68 @@ def nav_html(site: dict, active: str) -> str:
     return "\n      ".join(parts)
 
 
+def analytics_head(site: dict) -> str:
+    """Optional GA4 + Jetpack Stats (continuity with live WP)."""
+    analytics = site.get("analytics") or {}
+    chunks: list[str] = []
+
+    ga_id = (analytics.get("ga_measurement_id") or "").strip()
+    if ga_id:
+        gid = esc(ga_id)
+        chunks.append(
+            f"""  <script async src="https://www.googletagmanager.com/gtag/js?id={gid}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){{ dataLayer.push(arguments); }}
+    gtag('js', new Date());
+    gtag('config', '{gid}', {{ anonymize_ip: true }});
+  </script>"""
+        )
+
+    return "\n".join(chunks)
+
+
+def analytics_body(site: dict, active: str) -> str:
+    analytics = site.get("analytics") or {}
+    jetpack = analytics.get("jetpack") or {}
+    if not jetpack.get("enabled"):
+        return ""
+
+    blog_id = esc(str(jetpack.get("blog_id") or ""))
+    if not blog_id:
+        return ""
+
+    pages = jetpack.get("pages") or {}
+    post_id = esc(str(pages.get(active, "0")))
+    tz = esc(str(jetpack.get("timezone", "8")))
+    script = esc(str(jetpack.get("script") or "https://stats.wp.com/e-202632.js"))
+
+    return f"""  <script>
+    window._stq = window._stq || [];
+    window._stq.push([
+      "view",
+      {{
+        v: "ext",
+        blog: "{blog_id}",
+        post: "{post_id}",
+        tz: "{tz}",
+        srv: window.location.hostname,
+        j: "1:16.0.1"
+      }}
+    ]);
+    window._stq.push(["clickTrackerInit", "{blog_id}", "{post_id}"]);
+  </script>
+  <script defer src="{script}"></script>
+"""
+
+
 def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = False) -> str:
     person = site["person"]
     brand = esc(person.get("brand", "yzouyang"))
     page_title = f"{esc(title)} — {brand}"
     pf_attr = ' data-pagefind-body' if pagefind else ""
+    head_analytics = analytics_head(site)
+    body_analytics = analytics_body(site, active)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,6 +143,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+{head_analytics}
 </head>
 <body>
   <header class="site-header">
@@ -110,6 +168,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
       }}
     }});
   </script>
+{body_analytics}
 </body>
 </html>
 """

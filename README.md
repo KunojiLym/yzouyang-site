@@ -31,6 +31,17 @@ python3 scripts/export_public.py yingzhao --check
 cp people/yingzhao/data/export_public.json ../yzouyang-site/data/export_public.json
 ```
 
+## Analytics
+
+Configured in `data/site.json` → `analytics`:
+
+| Provider | Status | Notes |
+|---|---|---|
+| **Jetpack Stats** | on (default) | Same WordPress.com blog id as live WP (`34802711`); page ids mapped from WP REST |
+| **GA4** | optional | Set `ga_measurement_id` to `G-…` to inject gtag (IP anonymized) |
+
+Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hosts report with `srv = location.hostname`.
+
 ## Docs
 
 - [docs/redirects.md](docs/redirects.md) — WP → static map

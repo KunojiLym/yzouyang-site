@@ -28,6 +28,22 @@
       "Public writing on AI disruption, industrial playbooks, and building analytics products in the open."
     ]
   },
+  "analytics": {
+    "ga_measurement_id": "",
+    "jetpack": {
+      "enabled": true,
+      "blog_id": "34802711",
+      "timezone": "8",
+      "script": "https://stats.wp.com/e-202632.js",
+      "pages": {
+        "Home": "225",
+        "About": "2",
+        "Portfolio": "125",
+        "Credentials": "45",
+        "Contact": "0"
+      }
+    }
+  },
   "nav": [
     { "label": "Home", "href": "/", "external": false },
     { "label": "About", "href": "/about/", "external": false },

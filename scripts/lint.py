@@ -59,6 +59,20 @@ def main() -> None:
         if item.get("label") in external_labels and not item.get("external"):
             fail(f"{item.get('label')} nav entry must be external until C2b")
 
+    analytics = site.get("analytics") or {}
+    ga_id = (analytics.get("ga_measurement_id") or "").strip()
+    if ga_id and not ga_id.startswith("G-"):
+        fail("analytics.ga_measurement_id must be a GA4 id (G-…)")
+
+    jetpack = analytics.get("jetpack") or {}
+    if jetpack.get("enabled"):
+        if not str(jetpack.get("blog_id") or "").strip():
+            fail("analytics.jetpack.blog_id required when jetpack.enabled")
+        pages = jetpack.get("pages") or {}
+        for label in ("Home", "About", "Portfolio", "Credentials", "Contact"):
+            if label not in pages:
+                fail(f"analytics.jetpack.pages missing {label}")
+
     print("lint ok")
 
 
