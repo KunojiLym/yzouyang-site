@@ -1,0 +1,41 @@
+{
+  "person": {
+    "full_name": "Yingzhao Ouyang",
+    "brand": "yzouyang",
+    "headline": "Data and AI Transformation Specialist",
+    "tagline": "Driving value in cloud, data and generative AI solutions for enterprises",
+    "location": "Singapore"
+  },
+  "contact": {
+    "email": "kunojilym@gmail.com",
+    "phone": "+65 8468 4623",
+    "note": "PUBLIC contacts only — no work or university emails"
+  },
+  "external": {
+    "blog": "https://www.yzouyang.com/blog/",
+    "medium": "https://medium.com/@kunojilym",
+    "linkedin": "https://www.linkedin.com/in/yzouyang/",
+    "github": "https://www.github.com/KunojiLym",
+    "bitly_hub": "https://bit.ly/m/yzouyang",
+    "portfolio_short": "https://bit.ly/3GGyiXF",
+    "credentials_short": "https://bit.ly/4m4fqki"
+  },
+  "about": {
+    "lede": "I design and lead cloud data platforms and generative AI solutions for enterprises — with a bias toward governance, cost visibility, and systems that operators can trust.",
+    "bullets": [
+      "Senior data platform leadership across cloud economics, Unity Catalog, and medallion architectures.",
+      "Hands-on engineering background on GCP, AWS, and Azure — batch, streaming, and ML ops.",
+      "Public writing on AI disruption, industrial playbooks, and building analytics products in the open."
+    ]
+  },
+  "nav": [
+    { "label": "Home", "href": "/", "external": false },
+    { "label": "About", "href": "/about/", "external": false },
+    { "label": "Portfolio", "href": "/portfolio/", "external": false },
+    { "label": "Credentials", "href": "/credentials/", "external": false },
+    { "label": "Contact", "href": "/contact/", "external": false },
+    { "label": "Blog", "href": "https://www.yzouyang.com/blog/", "external": true },
+    { "label": "Medium", "href": "https://medium.com/@kunojilym", "external": true },
+    { "label": "LinkedIn", "href": "https://www.linkedin.com/in/yzouyang/", "external": true }
+  ]
+}

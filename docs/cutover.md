@@ -1,0 +1,23 @@
+# Operator cutover checklist
+
+**Gate:** only after Phase 1 **preview** parity is signed off. Until then, WordPress on Bluehost shared (`yzouyang.com` / `www` → `162.241.24.224`, `host-header` → `shared.bluehost.com`) stays authoritative on the apex.
+
+## Before DNS
+
+- [ ] Preview URL (GitHub Pages / Cloudflare Pages) serves `/`, `/about/`, `/portfolio/`, `/credentials/`, `/contact/` from PUBLIC export
+- [ ] Pagefind works on portfolio or credentials
+- [ ] Blog / Medium / LinkedIn still reachable from nav (external)
+- [ ] Bitly shorts still resolve: portfolio `bit.ly/3GGyiXF`, credentials `bit.ly/4m4fqki`
+- [ ] No work/university emails on Contact
+
+## Cutover
+
+1. Point DNS / CDN for apex + `www` to the static host (GitHub Pages custom domain or Cloudflare).
+2. Keep WP read-only **or** redirect non-blog routes to static (see [redirects.md](redirects.md)).
+3. Leave WP `/blog`, Medium, and LinkedIn writing hosts as-is until **C2b**.
+4. Smoke apex `/`, `/portfolio/`, `/credentials/`, Bitly destinations.
+5. Do not import writing into Pagefind until C2b inventory is complete.
+
+## Rollback
+
+Repoint DNS to Bluehost / restore WP as primary; static preview can remain for iteration.
