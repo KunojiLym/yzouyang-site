@@ -80,6 +80,19 @@ jobs:
       - name: Site build contract tests
         run: python scripts/test_site_build.py
 
+      - name: Upload offline preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: dist
+          retention-days: 14
+
+      - name: Upload Pages artifact
+        if: steps.meta.outputs.should_deploy == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -88,6 +101,12 @@ jobs:
         run: |
           npm install
           npx playwright install --with-deps chromium
+
+      # e2e serves dist at /; Pages build uses /yzouyang-site asset prefixes — rebuild root for tests
+      - name: Build root site for e2e
+        env:
+          SITE_BASE_PATH: ""
+        run: python scripts/build.py
 
       - name: Playwright usability e2e
         run: npm run test:e2e
@@ -103,19 +122,6 @@ jobs:
             playwright-report
             test-results
           retention-days: 7
-
-      - name: Upload offline preview artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: site-preview
-          path: dist
-          retention-days: 14
-
-      - name: Upload Pages artifact
-        if: steps.meta.outputs.should_deploy == 'true'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
 
   deploy:
     if: needs.lint-build.outputs.should_deploy == 'true'

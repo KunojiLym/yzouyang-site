@@ -31,9 +31,27 @@ test.describe("a11y light + contrast", () => {
     } else {
       await expect(page.locator("nav.site-nav-desktop")).toBeVisible();
     }
-    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(bg).not.toMatch(/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/);
-    expect(bg).not.toBe("transparent");
+    const paint = await page.evaluate(async () => {
+      const link = [...document.querySelectorAll('link[rel="stylesheet"]')].find((el) =>
+        (el.getAttribute("href") || "").includes("styles")
+      );
+      let cssOk = false;
+      if (link) {
+        try {
+          cssOk = (await fetch(link.href)).ok;
+        } catch {
+          cssOk = false;
+        }
+      }
+      return {
+        cssOk,
+        bodyBg: getComputedStyle(document.body).backgroundColor,
+        htmlBg: getComputedStyle(document.documentElement).backgroundColor,
+      };
+    });
+    expect(paint.cssOk).toBe(true);
+    const solid = (c) => c && c !== "transparent" && !/^rgba\(\s*0,\s*0,\s*0,\s*0\s*\)$/.test(c);
+    expect(solid(paint.htmlBg) || solid(paint.bodyBg)).toBe(true);
   });
 });
 

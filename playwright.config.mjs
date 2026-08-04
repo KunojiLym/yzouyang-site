@@ -17,6 +17,7 @@ export default defineConfig({
     colorScheme: "dark",
   },
   webServer: {
+    // Expects a root-path build (empty SITE_BASE_PATH). CI rebuilds after the Pages artifact step.
     command: `python -m http.server ${PORT} --directory dist --bind 127.0.0.1`,
     url: BASE,
     reuseExistingServer: !process.env.CI,
