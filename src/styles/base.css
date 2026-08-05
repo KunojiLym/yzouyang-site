@@ -17,7 +17,7 @@ body {
   background-color: var(--bg-deep);
   background-image:
     radial-gradient(ellipse 80% 50% at 10% -10%, var(--glow), transparent 55%),
-    linear-gradient(165deg, var(--bg-deep) 0%, #12201c 45%, #0e1815 100%);
+    linear-gradient(165deg, var(--bg-deep) 0%, var(--bg-gradient-mid) 45%, var(--bg-gradient-end) 100%);
   background-attachment: fixed;
   line-height: 1.6;
 }

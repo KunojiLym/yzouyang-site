@@ -4,9 +4,16 @@
   "type": "module",
   "scripts": {
     "test:e2e": "playwright test",
+    "test:visual": "playwright test tests/e2e/visual.spec.mjs",
+    "test:a11y": "playwright test tests/e2e/a11y.spec.mjs",
+    "lint:css": "stylelint \"src/styles/*.css\"",
     "qa:shots": "node scripts/qa-screenshot.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.62.0"
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "1.62.0",
+    "stylelint": "^16.9.0",
+    "stylelint-config-standard": "^36.0.0",
+    "stylelint-declaration-strict-value": "^1.10.0"
   }
 }

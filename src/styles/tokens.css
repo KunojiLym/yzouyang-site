@@ -23,9 +23,65 @@
   --warning: #c4a35a;
   --danger: #c47a6a;
   --glow: rgba(70, 140, 120, 0.35);
+  --bg-gradient-mid: #12201c;
+  --bg-gradient-end: #0e1815;
   --font-display: "Fraunces", "Palatino Linotype", Palatino, serif;
   --font-body: "Sora", "Segoe UI", sans-serif;
   --max: 68rem;
   --max-longform: 80rem;
   --header-offset: 4.75rem;
+
+  /* Type scale — fixed steps for UI/meta text.
+     See docs/design-system.md Layer A for the full table + rationale. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.85rem;
+  --text-base: 0.9rem;
+  --text-md: 1.05rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.35rem;
+
+  /* Fluid display sizes — headings that scale with viewport width.
+     Named by role, not by raw size, since they're not part of the fixed ramp. */
+  --text-display-hero: clamp(2.6rem, 7vw, 4.6rem);
+  --text-display-1: clamp(1.85rem, 3.5vw, 2.35rem);
+  --text-display-2: clamp(1.3rem, 2.5vw, 1.65rem);
+  --text-display-3: clamp(1.15rem, 2.2vw, 1.4rem);
+  --text-display-4: clamp(1.05rem, 2.2vw, 1.35rem);
+
+  /* Spacing scale — base-4px rhythm (1rem = 16px), plus two named
+     exceptions for chrome-level hairline gaps that don't sit on the grid.
+     Migration mapping from today's raw values: docs/token-migration-checklist.md */
+  --space-hairline: 0.15rem;
+  --space-tight: 0.35rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-9: 2.25rem;
+  --space-10: 2.5rem;
+  --space-11: 3rem;
+  --space-12: 4rem;
+
+  /* Radius scale — formalizes the 3 values already in use (no drift). */
+  --radius-sm: 0.15rem;
+  --radius-md: 0.2rem;
+  --radius-lg: 0.25rem;
 }
+
+/*
+  Breakpoint reference (documented constants, not usable via var() inside
+  @media until a build step adds preprocessing — see docs/design-system.md).
+
+  --bp-sm: 800px  — hero two-column -> stacked (home.css)
+  --bp-md: 900px  — nav collapse (chrome.css) + long-form sidebar collapse
+                     (longform.css currently uses 960px; converges to 900px
+                     in the Phase 2 migration — see token-migration-checklist.md)
+
+  These stay as two values, not one, because the hero's two-column layout
+  and the chrome/sidebar collapse are different layout concerns that happen
+  to be close in width, not the same concern duplicated three times.
+*/

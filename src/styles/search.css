@@ -1,6 +1,6 @@
 /* Pagefind dark theme hooks */
 #search {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
   --pagefind-ui-scale: 0.92;
   --pagefind-ui-primary: var(--accent);
   --pagefind-ui-text: var(--text-default);
@@ -8,8 +8,8 @@
   --pagefind-ui-border: var(--line-soft);
   --pagefind-ui-tag: var(--bg-mid);
   --pagefind-ui-border-width: 1px;
-  --pagefind-ui-border-radius: 0.25rem;
-  --pagefind-ui-image-border-radius: 0.2rem;
+  --pagefind-ui-border-radius: var(--radius-lg);
+  --pagefind-ui-image-border-radius: var(--radius-md);
   --pagefind-ui-image-box-ratio: 3 / 2;
   --pagefind-ui-font: var(--font-body);
 }
@@ -38,8 +38,8 @@
 #search .pagefind-ui__drawer {
   background: rgba(12, 20, 18, 0.96) !important;
   border: 1px solid var(--line-soft);
-  border-radius: 0.25rem;
-  margin-top: 0.5rem;
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-2);
 }
 
 #search .pagefind-ui__result {

@@ -1,6 +1,6 @@
 # Design system
 
-Visual contract for yzouyang-site Phase 1. Implementation: [`src/styles/`](../src/styles/) (assembled to `dist/styles.css`). Builder / IA / embeds: [site-builder.md](site-builder.md).
+Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles/) (assembled to `dist/styles.css`). Builder / IA / embeds: [site-builder.md](site-builder.md).
 
 **Governing sentence:** Design the site like a senior enterprise architect’s public briefing document, with editorial polish and technical precision.
 
@@ -38,11 +38,75 @@ Visual contract for yzouyang-site Phase 1. Implementation: [`src/styles/`](../sr
 | `--line-soft` / `--line` | Hairline borders | `rgba(232, 239, 233, 0.12)` |
 | `--success` / `--warning` / `--danger` | Status (reserved; use sparingly) | muted green / amber / rose |
 | `--glow` | Single ambient green glow | `rgba(70, 140, 120, 0.35)` |
+| `--bg-gradient-mid` | Body background gradient, 45% stop | `#12201c` |
+| `--bg-gradient-end` | Body background gradient, 100% stop | `#0e1815` |
 | `--font-display` | Hero title + brand wordmark only | Fraunces |
 | `--font-body` | Everything else | Sora |
-| `--max` | Content measure | `68rem` |
+| `--max` | Content measure (Home, About) | `68rem` |
+| `--max-longform` | Content measure (Portfolio, Credentials — wider for sidebar TOC layout) | `80rem` |
+| `--header-offset` | Sticky header height; used for `scroll-padding-top` and sidebar `max-height` math | `4.75rem` |
 
 `html` / `body` set `background-color: var(--bg-deep)`. Gradients use `background-image` only.
+
+### Type scale
+
+Fixed steps for UI/meta text (page titles, section headings, nav, meta, chips — everything that isn't a fluid display heading):
+
+| Token | Value | Replaces (pre-Phase 1 raw sizes) |
+|---|---|---|
+| `--text-xs` | `0.75rem` | `0.7rem`, `0.75rem` |
+| `--text-sm` | `0.85rem` | `0.8rem`, `0.85rem` |
+| `--text-base` | `0.9rem` | `0.9rem` |
+| `--text-md` | `1.05rem` | `1.05rem`, `1.1rem` |
+| `--text-lg` | `1.2rem` | `1.1rem`–`1.2rem` |
+| `--text-xl` | `1.35rem` | `1.35rem` |
+
+Fluid display headings (viewport-responsive, not on the fixed ramp):
+
+| Token | Value | Use |
+|---|---|---|
+| `--text-display-hero` | `clamp(2.6rem, 7vw, 4.6rem)` | Home hero `h1` |
+| `--text-display-1` | `clamp(1.85rem, 3.5vw, 2.35rem)` | Page `h1` (About, Portfolio, Credentials) |
+| `--text-display-2` | `clamp(1.3rem, 2.5vw, 1.65rem)` | Section `h2` |
+| `--text-display-3` | `clamp(1.15rem, 2.2vw, 1.4rem)` | Sub-section `h3` (long-form) |
+| `--text-display-4` | `clamp(1.05rem, 2.2vw, 1.35rem)` | Small fluid headings |
+
+### Spacing scale
+
+Base-4px rhythm (`1rem` = 16px root), plus two named exceptions for chrome-level hairline gaps that predate the grid and don't sit on it cleanly:
+
+| Token | Value | Token | Value |
+|---|---|---|---|
+| `--space-hairline` | `0.15rem` | `--space-6` | `1.5rem` |
+| `--space-tight` | `0.35rem` | `--space-7` | `1.75rem` |
+| `--space-1` | `0.25rem` | `--space-8` | `2rem` |
+| `--space-2` | `0.5rem` | `--space-9` | `2.25rem` |
+| `--space-3` | `0.75rem` | `--space-10` | `2.5rem` |
+| `--space-4` | `1rem` | `--space-11` | `3rem` |
+| `--space-5` | `1.25rem` | `--space-12` | `4rem` |
+
+Full raw-value → token mapping (with drift notes) for the Phase 2 migration: [token-migration-checklist.md](token-migration-checklist.md).
+
+### Radius scale
+
+Formalizes the 3 values already in use — no visual drift:
+
+| Token | Value |
+|---|---|
+| `--radius-sm` | `0.15rem` |
+| `--radius-md` | `0.2rem` |
+| `--radius-lg` | `0.25rem` |
+
+### Breakpoints
+
+Two documented widths, not one shared value, because the hero's two-column layout and the chrome/sidebar collapse are different layout concerns that happen to sit close in width:
+
+| Reference | Value | Applies to |
+|---|---|---|
+| `--bp-sm` | `800px` | Hero two-column → stacked (`home.css`) |
+| `--bp-md` | `900px` | Nav collapse (`chrome.css`) + long-form sidebar collapse (`longform.css` — converged from its pre-migration `960px`) |
+
+These are documented constants, not live custom properties — `@media` conditions can't consume `var()` without a preprocessing step. Treat the table above as the source of truth until/unless the build adds one.
 
 ### Typography
 
@@ -117,6 +181,23 @@ Site reads as a senior professional dossier:
 **Motion:** Short, minimal entrance (`rise`); honor `prefers-reduced-motion`. No novelty animation.
 
 External nav links use `.external` (↗ via CSS `::after`).
+
+---
+
+## Maintainability tooling (Phase 3)
+
+The token system above is enforced by CI, not just convention:
+
+| Gate | What it catches | Command | Config |
+|---|---|---|---|
+| Stylelint | Raw `font-size`/`border-radius`/`margin*`/`padding*`/`*gap` instead of `var(--...)` | `npm run lint:css` | `.stylelintrc.json` |
+| Token drift check | Raw hex colors or un-tokenized `font-family` outside `tokens.css` | `python scripts/check_token_drift.py` | `scripts/check_token_drift.py` |
+| Accessibility (axe-core) | WCAG2A/AA violations (contrast, landmarks, ARIA) on the 4 core routes | `npm run test:a11y` | `tests/e2e/a11y.spec.mjs` |
+| Visual regression | Unintended layout/style drift on the 4 core routes × 2 viewports | `npm run test:visual` | `tests/e2e/visual.spec.mjs` |
+
+All four run in `.github/workflows/ci.yml`. Visual regression is currently **non-blocking** (`continue-on-error: true`) because no baseline screenshots are committed yet — see the setup steps in `tests/e2e/visual.spec.mjs`'s header comment. Once baselines exist and are committed, remove `continue-on-error` so it becomes a real gate.
+
+A handful of documented one-off values are intentionally exempt from the stylelint rule (e.g. `0.75em` external-link arrow markers in `chrome.css`, which are relative to their parent font-size rather than the fixed type ramp) — see `ignoreValues` in `.stylelintrc.json`.
 
 ---
 

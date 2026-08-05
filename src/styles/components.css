@@ -2,7 +2,7 @@
 main.page {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: var(--space-8) var(--space-6) var(--space-12);
   animation: rise 0.45s ease-out both;
 }
 
@@ -12,46 +12,46 @@ main.page:has(.page-with-toc) {
 
 main.page h1 {
   font-family: var(--font-body);
-  font-size: clamp(1.85rem, 3.5vw, 2.35rem);
+  font-size: var(--text-display-1);
   font-weight: 600;
   letter-spacing: -0.02em;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--space-3);
   color: var(--text-strong);
 }
 
 main.page h2 {
   font-family: var(--font-body);
-  font-size: clamp(1.3rem, 2.5vw, 1.65rem);
+  font-size: var(--text-display-2);
   font-weight: 600;
   letter-spacing: -0.01em;
-  margin: 2.5rem 0 1rem;
+  margin: var(--space-10) 0 var(--space-4);
   color: var(--text-strong);
   scroll-margin-top: calc(var(--header-offset) + 0.5rem);
 }
 
 main.page h3 {
   font-family: var(--font-body);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
-  margin: 1.75rem 0 0.75rem;
+  margin: var(--space-7) 0 var(--space-3);
   color: var(--text-strong);
   scroll-margin-top: calc(var(--header-offset) + 0.5rem);
 }
 
 main.page h3.issuer-group {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--text-muted);
   font-family: var(--font-body);
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: none;
-  margin: 1.5rem 0 0.75rem;
+  margin: var(--space-6) 0 var(--space-3);
 }
 
 .writing-list h3 {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 600;
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-1);
 }
 
 .writing-list h3 a {
@@ -70,72 +70,72 @@ main.page h3.issuer-group {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
 .item-list li {
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--space-6);
   border-bottom: 1px solid var(--line-soft);
 }
 
 .item-list h2,
 .item-list h3 {
   font-family: var(--font-body);
-  font-size: 1.2rem;
+  font-size: var(--text-lg);
   font-weight: 600;
-  margin: 0 0 0.35rem;
+  margin: 0 0 var(--space-tight);
   color: var(--text-strong);
 }
 
 .item-list .case-outcome {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
   color: var(--text-default);
 }
 
 .item-list .case-tools {
-  margin: 0.5rem 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: var(--text-base);
 }
 
 .meta {
   color: var(--text-muted);
-  font-size: 0.9rem;
-  margin: 0 0 0.5rem;
+  font-size: var(--text-base);
+  margin: 0 0 var(--space-2);
 }
 
 .item-list p {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
 }
 
 .item-list ul {
-  margin: 0.35rem 0 0;
-  padding-left: 1.1rem;
+  margin: var(--space-tight) 0 0;
+  padding-left: var(--space-5);
   color: var(--text-muted);
 }
 
 .links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
 }
 
 .embed-wrap {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .embed-fallback {
   display: block;
-  margin-bottom: 0.65rem;
-  padding: 0.75rem 1rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border: 1px dashed var(--line-soft);
-  border-radius: 0.2rem;
+  border-radius: var(--radius-md);
   background: var(--bg-panel);
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: var(--text-base);
 }
 
 .embed-fallback:hover {
@@ -154,7 +154,7 @@ main.page h3.issuer-group {
   width: 100%;
   aspect-ratio: 16 / 10;
   border: 1px solid var(--line-soft);
-  border-radius: 0.2rem;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: rgba(0, 0, 0, 0.25);
 }
@@ -174,11 +174,11 @@ main.page h3.issuer-group {
 .competency-list {
   max-width: 44rem;
   color: var(--text-muted);
-  padding-left: 1.2rem;
+  padding-left: var(--space-5);
 }
 
 .competency-list li {
-  margin-bottom: 0.85rem;
+  margin-bottom: var(--space-3);
 }
 
 .competency-list strong {
@@ -188,15 +188,15 @@ main.page h3.issuer-group {
 
 .highlight-list h3 {
   font-family: var(--font-body);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
-  margin: 0 0 0.35rem;
+  margin: 0 0 var(--space-tight);
   color: var(--text-strong);
 }
 
 .philosophy {
-  margin: 0 0 2rem;
-  padding: 1.25rem 0 1.25rem 1.25rem;
+  margin: 0 0 var(--space-8);
+  padding: var(--space-5) 0 var(--space-5) var(--space-5);
   border-left: 2px solid var(--accent);
   max-width: 40rem;
 }
@@ -204,7 +204,7 @@ main.page h3.issuer-group {
 .philosophy p {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   line-height: 1.5;
   color: var(--text-default);
   font-weight: 500;
