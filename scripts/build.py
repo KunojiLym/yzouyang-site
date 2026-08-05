@@ -326,24 +326,37 @@ def build_home(site: dict, export: dict) -> str:
     person = site["person"]
     photo = person.get("photo") or ""
     location = str(person.get("location") or "").strip()
-    platforms = [str(p) for p in (person.get("platforms") or []) if str(p).strip()]
-    certs = [c for c in (export.get("certifications") or []) if isinstance(c, dict)]
-    pro_certs = [c for c in certs if str(c.get("category") or "professional") == "professional"]
-    cert_count = len(pro_certs) if pro_certs else len(certs)
+    platforms = [str(p) for p in (person.get("platforms") or []) if str(p).strip()][:4]
+
+    outcome_bits: list[str] = []
+    for row in (site.get("outcomes") or [])[:3]:
+        if not isinstance(row, dict):
+            continue
+        metric = str(row.get("metric") or "").strip()
+        label = str(row.get("label") or "").strip()
+        if not metric or not label:
+            continue
+        outcome_bits.append(
+            f"<li><span class=\"metric\">{esc(metric)}</span>"
+            f"<span class=\"label\">{esc(label)}</span></li>"
+        )
+    outcome_html = ""
+    if outcome_bits:
+        outcome_html = (
+            '        <ul class="outcome-strip" aria-label="Selected outcomes">\n'
+            + "\n".join(f"          {b}" for b in outcome_bits)
+            + "\n        </ul>"
+        )
 
     proof_bits: list[str] = []
     if location:
         proof_bits.append(f"<li><strong>{esc(location)}</strong></li>")
-    if cert_count:
-        proof_bits.append(
-            f"<li><strong>{cert_count}</strong> professional credentials</li>"
-        )
     for p in platforms:
         proof_bits.append(f"<li>{esc(p)}</li>")
     proof_html = ""
     if proof_bits:
         proof_html = (
-            '        <ul class="proof-strip" aria-label="Highlights">\n'
+            '        <ul class="proof-strip" aria-label="Location and platforms">\n'
             + "\n".join(f"          {b}" for b in proof_bits)
             + "\n        </ul>"
         )
@@ -397,6 +410,7 @@ def build_home(site: dict, export: dict) -> str:
         <h1>{esc(person['full_name'])}</h1>
         <p class="subtitle">{esc(person['headline'])}</p>
         <p class="lede">{esc(person['tagline'])}</p>
+{outcome_html}
 {proof_html}
         <div class="cta-row">
           <a class="btn btn-primary" href="{contact_href}">Contact</a>
@@ -558,13 +572,22 @@ def _link_label(url: str) -> str:
 
 def _project_item_html(row: dict) -> str:
     name = esc(row.get("name") or row.get("id") or "Project")
-    desc = esc((row.get("description") or "").strip())
+    # Outcome → scope → tools. Export may only have description (outcome stand-in).
+    outcome = str(row.get("outcome") or row.get("impact") or row.get("description") or "").strip()
+    scope = str(row.get("scope") or row.get("context") or "").strip()
+    if scope and scope == outcome:
+        scope = ""
     start = esc(row.get("start") or "")
     end = esc(row.get("end") or "present")
     tools = row.get("tools") or []
     tools_html = ""
     if tools:
-        tools_html = f'<p class="meta">Tools: {esc(", ".join(str(t) for t in tools))}</p>'
+        tools_html = (
+            f'<p class="case-tools meta">Tools: '
+            f'{esc(", ".join(str(t) for t in tools))}</p>'
+        )
+    outcome_html = f'<p class="case-outcome">{esc(outcome)}</p>' if outcome else ""
+    scope_html = f"<p>{esc(scope)}</p>" if scope else ""
     links = urls_from_bullets(row.get("bullets"))
     link_html = ""
     if links:
@@ -585,7 +608,8 @@ def _project_item_html(row: dict) -> str:
         f"      <li>\n"
         f"        <h3>{name}</h3>\n"
         f'        <p class="meta">{start} – {end}</p>\n'
-        f"        <p>{desc}</p>\n"
+        f"        {outcome_html}\n"
+        f"        {scope_html}\n"
         f"        {tools_html}\n"
         f"        {link_html}\n"
         f"        {embed_html}\n"

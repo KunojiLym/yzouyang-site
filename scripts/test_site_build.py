@@ -40,6 +40,10 @@ def main() -> None:
             fail(f"missing route {label}: {rel}")
 
     home = (DIST / "index.html").read_text(encoding="utf-8")
+    if 'class="outcome-strip"' not in home:
+        fail("home missing outcome-strip")
+    if "professional credentials" in home:
+        fail("home still shows cert-count vanity chip")
     if 'class="proof-strip"' not in home:
         fail("home missing proof-strip")
     if "Digital card" not in home or bitly not in home:
@@ -72,9 +76,17 @@ def main() -> None:
         fail("styles.css missing solid background-color: var(--bg-deep)")
     if "position: sticky" not in css:
         fail("styles.css missing sticky header")
+    if "--bg-elevated" not in css or "--focus-ring" not in css:
+        fail("styles.css missing semantic tokens (--bg-elevated / --focus-ring)")
+    if "--text-default" not in css:
+        fail("styles.css missing --text-default")
 
     portfolio = (DIST / "portfolio" / "index.html").read_text(encoding="utf-8")
     credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
+    if 'class="case-outcome"' not in portfolio:
+        fail("portfolio missing case-outcome class on project rows")
+    if 'class="case-tools' not in portfolio:
+        fail("portfolio missing case-tools class")
     for name, html in (("portfolio", portfolio), ("credentials", credentials)):
         if 'id="search"' not in html:
             fail(f"{name} missing #search")

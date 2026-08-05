@@ -20,7 +20,7 @@ data/site.json  +  data/export_public.json
  preview.py  /  CI  /  GitHub Pages
 ```
 
-- **Config / chrome / curated writing:** [`data/site.json`](../data/site.json)
+- **Config / chrome / curated writing / outcomes:** [`data/site.json`](../data/site.json)
 - **PUBLIC narrative + projects + certs:** vendored from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` → [`data/export_public.json`](../data/export_public.json)
 - **Styles:** [`src/styles.css`](../src/styles.css) → `dist/styles.css`
 - **No Jinja** — page HTML is built in [`scripts/build.py`](../scripts/build.py)
@@ -46,7 +46,8 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Key | Purpose |
 |---|---|
-| `person` | Name, brand, headline, tagline, location, platforms, photo |
+| `person` | Name, brand, headline, tagline, location, platforms (≤4 on Home), photo |
+| `outcomes` | Curated Home proof: `{ "metric", "label" }` (2–3; public CV facts only) |
 | `contact` | PUBLIC email + phone (never work/university domains) |
 | `external` | Blog, Medium, LinkedIn, GitHub, Bitly shorts, digital card hub |
 | `nav` | Primary links (internal + external). **No Contact item** |
@@ -58,19 +59,29 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Route | Builder | Sources |
 |---|---|---|
-| `/` | `build_home` | `person` + proof metrics from export certs; `#contact` from `contact`/`external` |
+| `/` | `build_home` | `person` + `outcomes` + platform proof strip; `#contact` from `contact`/`external` |
 | `/about/` | `build_about` | export `about` + `writing_highlights` |
-| `/portfolio/` | `build_portfolio` | export `portfolio` + `projects` + Pagefind |
+| `/portfolio/` | `build_portfolio` | export `portfolio` + `projects` + Pagefind (case rows: outcome → scope → tools) |
 | `/credentials/` | `build_credentials` | export `credentials` + certs/edu + Pagefind |
 | `/contact/` | `build_contact_redirect` | Meta refresh + link to `/#contact` |
 
 ## IA rules (Phase 1)
 
+- Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → `#contact`
 - **Sticky header** — always reachable; **Contact** control jumps to `/#contact`
-- Contact is **not** a primary nav page
-- Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; About shows curated external titles only
+- Contact is **not** a primary nav page; no cert-count vanity chip on Home
+- Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; About shows curated external titles only (publications-style)
 - Blog / Medium / LinkedIn remain external (`↗`)
 - Public footer (© + mailto + social) — no migration changelog in chrome
+
+## Progressive embeds
+
+Figma (and similar) iframes are an implementation pattern, not brand chrome:
+
+- Always pair the iframe with a visible **Open deck** / `.embed-fallback` link
+- Prefer a direct Figma URL from project bullets when available
+- Blank or blocked iframes must still leave the fallback usable
+- Do not treat embeds as the primary proof signal — case copy (outcome → scope → tools) comes first
 
 ## Agent / contributor rules
 
@@ -78,6 +89,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 - Do not decrypt SOPS or commit secrets
 - Do not commit `qa-shots/`, `test-results/`, or `playwright-report/`
 - Prefer `op://` for any credentials; never paste secret values into chat or commits
+- Do not invent outcome metrics — only operator-curated public facts in `site.outcomes`
 
 ## Related ops docs
 
@@ -86,3 +98,4 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 - [cutover.md](cutover.md) — DNS operator gate
 - [diy-tracking.md](diy-tracking.md) — first-party beacon
 - [c2b-writing-inventory.md](c2b-writing-inventory.md) — deferred writing corpus
+- [design-system.md](design-system.md) — visual / proof contract

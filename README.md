@@ -53,7 +53,7 @@ Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hos
 ## Docs
 
 - [docs/site-builder.md](docs/site-builder.md) — build pipeline, config map, IA rules
-- [docs/design-system.md](docs/design-system.md) — tokens, components, do/don’t
+- [docs/design-system.md](docs/design-system.md) — senior enterprise briefing contract (tokens, proof hierarchy, components)
 - [docs/preview-uat.md](docs/preview-uat.md) — offline preview + UAT branch publish
 - [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map

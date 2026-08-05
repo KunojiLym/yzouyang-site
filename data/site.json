@@ -10,6 +10,20 @@
     "photo": "/assets/profile.jpg",
     "photo_alt": "Portrait of Yingzhao Ouyang"
   },
+  "outcomes": [
+    {
+      "metric": "50%",
+      "label": "Documentation acceleration on platform delivery"
+    },
+    {
+      "metric": "20%",
+      "label": "Query cost reduction through platform FinOps"
+    },
+    {
+      "metric": "30%",
+      "label": "Migration and process efficiency gains"
+    }
+  ],
   "contact": {
     "email": "kunojilym@gmail.com",
     "phone": "+65 8468 4623",

@@ -74,6 +74,25 @@ def main() -> None:
             if not (row.get("title") and row.get("url")):
                 fail("writing_highlights entries need title and url")
 
+    outcomes = site.get("outcomes")
+    if outcomes is not None:
+        if not isinstance(outcomes, list):
+            fail("site.outcomes must be a list when set")
+        if len(outcomes) > 3:
+            fail("site.outcomes must have at most 3 entries")
+        for row in outcomes:
+            if not isinstance(row, dict):
+                fail("outcomes entries must be objects")
+            if not (str(row.get("metric") or "").strip() and str(row.get("label") or "").strip()):
+                fail("outcomes entries need metric and label")
+
+    platforms = (site.get("person") or {}).get("platforms")
+    if platforms is not None:
+        if not isinstance(platforms, list):
+            fail("site.person.platforms must be a list when set")
+        if len(platforms) > 4:
+            fail("site.person.platforms should have at most 4 entries for Home proof strip")
+
     analytics = site.get("analytics") or {}
     ga_id = (analytics.get("ga_measurement_id") or "").strip()
     if ga_id and not ga_id.startswith("G-"):
@@ -99,10 +118,6 @@ def main() -> None:
         if isinstance(collect, str) and collect.strip():
             if not collect.startswith(("https://", "http://")):
                 fail("analytics.diy.collect_url must be http(s)")
-
-    platforms = (site.get("person") or {}).get("platforms")
-    if platforms is not None and not isinstance(platforms, list):
-        fail("site.person.platforms must be a list when set")
 
     dist = ROOT / "dist"
     if dist.is_dir():

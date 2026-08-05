@@ -58,7 +58,10 @@ test.describe("a11y light + contrast", () => {
 test.describe("home", () => {
   test("proof strip, CTAs, portrait chip, contact section", async ({ page }, testInfo) => {
     await page.goto("/");
+    await expect(page.locator(".outcome-strip")).toBeVisible();
+    await expect(page.locator(".outcome-strip .metric").first()).toBeVisible();
     await expect(page.locator(".proof-strip")).toBeVisible();
+    await expect(page.locator("body")).not.toContainText("professional credentials");
     if (testInfo.project.name === "mobile") {
       const menu = page.locator("details.nav-menu");
       await menu.locator("summary").click();

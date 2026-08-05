@@ -1,95 +1,139 @@
 # Design system
 
-Visual contract for yzouyang-site Phase 1. Implementation source of truth: [`src/styles.css`](../src/styles.css). Builder / IA rules: [site-builder.md](site-builder.md).
+Visual contract for yzouyang-site Phase 1. Implementation: [`src/styles.css`](../src/styles.css). Builder / IA / embeds: [site-builder.md](site-builder.md).
 
-## Principles
+**Governing sentence:** Design the site like a senior enterprise architect’s public briefing document, with editorial polish and technical precision.
 
-- **Dark atmospheric field** — deep green-black base with soft radial glows; never rely on transparent body fill alone
-- **Brand-first home** — name as hero signal; specialist line in gold; portrait as visual anchor
-- **Type pairing** — Fraunces (display) + Sora (UI/body)
-- **Gold accent sparingly** — links, primary CTAs, specialist line; not rainbow chrome
-- **Calm enterprise persona** — no neon, glassmorphism dashboards, CLI splash screens, or junior template illustration heroes
-- **Progressive embeds** — Figma iframes always paired with an Open deck / fallback link
+**Style direction:** Calm enterprise editorial — dark, restrained, slightly atmospheric, structured and businesslike. Mood = **boardroom-meets-technical-journal**, not futurist demo lab, AI-builder novelty, or startup theater. Optimize for **authority, scanability, and proof density** — not animation or decorative UI.
 
-## Tokens (`:root`)
+---
+
+## Layer A — Brand tokens
+
+**Positioning:** Senior Data and AI Transformation Leader. Platform, governance, FinOps, multi-cloud, and agentic AI appear as **disciplined capability signals**, not product theater.
+
+**Palette:** Deep charcoal-green / green-black; **one** muted gold accent; neutral text. Avoid generic blue-purple AI palettes. Gold-on-dark is allowed only with discipline (enterprise rigor, not boutique luxury).
+
+**Atmosphere:** **One** ambient glow layer maximum; solid `--bg-deep` under gradients. No particles, neon, glassmorphism, terminal motifs, gradient text, or oversized AI imagery.
+
+### Semantic tokens (`:root`)
 
 | Token | Role | Approx value |
 |---|---|---|
 | `--bg-deep` | Page fill / sticky header base | `#0c1412` |
 | `--bg-mid` | Secondary surface | `#152a24` |
-| `--ink` | Primary text | `#e8efe9` |
-| `--muted` | Secondary text | `#9aada3` |
-| `--accent` | Links / emphasis | `#d4a35c` |
-| `--accent-soft` | Soft fills / primary button wash | `rgba(212, 163, 92, 0.18)` |
-| `--line` | Hairline borders | `rgba(232, 239, 233, 0.12)` |
-| `--glow` | Ambient green glow | `rgba(70, 140, 120, 0.35)` |
-| `--font-display` | Headings / brand | Fraunces, serif fallbacks |
-| `--font-body` | Body / UI | Sora, system sans |
+| `--bg-elevated` | Slightly lifted surface | `#1a3028` |
+| `--bg-panel` | TOC / search / panel fills | `rgba(255,255,255,0.03)` |
+| `--bg-hover` | Hover wash | `rgba(255,255,255,0.06)` |
+| `--text-strong` | Emphasized text | `#f2f7f3` |
+| `--text-default` / `--ink` | Primary text | `#e8efe9` |
+| `--text-muted` / `--muted` | Secondary text | `#9aada3` |
+| `--text-faint` | Tertiary / chrome hints | `#6f8178` |
+| `--accent` | Links / specialist line / primary CTA border | `#d4a35c` |
+| `--accent-soft` | Soft accent fill | `rgba(212, 163, 92, 0.18)` |
+| `--accent-hover` | Link / accent hover | `#f0c27a` |
+| `--accent-active` | Pressed accent | `#c4924a` |
+| `--focus-ring` | `:focus-visible` outline | `rgba(212, 163, 92, 0.65)` |
+| `--line-strong` | Stronger dividers | `rgba(232, 239, 233, 0.22)` |
+| `--line-soft` / `--line` | Hairline borders | `rgba(232, 239, 233, 0.12)` |
+| `--success` / `--warning` / `--danger` | Status (reserved; use sparingly) | muted green / amber / rose |
+| `--glow` | Single ambient green glow | `rgba(70, 140, 120, 0.35)` |
+| `--font-display` | Hero title + brand wordmark only | Fraunces |
+| `--font-body` | Everything else | Sora |
 | `--max` | Content measure | `68rem` |
 
-`html` and `body` set `background-color: var(--bg-deep)`. Gradients use `background-image` on `body` with `background-attachment: fixed`.
+`html` / `body` set `background-color: var(--bg-deep)`. Gradients use `background-image` only.
 
-## Typography
+### Typography
 
-| Element | Notes |
+| Use | Face |
 |---|---|
-| `.brand` | Display, ~1.35rem, wordmark `yzouyang` |
-| Hero `h1` | Display, clamp ~2.6–4.6rem, tight tracking |
-| `.subtitle` | Accent color, specialist line |
-| `.lede` / `.page-lede` | Muted, max ~36–40rem |
-| `main.page h1–h3` | Display scale for long pages |
-| `.meta` | Small muted metadata |
-| `.proof-strip` | Compact chips; strong for location / counts |
+| `.brand`, `.hero h1` | Fraunces (serif) |
+| Page titles, section headings, body, UI, nav, meta, chips, lists, search, buttons | Sora (sans) |
 
-## Layout
+No serif in dense scanning contexts (portfolio rows, writing lists, credentials, TOC, search).
 
-- **Sticky header** — `.site-header-wrap` (`position: sticky; top: 0`) with translucent deep fill + blur; contains brand, desktop nav, Contact control, mobile `details.nav-menu`
-- **Main** — `.page` capped at `--max`, horizontal padding
-- **Home hero** — two-column grid; mobile stacks **copy before photo** (no photo-first order)
-- **Long pages** — `.page-toc` jump links before Pagefind search
-- **Contact** — Home `#contact` section (not a nav destination)
+---
 
-## Components
+## Layer B — Content hierarchy (dossier order)
 
-| Class | Use |
+Site reads as a senior professional dossier:
+
+1. **Headline** — name → role → specialist line
+2. **Quantified proof** — 2–3 outcomes from `site.outcomes`
+3. **Platform scope + location** — proof strip (≤4 platforms; **no cert wall / vanity counters on Home**)
+4. **Selected systems / work** — portfolio case rows
+5. **Writing / speaking** — publications-style lists (About Selected writing; external Blog/Medium/LinkedIn)
+6. **Credentials** — issuer-grouped; curated on `/credentials/`
+7. **Contact** — Home `#contact`; sticky header control; not primary nav
+
+### Long-form scanning
+
+- Narrow-to-medium measure (`--max`), **left-aligned** copy, strong section rhythm
+- Prefer editorial rows, compact lists, proof/outcome strips — **cards sparingly**
+- Metadata order: title → org/issuer → date → links
+- Case studies: **business outcome → architecture scope → tools** (tools last; description stands in for outcome when export has no separate field)
+- Writing/speaking: publications page density, not blog card grid
+- Search / TOC / archive chrome must feel deliberate
+- Emphasize measurable outcomes and platform breadth **before** tool buzzwords
+
+### Proof components
+
+| Component | Rule |
 |---|---|
-| `.btn` / `.btn-primary` | CTA row; primary = accent border + soft fill |
-| `.header-contact` | Sticky Contact jump to `/#contact` |
-| `.cta-row` | Home button group |
-| `.proof-strip` | Home proof chips (location, cert count, platforms) |
+| Outcome block (`.outcome-strip`) | Metric + short label; from `site.outcomes` only; never invent |
+| Proof strip (`.proof-strip`) | Location + ≤4 platforms; no inventing counts |
+| Credibility modules | Speaking / newsletter / certs / community on About or Credentials — not hero chrome |
+
+---
+
+## Layer C — Component rules
+
+| Class / pattern | Use |
+|---|---|
+| `.brand` | Wordmark `yzouyang` (serif) |
+| `.hero` / `.hero-copy` / `.hero-visual` | Name first, role, specialist line, outcomes, proof, CTAs; copy before photo on mobile |
+| `.outcome-strip` | 2–3 quantified proof points |
+| `.proof-strip` | Location + platforms |
 | `.portrait-chip` | Role · location over photo |
-| `.hero-visual` / `.hero-photo` | Portrait + vignette overlay |
-| `.site-nav` / `.site-nav-desktop` | Desktop primary links |
-| `.nav-menu` | Mobile hamburger (`details`/`summary`) |
-| `.page-toc` | On-this-page anchors |
-| `.item-list` | Portfolio / credentials / writing rows |
-| `.issuer-group` | Credentials `h3` vendor subgroups |
-| `.writing-list` | About selected writing titles |
-| `.embed-wrap` / `.embed-fallback` / `.embed-frame` | Figma progressive enhancement |
+| `.btn` / `.btn-primary` | **One** primary accent CTA (Contact); other actions understated `.btn` |
+| `.header-contact` | Sticky jump to `/#contact` |
+| `.cta-row` | Home button group |
+| `.site-nav` / `.nav-menu` | Primary nav + mobile menu |
+| `.page-toc` | On-this-page anchors (panel surface) |
+| `.item-list` | Portfolio / credentials / contact rows (editorial, not cards) |
+| `.issuer-group` | Credentials vendor subgroups |
+| `.writing-list` | Publications rows (title / venue·date / external link) |
+| `.embed-wrap` / `.embed-fallback` / `.embed-frame` | Visual surfaces only — embed **policy** in site-builder |
 | `.contact-section` | Home contact block |
 | `.site-footer` | © + mailto + social |
-| `#search` + Pagefind UI vars | Dark-themed search on portfolio/credentials |
+| `#search` + Pagefind vars | Dark panel search on portfolio/credentials |
+
+**Sticky header:** `.site-header-wrap` — opaque ≥94% `--bg-deep`; blur additive only.
+
+**Motion:** Short, minimal entrance (`rise`); honor `prefers-reduced-motion`. No novelty animation.
 
 External nav links use `.external` (↗ via CSS `::after`).
 
-## Motion
-
-- `.hero` / `.page` use short `rise` entrance
-- Honor `prefers-reduced-motion: reduce` (animations/transitions off)
+---
 
 ## Do / don’t
 
 **Do**
 
+- Quiet contrast, clean borders, disciplined spacing, long-page readability
 - Keep solid `--bg-deep` under gradients
-- Keep Figma Open deck / fallback visible even when the iframe is blank
-- Curate platforms and writing highlights; prefer fewer strong signals
+- Deliberate TOC, search, and metadata chrome
+- Outcomes + platform breadth before tool buzzwords
+- Curate platforms and writing highlights; fewer strong signals
 - Keep primary nav short; Contact stays a sticky control
 
 **Don’t**
 
-- Put migration / Phase 1 changelog in the footer or header
+- Neon glows, glassmorphism, terminal motifs, particles, gradient text, oversized AI art
+- Turn the homepage into a certification wall
+- Overuse serif in dense sections
+- SaaS conversion button stacks (one primary CTA is enough)
+- Put migration / Phase 1 changelog in footer or header
 - Reintroduce Contact as a primary nav page
-- Add neon particles, glass OS shells, or terminal boot gates
-- Ship bare `build.py` without Pagefind when portfolio/credentials expect search
 - Invent proof metrics — derive from export / `site.json` only
