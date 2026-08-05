@@ -90,8 +90,28 @@ def main() -> None:
     for name, html in (("portfolio", portfolio), ("credentials", credentials)):
         if 'id="search"' not in html:
             fail(f"{name} missing #search")
-        if 'class="page-toc"' not in html:
+        if 'class="page-toc' not in html:
             fail(f"{name} missing page-toc")
+        if 'class="page-with-toc"' not in html:
+            fail(f"{name} missing page-with-toc layout")
+        if "page-toc-sidebar" not in html:
+            fail(f"{name} missing sticky sidebar TOC class")
+
+    styles_dir = ROOT / "src" / "styles"
+    for part in (
+        "tokens.css",
+        "base.css",
+        "chrome.css",
+        "home.css",
+        "components.css",
+        "longform.css",
+        "search.css",
+        "motion.css",
+    ):
+        if not (styles_dir / part).is_file():
+            fail(f"missing style module src/styles/{part}")
+    if "--- longform.css ---" not in css:
+        fail("dist/styles.css was not assembled from src/styles modules")
 
     if 'class="issuer-group"' not in credentials:
         fail("credentials missing issuer-group headings")

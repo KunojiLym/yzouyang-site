@@ -1,0 +1,31 @@
+/* Brand tokens — see docs/design-system.md Layer A */
+:root {
+  --bg-deep: #0c1412;
+  --bg-mid: #152a24;
+  --bg-elevated: #1a3028;
+  --bg-panel: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --text-strong: #f2f7f3;
+  --text-default: #e8efe9;
+  --text-muted: #9aada3;
+  --text-faint: #6f8178;
+  --ink: var(--text-default);
+  --muted: var(--text-muted);
+  --accent: #d4a35c;
+  --accent-soft: rgba(212, 163, 92, 0.18);
+  --accent-hover: #f0c27a;
+  --accent-active: #c4924a;
+  --focus-ring: rgba(212, 163, 92, 0.65);
+  --line-strong: rgba(232, 239, 233, 0.22);
+  --line-soft: rgba(232, 239, 233, 0.12);
+  --line: var(--line-soft);
+  --success: #6a9a7a;
+  --warning: #c4a35a;
+  --danger: #c47a6a;
+  --glow: rgba(70, 140, 120, 0.35);
+  --font-display: "Fraunces", "Palatino Linotype", Palatino, serif;
+  --font-body: "Sora", "Segoe UI", sans-serif;
+  --max: 68rem;
+  --max-longform: 80rem;
+  --header-offset: 4.75rem;
+}

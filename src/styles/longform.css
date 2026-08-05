@@ -1,0 +1,88 @@
+/* Long-form dossier layout: sticky sidebar TOC (portfolio / credentials) */
+.page-with-toc {
+  display: grid;
+  grid-template-columns: minmax(11.5rem, 15rem) minmax(0, 1fr);
+  gap: 1.75rem 2.25rem;
+  align-items: start;
+}
+
+.page-main {
+  min-width: 0;
+}
+
+.page-toc {
+  margin: 0 0 1.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.2rem;
+  background: var(--bg-panel);
+}
+
+.page-toc-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.page-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+}
+
+.page-toc a {
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.page-toc a:hover {
+  color: var(--accent);
+}
+
+.page-toc-sidebar {
+  position: sticky;
+  top: calc(var(--header-offset) + 0.75rem);
+  z-index: 10;
+  margin: 0;
+  max-height: calc(100vh - var(--header-offset) - 1.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-self: start;
+}
+
+.page-toc-sidebar ul {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+}
+
+.page-toc-sidebar a {
+  display: block;
+}
+
+@media (max-width: 960px) {
+  .page-with-toc {
+    grid-template-columns: 1fr;
+  }
+
+  .page-toc-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    order: -1;
+  }
+
+  .page-toc-sidebar ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.85rem;
+  }
+}

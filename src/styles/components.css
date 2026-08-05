@@ -1,0 +1,211 @@
+/* Shared page content: headings, lists, writing, embeds, about */
+main.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  animation: rise 0.45s ease-out both;
+}
+
+main.page:has(.page-with-toc) {
+  max-width: var(--max-longform);
+}
+
+main.page h1 {
+  font-family: var(--font-body);
+  font-size: clamp(1.85rem, 3.5vw, 2.35rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+  color: var(--text-strong);
+}
+
+main.page h2 {
+  font-family: var(--font-body);
+  font-size: clamp(1.3rem, 2.5vw, 1.65rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 2.5rem 0 1rem;
+  color: var(--text-strong);
+  scroll-margin-top: calc(var(--header-offset) + 0.5rem);
+}
+
+main.page h3 {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--text-strong);
+  scroll-margin-top: calc(var(--header-offset) + 0.5rem);
+}
+
+main.page h3.issuer-group {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.writing-list h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.writing-list h3 a {
+  text-decoration: none;
+  color: var(--text-default);
+}
+
+.writing-list h3 a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.item-list li {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.item-list h2,
+.item-list h3 {
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  color: var(--text-strong);
+}
+
+.item-list .case-outcome {
+  margin: 0 0 0.5rem;
+  color: var(--text-default);
+}
+
+.item-list .case-tools {
+  margin: 0.5rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+}
+
+.item-list p {
+  margin: 0 0 0.5rem;
+}
+
+.item-list ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--text-muted);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.embed-wrap {
+  margin-top: 1rem;
+}
+
+.embed-fallback {
+  display: block;
+  margin-bottom: 0.65rem;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--line-soft);
+  border-radius: 0.2rem;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.embed-fallback:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.embed-fallback strong {
+  color: var(--text-default);
+  font-weight: 600;
+}
+
+.embed-frame {
+  margin-top: 0;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.2rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.embed-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.embed-frame-tall {
+  aspect-ratio: 16 / 11;
+}
+
+.competency-list {
+  max-width: 44rem;
+  color: var(--text-muted);
+  padding-left: 1.2rem;
+}
+
+.competency-list li {
+  margin-bottom: 0.85rem;
+}
+
+.competency-list strong {
+  color: var(--text-default);
+  font-weight: 600;
+}
+
+.highlight-list h3 {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  color: var(--text-strong);
+}
+
+.philosophy {
+  margin: 0 0 2rem;
+  padding: 1.25rem 0 1.25rem 1.25rem;
+  border-left: 2px solid var(--accent);
+  max-width: 40rem;
+}
+
+.philosophy p {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: var(--text-default);
+  font-weight: 500;
+}

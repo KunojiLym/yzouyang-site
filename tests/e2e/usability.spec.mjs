@@ -170,6 +170,17 @@ test.describe("toc + credentials", () => {
     await expect(target).toBeVisible();
     await expect(target).toBeInViewport();
   });
+
+  test("portfolio sidebar TOC stays sticky while scrolling", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop sidebar coverage enough");
+    await page.goto("/portfolio/");
+    const toc = page.locator(".page-toc-sidebar");
+    await expect(toc).toBeVisible();
+    const position = await toc.evaluate((el) => getComputedStyle(el).position);
+    expect(position).toBe("sticky");
+    await page.evaluate(() => window.scrollTo(0, 1400));
+    await expect(toc).toBeInViewport();
+  });
 });
 
 test.describe("about writing + figma", () => {

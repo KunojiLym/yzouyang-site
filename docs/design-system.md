@@ -1,6 +1,6 @@
 # Design system
 
-Visual contract for yzouyang-site Phase 1. Implementation: [`src/styles.css`](../src/styles.css). Builder / IA / embeds: [site-builder.md](site-builder.md).
+Visual contract for yzouyang-site Phase 1. Implementation: [`src/styles/`](../src/styles/) (assembled to `dist/styles.css`). Builder / IA / embeds: [site-builder.md](site-builder.md).
 
 **Governing sentence:** Design the site like a senior enterprise architect’s public briefing document, with editorial polish and technical precision.
 
@@ -100,7 +100,7 @@ Site reads as a senior professional dossier:
 | `.header-contact` | Sticky jump to `/#contact` |
 | `.cta-row` | Home button group |
 | `.site-nav` / `.nav-menu` | Primary nav + mobile menu |
-| `.page-toc` | On-this-page anchors (panel surface) |
+| `.page-toc` / `.page-toc-sidebar` | On-this-page anchors; sticky sidebar on portfolio/credentials (`.page-with-toc`) |
 | `.item-list` | Portfolio / credentials / contact rows (editorial, not cards) |
 | `.issuer-group` | Credentials vendor subgroups |
 | `.writing-list` | Publications rows (title / venue·date / external link) |
@@ -110,6 +110,8 @@ Site reads as a senior professional dossier:
 | `#search` + Pagefind vars | Dark panel search on portfolio/credentials |
 
 **Sticky header:** `.site-header-wrap` — opaque ≥94% `--bg-deep`; blur additive only.
+
+**Long-form TOC:** Portfolio and Credentials use `.page-with-toc` with a sticky `.page-toc-sidebar` (scrolls with the viewport under the header). On narrow viewports the TOC stacks above content as a wrapping strip.
 
 **Motion:** Short, minimal entrance (`rise`); honor `prefers-reduced-motion`. No novelty animation.
 

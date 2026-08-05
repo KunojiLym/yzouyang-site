@@ -22,7 +22,7 @@ data/site.json  +  data/export_public.json
 
 - **Config / chrome / curated writing / outcomes:** [`data/site.json`](../data/site.json)
 - **PUBLIC narrative + projects + certs:** vendored from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` → [`data/export_public.json`](../data/export_public.json)
-- **Styles:** [`src/styles.css`](../src/styles.css) → `dist/styles.css`
+- **Styles:** [`src/styles/`](../src/styles/) modules → assembled by build into `dist/styles.css` (see [`src/styles/README.md`](../src/styles/README.md))
 - **No Jinja** — page HTML is built in [`scripts/build.py`](../scripts/build.py)
 
 ## Scripts
@@ -69,6 +69,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 - Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → `#contact`
 - **Sticky header** — always reachable; **Contact** control jumps to `/#contact`
+- Portfolio / Credentials — **sticky sidebar TOC** (`.page-with-toc`) so section jumps stay available while scrolling
 - Contact is **not** a primary nav page; no cert-count vanity chip on Home
 - Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; About shows curated external titles only (publications-style)
 - Blog / Medium / LinkedIn remain external (`↗`)

@@ -124,19 +124,70 @@ def nav_html(site: dict, active: str, *, grouped: bool = False) -> str:
     return "\n      ".join(parts)
 
 
-def toc_html(entries: list[tuple[str, str]]) -> str:
+STYLE_PARTS = (
+    "tokens.css",
+    "base.css",
+    "chrome.css",
+    "home.css",
+    "components.css",
+    "longform.css",
+    "search.css",
+    "motion.css",
+)
+
+
+def assemble_styles() -> str:
+    """Concatenate src/styles/*.css into a single stylesheet for dist/."""
+    styles_dir = SRC / "styles"
+    chunks: list[str] = [
+        "/* Assembled by scripts/build.py from src/styles/ — do not edit dist copy */\n"
+    ]
+    for name in STYLE_PARTS:
+        path = styles_dir / name
+        if not path.is_file():
+            raise FileNotFoundError(f"missing style module: {path}")
+        chunks.append(f"\n/* --- {name} --- */\n")
+        chunks.append(path.read_text(encoding="utf-8").rstrip() + "\n")
+    return "".join(chunks)
+
+
+def toc_html(entries: list[tuple[str, str]], *, sidebar: bool = False) -> str:
     if not entries:
         return ""
     items = "\n".join(
         f'      <li><a href="#{esc(eid)}">{esc(label)}</a></li>' for eid, label in entries
     )
+    classes = "page-toc page-toc-sidebar" if sidebar else "page-toc"
+    label = (
+        '    <p class="page-toc-label">On this page</p>\n' if sidebar else ""
+    )
     return (
-        '    <nav class="page-toc" aria-label="On this page">\n'
+        f'    <nav class="{classes}" aria-label="On this page">\n'
+        f"{label}"
         "    <ul>\n"
         f"{items}\n"
         "    </ul>\n"
         "    </nav>\n"
     )
+
+
+def longform_page(
+    *,
+    title: str,
+    lede_html: str,
+    toc: list[tuple[str, str]],
+    body: str,
+) -> str:
+    """Portfolio/credentials shell: sticky sidebar TOC + main column."""
+    return f"""    <div class="page-with-toc">
+{toc_html(toc, sidebar=True)}      <div class="page-main">
+        <h1>{title}</h1>
+        {lede_html}
+        <div id="search"></div>
+{body}
+      </div>
+    </div>
+"""
 
 
 def figma_embed_html(
@@ -732,11 +783,11 @@ def build_portfolio(site: dict, export: dict) -> str:
             sections_html.append(f"    <p><em>{esc(note)}</em></p>")
 
     body = "\n".join(sections_html) if sections_html else "    <p>No PUBLIC projects in export.</p>"
-    return f"""    <h1>Portfolio</h1>
-    <p class="page-lede">{esc(lede)} Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
-{toc_html(toc)}    <div id="search"></div>
-{body}
-"""
+    lede_html = (
+        f'<p class="page-lede">{esc(lede)} Short link: '
+        f'<a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>'
+    )
+    return longform_page(title="Portfolio", lede_html=lede_html, toc=toc, body=body)
 
 
 def _cert_item_html(row: dict) -> str:
@@ -925,11 +976,16 @@ def build_credentials(site: dict, export: dict) -> str:
         )
 
     body = "\n".join(blocks) if blocks else "    <p>No PUBLIC credentials in export.</p>"
-    return f"""    <h1>Credentials &amp; Verifications</h1>
-    <p class="page-lede">{esc(lede)} Short link: <a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>
-{toc_html(toc)}    <div id="search"></div>
-{body}
-"""
+    lede_html = (
+        f'<p class="page-lede">{esc(lede)} Short link: '
+        f'<a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>'
+    )
+    return longform_page(
+        title="Credentials &amp; Verifications",
+        lede_html=lede_html,
+        toc=toc,
+        body=body,
+    )
 
 
 def build_contact_redirect(site: dict) -> str:
@@ -1006,7 +1062,7 @@ def main() -> None:
 
     write(DIST / "contact" / "index.html", build_contact_redirect(site))
 
-    shutil.copyfile(SRC / "styles.css", DIST / "styles.css")
+    write(DIST / "styles.css", assemble_styles())
     assets_src = ROOT / "assets"
     if assets_src.is_dir():
         shutil.copytree(assets_src, DIST / "assets", dirs_exist_ok=True)
