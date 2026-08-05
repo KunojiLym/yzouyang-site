@@ -8,9 +8,11 @@
 - [ ] `python scripts/test_site_build.py` and `npm run test:e2e` green
 - [ ] UAT on GitHub Pages (`uat` branch deploy) signed off: https://kunojilym.github.io/yzouyang-site/
 - [ ] Promoted to `main` Pages deploy matches UAT
-- [ ] Preview URL serves `/`, `/about/`, `/portfolio/`, `/credentials/`, `/contact/` from PUBLIC export
+- [ ] Preview URL serves `/`, `/about/`, `/portfolio/`, `/credentials/` from PUBLIC export
+- [ ] Home `#contact` reachable from sticky header Contact; `/contact/` redirects to Home contact
 - [ ] Pagefind works on portfolio or credentials
 - [ ] Blog / Medium / LinkedIn still reachable from nav (external)
+- [ ] About Selected writing links out (no full post import until C2b)
 - [ ] Bitly shorts still resolve: portfolio `bit.ly/3GGyiXF`, credentials `bit.ly/4m4fqki`
 - [ ] Digital card (`bit.ly/m/yzouyang`) reachable from home CTA
 - [ ] No work/university emails on Contact

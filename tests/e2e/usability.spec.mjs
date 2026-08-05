@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/contact/"];
+const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/"];
 
 async function noHorizontalOverflow(page) {
   const overflow = await page.evaluate(() => {
@@ -56,12 +56,19 @@ test.describe("a11y light + contrast", () => {
 });
 
 test.describe("home", () => {
-  test("proof strip, CTAs, portrait chip", async ({ page }, testInfo) => {
+  test("proof strip, CTAs, portrait chip, contact section", async ({ page }, testInfo) => {
     await page.goto("/");
     await expect(page.locator(".proof-strip")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Contact" }).first()).toBeVisible();
+    if (testInfo.project.name === "mobile") {
+      const menu = page.locator("details.nav-menu");
+      await menu.locator("summary").click();
+      await expect(menu.locator(".header-contact")).toBeVisible();
+    } else {
+      await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+    }
     await expect(page.getByRole("link", { name: "Digital card" })).toBeVisible();
     await expect(page.locator(".portrait-chip")).toBeVisible();
+    await expect(page.locator("#contact")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("Static migration");
 
     if (testInfo.project.name === "mobile") {
@@ -70,6 +77,14 @@ test.describe("home", () => {
       expect(h1Box && photoBox).toBeTruthy();
       expect(h1Box.y).toBeLessThan(photoBox.y);
     }
+  });
+
+  test("header contact jumps to #contact", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/about/");
+    await page.locator(".header-actions > .header-contact").click();
+    await expect(page).toHaveURL(/#contact$/);
+    await expect(page.locator("#contact")).toBeInViewport();
   });
 });
 
@@ -83,6 +98,7 @@ test.describe("nav", () => {
       await expect(menu.locator('a[href$="/portfolio/"]')).toBeVisible();
       await expect(menu.locator('a[href$="/credentials/"]')).toBeVisible();
       await expect(menu.locator('a[href$="/about/"][aria-current="page"]')).toBeVisible();
+      await expect(menu.locator('a[href$="/contact/"]')).toHaveCount(0);
       await expect(menu.getByRole("link", { name: /Blog/ })).toBeVisible();
       await expect(menu.getByRole("link", { name: /Medium/ })).toBeVisible();
       await expect(menu.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
@@ -92,6 +108,7 @@ test.describe("nav", () => {
         "aria-current",
         "page"
       );
+      await expect(nav.getByRole("link", { name: "Contact" })).toHaveCount(0);
       await expect(nav.getByRole("link", { name: /Blog/ })).toBeVisible();
     }
   });
@@ -99,12 +116,21 @@ test.describe("nav", () => {
 
 test.describe("footer", () => {
   test("public footer", async ({ page }) => {
-    await page.goto("/contact/");
+    await page.goto("/");
     const footer = page.locator("footer.site-footer");
     await expect(footer).toContainText(/©|©|&copy;|2026|202\d/);
     await expect(footer.locator('a[href^="mailto:"]')).toBeVisible();
     await expect(footer).not.toContainText("Phase 1");
     await expect(footer).not.toContainText("Static migration");
+  });
+});
+
+test.describe("contact redirect", () => {
+  test("/contact/ targets home #contact", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/contact/");
+    await page.waitForURL(/#contact/, { timeout: 10_000 });
+    await expect(page.locator("#contact")).toBeVisible();
   });
 });
 
@@ -143,12 +169,27 @@ test.describe("toc + credentials", () => {
   });
 });
 
-test.describe("figma fallback", () => {
-  test("open deck link present on about", async ({ page }) => {
+test.describe("about writing + figma", () => {
+  test("selected writing and open deck", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/about/");
+    await expect(page.locator("#selected-writing")).toBeVisible();
+    await expect(page.locator(".writing-list a.external").first()).toBeVisible();
     const open = page.locator("a.figma-open, a.embed-fallback").first();
     await expect(open).toBeVisible();
     await expect(open).toHaveAttribute("target", "_blank");
+  });
+});
+
+test.describe("sticky header", () => {
+  test("header wrap stays sticky while scrolling", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/credentials/");
+    const wrap = page.locator(".site-header-wrap");
+    await expect(wrap).toBeVisible();
+    const position = await wrap.evaluate((el) => getComputedStyle(el).position);
+    expect(position).toBe("sticky");
+    await page.evaluate(() => window.scrollTo(0, 1200));
+    await expect(wrap).toBeInViewport();
   });
 });

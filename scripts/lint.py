@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
-REQUIRED_PAGES = ("/", "/about/", "/portfolio/", "/credentials/", "/contact/")
+REQUIRED_PAGES = ("/", "/about/", "/portfolio/", "/credentials/")
 
 
 def fail(msg: str) -> None:
@@ -49,15 +49,30 @@ def main() -> None:
         if needle in blob:
             fail(f"site.json must not contain work/university contact domain: {needle}")
 
-    hrefs = {item.get("href") for item in site.get("nav") or []}
+    nav = site.get("nav") or []
+    hrefs = {item.get("href") for item in nav}
     for path in REQUIRED_PAGES:
         if path not in hrefs:
             fail(f"nav missing {path}")
 
+    for item in nav:
+        if item.get("label") == "Contact" or item.get("href") in ("/contact/", "/contact"):
+            fail("Contact must not be a primary nav item (use Home #contact)")
+
     external_labels = {"Blog", "Medium", "LinkedIn"}
-    for item in site.get("nav") or []:
+    for item in nav:
         if item.get("label") in external_labels and not item.get("external"):
             fail(f"{item.get('label')} nav entry must be external until C2b")
+
+    highlights = site.get("writing_highlights")
+    if highlights is not None:
+        if not isinstance(highlights, list) or not highlights:
+            fail("site.writing_highlights must be a non-empty list when set")
+        for row in highlights:
+            if not isinstance(row, dict):
+                fail("writing_highlights entries must be objects")
+            if not (row.get("title") and row.get("url")):
+                fail("writing_highlights entries need title and url")
 
     analytics = site.get("analytics") or {}
     ga_id = (analytics.get("ga_measurement_id") or "").strip()

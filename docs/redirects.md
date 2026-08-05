@@ -8,7 +8,7 @@ WordPress (Responsive theme on Bluehost shared) → static paths. Blog/post perm
 | `/about/` | `/about/` | |
 | `/portfolio/` | `/portfolio/` | Also `bit.ly/3GGyiXF` |
 | `/credentials/` | `/credentials/` | Also `bit.ly/4m4fqki` |
-| `/contact/` | `/contact/` | CTA |
+| `/contact/` | `/#contact` (Home) | Redirect HTML + `_redirects` 302 to `/` |
 | `/blog/` | *(keep WP)* | External until C2b |
 | `/category/**` | *(keep WP)* | |
 | Post permalinks | *(keep WP)* | e.g. `/a-chinese-open-weights-…/` |

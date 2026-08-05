@@ -24,6 +24,50 @@
     "portfolio_short": "https://bit.ly/3GGyiXF",
     "credentials_short": "https://bit.ly/4m4fqki"
   },
+  "writing_highlights": [
+    {
+      "title": "A Chinese Open-Weights Model Just Saved Hugging Face. That’s the Problem.",
+      "url": "https://medium.com/@kunojilym/a-chinese-open-weights-model-just-saved-hugging-face-thats-the-problem-139bf1afdacc",
+      "venue": "Medium",
+      "date": "2026-07"
+    },
+    {
+      "title": "Teaching Graphify to Understand Databricks Notebooks",
+      "url": "https://medium.com/@kunojilym/teaching-graphify-to-understand-databricks-notebooks-13856e2a09b9",
+      "venue": "Medium",
+      "date": "2026-07"
+    },
+    {
+      "title": "The AI Disruption Part 3: Designing for Judgment in an Age of Machines",
+      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-3-designing-for-judgment-in-an-age-of-machines-981953529ce8",
+      "venue": "Medium",
+      "date": "2026-06"
+    },
+    {
+      "title": "The AI Disruption Part 2: Inside the Sixth Technology Wave",
+      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-2-inside-the-sixth-technology-wave-754e75417b76",
+      "venue": "Medium",
+      "date": "2026-06"
+    },
+    {
+      "title": "The AI Disruption Part 1: How AI is Reshaping Work Before Our Institutions are Ready",
+      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-1-how-ai-is-reshaping-work-before-our-institutions-are-ready-713e2cd7c3a8",
+      "venue": "Medium",
+      "date": "2026-05"
+    },
+    {
+      "title": "Chips, Cells and Code: How Singapore is Applying its 40-Year Industrial Playbook to AI",
+      "url": "https://medium.com/@kunojilym/chips-cells-and-code-how-singapore-is-applying-its-40-year-industrial-playbook-to-ai-26889d5f5d91",
+      "venue": "Medium",
+      "date": "2026-02"
+    },
+    {
+      "title": "Build Your Own LinkedIn Analytics Part 1: Why It Matters (and What You’ll Learn)",
+      "url": "https://medium.com/@kunojilym/build-your-own-linkedin-analytics-part-1-why-it-matters-and-what-youll-learn-314a4de63988",
+      "venue": "Medium",
+      "date": "2025-10"
+    }
+  ],
   "about": {
     "note": "Prefer export_public.json about (from personal-content data/about.yaml). site.about is fallback only."
   },
@@ -53,7 +97,6 @@
     { "label": "About", "href": "/about/", "external": false },
     { "label": "Portfolio", "href": "/portfolio/", "external": false },
     { "label": "Credentials", "href": "/credentials/", "external": false },
-    { "label": "Contact", "href": "/contact/", "external": false },
     { "label": "Blog", "href": "https://www.yzouyang.com/blog/", "external": true },
     { "label": "Medium", "href": "https://medium.com/@kunojilym", "external": true },
     { "label": "LinkedIn", "href": "https://www.linkedin.com/in/yzouyang/", "external": true }

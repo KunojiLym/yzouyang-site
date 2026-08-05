@@ -6,11 +6,11 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/about/`, `/portfolio/`, `/credentials/`, `/contact/`.
+Routes: `/`, `/about/`, `/portfolio/`, `/credentials/`. Contact lives on Home as `#contact` (sticky header CTA); `/contact/` redirects there.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
-**Writing** (Blog / Medium / LinkedIn articles & newsletter) stays on existing hosts until **C2b**. Nav links out with an external marker.
+**Writing** stays on Blog / Medium / LinkedIn until **C2b**. About shows a curated **Selected writing** list of external links. Nav still links out with an external marker.
 
 Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 
@@ -52,6 +52,8 @@ Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hos
 
 ## Docs
 
+- [docs/site-builder.md](docs/site-builder.md) — build pipeline, config map, IA rules
+- [docs/design-system.md](docs/design-system.md) — tokens, components, do/don’t
 - [docs/preview-uat.md](docs/preview-uat.md) — offline preview + UAT branch publish
 - [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map

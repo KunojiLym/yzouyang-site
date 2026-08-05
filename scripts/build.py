@@ -262,6 +262,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
     pf_css = esc(with_base(site, "/pagefind/pagefind-ui.css"))
     pf_js = esc(with_base(site, "/pagefind/pagefind-ui.js"))
     home = esc(with_base(site, "/"))
+    contact_href = esc(with_base(site, "/#contact"))
     desktop_nav = nav_html(site, active)
     mobile_nav = nav_html(site, active, grouped=True)
     return f"""<!DOCTYPE html>
@@ -279,18 +280,24 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
 {head_analytics}
 </head>
 <body>
+  <div class="site-header-wrap">
   <header class="site-header">
     <p class="brand"><a href="{home}">{brand}</a></p>
-    <nav class="site-nav site-nav-desktop" aria-label="Primary">
-      {desktop_nav}
-    </nav>
-    <details class="nav-menu">
-      <summary>Menu</summary>
-      <nav class="site-nav" aria-label="Primary">
-      {mobile_nav}
+    <div class="header-actions">
+      <nav class="site-nav site-nav-desktop" aria-label="Primary">
+        {desktop_nav}
       </nav>
-    </details>
+      <a class="header-contact btn btn-primary" href="{contact_href}">Contact</a>
+      <details class="nav-menu">
+        <summary>Menu</summary>
+        <nav class="site-nav" aria-label="Primary">
+        {mobile_nav}
+        </nav>
+        <a class="header-contact btn btn-primary" href="{contact_href}">Contact</a>
+      </details>
+    </div>
   </header>
+  </div>
   <main class="page"{pf_attr}>
 {body}
   </main>
@@ -357,6 +364,34 @@ def build_home(site: dict, export: dict) -> str:
       </div>"""
 
     card = esc(site.get("external", {}).get("bitly_hub") or "#")
+    contact = site["contact"]
+    ext = site["external"]
+    contact_href = esc(with_base(site, "/#contact"))
+    contact_section = f"""
+    <section id="contact" class="contact-section">
+      <h2>Contact</h2>
+      <p class="page-lede">{esc(contact.get("note", ""))}</p>
+      <ul class="item-list">
+        <li>
+          <h3>Email</h3>
+          <p><a href="mailto:{esc(contact["email"])}">{esc(contact["email"])}</a></p>
+        </li>
+        <li>
+          <h3>Phone</h3>
+          <p><a href="tel:{esc(contact["phone"].replace(" ", ""))}">{esc(contact["phone"])}</a></p>
+        </li>
+        <li>
+          <h3>Elsewhere</h3>
+          <p class="links">
+            <a class="external" href="{esc(ext["linkedin"])}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a class="external" href="{esc(ext["medium"])}" target="_blank" rel="noopener noreferrer">Medium</a>
+            <a class="external" href="{esc(ext["github"])}" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a class="external" href="{esc(ext["blog"])}" target="_blank" rel="noopener noreferrer">Blog (WordPress)</a>
+          </p>
+        </li>
+      </ul>
+    </section>
+"""
     return f"""    <section class="hero">
       <div class="hero-copy">
         <h1>{esc(person['full_name'])}</h1>
@@ -364,13 +399,14 @@ def build_home(site: dict, export: dict) -> str:
         <p class="lede">{esc(person['tagline'])}</p>
 {proof_html}
         <div class="cta-row">
-          <a class="btn btn-primary" href="{esc(with_base(site, '/contact/'))}">Contact</a>
+          <a class="btn btn-primary" href="{contact_href}">Contact</a>
           <a class="btn" href="{card}" target="_blank" rel="noopener noreferrer">Digital card</a>
           <a class="btn" href="{esc(with_base(site, '/about/'))}">About</a>
           <a class="btn" href="{esc(with_base(site, '/portfolio/'))}">Portfolio</a>
         </div>
       </div>{photo_html}
     </section>
+{contact_section}
 """
 
 
@@ -456,6 +492,40 @@ def build_about(site: dict, export: dict) -> str:
 """
 
     creds = esc(with_base(site, "/credentials/"))
+    ext = site.get("external") or {}
+    writing_rows = []
+    for row in site.get("writing_highlights") or []:
+        if not isinstance(row, dict):
+            continue
+        title = (row.get("title") or "").strip()
+        url = (row.get("url") or "").strip()
+        if not title or not url:
+            continue
+        venue = esc(row.get("venue") or "Article")
+        date = esc(row.get("date") or "")
+        meta = " · ".join(x for x in (venue, date) if x)
+        writing_rows.append(
+            f"      <li>\n"
+            f'        <h3><a class="external" href="{esc(url)}" target="_blank" '
+            f'rel="noopener noreferrer">{esc(title)}</a></h3>\n'
+            f'        <p class="meta">{meta}</p>\n'
+            f"      </li>"
+        )
+    writing_html = ""
+    if writing_rows:
+        writing_html = f"""
+    <h2 id="selected-writing">Selected writing</h2>
+    <p class="page-lede">Thought leadership lives on Blog, Medium, and LinkedIn until the writing corpus is unified (C2b). Selected pieces:</p>
+    <ul class="item-list writing-list">
+{chr(10).join(writing_rows)}
+    </ul>
+    <p class="links">
+      <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" rel="noopener noreferrer">Blog</a>
+      <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" rel="noopener noreferrer">Medium</a>
+      <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    </p>
+"""
+
     return f"""    <h1>About</h1>
     <p class="page-lede">{esc(lede.strip())}</p>
     <h2>Core Competencies</h2>
@@ -467,7 +537,7 @@ def build_about(site: dict, export: dict) -> str:
 {chr(10).join(highlight_html) if highlight_html else "      <li>No highlights listed.</li>"}
     </ul>
     <p class="links"><a href="{creds}">View full credentials list</a></p>
-{journey_html}{philosophy_html}
+{writing_html}{journey_html}{philosophy_html}
 """
 
 
@@ -838,30 +908,23 @@ def build_credentials(site: dict, export: dict) -> str:
 """
 
 
-def build_contact(site: dict) -> str:
-    contact = site["contact"]
-    ext = site["external"]
-    return f"""    <h1>Contact</h1>
-    <p class="page-lede">{esc(contact.get('note', ''))}</p>
-    <ul class="item-list">
-      <li>
-        <h2>Email</h2>
-        <p><a href="mailto:{esc(contact['email'])}">{esc(contact['email'])}</a></p>
-      </li>
-      <li>
-        <h2>Phone</h2>
-        <p><a href="tel:{esc(contact['phone'].replace(' ', ''))}">{esc(contact['phone'])}</a></p>
-      </li>
-      <li>
-        <h2>Elsewhere</h2>
-        <p class="links">
-          <a class="external" href="{esc(ext['linkedin'])}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-          <a class="external" href="{esc(ext['medium'])}" target="_blank" rel="noopener noreferrer">Medium</a>
-          <a class="external" href="{esc(ext['github'])}" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a class="external" href="{esc(ext['blog'])}" target="_blank" rel="noopener noreferrer">Blog (WordPress)</a>
-        </p>
-      </li>
-    </ul>
+def build_contact_redirect(site: dict) -> str:
+    """Standalone redirect for /contact/ → Home#contact (bookmark / WP parity)."""
+    target = with_base(site, "/#contact")
+    brand = esc((site.get("person") or {}).get("brand", "yzouyang"))
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — {brand}</title>
+  <meta http-equiv="refresh" content="0;url={esc(target)}" />
+  <link rel="canonical" href="{esc(target)}" />
+</head>
+<body>
+  <p>Contact details are on the <a href="{esc(target)}">home page</a>.</p>
+</body>
+</html>
 """
 
 
@@ -913,10 +976,11 @@ def main() -> None:
             build_credentials(site, export),
             True,
         ),
-        ("contact/index.html", "Contact", "Contact", build_contact(site), False),
     ]
     for rel, title, active, body, pf in pages:
         write(DIST / rel, layout(site, title, active, body, pagefind=pf))
+
+    write(DIST / "contact" / "index.html", build_contact_redirect(site))
 
     shutil.copyfile(SRC / "styles.css", DIST / "styles.css")
     assets_src = ROOT / "assets"
@@ -934,11 +998,12 @@ def main() -> None:
     redirects = f"""{base}/about {base}/about/ 301
 {base}/portfolio {base}/portfolio/ 301
 {base}/credentials {base}/credentials/ 301
-{base}/contact {base}/contact/ 301
+{base}/contact {base}/ 302
+{base}/contact/ {base}/ 302
 """
     write(DIST / "_redirects", redirects)
 
-    print(f"built {len(pages)} pages -> {DIST} (base_path={base or '/'})")
+    print(f"built {len(pages)} pages + contact redirect -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:
         run_pagefind()

@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -18,7 +17,6 @@ ROUTES = (
     ("about/index.html", "About"),
     ("portfolio/index.html", "Portfolio"),
     ("credentials/index.html", "Credentials"),
-    ("contact/index.html", "Contact"),
 )
 
 
@@ -48,18 +46,32 @@ def main() -> None:
         fail("home missing Digital card CTA / bitly_hub")
     if 'class="portrait-chip"' not in home:
         fail("home missing portrait-chip")
+    if 'id="contact"' not in home:
+        fail("home missing #contact section")
     if "Static migration" in home or "Phase 1 pages" in home:
         fail("home footer still has migration chrome")
     if "&copy;" not in home and "©" not in home:
         fail("home footer missing copyright")
-    if f'mailto:{(site.get("contact") or {}).get("email")}' not in home:
-        fail("home footer missing mailto")
+    email = (site.get("contact") or {}).get("email") or ""
+    if f"mailto:{email}" not in home:
+        fail("home missing mailto")
     if 'class="nav-menu"' not in home:
         fail("home missing mobile nav-menu")
+    if 'class="site-header-wrap"' not in home:
+        fail("home missing sticky site-header-wrap")
+    if 'class="header-contact' not in home:
+        fail("home missing header Contact control")
+    if 'href="/contact/"' in home and 'nav' in home:
+        # primary nav must not point at /contact/ as a page
+        if 'aria-label="Primary"' in home and ">Contact</a>" in home.split('aria-label="Primary"')[1].split("</nav>")[0]:
+            if 'href="/contact/"' in home.split('aria-label="Primary"')[1].split("</nav>")[0]:
+                fail("primary nav still links to /contact/")
 
     css = (DIST / "styles.css").read_text(encoding="utf-8")
     if "background-color: var(--bg-deep)" not in css:
         fail("styles.css missing solid background-color: var(--bg-deep)")
+    if "position: sticky" not in css:
+        fail("styles.css missing sticky header")
 
     portfolio = (DIST / "portfolio" / "index.html").read_text(encoding="utf-8")
     credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
@@ -75,6 +87,19 @@ def main() -> None:
     about = (DIST / "about" / "index.html").read_text(encoding="utf-8")
     if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
         fail("about missing Figma open/fallback link")
+    if 'id="selected-writing"' not in about:
+        fail("about missing Selected writing section")
+    if "medium.com/@kunojilym" not in about:
+        fail("about missing Medium writing highlight links")
+
+    contact_page = DIST / "contact" / "index.html"
+    if not contact_page.is_file():
+        fail("contact/index.html redirect missing")
+    contact_html = contact_page.read_text(encoding="utf-8")
+    if "#contact" not in contact_html:
+        fail("contact redirect must target #contact")
+    if "http-equiv" not in contact_html.lower() and "refresh" not in contact_html.lower():
+        fail("contact redirect missing meta refresh")
 
     pf = DIST / "pagefind" / "pagefind-ui.js"
     if not pf.is_file():
@@ -82,26 +107,18 @@ def main() -> None:
 
     photo = site.get("person", {}).get("photo") or ""
     if photo:
-        asset = DIST / photo.lstrip("/").replace("/", "\\") if sys.platform == "win32" else DIST / photo.lstrip("/")
-        # normalize: photo is /assets/profile.jpg
         asset = DIST.joinpath(*photo.strip("/").split("/"))
         if not asset.is_file():
             fail(f"profile asset missing in dist: {photo}")
-        if photo not in home and with_base_check(home, photo):
-            pass  # may be base-path prefixed; just ensure asset exists
+        if "profile.jpg" not in home and "profile" not in home:
+            fail("home does not reference profile photo")
 
-    blob = "\n".join(
-        (DIST / rel).read_text(encoding="utf-8") for rel, _ in ROUTES
-    ).lower()
+    blob = "\n".join((DIST / rel).read_text(encoding="utf-8") for rel, _ in ROUTES).lower()
     for needle in FORBIDDEN:
         if needle in blob:
             fail(f"built HTML contains forbidden domain: {needle}")
 
     print("test_site_build ok")
-
-
-def with_base_check(home: str, photo: str) -> bool:
-    return photo.rsplit("/", 1)[-1] in home
 
 
 if __name__ == "__main__":
