@@ -557,7 +557,7 @@ def build_about(site: dict, export: dict) -> str:
             f"      </li>"
         )
 
-    journey_html = ""
+    journey_inner = ""
     if isinstance(journey, dict) and (journey.get("embed") or journey.get("link")):
         title = journey.get("title") or "Career Journey"
         link = journey.get("link") or ""
@@ -574,19 +574,14 @@ def build_about(site: dict, export: dict) -> str:
             embed_bit = figma_embed_html(
                 str(title), str(embed), str(link) if link else None, link_label=str(link_label), tall=True
             )
-        journey_html = f"""
-    <h2 id="career-journey">Career Journey</h2>
-    {link_bit}
-    {embed_bit}
-"""
+        journey_inner = f"{link_bit}\n{embed_bit}"
 
-    philosophy_html = ""
+    philosophy_inner = ""
     if philosophy:
-        philosophy_html = f"""
-    <h2 id="philosophy">Philosophy</h2>
-    <blockquote class="philosophy">
-      <p>{esc(philosophy)}</p>
-    </blockquote>
+        philosophy_inner = f"""
+      <blockquote class="philosophy">
+        <p>{esc(philosophy)}</p>
+      </blockquote>
 """
 
     creds = esc(with_base(site, "/credentials/"))
@@ -609,43 +604,69 @@ def build_about(site: dict, export: dict) -> str:
             f'        <p class="meta">{meta}</p>\n'
             f"      </li>"
         )
-    writing_html = ""
-    if writing_rows:
-        writing_html = f"""
-    <h2 id="selected-writing">Selected writing</h2>
-    <p class="page-lede">Thought leadership lives on Blog, Medium, and LinkedIn until the writing corpus is unified (C2b). Selected pieces:</p>
-    <ul class="item-list writing-list">
-{chr(10).join(writing_rows)}
-    </ul>
-    <p class="links">
-      <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" rel="noopener noreferrer">Blog</a>
-      <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" rel="noopener noreferrer">Medium</a>
-      <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-    </p>
-"""
 
     toc: list[dict] = [
         {"id": "core-competencies", "label": "Core Competencies", "children": []},
         {"id": "career-highlights", "label": "Career Highlights", "children": []},
     ]
+    parts: list[str] = [
+        section_fold_open("core-competencies", "Core Competencies", level="h2"),
+        '      <ul class="competency-list">\n'
+        + (chr(10).join(comp_html) if comp_html else "      <li>No competencies listed.</li>")
+        + "\n      </ul>",
+        section_fold_close(),
+        section_fold_open("career-highlights", "Career Highlights", level="h2"),
+        '      <ul class="item-list highlight-list">\n'
+        + (
+            chr(10).join(highlight_html)
+            if highlight_html
+            else "      <li>No highlights listed.</li>"
+        )
+        + "\n      </ul>",
+        f'      <p class="links"><a href="{creds}">View full credentials list</a></p>',
+        section_fold_close(),
+    ]
     if writing_rows:
         toc.append({"id": "selected-writing", "label": "Selected writing", "children": []})
-    if journey_html:
+        parts.extend(
+            [
+                section_fold_open("selected-writing", "Selected writing", level="h2"),
+                '      <p class="page-lede">Thought leadership lives on Blog, Medium, and LinkedIn '
+                "until the writing corpus is unified (C2b). Selected pieces:</p>",
+                '      <ul class="item-list writing-list">\n'
+                + chr(10).join(writing_rows)
+                + "\n      </ul>",
+                '      <p class="links">\n'
+                f'        <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" '
+                'rel="noopener noreferrer">Blog</a>\n'
+                f'        <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" '
+                'rel="noopener noreferrer">Medium</a>\n'
+                f'        <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" '
+                'rel="noopener noreferrer">LinkedIn</a>\n'
+                "      </p>",
+                section_fold_close(),
+            ]
+        )
+    if journey_inner:
         toc.append({"id": "career-journey", "label": "Career Journey", "children": []})
-    if philosophy:
+        parts.extend(
+            [
+                section_fold_open("career-journey", "Career Journey", level="h2"),
+                journey_inner,
+                section_fold_close(),
+            ]
+        )
+    if philosophy_inner:
         toc.append({"id": "philosophy", "label": "Philosophy", "children": []})
+        parts.extend(
+            [
+                section_fold_open("philosophy", "Philosophy", level="h2"),
+                philosophy_inner,
+                section_fold_close(),
+            ]
+        )
 
-    body = f"""    <h2 id="core-competencies">Core Competencies</h2>
-    <ul class="competency-list">
-{chr(10).join(comp_html) if comp_html else "      <li>No competencies listed.</li>"}
-    </ul>
-    <h2 id="career-highlights">Career Highlights</h2>
-    <ul class="item-list highlight-list">
-{chr(10).join(highlight_html) if highlight_html else "      <li>No highlights listed.</li>"}
-    </ul>
-    <p class="links"><a href="{creds}">View full credentials list</a></p>
-{writing_html}{journey_html}{philosophy_html}
-"""
+    body = "\n".join(parts)
     lede_html = f'<p class="page-lede">{esc(lede.strip())}</p>'
     return longform_page(
         title="About",

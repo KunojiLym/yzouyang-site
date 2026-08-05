@@ -121,6 +121,8 @@ def main() -> None:
         fail("about missing page-with-toc layout")
     if "page-toc-sidebar" not in about:
         fail("about missing sticky sidebar TOC")
+    if 'class="section-fold"' not in about:
+        fail("about missing collapsible section-fold (must match portfolio/credentials)")
     if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
         fail("about missing Figma open/fallback link")
     if 'id="selected-writing"' not in about:

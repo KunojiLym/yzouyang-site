@@ -200,6 +200,8 @@ test.describe("about writing + figma", () => {
     await expect(page.locator(".page-with-toc")).toBeVisible();
     await expect(page.locator(".page-toc-sidebar")).toBeVisible();
     await expect(page.locator(".page-toc-sidebar a").first()).toBeVisible();
+    await expect(page.locator("details.section-fold").first()).toBeVisible();
+    await expect(page.locator("details.section-fold").first()).toHaveAttribute("open", "");
   });
 });
 
