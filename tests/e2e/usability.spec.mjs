@@ -193,6 +193,14 @@ test.describe("about writing + figma", () => {
     await expect(open).toBeVisible();
     await expect(open).toHaveAttribute("target", "_blank");
   });
+
+  test("about has sidebar TOC like other long pages", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/about/");
+    await expect(page.locator(".page-with-toc")).toBeVisible();
+    await expect(page.locator(".page-toc-sidebar")).toBeVisible();
+    await expect(page.locator(".page-toc-sidebar a").first()).toBeVisible();
+  });
 });
 
 test.describe("sticky header", () => {

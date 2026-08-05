@@ -100,7 +100,8 @@ Site reads as a senior professional dossier:
 | `.header-contact` | Sticky jump to `/#contact` |
 | `.cta-row` | Home button group |
 | `.site-nav` / `.nav-menu` | Primary nav + mobile menu |
-| `.page-toc` / `.page-toc-sidebar` | On-this-page anchors; sticky sidebar on portfolio/credentials (`.page-with-toc`) |
+| `.page-toc` / `.page-toc-sidebar` / `.page-toc-sub` | On-this-page anchors; sticky sidebar on **all** long pages (About, Portfolio, Credentials) via `.page-with-toc`; nested subcategory links |
+| `.section-fold` | Collapsible long-form sections (default open); summary = section title |
 | `.item-list` | Portfolio / credentials / contact rows (editorial, not cards) |
 | `.issuer-group` | Credentials vendor subgroups |
 | `.writing-list` | Publications rows (title / venue·date / external link) |
@@ -111,7 +112,7 @@ Site reads as a senior professional dossier:
 
 **Sticky header:** `.site-header-wrap` — opaque ≥94% `--bg-deep`; blur additive only.
 
-**Long-form TOC:** Portfolio and Credentials use `.page-with-toc` with a sticky `.page-toc-sidebar` (scrolls with the viewport under the header). On narrow viewports the TOC stacks above content as a wrapping strip.
+**Long-form TOC (design-system rule):** Every multi-section dossier page (About, Portfolio, Credentials) uses `.page-with-toc` with a sticky `.page-toc-sidebar`. Nested `.page-toc-sub` lists expose subcategories (e.g. portfolio child sections, credential issuers). Major sections use `.section-fold` (`<details open>`) so readers can collapse dense blocks without losing the sidebar map.
 
 **Motion:** Short, minimal entrance (`rise`); honor `prefers-reduced-motion`. No novelty animation.
 

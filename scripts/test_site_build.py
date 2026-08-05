@@ -117,12 +117,25 @@ def main() -> None:
         fail("credentials missing issuer-group headings")
 
     about = (DIST / "about" / "index.html").read_text(encoding="utf-8")
+    if 'class="page-with-toc"' not in about:
+        fail("about missing page-with-toc layout")
+    if "page-toc-sidebar" not in about:
+        fail("about missing sticky sidebar TOC")
     if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
         fail("about missing Figma open/fallback link")
     if 'id="selected-writing"' not in about:
         fail("about missing Selected writing section")
     if "medium.com/@kunojilym" not in about:
         fail("about missing Medium writing highlight links")
+
+    if portfolio.count("github.com/") < 5:
+        fail("portfolio missing expected public GitHub project links")
+    if 'class="page-toc-sub"' not in portfolio:
+        fail("portfolio TOC missing nested subcategory list")
+    if 'class="section-fold"' not in portfolio or 'class="section-fold"' not in credentials:
+        fail("portfolio/credentials missing collapsible section-fold")
+    if 'class="page-toc-sub"' not in credentials:
+        fail("credentials TOC missing issuer subcategory list")
 
     contact_page = DIST / "contact" / "index.html"
     if not contact_page.is_file():

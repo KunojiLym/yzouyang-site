@@ -151,12 +151,31 @@ def assemble_styles() -> str:
     return "".join(chunks)
 
 
-def toc_html(entries: list[tuple[str, str]], *, sidebar: bool = False) -> str:
+def toc_html(entries: list[dict], *, sidebar: bool = False) -> str:
+    """Render on-this-page nav. entries: {id, label, children?} trees."""
     if not entries:
         return ""
-    items = "\n".join(
-        f'      <li><a href="#{esc(eid)}">{esc(label)}</a></li>' for eid, label in entries
-    )
+
+    def render_list(nodes: list[dict], *, nested: bool = False) -> str:
+        cls = ' class="page-toc-sub"' if nested else ""
+        lines = [f"    <ul{cls}>"]
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            eid = str(node.get("id") or "")
+            label = str(node.get("label") or eid)
+            if not eid:
+                continue
+            kids = node.get("children") or []
+            child_html = ""
+            if kids:
+                child_html = "\n" + render_list(kids, nested=True)
+            lines.append(
+                f'      <li><a href="#{esc(eid)}">{esc(label)}</a>{child_html}</li>'
+            )
+        lines.append("    </ul>")
+        return "\n".join(lines)
+
     classes = "page-toc page-toc-sidebar" if sidebar else "page-toc"
     label = (
         '    <p class="page-toc-label">On this page</p>\n' if sidebar else ""
@@ -164,9 +183,7 @@ def toc_html(entries: list[tuple[str, str]], *, sidebar: bool = False) -> str:
     return (
         f'    <nav class="{classes}" aria-label="On this page">\n'
         f"{label}"
-        "    <ul>\n"
-        f"{items}\n"
-        "    </ul>\n"
+        f"{render_list(entries)}\n"
         "    </nav>\n"
     )
 
@@ -175,19 +192,35 @@ def longform_page(
     *,
     title: str,
     lede_html: str,
-    toc: list[tuple[str, str]],
+    toc: list[dict],
     body: str,
+    search: bool = True,
 ) -> str:
-    """Portfolio/credentials shell: sticky sidebar TOC + main column."""
+    """Long-page shell: sticky sidebar TOC + main column (design-system longform)."""
+    search_html = '        <div id="search"></div>\n' if search else ""
     return f"""    <div class="page-with-toc">
 {toc_html(toc, sidebar=True)}      <div class="page-main">
         <h1>{title}</h1>
         {lede_html}
-        <div id="search"></div>
-{body}
+{search_html}{body}
       </div>
     </div>
 """
+
+
+def section_fold_open(section_id: str, heading: str, *, level: str = "h2") -> str:
+    """Start a collapsible long-form section (default open)."""
+    tag = "h2" if level == "h2" else "h3"
+    return (
+        f'    <details class="section-fold" open>\n'
+        f'      <summary class="section-fold-summary">'
+        f'<{tag} id="{esc(section_id)}">{heading}</{tag}></summary>\n'
+        f'      <div class="section-fold-body">\n'
+    )
+
+
+def section_fold_close() -> str:
+    return "      </div>\n    </details>\n"
 
 
 def figma_embed_html(
@@ -550,7 +583,7 @@ def build_about(site: dict, export: dict) -> str:
     philosophy_html = ""
     if philosophy:
         philosophy_html = f"""
-    <h2>Philosophy</h2>
+    <h2 id="philosophy">Philosophy</h2>
     <blockquote class="philosophy">
       <p>{esc(philosophy)}</p>
     </blockquote>
@@ -591,19 +624,36 @@ def build_about(site: dict, export: dict) -> str:
     </p>
 """
 
-    return f"""    <h1>About</h1>
-    <p class="page-lede">{esc(lede.strip())}</p>
-    <h2>Core Competencies</h2>
+    toc: list[dict] = [
+        {"id": "core-competencies", "label": "Core Competencies", "children": []},
+        {"id": "career-highlights", "label": "Career Highlights", "children": []},
+    ]
+    if writing_rows:
+        toc.append({"id": "selected-writing", "label": "Selected writing", "children": []})
+    if journey_html:
+        toc.append({"id": "career-journey", "label": "Career Journey", "children": []})
+    if philosophy:
+        toc.append({"id": "philosophy", "label": "Philosophy", "children": []})
+
+    body = f"""    <h2 id="core-competencies">Core Competencies</h2>
     <ul class="competency-list">
 {chr(10).join(comp_html) if comp_html else "      <li>No competencies listed.</li>"}
     </ul>
-    <h2>Career Highlights</h2>
+    <h2 id="career-highlights">Career Highlights</h2>
     <ul class="item-list highlight-list">
 {chr(10).join(highlight_html) if highlight_html else "      <li>No highlights listed.</li>"}
     </ul>
     <p class="links"><a href="{creds}">View full credentials list</a></p>
 {writing_html}{journey_html}{philosophy_html}
 """
+    lede_html = f'<p class="page-lede">{esc(lede.strip())}</p>'
+    return longform_page(
+        title="About",
+        lede_html=lede_html,
+        toc=toc,
+        body=body,
+        search=False,
+    )
 
 
 def _link_label(url: str) -> str:
@@ -645,7 +695,8 @@ def _project_item_html(row: dict) -> str:
         link_html = (
             '<p class="links">'
             + " · ".join(
-                f'<a href="{esc(u)}" target="_blank" rel="noopener noreferrer">{esc(_link_label(u))}</a>'
+                f'<a class="external" href="{esc(u)}" target="_blank" rel="noopener noreferrer">'
+                f"{esc(_link_label(u))}</a>"
                 for u in links
             )
             + "</p>"
@@ -678,9 +729,11 @@ def build_portfolio(site: dict, export: dict) -> str:
         by_section.setdefault(str(p.get("section") or "other"), []).append(p)
 
     sections_html: list[str] = []
-    toc: list[tuple[str, str]] = []
+    toc: list[dict] = []
     seen_parents: set[str] = set()
+    parent_nodes: dict[str, dict] = {}
     used_ids: set[str] = set()
+    fold_open = False
 
     def unique_id(label: str) -> str:
         base = slugify(label)
@@ -692,6 +745,12 @@ def build_portfolio(site: dict, export: dict) -> str:
         used_ids.add(eid)
         return eid
 
+    def close_fold() -> None:
+        nonlocal fold_open
+        if fold_open:
+            sections_html.append(section_fold_close())
+            fold_open = False
+
     for section in page.get("sections") or []:
         if not isinstance(section, dict):
             continue
@@ -700,69 +759,101 @@ def build_portfolio(site: dict, export: dict) -> str:
         if not rows and sid != "other":
             continue
         parent = section.get("parent")
-        if parent and parent not in seen_parents:
-            pid = unique_id(str(parent))
-            toc.append((pid, str(parent)))
-            sections_html.append(f'    <h2 id="{pid}">{esc(parent)}</h2>')
-            seen_parents.add(str(parent))
         title = str(section.get("title") or sid)
         hid = unique_id(title)
-        toc.append((hid, title))
-        sections_html.append(f'    <h3 id="{hid}">{esc(title)}</h3>')
+        child_node = {"id": hid, "label": title, "children": []}
+
+        if parent:
+            parent_key = str(parent)
+            if parent_key not in seen_parents:
+                close_fold()
+                pid = unique_id(parent_key)
+                parent_node = {"id": pid, "label": parent_key, "children": []}
+                toc.append(parent_node)
+                parent_nodes[parent_key] = parent_node
+                sections_html.append(section_fold_open(pid, esc(parent_key), level="h2"))
+                fold_open = True
+                seen_parents.add(parent_key)
+            parent_nodes[parent_key]["children"].append(child_node)
+            sections_html.append(f'      <h3 id="{hid}">{esc(title)}</h3>')
+        else:
+            close_fold()
+            toc.append(child_node)
+            sections_html.append(section_fold_open(hid, esc(title), level="h2"))
+            fold_open = True
+
         intro = (section.get("intro") or "").strip()
         if intro:
-            sections_html.append(f'    <p class="page-lede">{esc(intro)}</p>')
+            sections_html.append(f'      <p class="page-lede">{esc(intro)}</p>')
         sections_html.append(
-            '    <ul class="item-list">\n'
+            '      <ul class="item-list">\n'
             + "\n".join(_project_item_html(r) for r in rows)
-            + "\n    </ul>"
+            + "\n      </ul>"
         )
         footer_link = section.get("footer_link") or ""
         if footer_link:
             sections_html.append(
-                f'    <p class="links"><a href="{esc(footer_link)}" target="_blank" '
+                f'      <p class="links"><a class="external" href="{esc(footer_link)}" target="_blank" '
                 f'rel="noopener noreferrer">{esc(section.get("footer_label") or footer_link)}</a></p>'
             )
         outro = (section.get("outro") or "").strip()
         if outro:
-            sections_html.append(f"    <p><em>{esc(outro)}</em></p>")
+            sections_html.append(f"      <p><em>{esc(outro)}</em></p>")
+        if not parent:
+            close_fold()
 
     for sid, rows in by_section.items():
         if not rows:
             continue
+        close_fold()
         title = sid.replace("_", " ").title()
         hid = unique_id(title)
-        toc.append((hid, title))
-        sections_html.append(f'    <h3 id="{hid}">{esc(title)}</h3>')
+        toc.append({"id": hid, "label": title, "children": []})
+        sections_html.append(section_fold_open(hid, esc(title), level="h2"))
+        fold_open = True
         sections_html.append(
-            '    <ul class="item-list">\n'
+            '      <ul class="item-list">\n'
             + "\n".join(_project_item_html(r) for r in rows)
-            + "\n    </ul>"
+            + "\n      </ul>"
         )
+        close_fold()
 
     enterprise = page.get("enterprise_summaries") or {}
     if isinstance(enterprise, dict) and enterprise.get("items"):
+        close_fold()
         etitle = str(enterprise.get("title") or "Enterprise summaries")
         eid = unique_id(etitle)
-        toc.append((eid, etitle))
-        sections_html.append(f'    <h2 id="{eid}">{esc(etitle)}</h2>')
+        ent_node = {"id": eid, "label": etitle, "children": []}
+        toc.append(ent_node)
+        sections_html.append(section_fold_open(eid, esc(etitle), level="h2"))
+        fold_open = True
         for item in enterprise.get("items") or []:
             if not isinstance(item, dict):
                 continue
+            item_title = str(item.get("title") or "")
+            item_id = unique_id(item_title) if item_title else ""
+            if item_id:
+                ent_node["children"].append(
+                    {"id": item_id, "label": item_title, "children": []}
+                )
             bullets = "\n".join(
                 f"        <li>{esc(b)}</li>" for b in (item.get("bullets") or [])
             )
+            id_attr = f' id="{item_id}"' if item_id else ""
             sections_html.append(
-                f"    <h3>{esc(item.get('title') or '')}</h3>\n"
-                f'    <ul class="competency-list">\n{bullets}\n    </ul>'
+                f"      <h3{id_attr}>{esc(item_title)}</h3>\n"
+                f'      <ul class="competency-list">\n{bullets}\n      </ul>'
             )
+        close_fold()
 
     verify = page.get("verify") or {}
     if isinstance(verify, dict) and verify.get("items"):
+        close_fold()
         vtitle = str(verify.get("title") or "Verify")
         vid = unique_id(vtitle)
-        toc.append((vid, vtitle))
-        sections_html.append(f'    <h2 id="{vid}">{esc(vtitle)}</h2>')
+        toc.append({"id": vid, "label": vtitle, "children": []})
+        sections_html.append(section_fold_open(vid, esc(vtitle), level="h2"))
+        fold_open = True
         vitems = []
         for item in verify.get("items") or []:
             if not isinstance(item, dict):
@@ -772,16 +863,21 @@ def build_portfolio(site: dict, export: dict) -> str:
                 href = with_base(site, href)
             external = not str(item.get("href") or "").startswith("/")
             attrs = f' href="{esc(href)}"'
+            cls = ' class="external"' if external else ""
             if external:
                 attrs += ' target="_blank" rel="noopener noreferrer"'
-            vitems.append(f"      <li><a{attrs}>{esc(item.get('label') or href)}</a></li>")
+            vitems.append(
+                f"      <li><a{cls}{attrs}>{esc(item.get('label') or href)}</a></li>"
+            )
         sections_html.append(
-            '    <ul class="competency-list">\n' + "\n".join(vitems) + "\n    </ul>"
+            '      <ul class="competency-list">\n' + "\n".join(vitems) + "\n      </ul>"
         )
         note = (verify.get("note") or "").strip()
         if note:
-            sections_html.append(f"    <p><em>{esc(note)}</em></p>")
+            sections_html.append(f"      <p><em>{esc(note)}</em></p>")
+        close_fold()
 
+    close_fold()
     body = "\n".join(sections_html) if sections_html else "    <p>No PUBLIC projects in export.</p>"
     lede_html = (
         f'<p class="page-lede">{esc(lede)} Short link: '
@@ -848,20 +944,25 @@ def _edu_item_html(row: dict) -> str:
     )
 
 
-def _certs_by_issuer_html(rows: list[dict]) -> list[str]:
+def _certs_by_issuer_html(
+    rows: list[dict], unique_id
+) -> tuple[list[str], list[dict]]:
     grouped: OrderedDict[str, list[dict]] = OrderedDict()
     for row in rows:
         issuer = str(row.get("issuer") or "Other").strip() or "Other"
         grouped.setdefault(issuer, []).append(row)
     out: list[str] = []
+    children: list[dict] = []
     for issuer, group in grouped.items():
-        out.append(f'    <h3 class="issuer-group">{esc(issuer)}</h3>')
+        iid = unique_id(issuer)
+        children.append({"id": iid, "label": issuer, "children": []})
+        out.append(f'      <h3 class="issuer-group" id="{iid}">{esc(issuer)}</h3>')
         out.append(
-            '    <ul class="item-list">\n'
+            '      <ul class="item-list">\n'
             + "\n".join(_cert_item_html(r) for r in group)
-            + "\n    </ul>"
+            + "\n      </ul>"
         )
-    return out
+    return out, children
 
 
 def build_credentials(site: dict, export: dict) -> str:
@@ -890,7 +991,7 @@ def build_credentials(site: dict, export: dict) -> str:
         return out
 
     blocks: list[str] = []
-    toc: list[tuple[str, str]] = []
+    toc: list[dict] = []
     used_ids: set[str] = set()
 
     def unique_id(label: str) -> str:
@@ -918,62 +1019,70 @@ def build_credentials(site: dict, export: dict) -> str:
             if not rows:
                 continue
             hid = unique_id(title)
-            toc.append((hid, title))
-            blocks.append(f'    <h2 id="{hid}">{esc(title)}</h2>')
+            toc.append({"id": hid, "label": title, "children": []})
+            blocks.append(section_fold_open(hid, esc(title), level="h2"))
             blocks.append(
-                '    <ul class="item-list">\n'
+                '      <ul class="item-list">\n'
                 + "\n".join(_edu_item_html(r) for r in rows)
-                + "\n    </ul>"
+                + "\n      </ul>"
             )
+            blocks.append(section_fold_close())
         else:
             rows = ordered(certs_by_cat.pop(sid, []), order.get(sid))
             if not rows:
                 continue
             hid = unique_id(title)
-            toc.append((hid, title))
-            blocks.append(f'    <h2 id="{hid}">{esc(title)}</h2>')
+            node = {"id": hid, "label": title, "children": []}
+            toc.append(node)
+            blocks.append(section_fold_open(hid, esc(title), level="h2"))
             if sid == "professional":
-                blocks.extend(_certs_by_issuer_html(rows))
+                html_parts, children = _certs_by_issuer_html(rows, unique_id)
+                node["children"] = children
+                blocks.extend(html_parts)
             else:
                 blocks.append(
-                    '    <ul class="item-list">\n'
+                    '      <ul class="item-list">\n'
                     + "\n".join(_cert_item_html(r) for r in rows)
-                    + "\n    </ul>"
+                    + "\n      </ul>"
                 )
+            blocks.append(section_fold_close())
 
     for sid, rows in list(certs_by_cat.items()):
         if rows:
             title = sid.replace("_", " ").title()
             hid = unique_id(title)
-            toc.append((hid, title))
-            blocks.append(f'    <h2 id="{hid}">{esc(title)}</h2>')
+            toc.append({"id": hid, "label": title, "children": []})
+            blocks.append(section_fold_open(hid, esc(title), level="h2"))
             blocks.append(
-                '    <ul class="item-list">\n'
+                '      <ul class="item-list">\n'
                 + "\n".join(_cert_item_html(r) for r in rows)
-                + "\n    </ul>"
+                + "\n      </ul>"
             )
+            blocks.append(section_fold_close())
     for sid, rows in list(edu_by_cat.items()):
         if rows:
             title = sid.replace("_", " ").title()
             hid = unique_id(title)
-            toc.append((hid, title))
-            blocks.append(f'    <h2 id="{hid}">{esc(title)}</h2>')
+            toc.append({"id": hid, "label": title, "children": []})
+            blocks.append(section_fold_open(hid, esc(title), level="h2"))
             blocks.append(
-                '    <ul class="item-list">\n'
+                '      <ul class="item-list">\n'
                 + "\n".join(_edu_item_html(r) for r in rows)
-                + "\n    </ul>"
+                + "\n      </ul>"
             )
+            blocks.append(section_fold_close())
 
     notes = page.get("notes") or []
     if notes:
         hid = unique_id("Notes")
-        toc.append((hid, "Notes"))
-        blocks.append(f'    <h2 id="{hid}">Notes</h2>')
+        toc.append({"id": hid, "label": "Notes", "children": []})
+        blocks.append(section_fold_open(hid, "Notes", level="h2"))
         blocks.append(
-            '    <ul class="competency-list">\n'
+            '      <ul class="competency-list">\n'
             + "\n".join(f"      <li>{esc(n)}</li>" for n in notes)
-            + "\n    </ul>"
+            + "\n      </ul>"
         )
+        blocks.append(section_fold_close())
 
     body = "\n".join(blocks) if blocks else "    <p>No PUBLIC credentials in export.</p>"
     lede_html = (

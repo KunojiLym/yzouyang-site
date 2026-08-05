@@ -60,7 +60,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 | Route | Builder | Sources |
 |---|---|---|
 | `/` | `build_home` | `person` + `outcomes` + platform proof strip; `#contact` from `contact`/`external` |
-| `/about/` | `build_about` | export `about` + `writing_highlights` |
+| `/about/` | `build_about` | export `about` + `writing_highlights`; longform sidebar (no Pagefind) |
 | `/portfolio/` | `build_portfolio` | export `portfolio` + `projects` + Pagefind (case rows: outcome → scope → tools) |
 | `/credentials/` | `build_credentials` | export `credentials` + certs/edu + Pagefind |
 | `/contact/` | `build_contact_redirect` | Meta refresh + link to `/#contact` |
@@ -69,7 +69,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 - Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → `#contact`
 - **Sticky header** — always reachable; **Contact** control jumps to `/#contact`
-- Portfolio / Credentials — **sticky sidebar TOC** (`.page-with-toc`) so section jumps stay available while scrolling
+- Portfolio / Credentials / About — **sticky sidebar TOC** (`.page-with-toc`) with nested subcategories; major sections are collapsible (`.section-fold`)
 - Contact is **not** a primary nav page; no cert-count vanity chip on Home
 - Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; About shows curated external titles only (publications-style)
 - Blog / Medium / LinkedIn remain external (`↗`)

@@ -196,7 +196,8 @@
       ],
       "bullets": [
         "https://medium.com/@kunojilym/nyc-mta-turnstile-data-analysis-project-1-c1602b6de9d7",
-        "https://towardsdatascience.com/mta-turstile-data-my-first-taste-of-a-data-science-project-493b03f1708a"
+        "https://towardsdatascience.com/mta-turstile-data-my-first-taste-of-a-data-science-project-493b03f1708a",
+        "https://github.com/KunojiLym/metis_project_1"
       ]
     },
     {
@@ -213,7 +214,8 @@
         "BeautifulSoup"
       ],
       "bullets": [
-        "https://medium.com/@kunojilym/animelist-score-prediction-project-2-cdc196ab46b0"
+        "https://medium.com/@kunojilym/animelist-score-prediction-project-2-cdc196ab46b0",
+        "https://github.com/KunojiLym/metis_project_2"
       ]
     },
     {
@@ -230,7 +232,8 @@
         "Random Forest"
       ],
       "bullets": [
-        "https://medium.com/@kunojilym/global-fishing-watch-machine-learning-project-3-d3f0c33b5642"
+        "https://medium.com/@kunojilym/global-fishing-watch-machine-learning-project-3-d3f0c33b5642",
+        "https://github.com/KunojiLym/metis_project_3"
       ]
     },
     {
@@ -248,7 +251,8 @@
         "LDA"
       ],
       "bullets": [
-        "https://medium.com/@kunojilym/fake-news-detection-nlp-topic-modeling-project-4-4c54c2598fc6"
+        "https://medium.com/@kunojilym/fake-news-detection-nlp-topic-modeling-project-4-4c54c2598fc6",
+        "https://github.com/KunojiLym/metis_project_4"
       ]
     },
     {
@@ -266,7 +270,8 @@
         "Flask"
       ],
       "bullets": [
-        "https://medium.com/@kunojilym/generative-poetry-lstm-deep-learning-project-5-d341418fae16"
+        "https://medium.com/@kunojilym/generative-poetry-lstm-deep-learning-project-5-d341418fae16",
+        "https://github.com/KunojiLym/metis_project_5"
       ]
     },
     {
@@ -296,7 +301,9 @@
       "start": "2026-03",
       "end": "2026-05",
       "tools": [],
-      "bullets": []
+      "bullets": [
+        "https://github.com/KunojiLym/IRS-PM-2026-01-17-AIS08PT-GRP-SkillUP-Course-Recommender"
+      ]
     },
     {
       "id": "risk-assistant-hackathon",
@@ -307,7 +314,9 @@
       "start": "2026-06",
       "end": "2026-06",
       "tools": [],
-      "bullets": []
+      "bullets": [
+        "https://github.com/KunojiLym/hackathon-dd-agent"
+      ]
     }
   ],
   "certifications": [

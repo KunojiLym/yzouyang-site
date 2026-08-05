@@ -68,6 +68,70 @@
   display: block;
 }
 
+.page-toc-sub {
+  margin: 0.35rem 0 0.15rem 0.75rem !important;
+  padding: 0 !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 0.35rem !important;
+  border-left: 1px solid var(--line-soft);
+  padding-left: 0.65rem !important;
+}
+
+.page-toc-sub a {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+.page-toc-sub a:hover {
+  color: var(--accent);
+}
+
+.section-fold {
+  margin: 0 0 1.25rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0.2rem;
+  background: var(--bg-panel);
+}
+
+.section-fold > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid transparent;
+}
+
+.section-fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.section-fold > summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1rem;
+  color: var(--text-faint);
+  margin-right: 0.35rem;
+}
+
+.section-fold[open] > summary::before {
+  content: "▾";
+}
+
+.section-fold[open] > summary {
+  border-bottom-color: var(--line-soft);
+}
+
+.section-fold-summary h2,
+.section-fold-summary h3 {
+  display: inline;
+  margin: 0;
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+}
+
+.section-fold-body {
+  padding: 0.5rem 1rem 1.15rem;
+}
+
 @media (max-width: 960px) {
   .page-with-toc {
     grid-template-columns: 1fr;
@@ -84,5 +148,9 @@
     flex-direction: row;
     flex-wrap: wrap;
     gap: 0.35rem 0.85rem;
+  }
+
+  .page-toc-sub {
+    display: none !important;
   }
 }
