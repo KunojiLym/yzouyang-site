@@ -75,7 +75,7 @@ jobs:
       - name: Build (GitHub Pages base path)
         env:
           SITE_BASE_PATH: /yzouyang-site
-        run: python scripts/build.py
+        run: python scripts/build.py --skip-pagefind
 
       - uses: actions/setup-node@v4
         with:

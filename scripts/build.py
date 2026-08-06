@@ -349,6 +349,21 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
     contact_href = esc(with_base(site, "/#contact"))
     desktop_nav = nav_html(site, active)
     mobile_nav = nav_html(site, active, grouped=True)
+    pf_css_tag = f'\n  <link rel="stylesheet" href="{pf_css}" />' if pagefind else ""
+    pf_script = (
+        f"""
+  <script src="{pf_js}" type="text/javascript"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {{
+      const mount = document.querySelector("#search");
+      if (mount && window.PagefindUI) {{
+        new PagefindUI({{ element: "#search", showSubResults: true }});
+      }}
+    }});
+  </script>"""
+        if pagefind
+        else ""
+    )
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -359,8 +374,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{css}" />
-  <link rel="stylesheet" href="{pf_css}" />
+  <link rel="stylesheet" href="{css}" />{pf_css_tag}
 {head_analytics}
 </head>
 <body>
@@ -385,16 +399,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
   <main class="page" aria-label="{esc(title)}"{pf_attr}>
 {body}
   </main>
-{footer_html(site)}
-  <script src="{pf_js}" type="text/javascript"></script>
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {{
-      const mount = document.querySelector("#search");
-      if (mount && window.PagefindUI) {{
-        new PagefindUI({{ element: "#search", showSubResults: true }});
-      }}
-    }});
-  </script>
+{footer_html(site)}{pf_script}
 {body_analytics}
 </body>
 </html>
