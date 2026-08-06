@@ -1,14 +1,29 @@
+# Build output
 dist/
 .pagefind/
+
+# Node
 node_modules/
-.DS_Store
+npm-debug.log*
+
+# Python
 *.pyc
 __pycache__/
-data/diy-events*.ndjson
-collect/.wrangler/
-docs/_about-wp*
-scripts/_extract_about.py
+
+# Playwright / test artifacts
 qa-shots/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Cloudflare Worker (collect/)
+collect/.wrangler/
+
+# Ad hoc data / WP export scratch files (not part of the tracked data contract)
+data/diy-events*.ndjson
+docs/_about-wp*
+scripts/_extract_about.py
+
+# Editor/OS cruft
+.DS_Store
+*.swp
