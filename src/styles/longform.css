@@ -59,8 +59,7 @@
 }
 
 .page-toc-sidebar ul {
-  flex-direction: column;
-  flex-wrap: nowrap;
+  flex-flow: column nowrap;
   gap: var(--space-2);
 }
 
@@ -71,8 +70,7 @@
 .page-toc-sub {
   margin: var(--space-tight) 0 var(--space-hairline) var(--space-3) !important;
   padding: 0 !important;
-  flex-direction: column !important;
-  flex-wrap: nowrap !important;
+  flex-flow: column nowrap !important;
   gap: var(--space-tight) !important;
   border-left: 1px solid var(--line-soft);
   padding-left: var(--space-3) !important;
@@ -134,7 +132,7 @@
 
 /* --bp-md: 900px (see tokens.css) — converges from the previous 960px so
    nav collapse and long-form sidebar collapse share one reference width. */
-@media (max-width: 900px) {
+@media (width <= 900px) {
   .page-with-toc {
     grid-template-columns: 1fr;
   }
@@ -147,8 +145,7 @@
   }
 
   .page-toc-sidebar ul {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     gap: var(--space-tight) var(--space-3);
   }
 

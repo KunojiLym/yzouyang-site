@@ -156,7 +156,7 @@ main.page h3.issuer-group {
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgb(0 0 0 / 25%);
 }
 
 .embed-frame iframe {
