@@ -77,9 +77,12 @@ jobs:
           SITE_BASE_PATH: /yzouyang-site
         run: python scripts/build.py
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Pagefind
         run: npx --yes pagefind@1.3.0 --site dist
-
       - name: Site build contract tests
         run: python scripts/test_site_build.py
 
