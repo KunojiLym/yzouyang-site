@@ -382,7 +382,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
     </div>
   </header>
   </div>
-  <main class="page"{pf_attr}>
+  <main class="page" aria-label="{esc(title)}"{pf_attr}>
 {body}
   </main>
 {footer_html(site)}

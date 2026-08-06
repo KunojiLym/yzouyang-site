@@ -23,21 +23,21 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 | `--bg-deep` | Page fill / sticky header base | `#0c1412` |
 | `--bg-mid` | Secondary surface | `#152a24` |
 | `--bg-elevated` | Slightly lifted surface | `#1a3028` |
-| `--bg-panel` | TOC / search / panel fills | `rgba(255,255,255,0.03)` |
-| `--bg-hover` | Hover wash | `rgba(255,255,255,0.06)` |
+| `--bg-panel` | TOC / search / panel fills | `rgb(255 255 255 / 3%)` |
+| `--bg-hover` | Hover wash | `rgb(255 255 255 / 6%)` |
 | `--text-strong` | Emphasized text | `#f2f7f3` |
 | `--text-default` / `--ink` | Primary text | `#e8efe9` |
 | `--text-muted` / `--muted` | Secondary text | `#9aada3` |
 | `--text-faint` | Tertiary / chrome hints | `#6f8178` |
 | `--accent` | Links / specialist line / primary CTA border | `#d4a35c` |
-| `--accent-soft` | Soft accent fill | `rgba(212, 163, 92, 0.18)` |
+| `--accent-soft` | Soft accent fill | `rgb(212 163 92 / 18%)` |
 | `--accent-hover` | Link / accent hover | `#f0c27a` |
 | `--accent-active` | Pressed accent | `#c4924a` |
-| `--focus-ring` | `:focus-visible` outline | `rgba(212, 163, 92, 0.65)` |
-| `--line-strong` | Stronger dividers | `rgba(232, 239, 233, 0.22)` |
-| `--line-soft` / `--line` | Hairline borders | `rgba(232, 239, 233, 0.12)` |
+| `--focus-ring` | `:focus-visible` outline | `rgb(212 163 92 / 65%)` |
+| `--line-strong` | Stronger dividers | `rgb(232 239 233 / 22%)` |
+| `--line-soft` / `--line` | Hairline borders | `rgb(232 239 233 / 12%)` |
 | `--success` / `--warning` / `--danger` | Status (reserved; use sparingly) | muted green / amber / rose |
-| `--glow` | Single ambient green glow | `rgba(70, 140, 120, 0.35)` |
+| `--glow` | Single ambient green glow | `rgb(70 140 120 / 35%)` |
 | `--bg-gradient-mid` | Body background gradient, 45% stop | `#12201c` |
 | `--bg-gradient-end` | Body background gradient, 100% stop | `#0e1815` |
 | `--font-display` | Hero title + brand wordmark only | Fraunces |
@@ -198,6 +198,12 @@ The token system above is enforced by CI, not just convention:
 All four run in `.github/workflows/ci.yml`. Visual regression is currently **non-blocking** (`continue-on-error: true`) because no baseline screenshots are committed yet — see the setup steps in `tests/e2e/visual.spec.mjs`'s header comment. Once baselines exist and are committed, remove `continue-on-error` so it becomes a real gate.
 
 A handful of documented one-off values are intentionally exempt from the stylelint rule (e.g. `0.75em` external-link arrow markers in `chrome.css`, which are relative to their parent font-size rather than the fixed type ramp) — see `ignoreValues` in `.stylelintrc.json`.
+
+### Pre-commit hook
+
+A `husky` + `lint-staged` pre-commit hook runs Stylelint and the token-drift check against staged `src/styles/*.css` files before a commit is created, so a violation is caught locally instead of in CI. It activates automatically the first time you run `npm install` (the `prepare` script wires up `.husky/pre-commit`). Bypass with `git commit --no-verify` if you deliberately want CI to be the first gate.
+
+The hook is not a substitute for CI: `stylelint-config-standard` is pinned with a caret range (`^36.0.0`), so a semver-minor release can add new rules the codebase has never been checked against — the hook only catches drift once `node_modules` reflects that new version. Treat a sudden batch of new lint errors after `npm install` as a ruleset change, not a regression in the code.
 
 ---
 

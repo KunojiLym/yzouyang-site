@@ -10,9 +10,7 @@ const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/"];
 // Pagefind's third-party markup on Portfolio/Credentials has known upstream
 // a11y quirks outside this repo's control; scoped out rather than ignored
 // so a real regression elsewhere on those pages still fails the build.
-// Figma embed iframes on About/Portfolio render an unlabelled close button
-// inside the iframe — also upstream/third-party and outside this repo's control.
-const KNOWN_THIRD_PARTY_EXCLUDES = ["#search", "iframe"];
+const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];
 
 test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
   for (const route of ROUTES) {
@@ -21,22 +19,42 @@ test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
 
       const builder = new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa"])
-        .exclude(KNOWN_THIRD_PARTY_EXCLUDES);
+        .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
+        // Belt-and-suspenders attempt to keep axe out of the Figma embed's
+        // iframe. In practice @axe-core/playwright still walks into
+        // same-origin-accessible iframes via Playwright's own frame
+        // enumeration regardless of this option or .exclude("iframe") —
+        // verified by running this suite locally and seeing violations with
+        // target[0] === "iframe" even with both of those in place. The real
+        // filter is below, against the actual result nodes.
+        .options({ iframes: false });
 
       const results = await builder.analyze();
 
-      if (results.violations.length) {
-        const summary = results.violations
+      // Drop violations that only affect nodes inside the Figma embed's
+      // iframe — upstream/third-party markup outside this repo's control.
+      // axe reports a node's location as a target path, e.g.
+      // ["iframe", ".some-figma-class"]; target[0] === "iframe" means the
+      // node lives inside that embed rather than in first-party markup.
+      const violations = results.violations
+        .map((violation) => ({
+          ...violation,
+          nodes: violation.nodes.filter((node) => node.target[0] !== "iframe"),
+        }))
+        .filter((violation) => violation.nodes.length > 0);
+
+      if (violations.length) {
+        const summary = violations
           .map(
             (v) =>
               `${v.id} (${v.impact}): ${v.help} — ${v.nodes.length} node(s)\n  ${v.helpUrl}`
           )
           .join("\n");
         await testInfo.attach("axe-violations.json", {
-          body: JSON.stringify(results.violations, null, 2),
+          body: JSON.stringify(violations, null, 2),
           contentType: "application/json",
         });
-        expect(results.violations, `axe violations on ${route}:\n${summary}`).toEqual([]);
+        expect(violations, `axe violations on ${route}:\n${summary}`).toEqual([]);
       }
     });
   }
