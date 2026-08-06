@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import threading
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -35,6 +36,11 @@ def cors_headers(origin: str | None, allowed: set[str]) -> dict[str, str]:
 
 
 def make_handler(out_path: Path, allowed_origins: set[str], max_bytes: int):
+    # ThreadingHTTPServer dispatches each request on its own thread; without
+    # this lock, concurrent POSTs can interleave writes to the same NDJSON
+    # file and corrupt lines.
+    write_lock = threading.Lock()
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt: str, *args) -> None:  # quieter default
             sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
@@ -100,7 +106,7 @@ def make_handler(out_path: Path, allowed_origins: set[str], max_bytes: int):
             }
 
             out_path.parent.mkdir(parents=True, exist_ok=True)
-            with out_path.open("a", encoding="utf-8") as fh:
+            with write_lock, out_path.open("a", encoding="utf-8") as fh:
                 fh.write(json.dumps(clean, separators=(",", ":")) + "\n")
 
             self.send_response(204)

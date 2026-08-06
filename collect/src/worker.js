@@ -53,6 +53,14 @@ export default {
       return new Response("not found", { status: 404, headers: cors });
     }
 
+    // CORS headers only control whether browser JS can read the response —
+    // they don't stop a client from sending the request in the first place.
+    // Enforce the allowlist here so non-browser/forged-origin requests can't
+    // still rack up Analytics Engine / R2 storage costs.
+    if (!allowed.includes("*") && (!origin || !allowed.includes(origin))) {
+      return new Response(null, { status: 403, headers: cors });
+    }
+
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength <= 0 || bytes.byteLength > MAX_BYTES) {
       return new Response(null, {
