@@ -53,14 +53,17 @@ export default {
       return new Response("not found", { status: 404, headers: cors });
     }
 
-    const length = Number(request.headers.get("content-length") || 0);
-    if (length <= 0 || length > MAX_BYTES) {
-      return new Response(null, { status: length > MAX_BYTES ? 413 : 400, headers: cors });
+    const bytes = await request.arrayBuffer();
+    if (bytes.byteLength <= 0 || bytes.byteLength > MAX_BYTES) {
+      return new Response(null, {
+        status: bytes.byteLength > MAX_BYTES ? 413 : 400,
+        headers: cors,
+      });
     }
 
     let event;
     try {
-      event = await request.json();
+      event = JSON.parse(new TextDecoder("utf-8").decode(bytes));
     } catch {
       return new Response(null, { status: 400, headers: cors });
     }
