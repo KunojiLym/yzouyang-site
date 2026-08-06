@@ -22,7 +22,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: pages-deploy
+  group: pages-deploy-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
