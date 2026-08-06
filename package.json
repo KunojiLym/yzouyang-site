@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test tests/e2e/usability.spec.mjs",
     "test:visual": "playwright test tests/e2e/visual.spec.mjs",
     "test:a11y": "playwright test tests/e2e/a11y.spec.mjs",
     "lint:css": "stylelint \"src/styles/*.css\"",
