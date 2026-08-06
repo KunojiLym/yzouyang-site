@@ -38,7 +38,6 @@ def main() -> None:
         stderr=subprocess.PIPE,
     )
     try:
-        time.sleep(0.4)
         body = json.dumps(
             {
                 "t": "pageview",
@@ -60,9 +59,17 @@ def main() -> None:
             headers={"Content-Type": "application/json", "Origin": "http://127.0.0.1:8080"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            if resp.status not in (200, 204):
-                raise SystemExit(f"unexpected status {resp.status}")
+        deadline = time.time() + 5
+        while True:
+            try:
+                with urllib.request.urlopen(req, timeout=3) as resp:
+                    if resp.status not in (200, 204):
+                        raise SystemExit(f"unexpected status {resp.status}")
+                break
+            except urllib.error.URLError as e:
+                if time.time() >= deadline:
+                    raise
+                time.sleep(0.2)
 
         lines = OUT.read_text(encoding="utf-8").strip().splitlines()
         if len(lines) != 1:
