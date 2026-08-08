@@ -19,10 +19,15 @@ function corsHeaders(origin, allowed) {
   return headers;
 }
 
+function toInt(value, defaultValue) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.trunc(n) : defaultValue;
+}
+
 function cleanEvent(event) {
   return {
     t: "pageview",
-    v: Number(event.v || 1),
+    v: toInt(event.v, 1),
     ts: String(event.ts || new Date().toISOString()).slice(0, 40),
     path: String(event.path || "").slice(0, 512),
     host: String(event.host || "").slice(0, 253),
@@ -30,8 +35,8 @@ function cleanEvent(event) {
     ref: String(event.ref || "").slice(0, 253),
     lang: String(event.lang || "").slice(0, 16),
     tz: String(event.tz || "").slice(0, 64),
-    vw: Number(event.vw || 0),
-    vh: Number(event.vh || 0),
+    vw: toInt(event.vw, 0),
+    vh: toInt(event.vh, 0),
   };
 }
 

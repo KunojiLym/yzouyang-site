@@ -35,6 +35,14 @@ def cors_headers(origin: str | None, allowed: set[str]) -> dict[str, str]:
     return headers
 
 
+def _to_int(value, default: int) -> int:
+    """Coerce *value* to int, returning *default* for non-numeric input."""
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def make_handler(out_path: Path, allowed_origins: set[str], max_bytes: int):
     # ThreadingHTTPServer dispatches each request on its own thread; without
     # this lock, concurrent POSTs can interleave writes to the same NDJSON
@@ -91,7 +99,7 @@ def make_handler(out_path: Path, allowed_origins: set[str], max_bytes: int):
             # Strip unexpected large fields; keep first-party schema only.
             clean = {
                 "t": "pageview",
-                "v": int(event.get("v") or 1),
+                "v": _to_int(event.get("v"), 1),
                 "ts": str(event.get("ts") or datetime.now(timezone.utc).isoformat()),
                 "path": str(event.get("path") or "")[:512],
                 "host": str(event.get("host") or "")[:253],
@@ -99,8 +107,8 @@ def make_handler(out_path: Path, allowed_origins: set[str], max_bytes: int):
                 "ref": str(event.get("ref") or "")[:253],
                 "lang": str(event.get("lang") or "")[:16],
                 "tz": str(event.get("tz") or "")[:64],
-                "vw": int(event.get("vw") or 0),
-                "vh": int(event.get("vh") or 0),
+                "vw": _to_int(event.get("vw"), 0),
+                "vh": _to_int(event.get("vh"), 0),
                 "recv_at": datetime.now(timezone.utc).isoformat(),
                 "recv_ip": self.client_address[0],
             }

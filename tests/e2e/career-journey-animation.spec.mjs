@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.use({ video: "on" });
+test.use({ video: "retain-on-failure" });
 
 test.describe("career journey deck motion", () => {
   test("advances horizontally with active-slide animation", async ({ page }) => {
