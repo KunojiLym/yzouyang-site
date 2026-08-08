@@ -9,7 +9,7 @@ test.describe("career journey deck motion", () => {
     const rail = page.locator(".cj-slides");
     await expect(rail).toHaveClass(/cj-js/);
     await expect(page.locator(".cj-slide").first()).toHaveClass(/is-active/);
-    await expect(page.locator("[data-cj-current]")).toHaveText("1");
+    await expect(page.locator("[data-cj-current]")).toHaveText(/^Slide 1 of/);
 
     const motionConfig = await page.evaluate(() => {
       const slide = document.querySelector(".cj-slide");
@@ -35,7 +35,7 @@ test.describe("career journey deck motion", () => {
       samples.push(await rail.evaluate((el) => Math.round(el.scrollLeft)));
     }
 
-    await expect(page.locator("[data-cj-current]")).toHaveText("2");
+    await expect(page.locator("[data-cj-current]")).toHaveText(/^Slide 2 of/);
     await expect(page.locator(".cj-slide").nth(1)).toHaveClass(/is-active/);
     expect(Math.max(...samples)).toBeGreaterThan(0);
     expect(new Set(samples).size).toBeGreaterThan(1);
