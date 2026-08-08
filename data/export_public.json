@@ -1,0 +1,801 @@
+{
+  "_meta": {
+    "schema_version": 1,
+    "person_id": "yingzhao",
+    "visibility": "PUBLIC",
+    "source_repo": "personal-content",
+    "source_revision": "cad4af9f8fed",
+    "source_updated_at": "2026-08-05T09:16:57+08:00",
+    "source_files": [
+      "people/yingzhao/data/about.yaml",
+      "people/yingzhao/data/certifications.yaml",
+      "people/yingzhao/data/credentials.yaml",
+      "people/yingzhao/data/cv.yaml",
+      "people/yingzhao/data/portfolio.yaml",
+      "people/yingzhao/data/projects.yaml",
+      "people/yingzhao/data/writing.yaml"
+    ],
+    "generator": "scripts/export_public.py"
+  },
+  "experiences": [
+    {
+      "id": "prudential-cei-2023",
+      "title": "Senior Manager – Cloud Economics & Intelligence",
+      "organization": "Prudential Services Singapore",
+      "start": "2023-12",
+      "end": null,
+      "visibility_policy": "PUBLIC",
+      "summary": "Lead data platform architecture, governance, and engineering for cloud economics and intelligence.",
+      "bullets": [
+        "Accountable for strategic design, governance, and optimization of the data platform within Global Technology Infrastructure.",
+        "Led technical workstream mapping enterprise applications to cloud projects enabling application-level cost attribution across whole company scope.",
+        "Built attestation tracking dashboards and analytical models improving mapping completeness and ownership visibility by 50%.",
+        "Designed unified data governance layer centrally tracking pipeline, quality, lineage, and performance on Google BigQuery and Azure Databricks warehouses.",
+        "Accelerated documentation processes from 8 weeks to 4 weeks reducing project timelines by about 50% via Phase 1 implementation.",
+        "Improved migration efficiency for Unity Catalog adoption in UAT environment by about 30%.",
+        "Reduced data lineage ambiguities by about 40% through bespoke agentic GenAI workflow using Google Gemini Flash and Microsoft AutoGen/Magnetic One architecture.",
+        "Led modernization of Azure Databricks data architecture using Unity Catalog and medallion architecture strengthening governance standards.",
+        "Migrated production pipelines from legacy Airflow/Python/cron to optimized serverless compute with improved observability.",
+        "Architected batch ingestion framework on Google BigQuery reducing costs by about 20% via partitioning optimizations.",
+        "Designed Grafana dashboards for near real-time monitoring of GCP resources including Kubernetes clusters and VMs enhancing UX based on stakeholder feedback.",
+        "Established SLAs, operational playbook targeting 99.999% pipeline availability to reduce notification fatigue across CEI data pipelines.",
+        "Standardized event structures on OpenTelemetry ensuring consistent cross-platform observability for faster incident triage.",
+        "Increased visibility and maintainability of data assets by systematically assigning documentation responsibilities to subject matter experts.",
+        "Reduced new hire ramp-up time from 6 weeks to 4 weeks through standardized documentation frameworks and quick start guides.",
+        "Managed team transition from Confluence Data Centre to Confluence Cloud with support from central migration team."
+      ]
+    },
+    {
+      "id": "sph-media-2022",
+      "title": "Lead Data Engineer",
+      "organization": "SPH Media",
+      "start": "2022-06",
+      "end": "2023-11",
+      "visibility_policy": "PUBLIC",
+      "summary": "Governed and optimized the data platform; owned social media ingestion pipelines.",
+      "bullets": [
+        "Developed NoSQL backend data pipeline for Tamil Murasu App using AWS DocumentDB and Lambda to extract movie screening data from Golden Village API.",
+        "Built daily batch pipelines on Facebook and Instagram APIs for ingesting audience engagement data in a resilient, idempotent fashion.",
+        "Migrated Google Cloud Composer pipelines to an AWS-based ingestion framework (Glue, Athena, S3) using Java and Terraform to improve maintainability.",
+        "Championed documentation standards initiative by elaborating on frameworks and serving as role model for implementation across team.",
+        "Introduced modern technologies and design patterns to streamline data team workflows and enhance data quality.",
+        "Mentored junior engineers providing technical guidance and support for professional growth."
+      ]
+    },
+    {
+      "id": "dyson-2021",
+      "title": "Data Engineer",
+      "organization": "Dyson",
+      "start": "2021-06",
+      "end": "2022-06",
+      "visibility_policy": "PUBLIC",
+      "summary": "Built batch and streaming manufacturing metrics pipelines on Google Cloud.",
+      "bullets": [
+        "Supported pipelines for ingesting and transforming manufacturing metrics from subcontractors.",
+        "Led design and implementation of batch and streaming data pipelines on Google Cloud using dbt, Airflow, Apache Beam, and Cloud Functions.",
+        "Migrated old pipelines to an updated data environment, improving system reliability and performance.",
+        "Contributed functionality to common ingestion framework.",
+        "Maintained and improved existing Airflow (Google Cloud Composer) pipelines."
+      ]
+    },
+    {
+      "id": "stb-2020",
+      "title": "Data Engineer",
+      "organization": "Singapore Tourism Board",
+      "start": "2020-08",
+      "end": "2021-06",
+      "visibility_policy": "PUBLIC",
+      "summary": "Supported data science operational needs for engineering and ML pipelines.",
+      "bullets": [
+        "Configured and deployed machine learning models on AWS SageMaker with third-party vendor NCS to provide tourism arrival forecasts.",
+        "Implemented CI/CD pipelines for ML model production deployment in collaboration with NCS.",
+        "Managed data science team's ingestion and processing pipelines.",
+        "Created data tools to help build and optimise data-related initiatives."
+      ]
+    },
+    {
+      "id": "metis-2020",
+      "title": "Data Scientist (Bootcamp)",
+      "organization": "Metis",
+      "start": "2020-04",
+      "end": "2020-07",
+      "visibility_policy": "PUBLIC",
+      "summary": "Intensive 12-week accredited data science bootcamp with end-to-end ML projects.",
+      "bullets": [
+        "Published bootcamp projects on Towards Data Science (NLP, regression, classification).",
+        "https://medium.com/@kunojilym/list/my-metis-data-science-bootcamp-projects-2020-9f7b8996c3d9",
+        "https://bit.ly/4f7ubAr"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "mtech-ais",
+      "institution": "National University of Singapore (Institute of Systems Science)",
+      "credential": "MTech, Artificial Intelligence Systems",
+      "start": "2026-01",
+      "end": "2027-12",
+      "visibility_policy": "PUBLIC",
+      "category": "academic",
+      "bullets": [
+        "Intelligent Reasoning Systems; Pattern Recognition Systems; Capstone (in progress)."
+      ]
+    },
+    {
+      "id": "bsc-bis",
+      "institution": "Murdoch University",
+      "credential": "BSc, Business Information Systems",
+      "start": "2020-01",
+      "end": "2021-08",
+      "visibility_policy": "PUBLIC",
+      "category": "academic",
+      "bullets": [
+        "Databases (Distinction)",
+        "Introduction to ICT Research Methods (High Distinction)",
+        "Systems Analysis and Design (High Distinction)",
+        "Enterprise Architectures (Distinction)",
+        "Business Intelligence Application Development (Distinction)",
+        "Information Systems Management (Distinction)",
+        "IT Professional Practice Project (High Distinction)",
+        "Advanced Business Analysis and Design (Distinction)"
+      ]
+    },
+    {
+      "id": "mba",
+      "institution": "Murdoch University",
+      "credential": "MBA",
+      "start": "2012-07",
+      "end": "2013-09",
+      "visibility_policy": "PUBLIC",
+      "category": "academic",
+      "bullets": []
+    },
+    {
+      "id": "ba-english",
+      "institution": "National University of Singapore",
+      "credential": "BA, English Literature",
+      "start": "2005-01",
+      "end": "2009-12",
+      "visibility_policy": "PUBLIC",
+      "category": "academic",
+      "bullets": []
+    },
+    {
+      "id": "metis-bootcamp",
+      "institution": "Metis",
+      "credential": "Data Science Bootcamp (12-week accredited program)",
+      "start": "2020-04",
+      "end": "2020-07",
+      "visibility_policy": "PUBLIC",
+      "category": "training",
+      "bullets": [
+        "https://medium.com/@kunojilym/list/my-metis-data-science-bootcamp-projects-2020-9f7b8996c3d9",
+        "https://bit.ly/4f7ubAr"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "linkedin-analytics-databricks",
+      "name": "Build Your Own LinkedIn Analytics",
+      "visibility_policy": "PUBLIC",
+      "section": "featured_tutorial",
+      "description": "An end-to-end data product for personal LinkedIn Analytics, detailed for educational purposes in an ongoing blog series.\n",
+      "start": "2025-10",
+      "end": null,
+      "tools": [
+        "Databricks",
+        "Python",
+        "Spark",
+        "SQL",
+        "Data Engineering",
+        "Data Analytics",
+        "Data Architecture",
+        "Dashboarding",
+        "Technical Documentation"
+      ],
+      "bullets": [
+        "https://www.yzouyang.com/category/blog-series/build-your-own-linkedin-analytics/",
+        "https://github.com/KunojiLym/databricks-linkedin-analytics/tree/main/databricks_linkedin_analytics"
+      ]
+    },
+    {
+      "id": "metis-mta-edaproject",
+      "name": "NYC MTA Turnstile Data Analysis",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Exploratory data analysis, station usage patterns, recommendation system for optimal campaign placement.\n",
+      "start": "2020-04",
+      "end": "2020-04",
+      "tools": [
+        "Python",
+        "Pandas",
+        "Seaborn"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/nyc-mta-turnstile-data-analysis-project-1-c1602b6de9d7",
+        "https://towardsdatascience.com/mta-turstile-data-my-first-taste-of-a-data-science-project-493b03f1708a",
+        "https://github.com/KunojiLym/metis_project_1"
+      ]
+    },
+    {
+      "id": "metis-animelist-score-prediction",
+      "name": "MyAnimeList Score Prediction",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Web scraping, feature engineering, regression modeling, and bias analysis for crowd-sourced entertainment scores.\n",
+      "start": "2020-05",
+      "end": "2020-05",
+      "tools": [
+        "Python",
+        "Scikit-learn",
+        "BeautifulSoup"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/animelist-score-prediction-project-2-cdc196ab46b0",
+        "https://github.com/KunojiLym/metis_project_2"
+      ]
+    },
+    {
+      "id": "metis-global-fishing-watch",
+      "name": "Global Fishing Watch Classification",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Classification of maritime traffic; supervised ML for vessel activity using Random Forest (F1=0.90, AUC=0.98).\n",
+      "start": "2020-06",
+      "end": "2020-06",
+      "tools": [
+        "Python",
+        "PostgreSQL",
+        "Random Forest"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/global-fishing-watch-machine-learning-project-3-d3f0c33b5642",
+        "https://github.com/KunojiLym/metis_project_3"
+      ]
+    },
+    {
+      "id": "metis-fake-news-detection",
+      "name": "Fake News Detection (LIAR Dataset)",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Advanced NLP, topic modeling, and word embeddings for automated fact-checking and claim classification.\n",
+      "start": "2020-06",
+      "end": "2020-07",
+      "tools": [
+        "Python",
+        "NLP",
+        "GloVe",
+        "LDA"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/fake-news-detection-nlp-topic-modeling-project-4-4c54c2598fc6",
+        "https://github.com/KunojiLym/metis_project_4"
+      ]
+    },
+    {
+      "id": "metis-generative-poetry-lstm",
+      "name": "Generative Poetry with LSTM Neural Nets",
+      "visibility_policy": "PUBLIC",
+      "section": "metis_bootcamp",
+      "description": "Deep learning model for creative text generation, full-stack integration with Flask and PostgreSQL.\n",
+      "start": "2020-07",
+      "end": "2020-07",
+      "tools": [
+        "Python",
+        "Keras",
+        "LSTM",
+        "Flask"
+      ],
+      "bullets": [
+        "https://medium.com/@kunojilym/generative-poetry-lstm-deep-learning-project-5-d341418fae16",
+        "https://github.com/KunojiLym/metis_project_5"
+      ]
+    },
+    {
+      "id": "klook-travel-planner-capstone",
+      "name": "Klook Travel Planner Capstone",
+      "visibility_policy": "PUBLIC",
+      "section": "product_ux",
+      "description": "End-to-end UX research and Figma prototyping for the NTU Advanced Certificate in UI/UX & Digital Product Management.\n",
+      "start": "2025-01",
+      "end": "2025-04",
+      "tools": [
+        "Figma",
+        "UX Research",
+        "Product Design"
+      ],
+      "bullets": [
+        "https://www.figma.com/deck/KzoFrRv4ZmF60Ouqen318Q/Klook-Travel-Planner"
+      ],
+      "embed": "https://embed.figma.com/deck/KzoFrRv4ZmF60Ouqen318Q/Klook-Travel-Planner?embed-host=share"
+    },
+    {
+      "id": "skillup-mtech-capstone",
+      "name": "SkillUP — AI-Powered Personalised Learning Path Coach",
+      "visibility_policy": "PUBLIC",
+      "section": "other",
+      "description": "NUS-ISS MTech AIS capstone — course recommendation engine with CSP, fuzzy logic, and RAG explainability.",
+      "start": "2026-03",
+      "end": "2026-05",
+      "tools": [],
+      "bullets": [
+        "https://github.com/KunojiLym/IRS-PM-2026-01-17-AIS08PT-GRP-SkillUP-Course-Recommender"
+      ]
+    },
+    {
+      "id": "risk-assistant-hackathon",
+      "name": "Risk Assistant — Automated Reputational Screening Agent",
+      "visibility_policy": "PUBLIC",
+      "section": "other",
+      "description": "Agent Forge hackathon finalist — FastAPI + Streamlit reputational screening pipeline.",
+      "start": "2026-06",
+      "end": "2026-06",
+      "tools": [],
+      "bullets": [
+        "https://github.com/KunojiLym/hackathon-dd-agent"
+      ]
+    }
+  ],
+  "certifications": [
+    {
+      "id": "gcp-professional-data-engineer",
+      "name": "Google Cloud Certified Professional Data Engineer",
+      "issuer": "Google Cloud",
+      "issued": "2024-01",
+      "expires": "2028-01",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Professional Data Engineer Certification",
+        "Professional Data Engineer"
+      ],
+      "bullets": [
+        "https://www.credly.com/badges/73b32658-3fe5-4ebc-a911-9610bfaf334c/public_url",
+        "https://bit.ly/4c0sG6P"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "gcp-professional-ml-engineer",
+      "name": "Google Cloud Certified Professional Machine Learning Engineer",
+      "issuer": "Google Cloud",
+      "issued": "2024-04",
+      "expires": "2028-04",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Professional Machine Learning Engineer Certification",
+        "Professional Machine Learning Engineer"
+      ],
+      "bullets": [
+        "https://www.credly.com/badges/2654ea74-30b7-4a86-a85b-1bccf04e6e70/public_url",
+        "https://bit.ly/45iCW7w"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "databricks-data-engineer-associate",
+      "name": "Databricks Certified Data Engineer Associate",
+      "issuer": "Databricks",
+      "issued": "2026-01",
+      "expires": "2028-01",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Data Engineer Associate"
+      ],
+      "bullets": [
+        "https://credentials.databricks.com/597dd3da-2d98-4e97-a4fd-70d2a6ffc054",
+        "https://bit.ly/46fWg5j"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "gcp-associate-cloud-engineer",
+      "name": "Google Cloud Certified Associate Cloud Engineer",
+      "issuer": "Google Cloud",
+      "issued": "2024-03",
+      "expires": "2027-03",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Associate Cloud Engineer Certification",
+        "Associate Cloud Engineer"
+      ],
+      "bullets": [
+        "https://www.credly.com/badges/ab136dbc-daed-4e5b-8d78-dcbf9f4115ed/public_url",
+        "https://bit.ly/3U79azk"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "ms-fabric-analytics-engineer",
+      "name": "Microsoft Certified Fabric Analytics Engineer Associate (DP-600)",
+      "issuer": "Microsoft",
+      "issued": "2024-12",
+      "expires": "2027-12",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Fabric Analytics Engineer Associate (DP-600)"
+      ],
+      "bullets": [
+        "https://learn.microsoft.com/api/credentials/share/en-sg/YingzhaoOuyang-3447/6141298ECD3F5E27",
+        "https://bit.ly/4memBqg"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "ms-fabric-data-engineer",
+      "name": "Microsoft Certified Fabric Data Engineer Associate (DP-700)",
+      "issuer": "Microsoft",
+      "issued": "2025-08",
+      "expires": "2027-08",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Fabric Data Engineer Associate (DP-700)"
+      ],
+      "bullets": [
+        "https://learn.microsoft.com/api/credentials/share/en-sg/YingzhaoOuyang-3447/9E9F38EA00C2E4B9",
+        "https://bit.ly/3Hd72jF"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "ms-azure-ai-engineer",
+      "name": "Microsoft Certified Azure AI Engineer Associate (AI-102)",
+      "issuer": "Microsoft",
+      "issued": "2024-09",
+      "expires": "2026-09",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Azure AI Engineer Associate (AI-102)"
+      ],
+      "bullets": [
+        "https://learn.microsoft.com/api/credentials/share/en-sg/YingzhaoOuyang-3447/FAB101C9176957D6",
+        "https://bit.ly/4kPWx3r"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "databricks-genai-engineer-associate",
+      "name": "Databricks Certified Generative AI Engineer Associate",
+      "issuer": "Databricks",
+      "issued": "2025-04",
+      "expires": "2027-04",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Generative AI Engineer Associate"
+      ],
+      "bullets": [
+        "https://credentials.databricks.com/8ea043e0-8509-43cc-b7bd-a7b2540300e1#acc.y3wFDGCU",
+        "https://bit.ly/3lKqCEj"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "csm-scrum-alliance",
+      "name": "Certified ScrumMaster (CSM)",
+      "issuer": "Scrum Alliance",
+      "issued": "2022-02",
+      "expires": "2028-02",
+      "visibility_policy": "PUBLIC",
+      "category": "leadership",
+      "aliases": [
+        "Certified Scrum Master",
+        "Certified ScrumMaster"
+      ],
+      "bullets": [
+        "https://bcert.me/bc/html/show-badge.html?b=mpsvtgnm",
+        "https://bit.ly/3H1UIT8"
+      ]
+    },
+    {
+      "id": "astronomer-airflow-fundamentals",
+      "name": "Apache Airflow 2 Fundamentals",
+      "issuer": "Astronomer",
+      "issued": "2024-12",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Astronomer Certification for Apache Airflow 2 Fundamentals"
+      ],
+      "bullets": [
+        "https://www.credly.com/badges/8c17608b-9bfd-4d9c-987e-4951dd7c274b",
+        "https://bit.ly/4kTwNDq"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "genos-ei-practitioner",
+      "name": "Genos Emotional Intelligence Certified Practitioner",
+      "issuer": "NTUC LearningHub / Genos International",
+      "issued": "2026-02",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "bullets": [
+        "https://badges.credsvault.io/api/badgeitem/2bd409c5-2408-4a44-9201-d08cee2a7f7d/metadata",
+        "https://bit.ly/49SKy2Y"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "claude-architect-foundations",
+      "name": "Claude Certified Architect - Foundations",
+      "issuer": "Anthropic",
+      "issued": "2026-07",
+      "expires": "2027-07",
+      "visibility_policy": "PUBLIC",
+      "bullets": [
+        "https://www.credly.com/badges/c3935a0e-b01b-4398-9b3d-808a386eb1ce/public_url",
+        "https://bit.ly/4fHoNVj"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "aws-cloud-practitioner",
+      "name": "AWS Certified Cloud Practitioner",
+      "issuer": "Amazon Web Services",
+      "issued": "2020-07",
+      "expires": "2023-07",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Cloud Practitioner"
+      ],
+      "bullets": [
+        "https://www.credly.com/badges/7c2d9c5f-ea7f-403a-974c-c4f05171f671"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "ms-azure-data-engineer",
+      "name": "Microsoft Certified Azure Data Engineer Associate (DP-203)",
+      "issuer": "Microsoft",
+      "issued": "2025-02",
+      "expires": "2027-01",
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Azure Data Engineer Associate (DP-203)"
+      ],
+      "bullets": [
+        "https://learn.microsoft.com/en-us/users/YingzhaoOuyang-3447/credentials/863B0A450000D46",
+        "https://bit.ly/46WbTA2"
+      ],
+      "category": "professional"
+    },
+    {
+      "id": "nus-cdaio-programme",
+      "name": "NUS Chief Data and AI Officer Programme",
+      "issuer": "Emeritus / National University of Singapore",
+      "issued": "2025-01",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "aliases": [
+        "Chief Data, Analytics & AI Officer Programme"
+      ],
+      "bullets": [
+        "https://certificates.emeritus.org/fb370cc4-32cd-4eb3-b40e-b783f6afe04a",
+        "https://bit.ly/44NCYUR"
+      ],
+      "category": "leadership"
+    },
+    {
+      "id": "ntu-fleximaster-accounting-analytics",
+      "name": "NTU FlexiMaster in Accounting Analytics and Digital Forensics",
+      "issuer": "Nanyang Technological University",
+      "issued": "2024-06",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "bullets": [
+        "https://www.opencerts.io/?q={\"type\":\"DOCUMENT\",\"payload\":{\"uri\":\"https://gist.githubusercontent.com/KunojiLym/22567f6e2412a8364aa8d01e9acc1928/raw/794d01199505f1b534ee90de2758f0e0a911d187/gistfile1.txt\"}}#{\"key\":\"b53053fce414fe680ec3ab01f3e5823accb2889b20518b0333738a01cf644ad3\"}",
+        "https://bit.ly/3LAqENi"
+      ],
+      "category": "leadership"
+    },
+    {
+      "id": "ntu-uxpm-certificate",
+      "name": "NTU Advanced Professional Certificate in UI/UX and Digital Product Management",
+      "issuer": "Nanyang Technological University",
+      "issued": "2025-03",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "bullets": [
+        "https://www.opencerts.io/?q={\"type\":\"DOCUMENT\",\"payload\":{\"uri\":\"https://gist.githubusercontent.com/KunojiLym/bec70dca8b964381f2ddfd2b59914e43/raw/236f4b983cfa1c88d522df3b4ed242525b41970d/gistfile1.txt\"}}#{\"key\":\"c21301522e2d44ff46d836e3ba02c45f1c677b78f3489528e1279c6026dd76ea\"}",
+        "https://bit.ly/4konyuY"
+      ],
+      "category": "leadership"
+    },
+    {
+      "id": "pru-leap-programme",
+      "name": "Leadership Excellence At Prudential (LEAP) Programme",
+      "issuer": "Prudential",
+      "issued": "2025-06",
+      "expires": null,
+      "visibility_policy": "PUBLIC",
+      "bullets": [
+        "https://www.linkedin.com/posts/yzouyang_leadership-learningjourney-neverstoplearning-activity-7397442379278016512-OInj",
+        "https://bit.ly/4pJHU4S"
+      ],
+      "category": "leadership"
+    }
+  ],
+  "writing": [
+    {
+      "id": "writing-sample-2019-09",
+      "title": "Writing Sample (September 2019)",
+      "visibility_policy": "PUBLIC",
+      "summary": "Professional writing sample staged from persona-sources inbox (2019-09-writing-sample.docx).",
+      "source_file": "2019-09-writing-sample.docx",
+      "bullets": []
+    }
+  ],
+  "about": {
+    "visibility_policy": "PUBLIC",
+    "lede": "I design and lead cloud data platforms and generative AI solutions for enterprises — with a bias toward governance, cost visibility, and systems that operators can trust.\n",
+    "philosophy": "I believe in bridging the gap between business questions and technical delivery—empowering organizations through scalable data, AI, and analytics capabilities, and developing people as the foundation for lasting transformation.\n",
+    "competencies": [
+      {
+        "title": "Data Engineering Leadership",
+        "body": "Architecting and operating complex cloud data platforms (Google Cloud, Microsoft Azure, Databricks, AWS) since 2020, leading robust ETL/ELT pipeline development and data governance at scale.\n"
+      },
+      {
+        "title": "AI & Analytics Expertise",
+        "body": "Skilled in developing and integrating generative AI, machine learning, NLP and analytics solutions for modern product development, consistently delivering measurable operational improvements.\n"
+      },
+      {
+        "title": "Cloud Platform Mastery",
+        "body": "Multi-certified on Google Cloud, Microsoft Azure and Databricks; hands-on with MLOps, medallion/lakehouse architectures, and cloud-native solutions on AWS.\n"
+      },
+      {
+        "title": "Cross-Functional Leadership",
+        "body": "Formal management training, documentation standardization, and technical mentorship spanning business and technology teams.\n"
+      },
+      {
+        "title": "Product & User Focus",
+        "body": "Educated in UX/UI and digital product management, with proven success launching analytics tools and business dashboards for diverse stakeholders.\n"
+      }
+    ],
+    "career_highlights": [
+      {
+        "title": "Data Solutioning and Architecture",
+        "body": "Established medallion architecture, standardized cross-functional documentation, and guided data/AI/ML project delivery on Google Cloud and Microsoft Azure.\n"
+      },
+      {
+        "title": "Lead Data Engineer",
+        "body": "Architected resilient, cost-saving data pipelines on AWS and championed technical upskilling and collaboration.\n"
+      },
+      {
+        "title": "Technical Portfolio",
+        "body": "Comprehensive technical portfolio from Metis Data Science Bootcamp, including end-to-end ML, AI and analytics projects.\n",
+        "link": "/portfolio/",
+        "link_label": "Portfolio highlights"
+      }
+    ],
+    "career_journey": {
+      "title": "Career Journey",
+      "link": "https://www.figma.com/deck/0nKvFiourL6ya4HCTEN0AL/Career-Journey-2025",
+      "link_label": "Open Figma deck",
+      "embed": "https://embed.figma.com/deck/0nKvFiourL6ya4HCTEN0AL/Career-Journey-2025?embed-host=share"
+    }
+  },
+  "portfolio": {
+    "visibility_policy": "PUBLIC",
+    "lede": "Selected technical, data science, and product/UX work — with verification links for deeper reading.\n",
+    "sections": [
+      {
+        "id": "featured_tutorial",
+        "title": "Featured Tutorial Projects",
+        "parent": "Technical & Data Science Projects"
+      },
+      {
+        "id": "metis_bootcamp",
+        "title": "Metis Data Science Bootcamp (2020): Project Portfolio",
+        "parent": "Technical & Data Science Projects",
+        "intro": "End-to-end projects from the Metis Data Science Bootcamp (2020), across machine learning, NLP, deep learning, and data engineering.\n",
+        "footer_link": "https://medium.com/@kunojilym/list/my-metis-data-science-bootcamp-projects-2020-9f7b8996c3d9",
+        "footer_label": "Full Metis bootcamp project list"
+      },
+      {
+        "id": "product_ux",
+        "title": "Featured Product & UX Projects",
+        "parent": "Technical & Data Science Projects",
+        "outro": "These projects show how UI/UX principles inform building intuitive data products — technical excellence meeting user-centric design.\n"
+      },
+      {
+        "id": "other",
+        "title": "Other public projects",
+        "parent": null
+      }
+    ],
+    "enterprise_summaries": {
+      "title": "Enterprise Data & AI Solutioning (Selected Work Summaries)",
+      "items": [
+        {
+          "title": "Prudential (Singapore) — Senior Data Engineer, Solutioning & Architecture",
+          "bullets": [
+            "Established medallion architecture and standardized cross-team documentation for scalable data lakehouse infrastructure.",
+            "Led proof-of-concept and solutioning for GenAI and MLOps workflows, delivering increased operational efficiency and cost reduction.",
+            "Guided technical development of AI/ML projects on Google Cloud and Databricks."
+          ]
+        },
+        {
+          "title": "SPH Media — Lead Data Engineer",
+          "bullets": [
+            "Architected and delivered cost-saving, resilient data pipelines in AWS; implemented robust batch and streaming data solutions.",
+            "Drove team-wide technical upskilling, process improvement, and documentation standardization.",
+            "Managed analytics platform migration and integration for enterprise media operations."
+          ]
+        }
+      ]
+    },
+    "verify": {
+      "title": "How to Verify & Learn More",
+      "items": [
+        {
+          "label": "Comprehensive certifications, with public verification links",
+          "href": "/credentials/"
+        },
+        {
+          "label": "Digital business card and latest contact",
+          "href": "https://bit.ly/m/yzouyang"
+        },
+        {
+          "label": "LinkedIn profile",
+          "href": "https://www.linkedin.com/in/yzouyang/"
+        }
+      ],
+      "note": "For further detail or code samples, selected repositories or extended case studies are available upon request.\n"
+    }
+  },
+  "credentials": {
+    "visibility_policy": "PUBLIC",
+    "lede": "Public credentials and verifications — canonical verify links first, Bitly optional.\n",
+    "sections": [
+      {
+        "id": "professional",
+        "title": "Professional Certifications"
+      },
+      {
+        "id": "leadership",
+        "title": "Leadership & Professional Programs"
+      },
+      {
+        "id": "academic",
+        "title": "Academic Qualifications"
+      },
+      {
+        "id": "training",
+        "title": "Additional Training & Bootcamps"
+      }
+    ],
+    "notes": [
+      "Available upon request: credentials without public links can be verified for prospective employers or collaborators.",
+      "Portfolio access: major ML, NLP, analytics, and UX/UI projects are linked from the Portfolio page and Metis bootcamp collection.",
+      "Continuous professional development: this page is updated as cloud, data/AI, and leadership credentials change."
+    ],
+    "order": {
+      "professional": [
+        "gcp-professional-data-engineer",
+        "gcp-professional-ml-engineer",
+        "databricks-genai-engineer-associate",
+        "databricks-data-engineer-associate",
+        "ms-fabric-data-engineer",
+        "ms-fabric-analytics-engineer",
+        "ms-azure-ai-engineer",
+        "gcp-associate-cloud-engineer"
+      ],
+      "leadership": [
+        "nus-cdaio-programme",
+        "csm-scrum-alliance",
+        "pru-leap-programme",
+        "ntu-fleximaster-accounting-analytics",
+        "ntu-uxpm-certificate"
+      ],
+      "academic": [
+        "mtech-ais",
+        "bsc-bis",
+        "mba",
+        "ba-english"
+      ],
+      "training": [
+        "metis-bootcamp"
+      ]
+    }
+  }
+}

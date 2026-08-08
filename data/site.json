@@ -1,0 +1,118 @@
+{
+  "base_path": "",
+  "person": {
+    "full_name": "Yingzhao Ouyang",
+    "brand": "yzouyang",
+    "headline": "Data and AI Transformation Specialist",
+    "tagline": "Driving value in cloud, data and generative AI solutions for enterprises",
+    "location": "Singapore",
+    "platforms": ["Azure", "GCP", "AWS", "Databricks"],
+    "photo": "/assets/profile.jpg",
+    "photo_alt": "Portrait of Yingzhao Ouyang"
+  },
+  "outcomes": [
+    {
+      "metric": "50%",
+      "label": "Documentation acceleration on platform delivery"
+    },
+    {
+      "metric": "20%",
+      "label": "Query cost reduction through platform FinOps"
+    },
+    {
+      "metric": "30%",
+      "label": "Migration and process efficiency gains"
+    }
+  ],
+  "contact": {
+    "email": "kunojilym@gmail.com",
+    "phone": "+65 8468 4623",
+    "note": "PUBLIC contacts only — no work or university emails"
+  },
+  "external": {
+    "blog": "https://www.yzouyang.com/blog/",
+    "medium": "https://medium.com/@kunojilym",
+    "linkedin": "https://www.linkedin.com/in/yzouyang/",
+    "github": "https://www.github.com/KunojiLym",
+    "bitly_hub": "https://bit.ly/m/yzouyang",
+    "portfolio_short": "https://bit.ly/3GGyiXF",
+    "credentials_short": "https://bit.ly/4m4fqki"
+  },
+  "writing_highlights": [
+    {
+      "title": "A Chinese Open-Weights Model Just Saved Hugging Face. That’s the Problem.",
+      "url": "https://medium.com/@kunojilym/a-chinese-open-weights-model-just-saved-hugging-face-thats-the-problem-139bf1afdacc",
+      "venue": "Medium",
+      "date": "2026-07"
+    },
+    {
+      "title": "Teaching Graphify to Understand Databricks Notebooks",
+      "url": "https://medium.com/@kunojilym/teaching-graphify-to-understand-databricks-notebooks-13856e2a09b9",
+      "venue": "Medium",
+      "date": "2026-07"
+    },
+    {
+      "title": "The AI Disruption Part 3: Designing for Judgment in an Age of Machines",
+      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-3-designing-for-judgment-in-an-age-of-machines-981953529ce8",
+      "venue": "Medium",
+      "date": "2026-06"
+    },
+    {
+      "title": "The AI Disruption Part 2: Inside the Sixth Technology Wave",
+      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-2-inside-the-sixth-technology-wave-754e75417b76",
+      "venue": "Medium",
+      "date": "2026-06"
+    },
+    {
+      "title": "The AI Disruption Part 1: How AI is Reshaping Work Before Our Institutions are Ready",
+      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-1-how-ai-is-reshaping-work-before-our-institutions-are-ready-713e2cd7c3a8",
+      "venue": "Medium",
+      "date": "2026-05"
+    },
+    {
+      "title": "Chips, Cells and Code: How Singapore is Applying its 40-Year Industrial Playbook to AI",
+      "url": "https://medium.com/@kunojilym/chips-cells-and-code-how-singapore-is-applying-its-40-year-industrial-playbook-to-ai-26889d5f5d91",
+      "venue": "Medium",
+      "date": "2026-02"
+    },
+    {
+      "title": "Build Your Own LinkedIn Analytics Part 1: Why It Matters (and What You’ll Learn)",
+      "url": "https://medium.com/@kunojilym/build-your-own-linkedin-analytics-part-1-why-it-matters-and-what-youll-learn-314a4de63988",
+      "venue": "Medium",
+      "date": "2025-10"
+    }
+  ],
+  "about": {
+    "note": "Prefer export_public.json about (from personal-content data/about.yaml). site.about is fallback only."
+  },
+  "analytics": {
+    "ga_measurement_id": "",
+    "jetpack": {
+      "enabled": true,
+      "blog_id": "34802711",
+      "timezone": "8",
+      "script": "https://stats.wp.com/e-202632.js",
+      "pages": {
+        "Home": "225",
+        "About": "2",
+        "Portfolio": "125",
+        "Credentials": "45",
+        "Contact": "0"
+      }
+    },
+    "diy": {
+      "enabled": true,
+      "collect_url": "",
+      "honor_dnt": true
+    }
+  },
+  "nav": [
+    { "label": "Home", "href": "/", "external": false },
+    { "label": "About", "href": "/about/", "external": false },
+    { "label": "Portfolio", "href": "/portfolio/", "external": false },
+    { "label": "Credentials", "href": "/credentials/", "external": false },
+    { "label": "Blog", "href": "https://www.yzouyang.com/blog/", "external": true },
+    { "label": "Medium", "href": "https://medium.com/@kunojilym", "external": true },
+    { "label": "LinkedIn", "href": "https://www.linkedin.com/in/yzouyang/", "external": true }
+  ]
+}

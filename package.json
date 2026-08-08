@@ -1,0 +1,31 @@
+{
+  "name": "yzouyang-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test tests/e2e/usability.spec.mjs tests/e2e/career-journey-animation.spec.mjs",
+    "test:motion": "playwright test tests/e2e/career-journey-animation.spec.mjs",
+    "test:visual": "playwright test tests/e2e/visual.spec.mjs",
+    "test:a11y": "playwright test tests/e2e/a11y.spec.mjs",
+    "lint:css": "stylelint \"src/styles/*.css\"",
+    "lint:token-drift": "uv run python scripts/check_token_drift.py",
+    "qa:shots": "node scripts/qa-screenshot.mjs",
+    "serve:dist": "node scripts/serve-dist.mjs",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "1.62.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "stylelint": "^16.9.0",
+    "stylelint-config-standard": "^36.0.0",
+    "stylelint-declaration-strict-value": "^1.10.0"
+  },
+  "lint-staged": {
+    "src/styles/*.css": [
+      "stylelint",
+      "npm run lint:token-drift"
+    ]
+  }
+}

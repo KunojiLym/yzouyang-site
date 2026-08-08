@@ -1,0 +1,5 @@
+/*
+  Styles are modular under src/styles/.
+  build.py concatenates them into dist/styles.css — see src/styles/README.md.
+  Do not add rules here.
+*/

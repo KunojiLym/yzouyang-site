@@ -1,0 +1,289 @@
+# Career Journey — native slide data.
+#
+# Source of truth for the /career-journey/ page (scripts/build.py ->
+# build_career_journey()). This version is rebuilt from the operator-provided
+# Figma raw export and PowerPoint export of "Career Journey 2025" received on
+# 2026-08-08. The slide sequence, section titles, and visible copy follow the
+# PPT export; the page uses native HTML so the content remains accessible,
+# responsive, and indexable rather than embedding the deck as screenshots.
+
+title: "Career Journey"
+subtitle: "My Long and Winding Journey into Data"
+lede: >
+  A career-transition story about English Literature, teaching, editing,
+  operational IT, and the deliberately messy path into data and AI platform
+  leadership.
+source_link: "https://www.figma.com/deck/0nKvFiourL6ya4HCTEN0AL/Career-Journey-2025"
+source_label: "View original Figma deck"
+default_transition: fade-up
+
+slides:
+  - id: title
+    chapter: null
+    kind: composed
+    layout: full-bleed-text-overlay
+    blocks:
+      - region: bg
+        type: image
+        image: /assets/career-journey/deck/image-1-1.png
+        image_alt: "Illustration of a person walking along a winding country path toward a village."
+      - region: text
+        type: heading
+        body: "Career Journey"
+        sub: "My Long and Winding Journey into Data"
+
+  - id: now-platform-leader
+    chapter: "Who I Am Now"
+    kind: points
+    title: "Who am I now?"
+    intro: "Data & AI Platform Leader at Prudential Services Singapore."
+    points:
+      - label: "5+ years"
+        body: "A data journey that now spans engineering, platform strategy, cloud economics, and AI enablement."
+
+  - id: now-thought-leader
+    chapter: "Who I Am Now"
+    kind: points
+    title: "Thought leader"
+    points:
+      - label: "30+ articles"
+        body: "Writing on data architecture, Databricks, GenAI, and the practical side of modern enterprise data work."
+
+  - id: now-technologist
+    chapter: "Who I Am Now"
+    kind: points
+    title: "Technologist"
+    points:
+      - label: "3 cloud platforms"
+        body: "AWS, Azure, and Google Cloud experience across data platforms, machine learning, governance, and delivery tooling."
+      - label: "15+ tools"
+        body: "Hands-on exposure across the moving parts that make data and AI systems run in production."
+
+  - id: now-mentor
+    chapter: "Who I Am Now"
+    kind: points
+    title: "Mentor"
+    points:
+      - label: "Career transitions"
+        body: "Supporting students and bootcamp participants as they build skills in data, product, and career navigation."
+
+  - id: where-started
+    chapter: "Where I Started"
+    kind: title
+    title: "Where did I start?"
+
+  - id: english-literature
+    chapter: "Where I Started"
+    kind: image
+    image: /assets/career-journey/deck/image-7-1.png
+    image_alt: "A classroom scene used in the deck to represent questions about an English Literature degree."
+    caption: "English Literature degree. “Can only become teacher?” Screencap from I Not Stupid 3 (2024)."
+
+  - id: food-sme-it
+    chapter: "Where I Started"
+    kind: composed
+    layout: split-60-40
+    blocks:
+      - region: main
+        type: image
+        image: /assets/career-journey/deck/image-8-1.png
+        image_alt: "A person juggling objects, representing a do-everything operations role."
+      - region: side-top
+        type: text
+        body: "IT Manager in a food manufacturing SME."
+      - region: side-bottom
+        type: text
+        body: "Aka “do everything.” Photo by Alexey Turenkov on Unsplash."
+
+  - id: private-tutor
+    chapter: "Where I Started"
+    kind: image
+    image: /assets/career-journey/deck/image-9-1.png
+    image_alt: "Scene from I Not Stupid 3 used to represent tutoring pressure and expectations."
+    caption: "Freelance private tutor in English and the humanities — cue existential dread from kids and feverous hope from parents."
+
+  - id: due-diligence
+    chapter: "Where I Started"
+    kind: image
+    image: /assets/career-journey/deck/image-10-1.png
+    image_alt: "Rows of law books used to represent due diligence report research."
+    caption: "Copyeditor and researcher for due diligence reports — must crunch this report in three hours. Photo by Krists Luhaers on Unsplash."
+
+  - id: how-get-here
+    chapter: "How I Got Here"
+    kind: title
+    title: "How did I get here?"
+
+  - id: acquiring-knowhow
+    chapter: "How I Got Here"
+    kind: title
+    title: "#1: Acquiring knowhow"
+
+  - id: metis-bootcamp
+    chapter: "How I Got Here"
+    kind: composed
+    layout: split-60-40
+    blocks:
+      - region: main
+        type: text
+        body: "Metis Bootcamp in Data Science: three to four months full-time in 2020."
+      - region: side-top
+        type: image
+        image: /assets/career-journey/deck/image-13-1.png
+        image_alt: "Metis bootcamp logo mark."
+      - region: side-bottom
+        type: text
+        body: "Crash course in Python, SQL, machine learning, statistics, and the data lifecycle."
+
+  - id: murdoch-degree
+    chapter: "How I Got Here"
+    kind: composed
+    layout: split-60-40
+    blocks:
+      - region: main
+        type: text
+        body: "Bachelor of IT in Business Information Systems from Murdoch University, undertaken part-time from 2020 to 2021."
+      - region: side-top
+        type: image
+        image: /assets/career-journey/deck/image-14-1.png
+        image_alt: "Murdoch University logo."
+      - region: side-bottom
+        type: text
+        body: "Formal grounding in programming, databases, software engineering practices, enterprise architecture, and related foundations."
+
+  - id: certification-timeline
+    chapter: "How I Got Here"
+    kind: timeline
+    title: "Online courses and industry certifications filled in the gaps."
+    items:
+      - year: "2020"
+        label: "Metis Bootcamp"
+        body: "A fast, practical immersion in data science foundations."
+      - year: "2020-2021"
+        label: "Murdoch University"
+        body: "Part-time Business Information Systems degree alongside the career pivot."
+      - year: "2022"
+        label: "Cloud and data certifications"
+        body: "Industry-specific skillsets covering cloud, data, machine learning, and platform tooling."
+      - year: "2024-2025"
+        label: "NTU PACE UX and product management"
+        body: "Advanced Professional Certificate in UX Design and Digital Product Management, graduated April 2025."
+
+  - id: learning-on-job
+    chapter: "How I Got Here"
+    kind: points
+    title: "Learning on the job"
+    points:
+      - "Observing real-world practices and their actual effects."
+      - "Reading the code and documentation."
+      - "Asking clarifying questions of peers and seniors."
+      - "Connecting beyond the immediate work group: stakeholders, recruiters, and industry peers."
+
+  - id: informal-learning
+    chapter: "How I Got Here"
+    kind: composed
+    layout: split-60-40
+    blocks:
+      - region: main
+        type: image
+        image: /assets/career-journey/deck/image-20-1.png
+        image_alt: "Screenshot of online programming and technology learning videos."
+      - region: side-top
+        type: text
+        body: "...and lots of YouTube, Googling, Stack Overflow, and whatever required attention next."
+      - region: side-bottom
+        type: text
+        body: "Formal courses gave structure; the rest came from solving live problems."
+
+  - id: leveraging-transferable-skills
+    chapter: "Transferable Skills"
+    kind: title
+    title: "#2: Leveraging transferable skills"
+
+  - id: can-transfer
+    chapter: "Transferable Skills"
+    kind: quote
+    body: "Can transfer meh?"
+    attribution: "The anxious version of the career-transition question."
+
+  - id: transferable-lenses
+    chapter: "Transferable Skills"
+    kind: points
+    title: "Different lenses became useful technical habits."
+    points:
+      - label: "English Literature degree"
+        body: "Using different lenses to view the world, adapt to viewpoints, empathize with stakeholders, and navigate ambiguity."
+      - label: "IT Manager in a food manufacturing SME"
+        body: "Living with operational constraints and practical end-user expectations."
+      - label: "Freelance private tutor"
+        body: "Explaining ideas clearly, sensing confusion early, and adjusting to the learner in front of you."
+      - label: "Copyeditor and researcher"
+        body: "Working fast, structuring evidence, and making dense material usable."
+
+  - id: transferable-office-skills
+    chapter: "Transferable Skills"
+    kind: points
+    title: "Some transferable skills were unexpectedly concrete."
+    points:
+      - "Skills in Excel, PowerPoint, and other everyday productivity tools."
+      - "The ability to juggle different requirements without dropping the actual outcome."
+
+  - id: transferable-expectations
+    chapter: "Transferable Skills"
+    kind: points
+    title: "Teaching and operations sharpened delivery instincts."
+    points:
+      - "Ability to meet end-user expectations."
+      - "Ability to self-manage financials and work schedule."
+
+  - id: transferable-deadlines
+    chapter: "Transferable Skills"
+    kind: points
+    title: "Research work made pressure familiar."
+    points:
+      - "Ability to meet tight deadlines."
+      - "Advanced Excel analytics skills from due diligence reporting work."
+
+  - id: what-learn
+    chapter: "What You Can Learn"
+    kind: title
+    title: "What can you learn?"
+
+  - id: always-learning
+    chapter: "What You Can Learn"
+    kind: points
+    title: "#1: Always be learning"
+    points:
+      - "Data tools and practices are constantly evolving."
+      - "They are not immune to disruption; see how ChatGPT completely flipped the script."
+
+  - id: ask
+    chapter: "What You Can Learn"
+    kind: points
+    title: "#2: If you don’t know, ask"
+    points:
+      - "There is no shame in not knowing, only in not finding out."
+      - "This is especially true if you are new to the role or company."
+
+  - id: visible
+    chapter: "What You Can Learn"
+    kind: points
+    title: "#3: Be visible"
+    points:
+      - "Recruiters and managers need to know what you are capable of."
+      - "Your work may speak for itself, but you need to help it speak louder."
+
+  - id: more-than-you-think
+    chapter: "What You Can Learn"
+    kind: points
+    title: "#4: You are more than you think"
+    points:
+      - "Even experiences that seem unconnected can have relevance."
+      - "Keep an open mind about the usefulness of your own history."
+
+  - id: connect
+    chapter: null
+    kind: image
+    image: /assets/career-journey/deck/image-32-1.png
+    image_alt: "LinkedIn QR code card for Yingzhao Ouyang."
+    caption: "Let’s connect: https://www.linkedin.com/in/yzouyang"

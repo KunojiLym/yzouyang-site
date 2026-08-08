@@ -1,0 +1,163 @@
+/* Sticky site header, brand, primary nav, mobile menu */
+.site-header-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: rgb(12 20 18 / 96%);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-6);
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-left: auto;
+}
+
+.header-contact {
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+}
+
+.nav-menu .header-contact {
+  display: inline-flex;
+  margin-top: var(--space-tight);
+  align-self: flex-start;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.brand a {
+  color: var(--text-default);
+  text-decoration: none;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+}
+
+.site-nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
+  color: var(--text-default);
+}
+
+.site-nav a.external::after {
+  content: " ↗";
+  font-size: 0.75em; /* intentional one-off: relative to parent, not the fixed ramp */
+  opacity: 0.7;
+}
+
+.site-nav-desktop {
+  display: flex;
+}
+
+.nav-menu {
+  display: none;
+  margin: 0;
+}
+
+.nav-menu > summary {
+  list-style: none;
+  cursor: pointer;
+  color: var(--text-default);
+  font-size: var(--text-base);
+  padding: var(--space-tight) var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  user-select: none;
+}
+
+.nav-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-menu[open] > summary {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.nav-menu .site-nav {
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--line-soft);
+  min-width: 12rem;
+}
+
+.nav-menu .nav-group-label {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: var(--space-2) 0 var(--space-hairline);
+}
+
+/* --bp-md: 900px (see tokens.css) — nav collapse */
+@media (width <= 900px) {
+  .site-nav-desktop {
+    display: none;
+  }
+
+  .nav-menu {
+    display: block;
+  }
+
+  .header-actions > .header-contact {
+    display: none;
+  }
+}
+
+.site-footer {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-6) var(--space-10);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  border-top: 1px solid var(--line-soft);
+}
+
+.site-footer p {
+  margin: var(--space-1) 0;
+}
+
+.site-footer .footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.site-footer .footer-links a.external::after {
+  content: " ↗";
+  font-size: 0.75em; /* intentional one-off: relative to parent, not the fixed ramp */
+  opacity: 0.7;
+}

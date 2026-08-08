@@ -1,0 +1,17 @@
+name = "yzouyang-diy-collect"
+main = "src/worker.js"
+compatibility_date = "2026-07-01"
+workers_dev = true
+
+# Comma-separated Origin allowlist. Use * only for smoke tests.
+[vars]
+ALLOWED_ORIGINS = "https://kunojilym.github.io,https://www.yzouyang.com,https://yzouyang.com,http://127.0.0.1:8080,http://localhost:8080"
+
+# Optional: bind Analytics Engine + R2 after creating resources in the CF dashboard.
+# [[analytics_engine_datasets]]
+# binding = "EVENTS"
+# dataset = "yzouyang_pageviews"
+#
+# [[r2_buckets]]
+# binding = "EVENTS_BUCKET"
+# bucket_name = "yzouyang-diy-events"
