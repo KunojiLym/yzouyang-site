@@ -505,8 +505,8 @@ def build_career_journey(site: dict, cj: dict) -> str:
         <div class="cj-deck-controls" aria-label="Career journey slide controls">
           <button class="cj-slide-btn" type="button" data-cj-reset aria-label="Restart from beginning">⟳</button>
           <button class="cj-slide-btn" type="button" data-cj-prev aria-label="Previous slide">←</button>
-          <p class="cj-slide-count" aria-hidden="true">
-            <input class="cj-goto-input" type="number" data-cj-goto min="1" max="{total}" value="1" />
+          <p class="cj-slide-count">
+            <input class="cj-goto-input" type="number" data-cj-goto aria-label="Go to slide" min="1" max="{total}" value="1" />
             <span> / {total}</span>
           </p>
           <span class="cj-live-announce" aria-live="polite" data-cj-current></span>
