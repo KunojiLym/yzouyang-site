@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -164,6 +165,29 @@ def main() -> None:
     for needle in FORBIDDEN:
         if needle in blob:
             fail(f"built HTML contains forbidden domain: {needle}")
+
+    cj_data_path = DATA / "career-journey.yaml"
+    cj_page_path = DIST / "career-journey" / "index.html"
+    if cj_data_path.is_file():
+        if not cj_page_path.is_file():
+            fail("career-journey.yaml present but dist/career-journey/index.html missing")
+        cj_html = cj_page_path.read_text(encoding="utf-8")
+        if 'class="cj-page"' not in cj_html:
+            fail("career-journey page missing cj-page wrapper")
+        slide_count = cj_html.count('class="cj-slide ')
+        if slide_count < 1:
+            fail("career-journey page has no rendered slides")
+        # Every <img> on this page must have a non-empty alt — the concrete,
+        # enforced version of the accessibility argument for going native
+        # instead of embedding the Figma deck (an iframe's internal alt
+        # text isn't something this repo can inspect or fix).
+        for match in re.finditer(r"<img\b[^>]*>", cj_html):
+            tag = match.group(0)
+            alt_match = re.search(r'alt="([^"]*)"', tag)
+            if not alt_match or not alt_match.group(1).strip():
+                fail(f"career-journey page has an <img> with missing/empty alt: {tag}")
+        if 'src="/career-journey.js"' not in cj_html and 'src="./career-journey.js"' not in cj_html and "career-journey.js" not in cj_html:
+            fail("career-journey page missing scroll-reveal script tag")
 
     print("test_site_build ok")
 

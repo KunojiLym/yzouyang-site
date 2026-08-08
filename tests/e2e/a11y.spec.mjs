@@ -5,7 +5,7 @@ import AxeBuilder from "@axe-core/playwright";
 // review already recorded in docs/design-system.md, but it makes sure a
 // future change (new component, new page) can't silently regress contrast,
 // landmarks, or ARIA wiring without a human noticing.
-const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/"];
+const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/career-journey/"];
 
 // Pagefind's third-party markup on Portfolio/Credentials has known upstream
 // a11y quirks outside this repo's control; scoped out rather than ignored

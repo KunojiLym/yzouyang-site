@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:e2e": "playwright test tests/e2e/usability.spec.mjs",
+    "test:e2e": "playwright test tests/e2e/usability.spec.mjs tests/e2e/career-journey-animation.spec.mjs",
+    "test:motion": "playwright test tests/e2e/career-journey-animation.spec.mjs",
     "test:visual": "playwright test tests/e2e/visual.spec.mjs",
     "test:a11y": "playwright test tests/e2e/a11y.spec.mjs",
     "lint:css": "stylelint \"src/styles/*.css\"",
-    "lint:token-drift": "python scripts/check_token_drift.py",
+    "lint:token-drift": "uv run python scripts/check_token_drift.py",
     "qa:shots": "node scripts/qa-screenshot.mjs",
+    "serve:dist": "node scripts/serve-dist.mjs",
     "prepare": "husky"
   },
   "devDependencies": {

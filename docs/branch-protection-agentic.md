@@ -1,33 +1,24 @@
-﻿# Branch protection notes (B5 agentic ops)
+# Branch Protection Notes
 
-Operator-facing checklist for `main` so agents can open **draft PRs only** (no merge, no force-push). SoT also lives in the Genbu Homelab docs (`docs/runbooks/agent-premerge-validation.md`, `docs/runbooks/1password-agent-debug.md`).
+Operator-facing checklist for `main` so agents can open draft PRs but cannot
+merge, force-push, delete protected branches, or bypass review.
 
-## Target settings
+## Target Settings
 
 | Setting | Value |
 |---|---|
 | Require a pull request before merging | On |
-| Require status checks to pass | On when CI exists (see table) |
+| Require status checks to pass | On |
+| Required check | `lint-build` |
 | Allow force pushes | Off |
 | Allow deletions | Off |
-| Admin bypass of the above | Off (preferred) |
-| Agent PAT | Fine-grained **Contents** + **Pull requests** R/W — **not** admin / bypass |
+| Admin bypass | Off |
+| Agent PAT | Fine-grained Contents + Pull requests R/W; no admin, no workflow, no bypass |
 
-## Required check names (when CI exists)
+## Agent Rules
 
-| Repo | Required check job |
-|---|---|
-| `homelab-gitops` | `validate` |
-| `macmini-ops` | `compose-validate` |
-| `agentic-services` | `pytest` |
-| `personal-content` | PR-only until thin CI exists |
-| `yzouyang-site` | PR-only until thin CI exists |
-
-## Measured 2026-07-23 (titles/scopes only)
-
-Via `gh api` branch protection as repo admin:
-
-- `homelab-gitops`, `macmini-ops`, `agentic-services`, `personal-content`: require-PR **on**, required status checks **empty**
-- `yzouyang-site`: **no** branch protection on `main`
-
-**OPERATOR:** enable the required checks above (and protect `yzouyang-site` `main`). Agents must not push/merge to `main`.
+- Open draft PRs only.
+- Never push directly to `main`.
+- Never merge PRs.
+- Do not add private repo tokens to public CI.
+- Validate vendored data with `uv run python scripts/lint.py`; non-public visibility markers must fail the build.

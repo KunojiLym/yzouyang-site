@@ -12,6 +12,7 @@ Source of truth for the site's CSS. [`scripts/build.py`](../../scripts/build.py)
 | `longform.css` | Portfolio/credentials sticky sidebar TOC |
 | `search.css` | Pagefind dark theme |
 | `motion.css` | `rise` + `prefers-reduced-motion` |
+| `career-journey.css` | `/career-journey/` slide chrome + Tier 2 composed-layout grid recipes (see [docs/career-journey-native-plan.md](../../docs/career-journey-native-plan.md)) |
 
 Visual contract: [docs/design-system.md](../../docs/design-system.md).
 

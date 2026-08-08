@@ -1,0 +1,490 @@
+/* /career-journey/ — native slide deck.
+   JS upgrades the linear document into a horizontal snap deck. Without JS,
+   slides remain readable in source order. */
+
+main.page:has(.cj-page) {
+  max-width: var(--max-longform);
+}
+
+.cj-page {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.cj-header {
+  margin-bottom: 0;
+}
+
+.cj-header .subtitle {
+  font-family: var(--font-display);
+  font-size: var(--text-display-3);
+  color: var(--text-strong);
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+.cj-chapters {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-panel);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.cj-chapters ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+}
+
+.cj-chapters a {
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.cj-stage {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.cj-deck-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.cj-slide-btn {
+  display: inline-grid;
+  place-items: center;
+  width: var(--space-11);
+  height: var(--space-11);
+  padding: 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  color: var(--text-default);
+  cursor: pointer;
+}
+
+.cj-slide-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-strong);
+}
+
+.cj-slide-btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.cj-slide-count {
+  min-width: var(--space-12);
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.cj-slides {
+  display: flex;
+  gap: var(--space-6);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  aspect-ratio: 16 / 9;
+  max-height: calc(100svh - var(--header-offset) - 8rem);
+  align-items: stretch;
+}
+
+.cj-slides::-webkit-scrollbar {
+  display: none;
+}
+
+.cj-slide {
+  flex: 0 0 100%;
+  display: grid;
+  align-content: center;
+  padding: var(--space-8);
+  scroll-margin-top: calc(var(--header-offset) + var(--space-4));
+  scroll-snap-align: start;
+  overflow: hidden;
+}
+
+.cj-slide--title h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-display-1);
+}
+
+.cj-figure {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  margin: 0;
+}
+
+.cj-figure img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: calc(var(--space-12) * 7);
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.cj-figure figcaption {
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.cj-quote {
+  margin: 0;
+  padding: var(--space-6) var(--space-8);
+  border-left: var(--space-1) solid var(--accent);
+  background: var(--bg-panel);
+  border-radius: var(--radius-md);
+}
+
+.cj-quote p {
+  font-family: var(--font-display);
+  font-size: var(--text-display-3);
+  color: var(--text-strong);
+  margin: 0;
+}
+
+.cj-quote cite {
+  display: block;
+  margin-top: var(--space-4);
+  font-style: normal;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.cj-stat-value {
+  font-family: var(--font-display);
+  font-size: var(--text-display-hero);
+  color: var(--accent);
+  margin: 0;
+}
+
+.cj-stat-label {
+  color: var(--text-muted);
+  margin: var(--space-2) 0 0;
+}
+
+.cj-points,
+.cj-timeline {
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: 0;
+}
+
+.cj-points {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.cj-points li {
+  border-left: var(--space-1) solid var(--accent);
+  padding-left: var(--space-4);
+}
+
+.cj-points strong,
+.cj-points span,
+.cj-timeline time,
+.cj-timeline strong,
+.cj-timeline span {
+  display: block;
+}
+
+.cj-points strong,
+.cj-timeline strong {
+  color: var(--text-strong);
+}
+
+.cj-points span,
+.cj-timeline span {
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+.cj-timeline {
+  display: grid;
+  gap: var(--space-5);
+  border-left: 1px solid var(--line-soft);
+  padding-left: var(--space-5);
+}
+
+.cj-timeline li {
+  position: relative;
+}
+
+.cj-timeline li::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--space-6));
+  top: var(--space-1);
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--accent);
+}
+
+.cj-timeline time {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  margin-bottom: var(--space-1);
+}
+
+.cj-composed {
+  display: grid;
+  gap: var(--space-5);
+  align-items: center;
+}
+
+.cj-layout--split-60-40 {
+  grid-template-columns: 3fr 2fr;
+  grid-template-areas:
+    "main side-top"
+    "main side-bottom";
+}
+
+.cj-layout--overlay-caption {
+  grid-template-areas: "bg";
+  position: relative;
+  aspect-ratio: 16 / 9;
+  min-height: calc(var(--space-12) * 4);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.cj-layout--overlay-caption .cj-block[style*="grid-area: caption"] {
+  grid-area: bg !important;
+  place-self: end start;
+  max-width: calc(var(--space-12) * 8);
+  padding: var(--space-5) var(--space-6);
+  background: rgb(12 20 18 / 70%);
+  border-radius: var(--radius-md);
+  color: var(--text-strong);
+}
+
+.cj-layout--overlay-caption .cj-block[style*="grid-area: bg"] {
+  grid-area: bg;
+}
+
+.cj-layout--three-up {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.cj-layout--full-bleed-text-overlay {
+  grid-template-areas: "bg";
+  position: relative;
+  aspect-ratio: 16 / 9;
+  min-height: calc(var(--space-12) * 6);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.cj-layout--full-bleed-text-overlay .cj-block[style*="grid-area: text"] {
+  grid-area: bg !important;
+  place-self: center;
+  z-index: 1;
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.cj-layout--full-bleed-text-overlay .cj-block[style*="grid-area: bg"],
+.cj-layout--overlay-caption .cj-block[style*="grid-area: bg"] {
+  min-height: inherit;
+  width: 100%;
+}
+
+.cj-block-image {
+  display: grid;
+  place-items: center;
+}
+
+.cj-block-image img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: calc(var(--space-12) * 6);
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.cj-layout--full-bleed-text-overlay .cj-block-image img,
+.cj-layout--overlay-caption .cj-block-image img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+}
+
+/* About page link card (replaces the old Figma embed in build_about()). */
+.cj-link-card {
+  padding: var(--space-6);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+}
+
+.cj-link-card h3 {
+  margin-top: 0;
+}
+
+@keyframes cj-active-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-4));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cj-js .cj-slide {
+  opacity: 0.45;
+  transform: scale(0.985);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.cj-js .cj-slide.is-active {
+  opacity: 1;
+  transform: none;
+}
+
+.cj-js .cj-slide.is-active > * {
+  animation: cj-active-enter 0.45s ease both;
+}
+
+.cj-js .cj-slide[data-transition="fade"] {
+  transform: none;
+}
+
+/* Staged step-by-step reveal for points / timeline items */
+.cj-js .cj-slide [data-step] {
+  opacity: 0;
+  transform: translateY(var(--space-3));
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+
+.cj-js .cj-slide [data-step].is-revealed {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Heading overlay block (title slide) */
+.cj-block-heading {
+  color: var(--text-strong);
+}
+
+.cj-block-heading h1,
+.cj-block-heading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-1);
+}
+
+.cj-block-heading p {
+  margin: var(--space-2) 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-display-3);
+}
+
+.cj-layout--full-bleed-text-overlay .cj-block-heading {
+  grid-area: bg !important;
+  place-self: center;
+  z-index: 1;
+  padding: var(--space-6) var(--space-8);
+  background: rgb(12 20 18 / 80%);
+  border-radius: var(--radius-md);
+  text-align: center;
+  color: var(--text-strong);
+}
+
+.cj-layout--full-bleed-text-overlay .cj-block-heading p {
+  color: var(--text-default);
+}
+
+/* Go-to-slide number input */
+.cj-goto-input {
+  width: 3ch;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: right;
+  padding: 0;
+  -moz-appearance: textfield;
+}
+
+.cj-goto-input::-webkit-inner-spin-button,
+.cj-goto-input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.cj-goto-input:focus {
+  outline: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+/* Visually-hidden aria-live region */
+.cj-live-announce {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --bp-sm: 800px (see tokens.css) */
+@media (width <= 800px) {
+  .cj-page {
+    gap: var(--space-6);
+  }
+
+  .cj-slides {
+    aspect-ratio: auto;
+  }
+
+  .cj-deck-controls {
+    justify-content: space-between;
+  }
+
+  .cj-slide {
+    min-height: calc(100svh - var(--header-offset) - var(--space-8));
+    padding: var(--space-5);
+  }
+
+  .cj-layout--split-60-40,
+  .cj-layout--three-up {
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+  }
+
+  .cj-layout--split-60-40 > *,
+  .cj-layout--three-up > * {
+    grid-area: auto !important;
+  }
+}

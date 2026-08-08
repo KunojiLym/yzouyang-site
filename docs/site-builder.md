@@ -5,7 +5,7 @@ How the static site is produced and extended. Visual rules live in [design-syste
 ## Pipeline
 
 ```text
-data/site.json  +  data/export_public.json
+data/site.json  +  data/export_public.json  +  data/career-journey.yaml
         │
         ▼
  scripts/build.py  (f-string HTML, copy assets/CSS)
@@ -22,17 +22,19 @@ data/site.json  +  data/export_public.json
 
 - **Config / chrome / curated writing / outcomes:** [`data/site.json`](../data/site.json)
 - **PUBLIC narrative + projects + certs:** vendored from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` → [`data/export_public.json`](../data/export_public.json)
+- **Career Journey slide content:** [`data/career-journey.yaml`](../data/career-journey.yaml) (+ Tier 3 partials in `data/career-journey-slides/`) — see [career-journey-native-plan.md](career-journey-native-plan.md) for the schema
 - **Styles:** [`src/styles/`](../src/styles/) modules → assembled by build into `dist/styles.css` (see [`src/styles/README.md`](../src/styles/README.md))
 - **No Jinja** — page HTML is built in [`scripts/build.py`](../scripts/build.py)
+- **Python deps** (currently just PyYAML) managed with [uv](https://docs.astral.sh/uv/) — `pyproject.toml` is this repo's uv project file; run `uv sync` once before any script below
 
 ## Scripts
 
 | Script | Role |
 |---|---|
-| `python scripts/lint.py` | Input validation (`site.json` / export); Pagefind presence if `dist/` exists |
-| `python scripts/build.py` | Write pages + assets; runs Pagefind unless `--skip-pagefind` |
-| `python scripts/preview.py` | Lint → build → local `http.server` |
-| `python scripts/test_site_build.py` | Contract checks on `dist/` |
+| `uv run python scripts/lint.py` | Input validation (`site.json` / export / `career-journey.yaml`); Pagefind presence if `dist/` exists |
+| `uv run python scripts/build.py` | Write pages + assets; runs Pagefind unless `--skip-pagefind` |
+| `uv run python scripts/preview.py` | Lint → build → local `http.server` |
+| `uv run python scripts/test_site_build.py` | Contract checks on `dist/` |
 | `npm run test:e2e` | Playwright usability (serves root-path `dist/`) |
 
 Build flags:
@@ -63,6 +65,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 | `/about/` | `build_about` | export `about` + `writing_highlights`; longform sidebar (no Pagefind) |
 | `/portfolio/` | `build_portfolio` | export `portfolio` + `projects` + Pagefind (case rows: outcome → scope → tools) |
 | `/credentials/` | `build_credentials` | export `credentials` + certs/edu + Pagefind |
+| `/career-journey/` | `build_career_journey` | `data/career-journey.yaml`; only built if that file exists. Not in primary nav — reachable from an About link card + direct/shared URL, same tier as Contact. See [career-journey-native-plan.md](career-journey-native-plan.md) |
 | `/contact/` | `build_contact_redirect` | Meta refresh + link to `/#contact` |
 
 ## IA rules

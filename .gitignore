@@ -9,6 +9,7 @@ npm-debug.log*
 # Python
 *.pyc
 __pycache__/
+.venv/
 
 # Playwright / test artifacts
 qa-shots/

@@ -16,17 +16,32 @@ Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via 
 
 ## Develop
 
-```bash
-# Offline preview (lint + build + Pagefind + local server)
-python scripts/preview.py
+Python deps (currently just PyYAML, for `data/career-journey.yaml`) are managed with [uv](https://docs.astral.sh/uv/) — see `pyproject.toml`. Run `uv sync` once (creates `.venv/`) before any of the commands below.
 
-python scripts/lint.py
-python scripts/build.py          # includes Pagefind (use --skip-pagefind to omit)
-python scripts/test_site_build.py
+```bash
+uv sync
+
+# Offline preview (lint + build + Pagefind + local server)
+uv run python scripts/preview.py
+
+uv run python scripts/lint.py
+uv run python scripts/build.py          # includes Pagefind (use --skip-pagefind to omit)
+uv run python scripts/test_site_build.py
 npm install
 npx playwright install chromium
+npm run serve:dist -- 8765              # optional local static server for dist/
 npm run test:e2e
+npm run test:motion                     # career journey slide motion, records video
 ```
+
+The `serve:dist` server logs timestamped startup, listening, signal, close-start,
+close-complete, timeout, and bind-error events. Playwright e2e starts and stops
+the same Node server through global setup/teardown so lifecycle events are
+visible during normal test runs.
+
+`npm run test:e2e` includes the Career Journey motion check. That spec records
+a Playwright video artifact and fails if the deck no longer advances
+horizontally with active-slide animation.
 
 CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty). Contract tests + Playwright usability e2e run on every PR.
 
@@ -37,6 +52,10 @@ Refresh export:
 python3 scripts/export_public.py yingzhao --check
 cp people/yingzhao/data/export_public.json ../yzouyang-site/data/export_public.json
 ```
+
+`data/export_public.json` must include `_meta.schema_version == 1` and
+`_meta.visibility == "PUBLIC"`. `scripts/lint.py` recursively rejects
+non-public visibility markers anywhere in the vendored export.
 
 ## Analytics
 

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/"];
+const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/career-journey/"];
 
 async function noHorizontalOverflow(page) {
   const overflow = await page.evaluate(() => {

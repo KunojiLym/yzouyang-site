@@ -1,4 +1,22 @@
 {
+  "_meta": {
+    "schema_version": 1,
+    "person_id": "yingzhao",
+    "visibility": "PUBLIC",
+    "source_repo": "personal-content",
+    "source_revision": "cad4af9f8fed",
+    "source_updated_at": "2026-08-05T09:16:57+08:00",
+    "source_files": [
+      "people/yingzhao/data/about.yaml",
+      "people/yingzhao/data/certifications.yaml",
+      "people/yingzhao/data/credentials.yaml",
+      "people/yingzhao/data/cv.yaml",
+      "people/yingzhao/data/portfolio.yaml",
+      "people/yingzhao/data/projects.yaml",
+      "people/yingzhao/data/writing.yaml"
+    ],
+    "generator": "scripts/export_public.py"
+  },
   "experiences": [
     {
       "id": "prudential-cei-2023",

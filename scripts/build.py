@@ -13,6 +13,8 @@ from collections import OrderedDict
 from datetime import date
 from pathlib import Path
 
+import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 DIST = ROOT / "dist"
@@ -133,6 +135,7 @@ STYLE_PARTS = (
     "longform.css",
     "search.css",
     "motion.css",
+    "career-journey.css",
 )
 
 
@@ -252,6 +255,270 @@ def figma_embed_html(
           ></iframe>
         </div>
       </div>"""
+
+
+# Tier 2 "composed" slide layouts for /career-journey/ — named grid-template
+# recipes, not arbitrary x/y positioning (see docs/career-journey-native-plan.md
+# §4 for why). Each maps a layout name to the region names its CSS grid
+# (src/styles/career-journey.css) defines. scripts/lint.py imports this
+# constant directly rather than duplicating it.
+CJ_LAYOUTS: dict[str, tuple[str, ...]] = {
+    "split-60-40": ("main", "side-top", "side-bottom"),
+    "overlay-caption": ("bg", "caption"),
+    "three-up": ("left", "center", "right"),
+    "full-bleed-text-overlay": ("bg", "text"),
+}
+
+CJ_SLIDE_KINDS = (
+    "title",
+    "image",
+    "text",
+    "points",
+    "timeline",
+    "quote",
+    "stat",
+    "composed",
+    "partial",
+)
+
+CJ_SLIDES_DIR = DATA / "career-journey-slides"
+
+
+def load_career_journey() -> dict | None:
+    """Load data/career-journey.yaml if present; None means no native page yet."""
+    path = DATA / "career-journey.yaml"
+    if not path.is_file():
+        return None
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def _cj_block_html(site: dict, block: dict) -> str:
+    region = esc(str(block.get("region") or ""))
+    btype = block.get("type")
+    style = f' style="grid-area: {region}"'
+    if btype == "image":
+        image = esc(with_base(site, str(block.get("image") or "")))
+        alt = esc(str(block.get("image_alt") or ""))
+        return f'      <div class="cj-block cj-block-image"{style}><img src="{image}" alt="{alt}" loading="lazy" /></div>'
+    if btype == "text":
+        body = esc(str(block.get("body") or "").strip())
+        return f'      <div class="cj-block cj-block-text"{style}><p>{body}</p></div>'
+    if btype == "heading":
+        level = max(1, min(6, int(block.get("level") or 1)))
+        text = esc(str(block.get("body") or "").strip())
+        sub = esc(str(block.get("sub") or "").strip())
+        sub_html = f"<p>{sub}</p>" if sub else ""
+        return f'      <div class="cj-block cj-block-heading"{style}><h{level}>{text}</h{level}>{sub_html}</div>'
+    return f'      <div class="cj-block"{style}></div>'
+
+
+def _cj_slide_html(site: dict, slide: dict, default_transition: str) -> str:
+    kind = slide.get("kind")
+    sid = esc(str(slide.get("id") or ""))
+    chapter = slide.get("chapter")
+    transition = esc(str(slide.get("transition") or default_transition or "fade-up"))
+    inner = ""
+    step_count = 0
+
+    if kind == "title":
+        title = esc(str(slide.get("title") or ""))
+        body = esc(str(slide.get("body") or "").strip())
+        body_html = f"<p>{body}</p>" if body else ""
+        inner = f'      <h2>{title}</h2>\n      {body_html}'
+
+    elif kind == "image":
+        image = esc(with_base(site, str(slide.get("image") or "")))
+        alt = esc(str(slide.get("image_alt") or ""))
+        caption = esc(str(slide.get("caption") or "").strip())
+        caption_html = f'<figcaption>{caption}</figcaption>' if caption else ""
+        inner = (
+            f'      <figure class="cj-figure">\n'
+            f'        <img src="{image}" alt="{alt}" loading="lazy" />\n'
+            f"        {caption_html}\n"
+            f"      </figure>"
+        )
+
+    elif kind == "text":
+        title = str(slide.get("title") or "").strip()
+        title_html = f"<h2>{esc(title)}</h2>" if title else ""
+        body = esc(str(slide.get("body") or "").strip())
+        inner = f"      {title_html}\n      <p>{body}</p>"
+
+    elif kind == "points":
+        title = str(slide.get("title") or "").strip()
+        title_html = f"<h2>{esc(title)}</h2>" if title else ""
+        intro = str(slide.get("intro") or "").strip()
+        intro_html = f"<p>{esc(intro)}</p>" if intro else ""
+        items: list[str] = []
+        for point in slide.get("points") or []:
+            step_count += 1
+            step_attr = f' data-step="{step_count}"'
+            if isinstance(point, dict):
+                label = esc(str(point.get("label") or "").strip())
+                body = esc(str(point.get("body") or "").strip())
+                if label and body:
+                    items.append(f"<li{step_attr}><strong>{label}</strong><span>{body}</span></li>")
+                elif label:
+                    items.append(f"<li{step_attr}><strong>{label}</strong></li>")
+                elif body:
+                    items.append(f"<li{step_attr}><span>{body}</span></li>")
+            else:
+                text = esc(str(point).strip())
+                if text:
+                    items.append(f"<li{step_attr}><span>{text}</span></li>")
+        points_html = "\n        ".join(items)
+        inner = (
+            f"      {title_html}\n"
+            f"      {intro_html}\n"
+            f'      <ul class="cj-points">\n        {points_html}\n      </ul>'
+        )
+
+    elif kind == "timeline":
+        title = str(slide.get("title") or "").strip()
+        title_html = f"<h2>{esc(title)}</h2>" if title else ""
+        rows: list[str] = []
+        for item in slide.get("items") or []:
+            if not isinstance(item, dict):
+                continue
+            year = esc(str(item.get("year") or "").strip())
+            label = esc(str(item.get("label") or "").strip())
+            body = esc(str(item.get("body") or "").strip())
+            body_html = f"<span>{body}</span>" if body else ""
+            step_count += 1
+            rows.append(
+                f'<li data-step="{step_count}"><time>{year}</time><strong>{label}</strong>{body_html}</li>'
+            )
+        timeline_html = "\n        ".join(rows)
+        inner = (
+            f"      {title_html}\n"
+            f'      <ol class="cj-timeline">\n        {timeline_html}\n      </ol>'
+        )
+
+    elif kind == "quote":
+        body = esc(str(slide.get("body") or "").strip())
+        attribution = str(slide.get("attribution") or "").strip()
+        cite_html = f"<cite>{esc(attribution)}</cite>" if attribution else ""
+        inner = f'      <blockquote class="cj-quote">\n        <p>{body}</p>\n        {cite_html}\n      </blockquote>'
+
+    elif kind == "stat":
+        value = esc(str(slide.get("stat_value") or ""))
+        label = esc(str(slide.get("stat_label") or ""))
+        inner = (
+            f'      <p class="cj-stat-value">{value}</p>\n'
+            f'      <p class="cj-stat-label">{label}</p>'
+        )
+
+    elif kind == "composed":
+        layout_name = str(slide.get("layout") or "")
+        regions = CJ_LAYOUTS.get(layout_name)
+        if regions is None:
+            raise ValueError(
+                f"career-journey slide {sid!r}: unknown composed layout {layout_name!r} "
+                f"(known: {', '.join(CJ_LAYOUTS)})"
+            )
+        blocks = slide.get("blocks") or []
+        for b in blocks:
+            region = str(b.get("region") or "")
+            if region not in regions:
+                raise ValueError(
+                    f"career-journey slide {sid!r}: region {region!r} not valid for "
+                    f"layout {layout_name!r} (valid: {', '.join(regions)})"
+                )
+        block_html = "\n".join(
+            _cj_block_html(site, b) for b in blocks if isinstance(b, dict)
+        )
+        inner = f'      <div class="cj-composed cj-layout--{esc(layout_name)}">\n{block_html}\n      </div>'
+
+    elif kind == "partial":
+        rel = str(slide.get("partial") or "")
+        path = CJ_SLIDES_DIR / rel
+        if not rel or not path.is_file():
+            raise FileNotFoundError(
+                f"career-journey slide {sid!r}: partial file not found: {path}"
+            )
+        # Trusted, hand-authored markup (Tier 3 escape hatch) — inlined
+        # verbatim, not esc()'d.
+        inner = path.read_text(encoding="utf-8").strip()
+
+    else:
+        raise ValueError(f"career-journey slide {sid!r}: unknown kind {kind!r}")
+
+    steps_attr = f' data-steps="{step_count}"' if step_count else ""
+    chapter_attr = f' data-chapter="{esc(str(chapter))}"' if chapter else ""
+    return (
+        f'    <section id="{sid}" class="cj-slide cj-slide--{esc(str(kind))}" '
+        f'data-transition="{transition}"{steps_attr}{chapter_attr}>\n'
+        f"{inner}\n"
+        f"    </section>"
+    )
+
+
+def build_career_journey(site: dict, cj: dict) -> str:
+    title = esc(str(cj.get("title") or "Career Journey"))
+    subtitle = esc(str(cj.get("subtitle") or "").strip())
+    lede = esc(str(cj.get("lede") or "").strip())
+    source_link = str(cj.get("source_link") or "").strip()
+    source_label = str(cj.get("source_label") or "View original Figma deck")
+    default_transition = str(cj.get("default_transition") or "fade-up")
+    slides = [s for s in (cj.get("slides") or []) if isinstance(s, dict)]
+
+    source_html = ""
+    if source_link:
+        source_html = (
+            f'      <p class="links"><a class="figma-open" href="{esc(source_link)}" '
+            f'target="_blank" rel="noopener noreferrer">{esc(source_label)}</a></p>'
+        )
+
+    # In-page chapter progress nav — built from each slide's optional
+    # `chapter`, in first-seen order; ungrouped (chapter: null) slides don't
+    # get an entry.
+    chapters: list[tuple[str, str]] = []  # (anchor slide id, chapter label)
+    seen_chapters: set[str] = set()
+    for s in slides:
+        chapter = s.get("chapter")
+        if chapter and str(chapter) not in seen_chapters:
+            seen_chapters.add(str(chapter))
+            chapters.append((str(s.get("id") or ""), str(chapter)))
+    chapters_html = ""
+    if chapters:
+        items = "\n".join(
+            f'        <li><a href="#{esc(sid)}">{esc(label)}</a></li>'
+            for sid, label in chapters
+        )
+        chapters_html = (
+            '      <nav class="cj-chapters" aria-label="Career journey chapters">\n'
+            f"      <ul>\n{items}\n      </ul>\n"
+            "      </nav>\n"
+        )
+
+    slides_html = "\n".join(_cj_slide_html(site, s, default_transition) for s in slides)
+    total = len(slides)
+
+    return f"""    <div class="cj-page">
+      <header class="cj-header">
+        <h1>{title}</h1>
+        {f'<p class="subtitle">{subtitle}</p>' if subtitle else ""}
+        {f'<p class="page-lede">{lede}</p>' if lede else ""}
+{source_html}
+      </header>
+{chapters_html}      <div class="cj-stage">
+        <div class="cj-deck-controls" aria-label="Career journey slide controls">
+          <button class="cj-slide-btn" type="button" data-cj-reset aria-label="Restart from beginning">⟳</button>
+          <button class="cj-slide-btn" type="button" data-cj-prev aria-label="Previous slide">←</button>
+          <p class="cj-slide-count" aria-hidden="true">
+            <input class="cj-goto-input" type="number" data-cj-goto min="1" max="{total}" value="1" />
+            <span> / {total}</span>
+          </p>
+          <span class="cj-live-announce" aria-live="polite" data-cj-current></span>
+          <button class="cj-slide-btn" type="button" data-cj-next aria-label="Next slide">→</button>
+        </div>
+        <div class="cj-slides" tabindex="0" aria-label="Career journey slides">
+{slides_html}
+        </div>
+      </div>
+    </div>
+    <script src="{esc(with_base(site, "/career-journey.js"))}" defer></script>
+"""
 
 
 def analytics_head(site: dict) -> str:
@@ -513,7 +780,7 @@ def build_home(site: dict, export: dict) -> str:
 """
 
 
-def build_about(site: dict, export: dict) -> str:
+def build_about(site: dict, export: dict, cj: dict | None = None) -> str:
     about = export.get("about") if isinstance(export.get("about"), dict) else None
     if not about:
         about = site.get("about") or {}
@@ -563,7 +830,33 @@ def build_about(site: dict, export: dict) -> str:
         )
 
     journey_inner = ""
-    if isinstance(journey, dict) and (journey.get("embed") or journey.get("link")):
+    if cj:
+        # Native /career-journey/ page exists — link to it instead of
+        # embedding the Figma deck. Keep the original Figma link as a
+        # secondary "view original" credit if export data still has one.
+        cj_href = esc(with_base(site, "/career-journey/"))
+        cj_title = esc(str(cj.get("title") or "Career Journey"))
+        cj_desc = esc(
+            str(cj.get("subtitle") or cj.get("lede") or "").strip()
+        )
+        original_link = journey.get("link") or cj.get("source_link") or ""
+        original_label = journey.get("link_label") or cj.get("source_label") or "View original Figma deck"
+        original_bit = ""
+        if original_link:
+            original_bit = (
+                f' <a class="figma-open" href="{esc(str(original_link))}" target="_blank" '
+                f'rel="noopener noreferrer">{esc(str(original_label))}</a>'
+            )
+        journey_inner = (
+            f'<div class="cj-link-card">\n'
+            f"        <h3>{cj_title}</h3>\n"
+            + (f"        <p>{cj_desc}</p>\n" if cj_desc else "")
+            + f'        <p class="links"><a href="{cj_href}"><strong>Read my career journey →</strong></a>'
+            f"{original_bit}</p>\n"
+            f"      </div>"
+        )
+    elif isinstance(journey, dict) and (journey.get("embed") or journey.get("link")):
+        # Fallback: no native page built yet — keep the legacy Figma embed.
         title = journey.get("title") or "Career Journey"
         link = journey.get("link") or ""
         embed = journey.get("embed") or ""
@@ -1168,6 +1461,7 @@ def main() -> None:
     site["base_path"] = normalize_base(site.get("base_path", ""))
 
     export = load_json(DATA / "export_public.json")
+    cj = load_career_journey()
     if DIST.exists():
         # On Windows, a running preview server may lock the dist directory itself.
         for child in DIST.iterdir():
@@ -1182,7 +1476,7 @@ def main() -> None:
 
     pages = [
         ("index.html", "Home", "Home", build_home(site, export), False),
-        ("about/index.html", "About", "About", build_about(site, export), False),
+        ("about/index.html", "About", "About", build_about(site, export, cj), False),
         ("portfolio/index.html", "Portfolio", "Portfolio", build_portfolio(site, export), True),
         (
             "credentials/index.html",
@@ -1194,6 +1488,20 @@ def main() -> None:
     ]
     for rel, title, active, body, pf in pages:
         write(DIST / rel, layout(site, title, active, body, pagefind=pf))
+
+    if cj:
+        # Not in primary nav (same tier as Contact) — reachable via the
+        # link card on /about/ and by direct/shared URL. See "Open
+        # decisions" in docs/career-journey-native-plan.md if that should
+        # change.
+        cj_title = str(cj.get("title") or "Career Journey")
+        write(
+            DIST / "career-journey" / "index.html",
+            layout(site, cj_title, cj_title, build_career_journey(site, cj), pagefind=False),
+        )
+        cj_js = SRC / "career-journey.js"
+        if cj_js.is_file():
+            shutil.copyfile(cj_js, DIST / "career-journey.js")
 
     write(DIST / "contact" / "index.html", build_contact_redirect(site))
 
