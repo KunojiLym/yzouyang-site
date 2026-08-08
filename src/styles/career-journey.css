@@ -431,7 +431,7 @@ main.page:has(.cj-page) {
   font: inherit;
   text-align: right;
   padding: 0;
-  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .cj-goto-input::-webkit-inner-spin-button,

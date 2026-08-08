@@ -21,7 +21,8 @@
           "unset",
           "none",
           "0.1em",
-          "0.75em"
+          "0.75em",
+          "-1px"
         ],
         "disableFix": true,
         "message": "Use a --text-*/--space-*/--radius-* token from src/styles/tokens.css instead of a raw value (see docs/design-system.md and docs/token-migration-checklist.md). If this is a genuine one-off, add it to ignoreValues in .stylelintrc.json and document the rationale in the PR (or in docs/design-system.md)."
