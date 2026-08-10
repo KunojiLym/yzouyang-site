@@ -28,3 +28,10 @@ scripts/_extract_about.py
 # Editor/OS cruft
 .DS_Store
 *.swp
+
+# Graphify (commit graph.json + GRAPH_REPORT.md; exclude regeneratable/local)
+graphify-out/cache/
+graphify-out/cost.json
+graphify-out/graph.html
+graphify-out/.graphify_python
+graphify-out/.graphify_analysis.json
