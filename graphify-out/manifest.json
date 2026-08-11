@@ -1,0 +1,617 @@
+{
+  ".husky/pre-commit": {
+    "mtime": 1786361859.464969,
+    "ast_hash": "bda7ed2a21756ebce41e14a5ddbeff6d",
+    "semantic_hash": "bda7ed2a21756ebce41e14a5ddbeff6d"
+  },
+  ".stylelintrc.json": {
+    "mtime": 1786361859.4659696,
+    "ast_hash": "b6c5e1d5d7391fffa1685ba4ad254b22",
+    "semantic_hash": "b6c5e1d5d7391fffa1685ba4ad254b22"
+  },
+  "collect/src/worker.js": {
+    "mtime": 1786361859.5722253,
+    "ast_hash": "4d569b6f8166b762bc6029d35a814875",
+    "semantic_hash": "4d569b6f8166b762bc6029d35a814875"
+  },
+  "package.json": {
+    "mtime": 1786361859.588791,
+    "ast_hash": "d025f92305b365077bc9b21aceb84955",
+    "semantic_hash": "d025f92305b365077bc9b21aceb84955"
+  },
+  "playwright.config.mjs": {
+    "mtime": 1786361859.588791,
+    "ast_hash": "15e8e368164e666d0df3b3eec245e37d",
+    "semantic_hash": "15e8e368164e666d0df3b3eec245e37d"
+  },
+  "pyproject.toml": {
+    "mtime": 1786361859.5897975,
+    "ast_hash": "7cd0e7c2282a66a78ac0c57fe060fc28",
+    "semantic_hash": "7cd0e7c2282a66a78ac0c57fe060fc28"
+  },
+  "scripts/build.py": {
+    "mtime": 1786361859.5907972,
+    "ast_hash": "12fa4155e0ff22c1a941077df17b9c17",
+    "semantic_hash": "12fa4155e0ff22c1a941077df17b9c17"
+  },
+  "scripts/check_token_drift.py": {
+    "mtime": 1786361859.5907972,
+    "ast_hash": "e1af3a8977cfbe5c1f56ceb2760c4472",
+    "semantic_hash": "e1af3a8977cfbe5c1f56ceb2760c4472"
+  },
+  "scripts/diy_collect.py": {
+    "mtime": 1786361859.5917978,
+    "ast_hash": "19367a3424ed91e43646027bd156bdf0",
+    "semantic_hash": "19367a3424ed91e43646027bd156bdf0"
+  },
+  "scripts/lint.py": {
+    "mtime": 1786361859.5917978,
+    "ast_hash": "0b4377278757094b4bb76a5648d60702",
+    "semantic_hash": "0b4377278757094b4bb76a5648d60702"
+  },
+  "scripts/preview.py": {
+    "mtime": 1786361859.5927963,
+    "ast_hash": "dd1d4036d056ac2e5a0e2982f2a3ac83",
+    "semantic_hash": "dd1d4036d056ac2e5a0e2982f2a3ac83"
+  },
+  "scripts/qa-compare-wp.mjs": {
+    "mtime": 1786361859.5927963,
+    "ast_hash": "2b5dfbf547cfb5219b0e852d42fe33fc",
+    "semantic_hash": "2b5dfbf547cfb5219b0e852d42fe33fc"
+  },
+  "scripts/qa-refs.mjs": {
+    "mtime": 1786361859.593797,
+    "ast_hash": "c219b90ce45d44d25d9db5d2abb5c2e7",
+    "semantic_hash": "c219b90ce45d44d25d9db5d2abb5c2e7"
+  },
+  "scripts/qa-screenshot.mjs": {
+    "mtime": 1786361859.593797,
+    "ast_hash": "098b9cdfb44f6849fc660677699cde9f",
+    "semantic_hash": "098b9cdfb44f6849fc660677699cde9f"
+  },
+  "scripts/serve-dist.mjs": {
+    "mtime": 1786361859.593797,
+    "ast_hash": "3bb9ddeea354eafedd438b1e0e2b8893",
+    "semantic_hash": "3bb9ddeea354eafedd438b1e0e2b8893"
+  },
+  "scripts/test_diy_collect.py": {
+    "mtime": 1786361859.5948,
+    "ast_hash": "aee3f6dad50223eedbc141a2f513018d",
+    "semantic_hash": "aee3f6dad50223eedbc141a2f513018d"
+  },
+  "scripts/test_site_build.py": {
+    "mtime": 1786361859.5957968,
+    "ast_hash": "a0d222d4b072ae740db7006ca948cf4b",
+    "semantic_hash": "a0d222d4b072ae740db7006ca948cf4b"
+  },
+  "src/career-journey.js": {
+    "mtime": 1786361859.5957968,
+    "ast_hash": "b72a2c14647e6bbbf82f7d0a3d2e5d9f",
+    "semantic_hash": "b72a2c14647e6bbbf82f7d0a3d2e5d9f"
+  },
+  "src/track.js": {
+    "mtime": 1786361859.6033309,
+    "ast_hash": "51e7f228308ca710049dba464cee659b",
+    "semantic_hash": "51e7f228308ca710049dba464cee659b"
+  },
+  "tests/e2e/a11y.spec.mjs": {
+    "mtime": 1786361859.6043365,
+    "ast_hash": "8288af4fcf78341d8d1ba6f91b3fbe06",
+    "semantic_hash": "8288af4fcf78341d8d1ba6f91b3fbe06"
+  },
+  "tests/e2e/career-journey-animation.spec.mjs": {
+    "mtime": 1786361859.605336,
+    "ast_hash": "e620dc445cac8add7941804e257f7186",
+    "semantic_hash": "e620dc445cac8add7941804e257f7186"
+  },
+  "tests/e2e/global-setup.mjs": {
+    "mtime": 1786361859.605336,
+    "ast_hash": "31b48de278e7fe9d4b87170da169a0ce",
+    "semantic_hash": "31b48de278e7fe9d4b87170da169a0ce"
+  },
+  "tests/e2e/global-teardown.mjs": {
+    "mtime": 1786361859.6063359,
+    "ast_hash": "c55250f0afdf28b64c9633b2e53c2c61",
+    "semantic_hash": "c55250f0afdf28b64c9633b2e53c2c61"
+  },
+  "tests/e2e/server-lifecycle.mjs": {
+    "mtime": 1786361859.6063359,
+    "ast_hash": "4487689c9934de4de0e7a34ea70397e6",
+    "semantic_hash": "4487689c9934de4de0e7a34ea70397e6"
+  },
+  "tests/e2e/usability.spec.mjs": {
+    "mtime": 1786361859.607335,
+    "ast_hash": "e249d7c7d11d3450ba1fed6515eb71f3",
+    "semantic_hash": "e249d7c7d11d3450ba1fed6515eb71f3"
+  },
+  "tests/e2e/visual.spec.mjs": {
+    "mtime": 1786361859.607335,
+    "ast_hash": "9388b2e0ad73779b334b20f6351ccb3b",
+    "semantic_hash": "9388b2e0ad73779b334b20f6351ccb3b"
+  },
+  "AGENTS.md": {
+    "mtime": 1786372951.4071918,
+    "ast_hash": "21ceb6533048be51308e69e7b74a35cf",
+    "semantic_hash": "21ceb6533048be51308e69e7b74a35cf"
+  },
+  "README.md": {
+    "mtime": 1786361859.4669678,
+    "ast_hash": "3164594bed058f3b9f01ae967aba8093",
+    "semantic_hash": "3164594bed058f3b9f01ae967aba8093"
+  },
+  "docs/c2b-writing-inventory.md": {
+    "mtime": 1786361859.577225,
+    "ast_hash": "d6dc298a3c9a4126b75250fa8d65ec26",
+    "semantic_hash": "d6dc298a3c9a4126b75250fa8d65ec26"
+  },
+  "docs/cutover.md": {
+    "mtime": 1786361859.5782259,
+    "ast_hash": "49c4d5529a225f55881677199ea3e82f",
+    "semantic_hash": "49c4d5529a225f55881677199ea3e82f"
+  },
+  "docs/design-system.md": {
+    "mtime": 1786361859.5792878,
+    "ast_hash": "7b40f5e6c0530ce0c4072760cef457bc",
+    "semantic_hash": "7b40f5e6c0530ce0c4072760cef457bc"
+  },
+  "docs/diy-tracking.md": {
+    "mtime": 1786361859.5792878,
+    "ast_hash": "29f20a9cb550c5b06431604bc00e4546",
+    "semantic_hash": "29f20a9cb550c5b06431604bc00e4546"
+  },
+  "docs/preview-uat.md": {
+    "mtime": 1786361859.5802872,
+    "ast_hash": "f4b5a4c3720a498ce0801f85080628e4",
+    "semantic_hash": "f4b5a4c3720a498ce0801f85080628e4"
+  },
+  "docs/redirects.md": {
+    "mtime": 1786361859.5802872,
+    "ast_hash": "7df9725ad1c884a28d4be1cae4fac1e1",
+    "semantic_hash": "7df9725ad1c884a28d4be1cae4fac1e1"
+  },
+  "assets/career-journey/badge-gcp-ml-engineer.png": {
+    "mtime": 1786361859.4724867,
+    "ast_hash": "bda6cf8a74e4afc5a3e68ee02edb09a8",
+    "semantic_hash": "bda6cf8a74e4afc5a3e68ee02edb09a8"
+  },
+  "assets/career-journey/compass-chart.jpg": {
+    "mtime": 1786361859.4952755,
+    "ast_hash": "e695e2b0182c0b4ac1af16bf9c2092cc",
+    "semantic_hash": "e695e2b0182c0b4ac1af16bf9c2092cc"
+  },
+  "assets/career-journey/compass-chart.png": {
+    "mtime": 1786361859.496275,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "assets/career-journey/deck/image-1-1.png": {
+    "mtime": 1786361859.500798,
+    "ast_hash": "4903be22edf45419ef986626a4ef0981",
+    "semantic_hash": "4903be22edf45419ef986626a4ef0981"
+  },
+  "assets/career-journey/deck/image-10-1.png": {
+    "mtime": 1786361859.5018036,
+    "ast_hash": "48a5de74766d7c8e4dc25163bf0f434e",
+    "semantic_hash": "48a5de74766d7c8e4dc25163bf0f434e"
+  },
+  "assets/career-journey/deck/image-13-1.png": {
+    "mtime": 1786361859.5018036,
+    "ast_hash": "dd0e48be6bc181ec068bdc07b109dbf1",
+    "semantic_hash": "dd0e48be6bc181ec068bdc07b109dbf1"
+  },
+  "assets/career-journey/deck/image-14-1.png": {
+    "mtime": 1786361859.5028036,
+    "ast_hash": "10dc2eb0e3c749905a5438703bdc15b1",
+    "semantic_hash": "10dc2eb0e3c749905a5438703bdc15b1"
+  },
+  "assets/career-journey/deck/image-15-1.png": {
+    "mtime": 1786361859.5028036,
+    "ast_hash": "50cf7c4ce4def084fa52fb393b2be51b",
+    "semantic_hash": "50cf7c4ce4def084fa52fb393b2be51b"
+  },
+  "assets/career-journey/deck/image-16-1.png": {
+    "mtime": 1786361859.5039043,
+    "ast_hash": "50cf7c4ce4def084fa52fb393b2be51b",
+    "semantic_hash": "50cf7c4ce4def084fa52fb393b2be51b"
+  },
+  "assets/career-journey/deck/image-16-2.png": {
+    "mtime": 1786361859.5049043,
+    "ast_hash": "6407bc6f7274b70e6546823cbf6be79e",
+    "semantic_hash": "6407bc6f7274b70e6546823cbf6be79e"
+  },
+  "assets/career-journey/deck/image-17-1.png": {
+    "mtime": 1786361859.5059018,
+    "ast_hash": "50cf7c4ce4def084fa52fb393b2be51b",
+    "semantic_hash": "50cf7c4ce4def084fa52fb393b2be51b"
+  },
+  "assets/career-journey/deck/image-17-2.png": {
+    "mtime": 1786361859.5069022,
+    "ast_hash": "7533829f1269d61a3967dafa7d284d93",
+    "semantic_hash": "7533829f1269d61a3967dafa7d284d93"
+  },
+  "assets/career-journey/deck/image-17-3.png": {
+    "mtime": 1786361859.5069022,
+    "ast_hash": "b07ddf4811df210767403f948e7c0765",
+    "semantic_hash": "b07ddf4811df210767403f948e7c0765"
+  },
+  "assets/career-journey/deck/image-17-4.png": {
+    "mtime": 1786361859.5069022,
+    "ast_hash": "6407bc6f7274b70e6546823cbf6be79e",
+    "semantic_hash": "6407bc6f7274b70e6546823cbf6be79e"
+  },
+  "assets/career-journey/deck/image-18-1.png": {
+    "mtime": 1786361859.508408,
+    "ast_hash": "50cf7c4ce4def084fa52fb393b2be51b",
+    "semantic_hash": "50cf7c4ce4def084fa52fb393b2be51b"
+  },
+  "assets/career-journey/deck/image-18-2.png": {
+    "mtime": 1786361859.508408,
+    "ast_hash": "7533829f1269d61a3967dafa7d284d93",
+    "semantic_hash": "7533829f1269d61a3967dafa7d284d93"
+  },
+  "assets/career-journey/deck/image-18-3.png": {
+    "mtime": 1786361859.5094144,
+    "ast_hash": "b07ddf4811df210767403f948e7c0765",
+    "semantic_hash": "b07ddf4811df210767403f948e7c0765"
+  },
+  "assets/career-journey/deck/image-18-4.png": {
+    "mtime": 1786361859.5094144,
+    "ast_hash": "a4264524758131b1174dec5389f21551",
+    "semantic_hash": "a4264524758131b1174dec5389f21551"
+  },
+  "assets/career-journey/deck/image-18-5.png": {
+    "mtime": 1786361859.510414,
+    "ast_hash": "8c19ddfeb2caece1b91a822c35d4638f",
+    "semantic_hash": "8c19ddfeb2caece1b91a822c35d4638f"
+  },
+  "assets/career-journey/deck/image-18-6.png": {
+    "mtime": 1786361859.510414,
+    "ast_hash": "641d7a6d29bd6d4708e18ea7941d3cf0",
+    "semantic_hash": "641d7a6d29bd6d4708e18ea7941d3cf0"
+  },
+  "assets/career-journey/deck/image-18-7.png": {
+    "mtime": 1786361859.511415,
+    "ast_hash": "6407bc6f7274b70e6546823cbf6be79e",
+    "semantic_hash": "6407bc6f7274b70e6546823cbf6be79e"
+  },
+  "assets/career-journey/deck/image-19-1.png": {
+    "mtime": 1786361859.5124135,
+    "ast_hash": "3ddf3ab17cebe3516166be0ccb4eff5b",
+    "semantic_hash": "3ddf3ab17cebe3516166be0ccb4eff5b"
+  },
+  "assets/career-journey/deck/image-19-2.png": {
+    "mtime": 1786361859.5124135,
+    "ast_hash": "87ba1769e5b75ab9cfe8821f752725ab",
+    "semantic_hash": "87ba1769e5b75ab9cfe8821f752725ab"
+  },
+  "assets/career-journey/deck/image-19-3.png": {
+    "mtime": 1786361859.5134141,
+    "ast_hash": "f3a2287c7c553eef385a5d6cc68b31d7",
+    "semantic_hash": "f3a2287c7c553eef385a5d6cc68b31d7"
+  },
+  "assets/career-journey/deck/image-19-4.png": {
+    "mtime": 1786361859.5134141,
+    "ast_hash": "3feae40e41ba4b783b3db1a2f74ff2ed",
+    "semantic_hash": "3feae40e41ba4b783b3db1a2f74ff2ed"
+  },
+  "assets/career-journey/deck/image-2-3.png": {
+    "mtime": 1786361859.515414,
+    "ast_hash": "87ba1769e5b75ab9cfe8821f752725ab",
+    "semantic_hash": "87ba1769e5b75ab9cfe8821f752725ab"
+  },
+  "assets/career-journey/deck/image-2-4.png": {
+    "mtime": 1786361859.5164137,
+    "ast_hash": "503619bd98485e6abe4a1267b2774f1b",
+    "semantic_hash": "503619bd98485e6abe4a1267b2774f1b"
+  },
+  "assets/career-journey/deck/image-2-5.png": {
+    "mtime": 1786361859.517414,
+    "ast_hash": "f3a2287c7c553eef385a5d6cc68b31d7",
+    "semantic_hash": "f3a2287c7c553eef385a5d6cc68b31d7"
+  },
+  "assets/career-journey/deck/image-2-6.png": {
+    "mtime": 1786361859.517414,
+    "ast_hash": "3feae40e41ba4b783b3db1a2f74ff2ed",
+    "semantic_hash": "3feae40e41ba4b783b3db1a2f74ff2ed"
+  },
+  "assets/career-journey/deck/image-20-1.png": {
+    "mtime": 1786361859.5189252,
+    "ast_hash": "fd83bd82d5d551d425a3fb81bb74f089",
+    "semantic_hash": "fd83bd82d5d551d425a3fb81bb74f089"
+  },
+  "assets/career-journey/deck/image-20-2.png": {
+    "mtime": 1786361859.5189252,
+    "ast_hash": "9e7673924f4f1b1c45b4f7fdc7050f54",
+    "semantic_hash": "9e7673924f4f1b1c45b4f7fdc7050f54"
+  },
+  "assets/career-journey/deck/image-20-3.png": {
+    "mtime": 1786361859.5199273,
+    "ast_hash": "fa0aafbb7937078a80b1ce1f7aaf4e33",
+    "semantic_hash": "fa0aafbb7937078a80b1ce1f7aaf4e33"
+  },
+  "assets/career-journey/deck/image-20-4.png": {
+    "mtime": 1786361859.5209274,
+    "ast_hash": "3c72903dbdf75f2b1362acdec1fd6fed",
+    "semantic_hash": "3c72903dbdf75f2b1362acdec1fd6fed"
+  },
+  "assets/career-journey/deck/image-22-1.png": {
+    "mtime": 1786361859.5219283,
+    "ast_hash": "208217e07a39e01d59091a7cbbd90f00",
+    "semantic_hash": "208217e07a39e01d59091a7cbbd90f00"
+  },
+  "assets/career-journey/deck/image-23-1.png": {
+    "mtime": 1786361859.5229263,
+    "ast_hash": "56e5481efcaf9514b47d4a150f6d9fd1",
+    "semantic_hash": "56e5481efcaf9514b47d4a150f6d9fd1"
+  },
+  "assets/career-journey/deck/image-23-2.png": {
+    "mtime": 1786361859.5239258,
+    "ast_hash": "81b12a2469f0b5097c4dc74855b251af",
+    "semantic_hash": "81b12a2469f0b5097c4dc74855b251af"
+  },
+  "assets/career-journey/deck/image-23-3.png": {
+    "mtime": 1786361859.52493,
+    "ast_hash": "f991760a256b2b8d786e1c8689eb6458",
+    "semantic_hash": "f991760a256b2b8d786e1c8689eb6458"
+  },
+  "assets/career-journey/deck/image-23-4.png": {
+    "mtime": 1786361859.5259273,
+    "ast_hash": "00fa0a847bef9998dcb2b002a8d94d38",
+    "semantic_hash": "00fa0a847bef9998dcb2b002a8d94d38"
+  },
+  "assets/career-journey/deck/image-24-1.png": {
+    "mtime": 1786361859.5279279,
+    "ast_hash": "3cc67efcd252f9e561bb077a9e2c87ae",
+    "semantic_hash": "3cc67efcd252f9e561bb077a9e2c87ae"
+  },
+  "assets/career-journey/deck/image-24-2.png": {
+    "mtime": 1786361859.5284352,
+    "ast_hash": "c6c493243818e9d91665c49ce48d629e",
+    "semantic_hash": "c6c493243818e9d91665c49ce48d629e"
+  },
+  "assets/career-journey/deck/image-24-3.png": {
+    "mtime": 1786361859.5284352,
+    "ast_hash": "091aaba56d71fd513a94622a32932117",
+    "semantic_hash": "091aaba56d71fd513a94622a32932117"
+  },
+  "assets/career-journey/deck/image-24-4.png": {
+    "mtime": 1786361859.5284352,
+    "ast_hash": "3d8b968a644bf3b78117bc0f73053322",
+    "semantic_hash": "3d8b968a644bf3b78117bc0f73053322"
+  },
+  "assets/career-journey/deck/image-24-5.png": {
+    "mtime": 1786361859.529436,
+    "ast_hash": "7e57659ea62a0e1dfeef3bb76071d3bd",
+    "semantic_hash": "7e57659ea62a0e1dfeef3bb76071d3bd"
+  },
+  "assets/career-journey/deck/image-24-6.png": {
+    "mtime": 1786361859.529436,
+    "ast_hash": "b299c051e4873bab1e14eb0240e39647",
+    "semantic_hash": "b299c051e4873bab1e14eb0240e39647"
+  },
+  "assets/career-journey/deck/image-25-1.png": {
+    "mtime": 1786361859.5314376,
+    "ast_hash": "753fc79922a423dab3e65d00ecad6793",
+    "semantic_hash": "753fc79922a423dab3e65d00ecad6793"
+  },
+  "assets/career-journey/deck/image-25-2.png": {
+    "mtime": 1786361859.5324368,
+    "ast_hash": "632dacbde30abfd4720eee2b2be14c20",
+    "semantic_hash": "632dacbde30abfd4720eee2b2be14c20"
+  },
+  "assets/career-journey/deck/image-26-1.png": {
+    "mtime": 1786361859.5344381,
+    "ast_hash": "438569bbe05eae328a991a4dd0f720d9",
+    "semantic_hash": "438569bbe05eae328a991a4dd0f720d9"
+  },
+  "assets/career-journey/deck/image-26-2.png": {
+    "mtime": 1786361859.5354366,
+    "ast_hash": "0e1df9dd31fbbddb35ff679597e80de1",
+    "semantic_hash": "0e1df9dd31fbbddb35ff679597e80de1"
+  },
+  "assets/career-journey/deck/image-3-1.png": {
+    "mtime": 1786361859.536436,
+    "ast_hash": "503619bd98485e6abe4a1267b2774f1b",
+    "semantic_hash": "503619bd98485e6abe4a1267b2774f1b"
+  },
+  "assets/career-journey/deck/image-3-2.png": {
+    "mtime": 1786361859.536436,
+    "ast_hash": "f72a49f976617ecbdb08ff1bd15224a1",
+    "semantic_hash": "f72a49f976617ecbdb08ff1bd15224a1"
+  },
+  "assets/career-journey/deck/image-3-3.png": {
+    "mtime": 1786361859.5379417,
+    "ast_hash": "54ec56c6886e4b4200ad30e655b20720",
+    "semantic_hash": "54ec56c6886e4b4200ad30e655b20720"
+  },
+  "assets/career-journey/deck/image-3-4.png": {
+    "mtime": 1786361859.5379417,
+    "ast_hash": "a203c9fef95b9ae468c56801ea3f2622",
+    "semantic_hash": "a203c9fef95b9ae468c56801ea3f2622"
+  },
+  "assets/career-journey/deck/image-32-1.png": {
+    "mtime": 1786361859.5389497,
+    "ast_hash": "1e57b7f09e5b26e7dfee62994d6c4d7c",
+    "semantic_hash": "1e57b7f09e5b26e7dfee62994d6c4d7c"
+  },
+  "assets/career-journey/deck/image-33-1.png": {
+    "mtime": 1786361859.539948,
+    "ast_hash": "50cf7c4ce4def084fa52fb393b2be51b",
+    "semantic_hash": "50cf7c4ce4def084fa52fb393b2be51b"
+  },
+  "assets/career-journey/deck/image-33-2.png": {
+    "mtime": 1786361859.539948,
+    "ast_hash": "7533829f1269d61a3967dafa7d284d93",
+    "semantic_hash": "7533829f1269d61a3967dafa7d284d93"
+  },
+  "assets/career-journey/deck/image-33-3.png": {
+    "mtime": 1786361859.5409474,
+    "ast_hash": "b07ddf4811df210767403f948e7c0765",
+    "semantic_hash": "b07ddf4811df210767403f948e7c0765"
+  },
+  "assets/career-journey/deck/image-33-4.png": {
+    "mtime": 1786361859.5419474,
+    "ast_hash": "a4264524758131b1174dec5389f21551",
+    "semantic_hash": "a4264524758131b1174dec5389f21551"
+  },
+  "assets/career-journey/deck/image-33-5.png": {
+    "mtime": 1786361859.5419474,
+    "ast_hash": "25def27fdc0e269d6fc5788740e2f83a",
+    "semantic_hash": "25def27fdc0e269d6fc5788740e2f83a"
+  },
+  "assets/career-journey/deck/image-33-6.png": {
+    "mtime": 1786361859.5419474,
+    "ast_hash": "641d7a6d29bd6d4708e18ea7941d3cf0",
+    "semantic_hash": "641d7a6d29bd6d4708e18ea7941d3cf0"
+  },
+  "assets/career-journey/deck/image-33-7.png": {
+    "mtime": 1786361859.5429463,
+    "ast_hash": "6407bc6f7274b70e6546823cbf6be79e",
+    "semantic_hash": "6407bc6f7274b70e6546823cbf6be79e"
+  },
+  "assets/career-journey/deck/image-4-10.png": {
+    "mtime": 1786361859.5429463,
+    "ast_hash": "ef137fd55204da24150fa662ce479acd",
+    "semantic_hash": "ef137fd55204da24150fa662ce479acd"
+  },
+  "assets/career-journey/deck/image-4-11.png": {
+    "mtime": 1786361859.5439463,
+    "ast_hash": "609ea80275c933ebfdebbe1f6e2b67e5",
+    "semantic_hash": "609ea80275c933ebfdebbe1f6e2b67e5"
+  },
+  "assets/career-journey/deck/image-4-12.png": {
+    "mtime": 1786361859.5439463,
+    "ast_hash": "56a71e4fabca6b9c6585f603e2d5188a",
+    "semantic_hash": "56a71e4fabca6b9c6585f603e2d5188a"
+  },
+  "assets/career-journey/deck/image-4-13.png": {
+    "mtime": 1786361859.544946,
+    "ast_hash": "5ebb76b9237ef4145470587cdfbbe6f1",
+    "semantic_hash": "5ebb76b9237ef4145470587cdfbbe6f1"
+  },
+  "assets/career-journey/deck/image-4-14.png": {
+    "mtime": 1786361859.544946,
+    "ast_hash": "1832428afb0a3f23196f3f677794ec9c",
+    "semantic_hash": "1832428afb0a3f23196f3f677794ec9c"
+  },
+  "assets/career-journey/deck/image-4-2.png": {
+    "mtime": 1786361859.5469458,
+    "ast_hash": "503619bd98485e6abe4a1267b2774f1b",
+    "semantic_hash": "503619bd98485e6abe4a1267b2774f1b"
+  },
+  "assets/career-journey/deck/image-4-3.png": {
+    "mtime": 1786361859.5469458,
+    "ast_hash": "97c0b0dd24f088e71a89ccb5020a02d7",
+    "semantic_hash": "97c0b0dd24f088e71a89ccb5020a02d7"
+  },
+  "assets/career-journey/deck/image-4-4.png": {
+    "mtime": 1786361859.5469458,
+    "ast_hash": "7dd15ed865aad28122743ae415a31482",
+    "semantic_hash": "7dd15ed865aad28122743ae415a31482"
+  },
+  "assets/career-journey/deck/image-4-5.png": {
+    "mtime": 1786361859.5479467,
+    "ast_hash": "d208b46853e0e8bc15bf5cdd3043ed1d",
+    "semantic_hash": "d208b46853e0e8bc15bf5cdd3043ed1d"
+  },
+  "assets/career-journey/deck/image-4-6.png": {
+    "mtime": 1786361859.5479467,
+    "ast_hash": "f6cc0f3887173b605641d28dd0b01423",
+    "semantic_hash": "f6cc0f3887173b605641d28dd0b01423"
+  },
+  "assets/career-journey/deck/image-4-7.png": {
+    "mtime": 1786361859.54911,
+    "ast_hash": "469b260d6f1c1998564d3425210267c2",
+    "semantic_hash": "469b260d6f1c1998564d3425210267c2"
+  },
+  "assets/career-journey/deck/image-4-8.png": {
+    "mtime": 1786361859.54911,
+    "ast_hash": "414978e4650d5d00e70206f1cbe0978a",
+    "semantic_hash": "414978e4650d5d00e70206f1cbe0978a"
+  },
+  "assets/career-journey/deck/image-4-9.png": {
+    "mtime": 1786361859.55011,
+    "ast_hash": "bf4954e58012b875ed2393cab3acdd5f",
+    "semantic_hash": "bf4954e58012b875ed2393cab3acdd5f"
+  },
+  "assets/career-journey/deck/image-5-1.png": {
+    "mtime": 1786361859.5511093,
+    "ast_hash": "503619bd98485e6abe4a1267b2774f1b",
+    "semantic_hash": "503619bd98485e6abe4a1267b2774f1b"
+  },
+  "assets/career-journey/deck/image-5-2.png": {
+    "mtime": 1786361859.552111,
+    "ast_hash": "1d6a478eae02b4dca01810b3c54b883b",
+    "semantic_hash": "1d6a478eae02b4dca01810b3c54b883b"
+  },
+  "assets/career-journey/deck/image-5-3.png": {
+    "mtime": 1786361859.552111,
+    "ast_hash": "484234bd39ca70e999a1334c1a0885bc",
+    "semantic_hash": "484234bd39ca70e999a1334c1a0885bc"
+  },
+  "assets/career-journey/deck/image-5-4.png": {
+    "mtime": 1786361859.553111,
+    "ast_hash": "42a979d9ab64468c9d95c94294b6b223",
+    "semantic_hash": "42a979d9ab64468c9d95c94294b6b223"
+  },
+  "assets/career-journey/deck/image-7-1.png": {
+    "mtime": 1786361859.553111,
+    "ast_hash": "508324b583be7ea8fff552aa999c5158",
+    "semantic_hash": "508324b583be7ea8fff552aa999c5158"
+  },
+  "assets/career-journey/deck/image-8-1.png": {
+    "mtime": 1786361859.5542839,
+    "ast_hash": "d74470336ed9d78a8637dd22ae0ad837",
+    "semantic_hash": "d74470336ed9d78a8637dd22ae0ad837"
+  },
+  "assets/career-journey/deck/image-9-1.png": {
+    "mtime": 1786361859.5552864,
+    "ast_hash": "cbeb5f578df901668c5ceb99d9cf0499",
+    "semantic_hash": "cbeb5f578df901668c5ceb99d9cf0499"
+  },
+  "assets/career-journey/journey-path-illustration.jpg": {
+    "mtime": 1786361859.556284,
+    "ast_hash": "3bac6f224883ec324d831377115dc253",
+    "semantic_hash": "3bac6f224883ec324d831377115dc253"
+  },
+  "assets/career-journey/journey-path-illustration.png": {
+    "mtime": 1786361859.5572839,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "assets/career-journey/laptop-code-charts.jpg": {
+    "mtime": 1786361859.5572839,
+    "ast_hash": "45b5afdd2110d9d65d22ccf089214649",
+    "semantic_hash": "45b5afdd2110d9d65d22ccf089214649"
+  },
+  "assets/career-journey/logo-aws.png": {
+    "mtime": 1786361859.5657098,
+    "ast_hash": "476b328efdc739d749a9e36ddb5d0c65",
+    "semantic_hash": "476b328efdc739d749a9e36ddb5d0c65"
+  },
+  "assets/career-journey/logo-azure.png": {
+    "mtime": 1786361859.5667093,
+    "ast_hash": "d83ee9ff64c07d90d52907f6de5a562a",
+    "semantic_hash": "d83ee9ff64c07d90d52907f6de5a562a"
+  },
+  "assets/career-journey/logo-prudential.png": {
+    "mtime": 1786361859.5667093,
+    "ast_hash": "91923f06a43dab0b722c2127c83f25e7",
+    "semantic_hash": "91923f06a43dab0b722c2127c83f25e7"
+  },
+  "assets/career-journey/logo-stb.png": {
+    "mtime": 1786361859.568215,
+    "ast_hash": "c159b8cf4dea9bc458431ec2bb25b640",
+    "semantic_hash": "c159b8cf4dea9bc458431ec2bb25b640"
+  },
+  "assets/career-journey/logo-tableau.png": {
+    "mtime": 1786361859.5692208,
+    "ast_hash": "94fd1fff5d73378d63e404f1fafcef64",
+    "semantic_hash": "94fd1fff5d73378d63e404f1fafcef64"
+  },
+  "assets/career-journey/screenshot-stackoverflow-python.png": {
+    "mtime": 1786361859.5692208,
+    "ast_hash": "8db95cd39d7ed0504a531545a9a5c151",
+    "semantic_hash": "8db95cd39d7ed0504a531545a9a5c151"
+  }
+}
