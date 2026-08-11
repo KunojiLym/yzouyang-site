@@ -1,7 +1,113 @@
 {
   "directed": false,
   "multigraph": false,
-  "graph": {},
+  "graph": {
+    "hyperedges": [
+      {
+        "id": "graphify_usage_commands",
+        "label": "Graph Query and Navigation Commands",
+        "nodes": [
+          "query",
+          "path",
+          "explain"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.9,
+        "source_file": "AGENTS.md"
+      },
+      {
+        "id": "build_pipeline_docs",
+        "label": "Documentation for Site Build Process",
+        "nodes": [
+          "readme",
+          "docs_site-builder",
+          "docs_preview-uat",
+          "docs_cutover"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.9,
+        "source_file": "README.md"
+      },
+      {
+        "id": "skill_summary_flow",
+        "label": "Career Skill Summary Flow",
+        "nodes": [
+          "transferable_skills",
+          "what_learn",
+          "connect"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.9,
+        "source_file": "data/career-journey-slides/?json"
+      },
+      {
+        "id": "frontend_component_stack",
+        "label": "Career Journey Frontend Component Stack",
+        "nodes": [
+          "career_journey_page",
+          "css_modules",
+          "js_modules"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.9,
+        "source_file": "N/A"
+      },
+      {
+        "id": "content_pipeline_validation",
+        "label": "Content Pipeline Validation Flow",
+        "nodes": [
+          "career_journey_data_structure",
+          "career_journey_validation_script",
+          "about_page"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.85,
+        "source_file": "N/A"
+      },
+      {
+        "id": "dossier_narrative_flow",
+        "label": "Core Professional Narrative Flow (Dossier Structure)",
+        "nodes": [
+          "design_system",
+          "visual_tokens"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.9,
+        "source_file": null
+      },
+      {
+        "id": "redirect_paths",
+        "label": "WordPress redirect paths and destinations",
+        "nodes": [
+          "docs_redirects"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.9,
+        "source_file": "docs/redirects.md"
+      },
+      {
+        "id": "css_tokenization_scope",
+        "label": "CSS Tokenization Scope and Enforcement",
+        "nodes": [
+          "README",
+          "spacing_drift_table",
+          "radius_drift_table",
+          "breakpoints_table"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 0.95,
+        "source_file": "README.md"
+      }
+    ]
+  },
   "nodes": [
     {
       "label": "pre-commit",
@@ -13,10 +119,10 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 20,
+      "community": 24,
       "norm_label": "pre-commit",
       "id": "husky_pre_commit",
-      "community_name": "Community 20"
+      "community_name": "Community 24"
     },
     {
       "label": "pre-commit script",
@@ -28,10 +134,10 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "community": 20,
+      "community": 24,
       "norm_label": "pre-commit script",
       "id": "husky_pre_commit__entry",
-      "community_name": "Community 20"
+      "community_name": "Community 24"
     },
     {
       "label": ".stylelintrc.json",
@@ -160,10 +266,10 @@
       "source_file": "collect/src/worker.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 11,
+      "community": 13,
       "norm_label": "worker.js",
       "id": "collect_src_worker",
-      "community_name": "Community 11"
+      "community_name": "Community 13"
     },
     {
       "label": "corsHeaders()",
@@ -172,10 +278,10 @@
       "source_location": "L8",
       "_callable": true,
       "_origin": "ast",
-      "community": 11,
+      "community": 13,
       "norm_label": "corsheaders()",
       "id": "collect_src_worker_corsheaders",
-      "community_name": "Community 11"
+      "community_name": "Community 13"
     },
     {
       "label": "toInt()",
@@ -184,10 +290,10 @@
       "source_location": "L22",
       "_callable": true,
       "_origin": "ast",
-      "community": 11,
+      "community": 13,
       "norm_label": "toint()",
       "id": "collect_src_worker_toint",
-      "community_name": "Community 11"
+      "community_name": "Community 13"
     },
     {
       "label": "cleanEvent()",
@@ -196,10 +302,10 @@
       "source_location": "L27",
       "_callable": true,
       "_origin": "ast",
-      "community": 11,
+      "community": 13,
       "norm_label": "cleanevent()",
       "id": "collect_src_worker_cleanevent",
-      "community_name": "Community 11"
+      "community_name": "Community 13"
     },
     {
       "label": "fetch()",
@@ -208,10 +314,10 @@
       "source_location": "L44",
       "_callable": true,
       "_origin": "ast",
-      "community": 11,
+      "community": 13,
       "norm_label": "fetch()",
       "id": "collect_src_worker_fetch",
-      "community_name": "Community 11"
+      "community_name": "Community 13"
     },
     {
       "label": "package.json",
@@ -219,10 +325,10 @@
       "source_file": "package.json",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "package.json",
       "id": "package",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "name",
@@ -230,10 +336,10 @@
       "source_file": "package.json",
       "source_location": "L2",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "name",
       "id": "package_name",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "private",
@@ -241,10 +347,10 @@
       "source_file": "package.json",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "private",
       "id": "package_private",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "type",
@@ -252,10 +358,10 @@
       "source_file": "package.json",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "type",
       "id": "package_type",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "scripts",
@@ -263,10 +369,10 @@
       "source_file": "package.json",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "scripts",
       "id": "package_scripts",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "test:e2e",
@@ -274,10 +380,10 @@
       "source_file": "package.json",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "test:e2e",
       "id": "package_scripts_test_e2e",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "test:motion",
@@ -285,10 +391,10 @@
       "source_file": "package.json",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "test:motion",
       "id": "package_scripts_test_motion",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "test:visual",
@@ -296,10 +402,10 @@
       "source_file": "package.json",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "test:visual",
       "id": "package_scripts_test_visual",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "test:a11y",
@@ -307,10 +413,10 @@
       "source_file": "package.json",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "test:a11y",
       "id": "package_scripts_test_a11y",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "lint:css",
@@ -318,10 +424,10 @@
       "source_file": "package.json",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "lint:css",
       "id": "package_scripts_lint_css",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "lint:token-drift",
@@ -329,10 +435,10 @@
       "source_file": "package.json",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "lint:token-drift",
       "id": "package_scripts_lint_token_drift",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "qa:shots",
@@ -340,10 +446,10 @@
       "source_file": "package.json",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "qa:shots",
       "id": "package_scripts_qa_shots",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "serve:dist",
@@ -351,10 +457,10 @@
       "source_file": "package.json",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "serve:dist",
       "id": "package_scripts_serve_dist",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "prepare",
@@ -362,10 +468,10 @@
       "source_file": "package.json",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 4,
+      "community": 1,
       "norm_label": "prepare",
       "id": "package_scripts_prepare",
-      "community_name": "Community 4"
+      "community_name": "Community 1"
     },
     {
       "label": "devDependencies",
@@ -373,10 +479,10 @@
       "source_file": "package.json",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "devdependencies",
       "id": "package_devdependencies",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "@axe-core/playwright",
@@ -384,10 +490,10 @@
       "source_file": "package.json",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "@axe-core/playwright",
       "id": "package_devdependencies_axe_core_playwright",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "@axe-core/playwright",
@@ -395,10 +501,10 @@
       "source_file": "package.json",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "@axe-core/playwright",
       "id": "axe_core_playwright",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "@playwright/test",
@@ -406,10 +512,10 @@
       "source_file": "package.json",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "@playwright/test",
       "id": "package_devdependencies_playwright_test",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "@playwright/test",
@@ -417,10 +523,10 @@
       "source_file": "package.json",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "@playwright/test",
       "id": "playwright_test",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "husky",
@@ -428,10 +534,10 @@
       "source_file": "package.json",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "husky",
       "id": "package_devdependencies_husky",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "husky",
@@ -439,10 +545,10 @@
       "source_file": "package.json",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "husky",
       "id": "husky",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "lint-staged",
@@ -450,10 +556,10 @@
       "source_file": "package.json",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "lint-staged",
       "id": "package_devdependencies_lint_staged",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "lint-staged",
@@ -461,10 +567,10 @@
       "source_file": "package.json",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "lint-staged",
       "id": "lint_staged",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "stylelint",
@@ -472,10 +578,10 @@
       "source_file": "package.json",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "stylelint",
       "id": "package_devdependencies_stylelint",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "stylelint",
@@ -483,10 +589,10 @@
       "source_file": "package.json",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "stylelint",
       "id": "stylelint",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "stylelint-config-standard",
@@ -538,10 +644,10 @@
       "source_file": "package.json",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "lint-staged",
       "id": "package_lint_staged",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "src/styles/*.css",
@@ -549,10 +655,10 @@
       "source_file": "package.json",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "src/styles/*.css",
       "id": "package_lint_staged_src_styles_css",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "npm run lint:token-drift",
@@ -560,10 +666,10 @@
       "source_file": "package.json",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "norm_label": "npm run lint:token-drift",
       "id": "ref_npm_run_lint_token_drift",
-      "community_name": "Community 2"
+      "community_name": "Community 1"
     },
     {
       "label": "playwright.config.mjs",
@@ -571,10 +677,10 @@
       "source_file": "playwright.config.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 25,
       "norm_label": "playwright.config.mjs",
       "id": "playwright_config",
-      "community_name": "Community 21"
+      "community_name": "Community 25"
     },
     {
       "label": "PORT",
@@ -582,10 +688,10 @@
       "source_file": "playwright.config.mjs",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 21,
+      "community": 25,
       "norm_label": "port",
       "id": "playwright_config_port",
-      "community_name": "Community 21"
+      "community_name": "Community 25"
     },
     {
       "label": "yzouyang-site",
@@ -596,10 +702,10 @@
       "source_location": "L1",
       "version": "0.1.0",
       "_origin": "ast",
-      "community": 23,
+      "community": 123,
       "norm_label": "yzouyang-site",
       "id": "pkg_yzouyang_site",
-      "community_name": "Community 23"
+      "community_name": "Community 123"
     },
     {
       "label": "build.py",
@@ -1149,10 +1255,10 @@
       "source_file": "scripts/check_token_drift.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 14,
+      "community": 18,
       "norm_label": "check_token_drift.py",
       "id": "scripts_check_token_drift",
-      "community_name": "Community 14"
+      "community_name": "Community 18"
     },
     {
       "label": "find_violations()",
@@ -1161,10 +1267,10 @@
       "source_location": "L31",
       "_callable": true,
       "_origin": "ast",
-      "community": 14,
+      "community": 18,
       "norm_label": "find_violations()",
       "id": "scripts_check_token_drift_find_violations",
-      "community_name": "Community 14"
+      "community_name": "Community 18"
     },
     {
       "label": "main()",
@@ -1173,10 +1279,10 @@
       "source_location": "L54",
       "_callable": true,
       "_origin": "ast",
-      "community": 14,
+      "community": 18,
       "norm_label": "main()",
       "id": "scripts_check_token_drift_main",
-      "community_name": "Community 14"
+      "community_name": "Community 18"
     },
     {
       "label": "diy_collect.py",
@@ -1184,10 +1290,10 @@
       "source_file": "scripts/diy_collect.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "diy_collect.py",
       "id": "scripts_diy_collect",
-      "community_name": "Community 7"
+      "community_name": "Community 8"
     },
     {
       "label": "cors_headers()",
@@ -1196,10 +1302,10 @@
       "source_location": "L25",
       "_callable": true,
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "cors_headers()",
       "id": "scripts_diy_collect_cors_headers",
-      "community_name": "Community 7"
+      "community_name": "Community 8"
     },
     {
       "label": "_to_int()",
@@ -1208,10 +1314,10 @@
       "source_location": "L38",
       "_callable": true,
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "_to_int()",
       "id": "scripts_diy_collect_to_int",
-      "community_name": "Community 7"
+      "community_name": "Community 8"
     },
     {
       "label": "make_handler()",
@@ -1220,10 +1326,10 @@
       "source_location": "L46",
       "_callable": true,
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "make_handler()",
       "id": "scripts_diy_collect_make_handler",
-      "community_name": "Community 7"
+      "community_name": "Community 8"
     },
     {
       "label": "Path",
@@ -1231,10 +1337,10 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "path",
       "id": "scripts_diy_collect_py_path",
-      "community_name": "Community 7"
+      "community_name": "Community 8"
     },
     {
       "label": "main()",
@@ -1243,10 +1349,10 @@
       "source_location": "L128",
       "_callable": true,
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "main()",
       "id": "scripts_diy_collect_main",
-      "community_name": "Community 7"
+      "community_name": "Community 8"
     },
     {
       "label": "Coerce *value* to int, returning *default* for non-numeric input.",
@@ -1254,10 +1360,10 @@
       "source_file": "scripts/diy_collect.py",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "coerce *value* to int, returning *default* for non-numeric input.",
       "id": "scripts_diy_collect_rationale_39",
-      "community_name": "Community 7"
+      "community_name": "Community 8"
     },
     {
       "label": "lint.py",
@@ -1265,10 +1371,10 @@
       "source_file": "scripts/lint.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "lint.py",
       "id": "scripts_lint",
-      "community_name": "Community 13"
+      "community_name": "Community 15"
     },
     {
       "label": "fail()",
@@ -1277,10 +1383,10 @@
       "source_location": "L31",
       "_callable": true,
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "fail()",
       "id": "scripts_lint_fail",
-      "community_name": "Community 13"
+      "community_name": "Community 15"
     },
     {
       "label": "validate_public_visibility()",
@@ -1289,10 +1395,10 @@
       "source_location": "L36",
       "_callable": true,
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "validate_public_visibility()",
       "id": "scripts_lint_validate_public_visibility",
-      "community_name": "Community 13"
+      "community_name": "Community 15"
     },
     {
       "label": "main()",
@@ -1301,10 +1407,10 @@
       "source_location": "L52",
       "_callable": true,
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "main()",
       "id": "scripts_lint_main",
-      "community_name": "Community 13"
+      "community_name": "Community 15"
     },
     {
       "label": "preview.py",
@@ -1312,10 +1418,10 @@
       "source_file": "scripts/preview.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
+      "community": 10,
       "norm_label": "preview.py",
       "id": "scripts_preview",
-      "community_name": "Community 8"
+      "community_name": "Community 10"
     },
     {
       "label": "run()",
@@ -1324,10 +1430,10 @@
       "source_location": "L27",
       "_callable": true,
       "_origin": "ast",
-      "community": 8,
+      "community": 10,
       "norm_label": "run()",
       "id": "scripts_preview_run",
-      "community_name": "Community 8"
+      "community_name": "Community 10"
     },
     {
       "label": "resolve_npx()",
@@ -1336,10 +1442,10 @@
       "source_location": "L35",
       "_callable": true,
       "_origin": "ast",
-      "community": 8,
+      "community": 10,
       "norm_label": "resolve_npx()",
       "id": "scripts_preview_resolve_npx",
-      "community_name": "Community 8"
+      "community_name": "Community 10"
     },
     {
       "label": "run_pagefind()",
@@ -1348,10 +1454,10 @@
       "source_location": "L44",
       "_callable": true,
       "_origin": "ast",
-      "community": 8,
+      "community": 10,
       "norm_label": "run_pagefind()",
       "id": "scripts_preview_run_pagefind",
-      "community_name": "Community 8"
+      "community_name": "Community 10"
     },
     {
       "label": "main()",
@@ -1360,10 +1466,10 @@
       "source_location": "L56",
       "_callable": true,
       "_origin": "ast",
-      "community": 8,
+      "community": 10,
       "norm_label": "main()",
       "id": "scripts_preview_main",
-      "community_name": "Community 8"
+      "community_name": "Community 10"
     },
     {
       "label": "Windows CreateProcess cannot run bare 'npx' (needs npx.cmd).",
@@ -1371,10 +1477,10 @@
       "source_file": "scripts/preview.py",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 8,
+      "community": 10,
       "norm_label": "windows createprocess cannot run bare 'npx' (needs npx.cmd).",
       "id": "scripts_preview_rationale_36",
-      "community_name": "Community 8"
+      "community_name": "Community 10"
     },
     {
       "label": "qa-compare-wp.mjs",
@@ -1382,10 +1488,10 @@
       "source_file": "scripts/qa-compare-wp.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 9,
+      "community": 11,
       "norm_label": "qa-compare-wp.mjs",
       "id": "scripts_qa_compare_wp",
-      "community_name": "Community 9"
+      "community_name": "Community 11"
     },
     {
       "label": "__dirname",
@@ -1393,10 +1499,10 @@
       "source_file": "scripts/qa-compare-wp.mjs",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 9,
+      "community": 11,
       "norm_label": "__dirname",
       "id": "scripts_qa_compare_wp_dirname",
-      "community_name": "Community 9"
+      "community_name": "Community 11"
     },
     {
       "label": "OUT",
@@ -1404,10 +1510,10 @@
       "source_file": "scripts/qa-compare-wp.mjs",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 9,
+      "community": 11,
       "norm_label": "out",
       "id": "scripts_qa_compare_wp_out",
-      "community_name": "Community 9"
+      "community_name": "Community 11"
     },
     {
       "label": "pairs",
@@ -1415,10 +1521,10 @@
       "source_file": "scripts/qa-compare-wp.mjs",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 9,
+      "community": 11,
       "norm_label": "pairs",
       "id": "scripts_qa_compare_wp_pairs",
-      "community_name": "Community 9"
+      "community_name": "Community 11"
     },
     {
       "label": "meta()",
@@ -1427,10 +1533,10 @@
       "source_location": "L17",
       "_callable": true,
       "_origin": "ast",
-      "community": 9,
+      "community": 11,
       "norm_label": "meta()",
       "id": "scripts_qa_compare_wp_meta",
-      "community_name": "Community 9"
+      "community_name": "Community 11"
     },
     {
       "label": "report",
@@ -1438,10 +1544,10 @@
       "source_file": "scripts/qa-compare-wp.mjs",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 9,
+      "community": 11,
       "norm_label": "report",
       "id": "scripts_qa_compare_wp_report",
-      "community_name": "Community 9"
+      "community_name": "Community 11"
     },
     {
       "label": "qa-refs.mjs",
@@ -1449,10 +1555,10 @@
       "source_file": "scripts/qa-refs.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 12,
+      "community": 14,
       "norm_label": "qa-refs.mjs",
       "id": "scripts_qa_refs",
-      "community_name": "Community 12"
+      "community_name": "Community 14"
     },
     {
       "label": "__dirname",
@@ -1460,10 +1566,10 @@
       "source_file": "scripts/qa-refs.mjs",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 12,
+      "community": 14,
       "norm_label": "__dirname",
       "id": "scripts_qa_refs_dirname",
-      "community_name": "Community 12"
+      "community_name": "Community 14"
     },
     {
       "label": "OUT",
@@ -1471,10 +1577,10 @@
       "source_file": "scripts/qa-refs.mjs",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 12,
+      "community": 14,
       "norm_label": "out",
       "id": "scripts_qa_refs_out",
-      "community_name": "Community 12"
+      "community_name": "Community 14"
     },
     {
       "label": "sites",
@@ -1482,10 +1588,10 @@
       "source_file": "scripts/qa-refs.mjs",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 12,
+      "community": 14,
       "norm_label": "sites",
       "id": "scripts_qa_refs_sites",
-      "community_name": "Community 12"
+      "community_name": "Community 14"
     },
     {
       "label": "report",
@@ -1493,10 +1599,10 @@
       "source_file": "scripts/qa-refs.mjs",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 12,
+      "community": 14,
       "norm_label": "report",
       "id": "scripts_qa_refs_report",
-      "community_name": "Community 12"
+      "community_name": "Community 14"
     },
     {
       "label": "qa-screenshot.mjs",
@@ -1504,10 +1610,10 @@
       "source_file": "scripts/qa-screenshot.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 10,
+      "community": 12,
       "norm_label": "qa-screenshot.mjs",
       "id": "scripts_qa_screenshot",
-      "community_name": "Community 10"
+      "community_name": "Community 12"
     },
     {
       "label": "__dirname",
@@ -1515,10 +1621,10 @@
       "source_file": "scripts/qa-screenshot.mjs",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 10,
+      "community": 12,
       "norm_label": "__dirname",
       "id": "scripts_qa_screenshot_dirname",
-      "community_name": "Community 10"
+      "community_name": "Community 12"
     },
     {
       "label": "OUT",
@@ -1526,10 +1632,10 @@
       "source_file": "scripts/qa-screenshot.mjs",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 10,
+      "community": 12,
       "norm_label": "out",
       "id": "scripts_qa_screenshot_out",
-      "community_name": "Community 10"
+      "community_name": "Community 12"
     },
     {
       "label": "pages",
@@ -1537,10 +1643,10 @@
       "source_file": "scripts/qa-screenshot.mjs",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 10,
+      "community": 12,
       "norm_label": "pages",
       "id": "scripts_qa_screenshot_pages",
-      "community_name": "Community 10"
+      "community_name": "Community 12"
     },
     {
       "label": "shot()",
@@ -1549,10 +1655,10 @@
       "source_location": "L18",
       "_callable": true,
       "_origin": "ast",
-      "community": 10,
+      "community": 12,
       "norm_label": "shot()",
       "id": "scripts_qa_screenshot_shot",
-      "community_name": "Community 10"
+      "community_name": "Community 12"
     },
     {
       "label": "input",
@@ -1560,10 +1666,10 @@
       "source_file": "scripts/qa-screenshot.mjs",
       "source_location": "L92",
       "_origin": "ast",
-      "community": 10,
+      "community": 12,
       "norm_label": "input",
       "id": "scripts_qa_screenshot_input",
-      "community_name": "Community 10"
+      "community_name": "Community 12"
     },
     {
       "label": "serve-dist.mjs",
@@ -1685,10 +1791,10 @@
       "source_file": "scripts/test_diy_collect.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 22,
+      "community": 26,
       "norm_label": "test_diy_collect.py",
       "id": "scripts_test_diy_collect",
-      "community_name": "Community 22"
+      "community_name": "Community 26"
     },
     {
       "label": "main()",
@@ -1697,10 +1803,10 @@
       "source_location": "L19",
       "_callable": true,
       "_origin": "ast",
-      "community": 22,
+      "community": 26,
       "norm_label": "main()",
       "id": "scripts_test_diy_collect_main",
-      "community_name": "Community 22"
+      "community_name": "Community 26"
     },
     {
       "label": "test_site_build.py",
@@ -1708,10 +1814,10 @@
       "source_file": "scripts/test_site_build.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 15,
+      "community": 4,
       "norm_label": "test_site_build.py",
       "id": "scripts_test_site_build",
-      "community_name": "Community 15"
+      "community_name": "Community 4"
     },
     {
       "label": "fail()",
@@ -1720,10 +1826,10 @@
       "source_location": "L24",
       "_callable": true,
       "_origin": "ast",
-      "community": 15,
+      "community": 4,
       "norm_label": "fail()",
       "id": "scripts_test_site_build_fail",
-      "community_name": "Community 15"
+      "community_name": "Community 4"
     },
     {
       "label": "main()",
@@ -1732,10 +1838,10 @@
       "source_location": "L29",
       "_callable": true,
       "_origin": "ast",
-      "community": 15,
+      "community": 4,
       "norm_label": "main()",
       "id": "scripts_test_site_build_main",
-      "community_name": "Community 15"
+      "community_name": "Community 4"
     },
     {
       "label": "career-journey.js",
@@ -1838,10 +1944,10 @@
       "source_file": "src/track.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 16,
+      "community": 19,
       "norm_label": "track.js",
       "id": "src_track",
-      "community_name": "Community 16"
+      "community_name": "Community 19"
     },
     {
       "label": "payload()",
@@ -1850,10 +1956,10 @@
       "source_location": "L17",
       "_callable": true,
       "_origin": "ast",
-      "community": 16,
+      "community": 19,
       "norm_label": "payload()",
       "id": "src_track_payload",
-      "community_name": "Community 16"
+      "community_name": "Community 19"
     },
     {
       "label": "send()",
@@ -1862,10 +1968,10 @@
       "source_location": "L40",
       "_callable": true,
       "_origin": "ast",
-      "community": 16,
+      "community": 19,
       "norm_label": "send()",
       "id": "src_track_send",
-      "community_name": "Community 16"
+      "community_name": "Community 19"
     },
     {
       "label": "a11y.spec.mjs",
@@ -1873,10 +1979,10 @@
       "source_file": "tests/e2e/a11y.spec.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 17,
+      "community": 20,
       "norm_label": "a11y.spec.mjs",
       "id": "tests_e2e_a11y_spec",
-      "community_name": "Community 17"
+      "community_name": "Community 20"
     },
     {
       "label": "ROUTES",
@@ -1884,10 +1990,10 @@
       "source_file": "tests/e2e/a11y.spec.mjs",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 17,
+      "community": 20,
       "norm_label": "routes",
       "id": "tests_e2e_a11y_spec_routes",
-      "community_name": "Community 17"
+      "community_name": "Community 20"
     },
     {
       "label": "KNOWN_THIRD_PARTY_EXCLUDES",
@@ -1895,10 +2001,10 @@
       "source_file": "tests/e2e/a11y.spec.mjs",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 17,
+      "community": 20,
       "norm_label": "known_third_party_excludes",
       "id": "tests_e2e_a11y_spec_known_third_party_excludes",
-      "community_name": "Community 17"
+      "community_name": "Community 20"
     },
     {
       "label": "career-journey-animation.spec.mjs",
@@ -1906,10 +2012,10 @@
       "source_file": "tests/e2e/career-journey-animation.spec.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 24,
+      "community": 128,
       "norm_label": "career-journey-animation.spec.mjs",
       "id": "tests_e2e_career_journey_animation_spec",
-      "community_name": "Community 24"
+      "community_name": "Community 128"
     },
     {
       "label": "global-setup.mjs",
@@ -1917,10 +2023,10 @@
       "source_file": "tests/e2e/global-setup.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "global-setup.mjs",
       "id": "tests_e2e_global_setup",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "globalSetup()",
@@ -1929,10 +2035,10 @@
       "source_location": "L3",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "globalsetup()",
       "id": "tests_e2e_global_setup_globalsetup",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "global-teardown.mjs",
@@ -1940,10 +2046,10 @@
       "source_file": "tests/e2e/global-teardown.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "global-teardown.mjs",
       "id": "tests_e2e_global_teardown",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "globalTeardown()",
@@ -1952,10 +2058,10 @@
       "source_location": "L3",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "globalteardown()",
       "id": "tests_e2e_global_teardown_globalteardown",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "server-lifecycle.mjs",
@@ -1963,10 +2069,10 @@
       "source_file": "tests/e2e/server-lifecycle.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "server-lifecycle.mjs",
       "id": "tests_e2e_server_lifecycle",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "PORT",
@@ -1974,10 +2080,10 @@
       "source_file": "tests/e2e/server-lifecycle.mjs",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "port",
       "id": "tests_e2e_server_lifecycle_port",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "HOST",
@@ -1985,10 +2091,10 @@
       "source_file": "tests/e2e/server-lifecycle.mjs",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "host",
       "id": "tests_e2e_server_lifecycle_host",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "BASE_URL",
@@ -1996,10 +2102,10 @@
       "source_file": "tests/e2e/server-lifecycle.mjs",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "base_url",
       "id": "tests_e2e_server_lifecycle_base_url",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "STATE_FILE",
@@ -2007,10 +2113,10 @@
       "source_file": "tests/e2e/server-lifecycle.mjs",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "state_file",
       "id": "tests_e2e_server_lifecycle_state_file",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "READY_TIMEOUT_MS",
@@ -2018,10 +2124,10 @@
       "source_file": "tests/e2e/server-lifecycle.mjs",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "ready_timeout_ms",
       "id": "tests_e2e_server_lifecycle_ready_timeout_ms",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "TEARDOWN_TIMEOUT_MS",
@@ -2029,10 +2135,10 @@
       "source_file": "tests/e2e/server-lifecycle.mjs",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "teardown_timeout_ms",
       "id": "tests_e2e_server_lifecycle_teardown_timeout_ms",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "log()",
@@ -2041,10 +2147,10 @@
       "source_location": "L14",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "log()",
       "id": "tests_e2e_server_lifecycle_log",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "writeState()",
@@ -2053,10 +2159,10 @@
       "source_location": "L22",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "writestate()",
       "id": "tests_e2e_server_lifecycle_writestate",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "readState()",
@@ -2065,10 +2171,10 @@
       "source_location": "L27",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "readstate()",
       "id": "tests_e2e_server_lifecycle_readstate",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "removeState()",
@@ -2077,10 +2183,10 @@
       "source_location": "L36",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "removestate()",
       "id": "tests_e2e_server_lifecycle_removestate",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "isReady()",
@@ -2089,10 +2195,10 @@
       "source_location": "L40",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "isready()",
       "id": "tests_e2e_server_lifecycle_isready",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "waitForReady()",
@@ -2101,10 +2207,10 @@
       "source_location": "L53",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "waitforready()",
       "id": "tests_e2e_server_lifecycle_waitforready",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "processExists()",
@@ -2113,10 +2219,10 @@
       "source_location": "L62",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "processexists()",
       "id": "tests_e2e_server_lifecycle_processexists",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "waitForExit()",
@@ -2125,10 +2231,10 @@
       "source_location": "L71",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "waitforexit()",
       "id": "tests_e2e_server_lifecycle_waitforexit",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "startE2EServer()",
@@ -2137,10 +2243,10 @@
       "source_location": "L80",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "starte2eserver()",
       "id": "tests_e2e_server_lifecycle_starte2eserver",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "stopE2EServer()",
@@ -2149,10 +2255,10 @@
       "source_location": "L131",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 2,
       "norm_label": "stope2eserver()",
       "id": "tests_e2e_server_lifecycle_stope2eserver",
-      "community_name": "Community 1"
+      "community_name": "Community 2"
     },
     {
       "label": "usability.spec.mjs",
@@ -2160,10 +2266,10 @@
       "source_file": "tests/e2e/usability.spec.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "usability.spec.mjs",
       "id": "tests_e2e_usability_spec",
-      "community_name": "Community 18"
+      "community_name": "Community 21"
     },
     {
       "label": "ROUTES",
@@ -2171,10 +2277,10 @@
       "source_file": "tests/e2e/usability.spec.mjs",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "routes",
       "id": "tests_e2e_usability_spec_routes",
-      "community_name": "Community 18"
+      "community_name": "Community 21"
     },
     {
       "label": "noHorizontalOverflow()",
@@ -2183,10 +2289,10 @@
       "source_location": "L5",
       "_callable": true,
       "_origin": "ast",
-      "community": 18,
+      "community": 21,
       "norm_label": "nohorizontaloverflow()",
       "id": "tests_e2e_usability_spec_nohorizontaloverflow",
-      "community_name": "Community 18"
+      "community_name": "Community 21"
     },
     {
       "label": "visual.spec.mjs",
@@ -2194,10 +2300,10 @@
       "source_file": "tests/e2e/visual.spec.mjs",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "visual.spec.mjs",
       "id": "tests_e2e_visual_spec",
-      "community_name": "Community 19"
+      "community_name": "Community 22"
     },
     {
       "label": "ROUTES",
@@ -2205,10 +2311,10 @@
       "source_file": "tests/e2e/visual.spec.mjs",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "routes",
       "id": "tests_e2e_visual_spec_routes",
-      "community_name": "Community 19"
+      "community_name": "Community 22"
     },
     {
       "label": "slugFor()",
@@ -2217,10 +2323,1873 @@
       "source_location": "L20",
       "_callable": true,
       "_origin": "ast",
-      "community": 19,
+      "community": 22,
       "norm_label": "slugfor()",
       "id": "tests_e2e_visual_spec_slugfor",
-      "community_name": "Community 19"
+      "community_name": "Community 22"
+    },
+    {
+      "label": "AGENTS.md Document",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 9,
+      "norm_label": "agents.md document",
+      "id": "agents",
+      "community_name": "Community 9"
+    },
+    {
+      "label": "Knowledge Graph Output Directory",
+      "file_type": "concept",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 9,
+      "norm_label": "knowledge graph output directory",
+      "id": "graphify_out",
+      "community_name": "Community 9"
+    },
+    {
+      "label": "graphify query command",
+      "file_type": "concept",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 9,
+      "norm_label": "graphify query command",
+      "id": "query",
+      "community_name": "Community 9"
+    },
+    {
+      "label": "graphify path command",
+      "file_type": "concept",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 9,
+      "norm_label": "graphify path command",
+      "id": "path",
+      "community_name": "Community 9"
+    },
+    {
+      "label": "graphify explain command",
+      "file_type": "concept",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 9,
+      "norm_label": "graphify explain command",
+      "id": "explain",
+      "community_name": "Community 9"
+    },
+    {
+      "label": "GRAPH_REPORT.md file",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 120,
+      "norm_label": "graph_report.md file",
+      "id": "graph_report",
+      "community_name": "Community 120"
+    },
+    {
+      "label": "wiki/index.md file",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 9,
+      "norm_label": "wiki/index.md file",
+      "id": "wiki_index",
+      "community_name": "Community 9"
+    },
+    {
+      "label": "README",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "readme",
+      "id": "readme",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Preview/UAT Documentation",
+      "file_type": "document",
+      "source_file": "docs/preview-uat.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "preview/uat documentation",
+      "id": "docs_preview-uat",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Cutover Documentation",
+      "file_type": "document",
+      "source_file": "docs/cutover.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "cutover documentation",
+      "id": "docs_cutover",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Public JSON Data Export",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "public json data export",
+      "id": "data_export_public",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Site Builder Documentation",
+      "file_type": "document",
+      "source_file": "docs/site-builder.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "site builder documentation",
+      "id": "docs_site-builder",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Design System Documentation",
+      "file_type": "document",
+      "source_file": "docs/design-system.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "design system documentation",
+      "id": "docs_design-system",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "DIY Tracking Documentation",
+      "file_type": "document",
+      "source_file": "docs/diy-tracking.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "diy tracking documentation",
+      "id": "docs_diy-tracking",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Redirect Map Documentation",
+      "file_type": "document",
+      "source_file": "docs/redirects.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 119,
+      "norm_label": "redirect map documentation",
+      "id": "docs_redirects",
+      "community_name": "Community 119"
+    },
+    {
+      "label": "C2B Writing Inventory Documentation",
+      "file_type": "document",
+      "source_file": "docs/c2b-writing-inventory.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 117,
+      "norm_label": "c2b writing inventory documentation",
+      "id": "docs_c2b-writing-inventory",
+      "community_name": "Community 117"
+    },
+    {
+      "label": "Badge for GCP ML Engineer certification",
+      "file_type": "image",
+      "source_file": "assets/career-journey/badge-gcp-ml-engineer.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 28,
+      "norm_label": "badge for gcp ml engineer certification",
+      "id": "assets_career-journey_badge-gcp-ml-engineer",
+      "community_name": "Community 28"
+    },
+    {
+      "label": "Compass chart showing career journey progression",
+      "file_type": "image",
+      "source_file": "assets/career-journey/compass-chart.jpg",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 29,
+      "norm_label": "compass chart showing career journey progression",
+      "id": "assets_career-journey_compass-chart",
+      "community_name": "Community 29"
+    },
+    {
+      "label": "Compass Chart Diagram",
+      "file_type": "image",
+      "source_file": "assets/career-journey/compass-chart.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 30,
+      "norm_label": "compass chart diagram",
+      "id": "assets_career-journey_compass-chart-png",
+      "community_name": "Community 30"
+    },
+    {
+      "label": "Career Journey Path Illustration",
+      "file_type": "image",
+      "source_file": "assets/career-journey/journey-path-illustration.jpg",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 102,
+      "norm_label": "career journey path illustration",
+      "id": "assets_career-journey_journey-path-illustration-jpg",
+      "community_name": "Community 102"
+    },
+    {
+      "label": "Diagram illustrating a career journey path",
+      "file_type": "image",
+      "source_file": "assets/career-journey/journey-path-illustration.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 101,
+      "norm_label": "diagram illustrating a career journey path",
+      "id": "assets_career-journey_journey-path-illustration",
+      "community_name": "Community 101"
+    },
+    {
+      "label": "Screenshot showing a laptop displaying code and charts",
+      "file_type": "image",
+      "source_file": "assets/career-journey/laptop-code-charts.jpg",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 103,
+      "norm_label": "screenshot showing a laptop displaying code and charts",
+      "id": "assets_career-journey_laptop-code-charts",
+      "community_name": "Community 103"
+    },
+    {
+      "label": "Screenshot of an IDE code editor view with console output and UI elements",
+      "file_type": "image",
+      "source_file": "<unknown>",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 126,
+      "norm_label": "screenshot of an ide code editor view with console output and ui elements",
+      "id": "screenshot_ide_code_editor_view",
+      "community_name": "Community 126"
+    },
+    {
+      "label": "AWS Logo",
+      "file_type": "image",
+      "source_file": "assets/career-journey/logo-aws.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 104,
+      "norm_label": "aws logo",
+      "id": "assets_career-journey_logo-aws",
+      "community_name": "Community 104"
+    },
+    {
+      "label": "Azure Logo",
+      "file_type": "image",
+      "source_file": "assets/career-journey/logo-azure.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 105,
+      "norm_label": "azure logo",
+      "id": "assets_career-journey_logo-azure",
+      "community_name": "Community 105"
+    },
+    {
+      "label": "Logo depicting Prudential branding",
+      "file_type": "image",
+      "source_file": "assets/career-journey/logo-prudential.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 106,
+      "norm_label": "logo depicting prudential branding",
+      "id": "assets_career-journey_logo-prudential",
+      "community_name": "Community 106"
+    },
+    {
+      "label": "Logo depicting Singapore Tourism Board branding",
+      "file_type": "image",
+      "source_file": "assets/career-journey/logo-stb.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 107,
+      "norm_label": "logo depicting singapore tourism board branding",
+      "id": "assets_career-journey_logo-stb",
+      "community_name": "Community 107"
+    },
+    {
+      "label": "Tableau Logo and Branding",
+      "file_type": "image",
+      "source_file": "assets/career-journey/logo-tableau.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 108,
+      "norm_label": "tableau logo and branding",
+      "id": "assets_career-journey_logo-tableau",
+      "community_name": "Community 108"
+    },
+    {
+      "label": "Stack Overflow Screenshot (Python Programming Context)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/screenshot-stackoverflow-python.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 109,
+      "norm_label": "stack overflow screenshot (python programming context)",
+      "id": "assets_career-journey_screenshot-stackoverflow-python",
+      "community_name": "Community 109"
+    },
+    {
+      "label": "Diagram showing career journey stages and progression",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-1-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 16,
+      "norm_label": "diagram showing career journey stages and progression",
+      "id": "assets_career-journey_deck_image-1-1",
+      "community_name": "Community 16"
+    },
+    {
+      "label": "Diagram showing career journey stages and progression",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-10-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 16,
+      "norm_label": "diagram showing career journey stages and progression",
+      "id": "assets_career-journey_deck_image-10-1",
+      "community_name": "Community 16"
+    },
+    {
+      "label": "Book cover: The Constitution of Europe",
+      "file_type": "document",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 115,
+      "norm_label": "book cover: the constitution of europe",
+      "id": "book_the_constitution_of_europe",
+      "community_name": "Community 115"
+    },
+    {
+      "label": "Book cover: EU Law",
+      "file_type": "document",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 114,
+      "norm_label": "book cover: eu law",
+      "id": "book_eu_law",
+      "community_name": "Community 114"
+    },
+    {
+      "label": "Book cover: The Constitution of Europe by Stephen Weathrill",
+      "file_type": "document",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 16,
+      "norm_label": "book cover: the constitution of europe by stephen weathrill",
+      "id": "book_the_constitution_of_europe_weathrill",
+      "community_name": "Community 16"
+    },
+    {
+      "label": "Diagram illustrating career journey concept",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-13-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 31,
+      "norm_label": "diagram illustrating career journey concept",
+      "id": "assets_career-journey_deck_image-13-1",
+      "community_name": "Community 31"
+    },
+    {
+      "label": "Diagram illustrating career journey concept",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-14-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 32,
+      "norm_label": "diagram illustrating career journey concept",
+      "id": "assets_career-journey_deck_image-14-1",
+      "community_name": "Community 32"
+    },
+    {
+      "label": "Logo/Branding for Coursera",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-15-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 33,
+      "norm_label": "logo/branding for coursera",
+      "id": "assets_career-journey_deck_image-15-1",
+      "community_name": "Community 33"
+    },
+    {
+      "label": "Logo/Branding for Coursera",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-16-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 34,
+      "norm_label": "logo/branding for coursera",
+      "id": "assets_career-journey_deck_image-16-1",
+      "community_name": "Community 34"
+    },
+    {
+      "label": "Diagram showing AWS Cloud Practitioner certification level and branding",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-16-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 35,
+      "norm_label": "diagram showing aws cloud practitioner certification level and branding",
+      "id": "assets_career-journey_deck_image-16-2",
+      "community_name": "Community 35"
+    },
+    {
+      "label": "Logo/Branding for Coursera",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-17-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 36,
+      "norm_label": "logo/branding for coursera",
+      "id": "assets_career-journey_deck_image-17-1",
+      "community_name": "Community 36"
+    },
+    {
+      "label": "Career Path Diagram / Certification Badge for Data Engineer",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-17-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 37,
+      "norm_label": "career path diagram / certification badge for data engineer",
+      "id": "assets_career-journey_deck_image-17-2",
+      "community_name": "Community 37"
+    },
+    {
+      "label": "Certification Badge for Scrum Master (CSM)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-17-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 38,
+      "norm_label": "certification badge for scrum master (csm)",
+      "id": "assets_career-journey_deck_image-17-3",
+      "community_name": "Community 38"
+    },
+    {
+      "label": "Diagram/Slide showing AWS Cloud Practitioner branding",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-17-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 39,
+      "norm_label": "diagram/slide showing aws cloud practitioner branding",
+      "id": "assets_career-journey_deck_image-17-4",
+      "community_name": "Community 39"
+    },
+    {
+      "label": "Logo/Branding for Coursera",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-18-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 40,
+      "norm_label": "logo/branding for coursera",
+      "id": "assets_career-journey_deck_image-18-1",
+      "community_name": "Community 40"
+    },
+    {
+      "label": "Diagram illustrating a career path or certification level (Data Engineer).",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-18-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 41,
+      "norm_label": "diagram illustrating a career path or certification level (data engineer).",
+      "id": "assets_career-journey_deck_image-18-2",
+      "community_name": "Community 41"
+    },
+    {
+      "label": "Diagram illustrating a certification badge (CSM/Scrum Alliance).",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-18-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 42,
+      "norm_label": "diagram illustrating a certification badge (csm/scrum alliance).",
+      "id": "assets_career-journey_deck_image-18-3",
+      "community_name": "Community 42"
+    },
+    {
+      "label": "Career Path Diagram showing Machine Learning Engineer track and Google Cloud certification levels",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-18-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 43,
+      "norm_label": "career path diagram showing machine learning engineer track and google cloud certification levels",
+      "id": "assets_career-journey_deck_image-18-4",
+      "community_name": "Community 43"
+    },
+    {
+      "label": "Certification Overview Diagram showing Data Engineer Associate and Databricks certification",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-18-5.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 44,
+      "norm_label": "certification overview diagram showing data engineer associate and databricks certification",
+      "id": "assets_career-journey_deck_image-18-5",
+      "community_name": "Community 44"
+    },
+    {
+      "label": "Diagram/Logo depicting Microsoft Certified Associate status",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-18-6.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 45,
+      "norm_label": "diagram/logo depicting microsoft certified associate status",
+      "id": "assets_career-journey_deck_image-18-6",
+      "community_name": "Community 45"
+    },
+    {
+      "label": "Diagram/Logo depicting AWS Certified Cloud Practitioner status",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-18-7.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 46,
+      "norm_label": "diagram/logo depicting aws certified cloud practitioner status",
+      "id": "assets_career-journey_deck_image-18-7",
+      "community_name": "Community 46"
+    },
+    {
+      "label": "Logo/Branding: SPH MEDIA",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-19-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 47,
+      "norm_label": "logo/branding: sph media",
+      "id": "assets_career-journey_deck_image-19-1",
+      "community_name": "Community 47"
+    },
+    {
+      "label": "Logo/Branding: PRUDENTIAL",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-19-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 48,
+      "norm_label": "logo/branding: prudential",
+      "id": "assets_career-journey_deck_image-19-2",
+      "community_name": "Community 48"
+    },
+    {
+      "label": "Logo/Branding (Dyson)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-19-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 49,
+      "norm_label": "logo/branding (dyson)",
+      "id": "assets_career-journey_deck_image-19-3",
+      "community_name": "Community 49"
+    },
+    {
+      "label": "Logo/Branding (Singapore Tourism Board)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-19-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 50,
+      "norm_label": "logo/branding (singapore tourism board)",
+      "id": "assets_career-journey_deck_image-19-4",
+      "community_name": "Community 50"
+    },
+    {
+      "label": "Diagram of a person's profile (Icon)",
+      "file_type": "image",
+      "source_file": "pasted_image_1",
+      "community": 121,
+      "norm_label": "diagram of a person's profile (icon)",
+      "id": "image_person_profile",
+      "community_name": "Community 121"
+    },
+    {
+      "label": "sph MEDIA logo",
+      "file_type": "image",
+      "source_file": "pasted_image_2",
+      "community": 122,
+      "norm_label": "sph media logo",
+      "id": "image_sph_media_logo",
+      "community_name": "Community 122"
+    },
+    {
+      "label": "Diagram showing career progression stages",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-2-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 51,
+      "norm_label": "diagram showing career progression stages",
+      "id": "assets_career-journey_deck_image-2-3",
+      "community_name": "Community 51"
+    },
+    {
+      "label": "Diagram showing career progression stages",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-2-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 52,
+      "norm_label": "diagram showing career progression stages",
+      "id": "assets_career-journey_deck_image-2-4",
+      "community_name": "Community 52"
+    },
+    {
+      "label": "Prudential Logo/Branding",
+      "file_type": "image",
+      "source_file": "user_provided_logo.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 124,
+      "norm_label": "prudential logo/branding",
+      "id": "prudential",
+      "community_name": "Community 124"
+    },
+    {
+      "label": "Portrait of a professional individual",
+      "file_type": "image",
+      "source_file": "user_provided_portrait.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 131,
+      "norm_label": "portrait of a professional individual",
+      "id": "unnamed_person",
+      "community_name": "Community 131"
+    },
+    {
+      "label": "Diagram or Slide Visual",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-2-5.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 53,
+      "norm_label": "diagram or slide visual",
+      "id": "assets_career-journey_deck_image-2-5",
+      "community_name": "Community 53"
+    },
+    {
+      "label": "Diagram or Slide Visual",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-2-6.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 54,
+      "norm_label": "diagram or slide visual",
+      "id": "assets_career-journey_deck_image-2-6",
+      "community_name": "Community 54"
+    },
+    {
+      "label": "Diagram/Slide Image (Career Journey)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-20-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 55,
+      "norm_label": "diagram/slide image (career journey)",
+      "id": "assets_career-journey_deck_image-20-1",
+      "community_name": "Community 55"
+    },
+    {
+      "label": "Diagram illustrating career journey stages",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-20-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 110,
+      "norm_label": "diagram illustrating career journey stages",
+      "id": "assets_career_journey_deck_image-20-2",
+      "community_name": "Community 110"
+    },
+    {
+      "label": "Diagram illustrating career journey stage 20-3",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-20-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 56,
+      "norm_label": "diagram illustrating career journey stage 20-3",
+      "id": "assets_career-journey_deck_image-20-3",
+      "community_name": "Community 56"
+    },
+    {
+      "label": "Diagram illustrating career journey stage 20-4",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-20-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 57,
+      "norm_label": "diagram illustrating career journey stage 20-4",
+      "id": "assets_career-journey_deck_image-20-4",
+      "community_name": "Community 57"
+    },
+    {
+      "label": "Diagram illustrating a career journey stage or concept",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-22-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 58,
+      "norm_label": "diagram illustrating a career journey stage or concept",
+      "id": "assets_career-journey_deck_image-22-1",
+      "community_name": "Community 58"
+    },
+    {
+      "label": "Diagram illustrating a career journey stage or concept",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-23-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 59,
+      "norm_label": "diagram illustrating a career journey stage or concept",
+      "id": "assets_career-journey_deck_image-23-1",
+      "community_name": "Community 59"
+    },
+    {
+      "label": "Diagram/Slide content depicting career journey stages",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-23-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 60,
+      "norm_label": "diagram/slide content depicting career journey stages",
+      "id": "assets_career-journey_deck_image-23-2",
+      "community_name": "Community 60"
+    },
+    {
+      "label": "Diagram/Slide Visual",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-23-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 111,
+      "norm_label": "diagram/slide visual",
+      "id": "assets_career_journey_deck_image-23-3",
+      "community_name": "Community 111"
+    },
+    {
+      "label": "Diagram illustrating career journey stages",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-23-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 61,
+      "norm_label": "diagram illustrating career journey stages",
+      "id": "assets_career-journey_deck_image-23-4",
+      "community_name": "Community 61"
+    },
+    {
+      "label": "Diagram or chart related to career journey (content unknown)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-24-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 62,
+      "norm_label": "diagram or chart related to career journey (content unknown)",
+      "id": "assets_career-journey_deck_image-24-1",
+      "community_name": "Community 62"
+    },
+    {
+      "label": "Diagram showing a large 'P' (likely representing a phase or concept in a career journey).",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-24-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 63,
+      "norm_label": "diagram showing a large 'p' (likely representing a phase or concept in a career journey).",
+      "id": "assets_career-journey_deck_image-24-2",
+      "community_name": "Community 63"
+    },
+    {
+      "label": "Diagram showing a large 'X' (likely representing a phase or concept in a career journey).",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-24-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 64,
+      "norm_label": "diagram showing a large 'x' (likely representing a phase or concept in a career journey).",
+      "id": "assets_career-journey_deck_image-24-3",
+      "community_name": "Community 64"
+    },
+    {
+      "label": "Logo/Icon for Ps (Adobe Photoshop)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-24-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 65,
+      "norm_label": "logo/icon for ps (adobe photoshop)",
+      "id": "assets_career-journey_deck_image-24-4",
+      "community_name": "Community 65"
+    },
+    {
+      "label": "Logo/Icon for W (Microsoft Word)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-24-5.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 66,
+      "norm_label": "logo/icon for w (microsoft word)",
+      "id": "assets_career-journey_deck_image-24-5",
+      "community_name": "Community 66"
+    },
+    {
+      "label": "Diagram slide showing career journey steps",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-24-6.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 67,
+      "norm_label": "diagram slide showing career journey steps",
+      "id": "assets_career-journey_deck_image-24-6",
+      "community_name": "Community 67"
+    },
+    {
+      "label": "Diagram slide showing career journey steps",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-25-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 68,
+      "norm_label": "diagram slide showing career journey steps",
+      "id": "assets_career-journey_deck_image-25-1",
+      "community_name": "Community 68"
+    },
+    {
+      "label": "Diagram illustrating a career journey or progression path",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-25-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 69,
+      "norm_label": "diagram illustrating a career journey or progression path",
+      "id": "assets_career-journey_deck_image-25-2",
+      "community_name": "Community 69"
+    },
+    {
+      "label": "Photo of an hourglass/sand timer",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-26-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 70,
+      "norm_label": "photo of an hourglass/sand timer",
+      "id": "assets_career-journey_deck_image-26-1",
+      "community_name": "Community 70"
+    },
+    {
+      "label": "Diagram slide showing career journey stages and progression",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-26-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 112,
+      "norm_label": "diagram slide showing career journey stages and progression",
+      "id": "assets_career_journey_deck_image_26_2",
+      "community_name": "Community 112"
+    },
+    {
+      "label": "Diagram slide showing career journey stages and progression",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-3-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 113,
+      "norm_label": "diagram slide showing career journey stages and progression",
+      "id": "assets_career_journey_deck_image_3_1",
+      "community_name": "Community 113"
+    },
+    {
+      "label": "Diagram or Slide Visual Element",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-3-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 71,
+      "norm_label": "diagram or slide visual element",
+      "id": "assets_career-journey_deck_image-3-2",
+      "community_name": "Community 71"
+    },
+    {
+      "label": "Diagram or Slide Visual Element",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-3-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 72,
+      "norm_label": "diagram or slide visual element",
+      "id": "assets_career-journey_deck_image-3-3",
+      "community_name": "Community 72"
+    },
+    {
+      "label": "Diagram illustrating career journey stages or concepts",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-3-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 73,
+      "norm_label": "diagram illustrating career journey stages or concepts",
+      "id": "assets_career-journey_deck_image-3-4",
+      "community_name": "Community 73"
+    },
+    {
+      "label": "Slide content featuring text and a QR code, likely summarizing professional information or contact details",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-32-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 74,
+      "norm_label": "slide content featuring text and a qr code, likely summarizing professional information or contact details",
+      "id": "assets_career-journey_deck_image-32-1",
+      "community_name": "Community 74"
+    },
+    {
+      "label": "Logo depicting 'coursera' text",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-33-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 75,
+      "norm_label": "logo depicting 'coursera' text",
+      "id": "assets_career-journey_deck_image-33-1",
+      "community_name": "Community 75"
+    },
+    {
+      "label": "Badge/Diagram for 'Google Cloud Certified Data Engineer'",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-33-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 76,
+      "norm_label": "badge/diagram for 'google cloud certified data engineer'",
+      "id": "assets_career-journey_deck_image-33-2",
+      "community_name": "Community 76"
+    },
+    {
+      "label": "Diagram illustrating Scrum Master certification (CSM) and career path",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-33-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 77,
+      "norm_label": "diagram illustrating scrum master certification (csm) and career path",
+      "id": "assets_career-journey_deck_image-33-3",
+      "community_name": "Community 77"
+    },
+    {
+      "label": "Diagram illustrating Machine Learning Engineer certification and Google Cloud Professional status",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-33-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 78,
+      "norm_label": "diagram illustrating machine learning engineer certification and google cloud professional status",
+      "id": "assets_career-journey_deck_image-33-4",
+      "community_name": "Community 78"
+    },
+    {
+      "label": "Diagram illustrating Cloud Engineer career path and levels",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-33-5.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 79,
+      "norm_label": "diagram illustrating cloud engineer career path and levels",
+      "id": "assets_career-journey_deck_image-33-5",
+      "community_name": "Community 79"
+    },
+    {
+      "label": "Certification badge for Google Cloud Certified Associate",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-33-6.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 80,
+      "norm_label": "certification badge for google cloud certified associate",
+      "id": "assets_career-journey_deck_image-33-6",
+      "community_name": "Community 80"
+    },
+    {
+      "label": "AWS Cloud Practitioner Certification Badge/Graphic",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-33-7.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 81,
+      "norm_label": "aws cloud practitioner certification badge/graphic",
+      "id": "assets_career-journey_deck_image-33-7",
+      "community_name": "Community 81"
+    },
+    {
+      "label": "Logo or Branding for Pandas",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-10.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 82,
+      "norm_label": "logo or branding for pandas",
+      "id": "assets_career-journey_deck_image-4-10",
+      "community_name": "Community 82"
+    },
+    {
+      "label": "Logo or Diagram for Cotobrics",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-11.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 83,
+      "norm_label": "logo or diagram for cotobrics",
+      "id": "assets_career-journey_deck_image-4-11",
+      "community_name": "Community 83"
+    },
+    {
+      "label": "Diagram showing Apache Spark logo and branding",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-12.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 84,
+      "norm_label": "diagram showing apache spark logo and branding",
+      "id": "assets_career-journey_deck_image-4-12",
+      "community_name": "Community 84"
+    },
+    {
+      "label": "Diagram showing Tableau logo and branding",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-13.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 85,
+      "norm_label": "diagram showing tableau logo and branding",
+      "id": "assets_career-journey_deck_image-4-13",
+      "community_name": "Community 85"
+    },
+    {
+      "label": "Diagram showing career progression stages",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-14.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 86,
+      "norm_label": "diagram showing career progression stages",
+      "id": "assets_career-journey_deck_image-4-14",
+      "community_name": "Community 86"
+    },
+    {
+      "label": "Diagram showing career progression stages",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 87,
+      "norm_label": "diagram showing career progression stages",
+      "id": "assets_career-journey_deck_image-4-2",
+      "community_name": "Community 87"
+    },
+    {
+      "label": "Photo of a person (likely speaker/subject)",
+      "file_type": "image",
+      "source_file": "unnamed_image",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 130,
+      "norm_label": "photo of a person (likely speaker/subject)",
+      "id": "unnamed_image",
+      "community_name": "Community 130"
+    },
+    {
+      "label": "Diagram illustrating a career journey or progression path",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 88,
+      "norm_label": "diagram illustrating a career journey or progression path",
+      "id": "assets_career-journey_deck_image-4-3png",
+      "community_name": "Community 88"
+    },
+    {
+      "label": "Diagram illustrating a connection or flow between two concepts (e.g., skills and roles)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 89,
+      "norm_label": "diagram illustrating a connection or flow between two concepts (e.g., skills and roles)",
+      "id": "assets_career-journey_deck_image-4-4png",
+      "community_name": "Community 89"
+    },
+    {
+      "label": "Diagram or Visual Slide Content",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-5.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 90,
+      "norm_label": "diagram or visual slide content",
+      "id": "assets_career-journey_deck_image-4-5",
+      "community_name": "Community 90"
+    },
+    {
+      "label": "Logo or Diagram (X and dbt text)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-6.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 91,
+      "norm_label": "logo or diagram (x and dbt text)",
+      "id": "assets_career-journey_deck_image-4-6",
+      "community_name": "Community 91"
+    },
+    {
+      "label": "Career Journey Diagram Visual",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-7.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 92,
+      "norm_label": "career journey diagram visual",
+      "id": "assets_career-journey_deck_image-4-7",
+      "community_name": "Community 92"
+    },
+    {
+      "label": "Career Journey Diagram Visual",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-8.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 93,
+      "norm_label": "career journey diagram visual",
+      "id": "assets_career-journey_deck_image-4-8",
+      "community_name": "Community 93"
+    },
+    {
+      "label": "Diagram showing career journey stages (Image 4-9)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-4-9.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 94,
+      "norm_label": "diagram showing career journey stages (image 4-9)",
+      "id": "assets_career-journey_deck_image-4-9",
+      "community_name": "Community 94"
+    },
+    {
+      "label": "Diagram showing career journey stages (Image 5-1)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-5-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 95,
+      "norm_label": "diagram showing career journey stages (image 5-1)",
+      "id": "assets_career-journey_deck_image-5-1",
+      "community_name": "Community 95"
+    },
+    {
+      "label": "Photo of a person (Unknown)",
+      "file_type": "image",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 129,
+      "norm_label": "photo of a person (unknown)",
+      "id": "unknown_person",
+      "community_name": "Community 129"
+    },
+    {
+      "label": "Diagram showing career journey stages or progression",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-5-3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 96,
+      "norm_label": "diagram showing career journey stages or progression",
+      "id": "assets_career-journey_deck_image-5-3",
+      "community_name": "Community 96"
+    },
+    {
+      "label": "Logo and Branding for Workforce Singapore (WSG)",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-5-4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 97,
+      "norm_label": "logo and branding for workforce singapore (wsg)",
+      "id": "assets_career-journey_deck_image-5-4",
+      "community_name": "Community 97"
+    },
+    {
+      "label": "Photo of a professional man",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-7-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 98,
+      "norm_label": "photo of a professional man",
+      "id": "assets_career-journey_deck_image-7-1",
+      "community_name": "Community 98"
+    },
+    {
+      "label": "Diagram illustrating career progression stages and transitions",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-8-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 99,
+      "norm_label": "diagram illustrating career progression stages and transitions",
+      "id": "assets_career-journey_deck_image-8-1",
+      "community_name": "Community 99"
+    },
+    {
+      "label": "Photo depicting people in a professional or educational setting",
+      "file_type": "image",
+      "source_file": "assets/career-journey/deck/image-9-1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 100,
+      "norm_label": "photo depicting people in a professional or educational setting",
+      "id": "assets_career-journey_deck_image-9-1",
+      "community_name": "Community 100"
+    },
+    {
+      "label": "Transferable Skills Section",
+      "file_type": "concept",
+      "source_file": "data/career-journey-slides/?json",
+      "source_location": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 17,
+      "norm_label": "transferable skills section",
+      "id": "transferable_skills",
+      "community_name": "Community 17"
+    },
+    {
+      "label": "What You Can Learn Section",
+      "file_type": "concept",
+      "source_file": "data/career-journey-slides/?json",
+      "source_location": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 17,
+      "norm_label": "what you can learn section",
+      "id": "what_learn",
+      "community_name": "Community 17"
+    },
+    {
+      "label": "Let's Connect Slide",
+      "file_type": "image",
+      "source_file": "data/career-journey-slides/?json",
+      "source_location": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 17,
+      "norm_label": "let's connect slide",
+      "id": "connect",
+      "community_name": "Community 17"
+    },
+    {
+      "label": "/about/ page content update",
+      "file_type": "concept",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 7,
+      "norm_label": "/about/ page content update",
+      "id": "about_page",
+      "community_name": "Community 7"
+    },
+    {
+      "label": "Career Journey Page Component/Route",
+      "file_type": "concept",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 7,
+      "norm_label": "career journey page component/route",
+      "id": "career_journey_page",
+      "community_name": "Community 7"
+    },
+    {
+      "label": "Career Journey Data Structure (JSON/Schema)",
+      "file_type": "concept",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 7,
+      "norm_label": "career journey data structure (json/schema)",
+      "id": "career_journey_data_structure",
+      "community_name": "Community 7"
+    },
+    {
+      "label": "Career Journey Content Validation Script",
+      "file_type": "code",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 7,
+      "norm_label": "career journey content validation script",
+      "id": "career_journey_validation_script",
+      "community_name": "Community 7"
+    },
+    {
+      "label": "New CSS Modules (Styling)",
+      "file_type": "code",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 7,
+      "norm_label": "new css modules (styling)",
+      "id": "css_modules",
+      "community_name": "Community 7"
+    },
+    {
+      "label": "New JavaScript Modules (Interactivity)",
+      "file_type": "code",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 7,
+      "norm_label": "new javascript modules (interactivity)",
+      "id": "js_modules",
+      "community_name": "Community 7"
+    },
+    {
+      "label": "Dependency Management Update (uv/pyproject.toml)",
+      "file_type": "code",
+      "source_file": "N/A",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 7,
+      "norm_label": "dependency management update (uv/pyproject.toml)",
+      "id": "dependency_management_update",
+      "community_name": "Community 7"
+    },
+    {
+      "label": "Design System & Style Guide",
+      "file_type": "document",
+      "source_file": null,
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 23,
+      "norm_label": "design system & style guide",
+      "id": "design_system",
+      "community_name": "Community 23"
+    },
+    {
+      "label": "Visual Design Tokens",
+      "file_type": "concept",
+      "source_file": null,
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 23,
+      "norm_label": "visual design tokens",
+      "id": "visual_tokens",
+      "community_name": "Community 23"
+    },
+    {
+      "label": "DIY pageview tracking documentation",
+      "file_type": "document",
+      "source_file": "docs/diy-tracking.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 118,
+      "norm_label": "diy pageview tracking documentation",
+      "id": "docs_diy_tracking",
+      "community_name": "Community 118"
+    },
+    {
+      "label": "E2E Test Script",
+      "file_type": "code",
+      "source_file": "docs/preview-uat.md",
+      "source_location": "bash",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "e2e test script",
+      "id": "npm_run_test:e2e",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "PR Artifact (downloadable dist)",
+      "file_type": "concept",
+      "source_file": "docs/preview-uat.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "pr artifact (downloadable dist)",
+      "id": "site-preview",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Cutover Documentation",
+      "file_type": "document",
+      "source_file": "docs/preview-uat.md",
+      "source_location": null,
+      "source_url": "cutover.md",
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 4,
+      "norm_label": "cutover documentation",
+      "id": "cutover_md",
+      "community_name": "Community 4"
+    },
+    {
+      "label": "Project Overview and Migration Guidelines",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 27,
+      "norm_label": "project overview and migration guidelines",
+      "id": "README",
+      "community_name": "Community 27"
+    },
+    {
+      "label": "Spacing Token Drift Analysis",
+      "file_type": "concept",
+      "source_file": "spacing_drift_table",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 127,
+      "norm_label": "spacing token drift analysis",
+      "id": "spacing_drift_table",
+      "community_name": "Community 127"
+    },
+    {
+      "label": "Border Radius Token Mapping",
+      "file_type": "concept",
+      "source_file": "radius_drift_table",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 125,
+      "norm_label": "border radius token mapping",
+      "id": "radius_drift_table",
+      "community_name": "Community 125"
+    },
+    {
+      "label": "Breakpoint Definition Review",
+      "file_type": "concept",
+      "source_file": "breakpoints_table",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 116,
+      "norm_label": "breakpoint definition review",
+      "id": "breakpoints_table",
+      "community_name": "Community 116"
     }
   ],
   "links": [
@@ -4792,6 +6761,16 @@
       "target": "scripts_test_diy_collect_main"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/preview-uat.md",
+      "source_location": "bash",
+      "weight": 1.0,
+      "source": "docs_preview-uat",
+      "target": "scripts_test_site_build"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/test_site_build.py",
@@ -5487,8 +7466,397 @@
       "confidence_score": 1.0,
       "source": "tests_e2e_visual_spec",
       "target": "tests_e2e_visual_spec_slugfor"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents",
+      "target": "explain"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents",
+      "target": "graphify_out"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents",
+      "target": "path"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents",
+      "target": "query"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "agents",
+      "target": "wiki_index"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "explain",
+      "target": "graphify_out"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "path",
+      "target": "graphify_out"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "query",
+      "target": "graphify_out"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "Data: vendored PUBLIC JSON from [personal-content]... data/export_public.json",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "data_export_public"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "docs_cutover"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "[docs/design-system.md](docs/design-system.md) \u2014 senior enterprise briefing contract (tokens, proof hierarchy, components)",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "docs_design-system"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "see [docs/diy-tracking.md](docs/diy-tracking.md)",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "docs_diy-tracking"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "See [docs/preview-uat.md](docs/preview-uat.md).",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "docs_preview-uat"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "[docs/site-builder.md](docs/site-builder.md) \u2014 build pipeline, config map, IA rules",
+      "weight": 1.0,
+      "source": "readme",
+      "target": "docs_site-builder"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/preview-uat.md",
+      "source_location": "text",
+      "weight": 1.0,
+      "source": "docs_preview-uat",
+      "target": "cutover_md"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/preview-uat.md",
+      "source_location": "bash",
+      "weight": 1.0,
+      "source": "docs_preview-uat",
+      "target": "npm_run_test:e2e"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/preview-uat.md",
+      "source_location": "null",
+      "weight": 1.0,
+      "source": "docs_preview-uat",
+      "target": "site-preview"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.9,
+      "source_file": "N/A",
+      "weight": 1.0,
+      "source": "assets_career-journey_deck_image-1-1",
+      "target": "book_the_constitution_of_europe_weathrill"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.9,
+      "source_file": "N/A",
+      "weight": 1.0,
+      "source": "assets_career-journey_deck_image-10-1",
+      "target": "book_the_constitution_of_europe_weathrill"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "data/career-journey-slides/?json",
+      "weight": 1.0,
+      "source": "transferable_skills",
+      "target": "connect"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "data/career-journey-slides/?json",
+      "weight": 1.0,
+      "source": "transferable_skills",
+      "target": "what_learn"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "N/A",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "career_journey_page",
+      "target": "about_page"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "N/A",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "career_journey_page",
+      "target": "career_journey_data_structure"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "N/A",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "career_journey_page",
+      "target": "css_modules"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "N/A",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "career_journey_page",
+      "target": "js_modules"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "N/A",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "career_journey_validation_script",
+      "target": "career_journey_data_structure"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "N/A",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dependency_management_update",
+      "target": "css_modules"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "N/A",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dependency_management_update",
+      "target": "js_modules"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "",
+      "weight": 1.0,
+      "source": "design_system",
+      "target": "visual_tokens"
     }
   ],
-  "hyperedges": [],
-  "built_at_commit": "67af35a9d401bedaf07dcb0f4dabb2e5d50a01f7"
+  "hyperedges": [
+    {
+      "id": "graphify_usage_commands",
+      "label": "Graph Query and Navigation Commands",
+      "nodes": [
+        "query",
+        "path",
+        "explain"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "AGENTS.md"
+    },
+    {
+      "id": "build_pipeline_docs",
+      "label": "Documentation for Site Build Process",
+      "nodes": [
+        "readme",
+        "docs_site-builder",
+        "docs_preview-uat",
+        "docs_cutover"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "README.md"
+    },
+    {
+      "id": "skill_summary_flow",
+      "label": "Career Skill Summary Flow",
+      "nodes": [
+        "transferable_skills",
+        "what_learn",
+        "connect"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "data/career-journey-slides/?json"
+    },
+    {
+      "id": "frontend_component_stack",
+      "label": "Career Journey Frontend Component Stack",
+      "nodes": [
+        "career_journey_page",
+        "css_modules",
+        "js_modules"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "N/A"
+    },
+    {
+      "id": "content_pipeline_validation",
+      "label": "Content Pipeline Validation Flow",
+      "nodes": [
+        "career_journey_data_structure",
+        "career_journey_validation_script",
+        "about_page"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.85,
+      "source_file": "N/A"
+    },
+    {
+      "id": "dossier_narrative_flow",
+      "label": "Core Professional Narrative Flow (Dossier Structure)",
+      "nodes": [
+        "design_system",
+        "visual_tokens"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": null
+    },
+    {
+      "id": "redirect_paths",
+      "label": "WordPress redirect paths and destinations",
+      "nodes": [
+        "docs_redirects"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.9,
+      "source_file": "docs/redirects.md"
+    },
+    {
+      "id": "css_tokenization_scope",
+      "label": "CSS Tokenization Scope and Enforcement",
+      "nodes": [
+        "README",
+        "spacing_drift_table",
+        "radius_drift_table",
+        "breakpoints_table"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "README.md"
+    }
+  ],
+  "built_at_commit": "ef46633f238e325d2327a8bed571940d24e0993f"
 }
