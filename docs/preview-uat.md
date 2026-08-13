@@ -63,3 +63,7 @@ Add required reviewers on the `uat` environment in GitHub settings if you want a
 ### Note
 
 UAT and production **share** the Pages hostname until you add a second host (e.g. Cloudflare Pages project). Apex `yzouyang.com` stays on WordPress until [cutover.md](cutover.md).
+
+## 4. CI / Pages failure → ntfy
+
+Optional GitHub Actions secret **`NTFY_TOPIC_URL`** (full topic URL). Job `notify-ntfy` runs after `lint-build` or `deploy` **failure** and POSTs the workflow run URL only (no PRIVATE/CV body). If the secret is unset, the job exits 0. Reuse the Alertmanager ntfy topic if you already subscribe on the phone.

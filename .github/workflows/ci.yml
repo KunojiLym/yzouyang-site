@@ -165,3 +165,33 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Pages/lint failure only — POST body is the Actions run URL (no site/CV content).
+  # When NTFY_TOPIC_URL is unset, this job exits 0 so missing secret does not fail CI.
+  notify-ntfy:
+    name: ntfy on failure
+    needs: [lint-build, deploy]
+    if: always() && !cancelled() && (needs.lint-build.result == 'failure' || needs.deploy.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: POST ntfy topic (skip if secret unset)
+        env:
+          NTFY_TOPIC_URL: ${{ secrets.NTFY_TOPIC_URL }}
+        run: |
+          if [ -z "${NTFY_TOPIC_URL}" ]; then
+            echo "NTFY_TOPIC_URL unset — skip (add repo secret; same topic as Alertmanager is fine)"
+            exit 0
+          fi
+          curl -fsS \
+            --connect-timeout 5 \
+            --max-time 15 \
+            --retry 2 \
+            --retry-delay 2 \
+            --retry-all-errors \
+            -H "Title: yzouyang-site CI failed" \
+            -H "Priority: high" \
+            -H "Tags: warning,github" \
+            -d "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            "${NTFY_TOPIC_URL}"
