@@ -166,8 +166,8 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
-  # Pages/lint failure only — body is workflow + run URL (no site/CV content).
-  # Skips green when secrets.NTFY_TOPIC_URL is unset so PRs stay usable.
+  # Pages/lint failure only — POST body is the Actions run URL (no site/CV content).
+  # When NTFY_TOPIC_URL is unset, this job exits 0 so missing secret does not fail CI.
   notify-ntfy:
     name: ntfy on failure
     needs: [lint-build, deploy]
@@ -185,8 +185,13 @@ jobs:
             exit 0
           fi
           curl -fsS \
+            --connect-timeout 5 \
+            --max-time 15 \
+            --retry 2 \
+            --retry-delay 2 \
+            --retry-all-errors \
             -H "Title: yzouyang-site CI failed" \
             -H "Priority: high" \
             -H "Tags: warning,github" \
-            -d "workflow=${GITHUB_WORKFLOW} ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            -d "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
             "${NTFY_TOPIC_URL}"
