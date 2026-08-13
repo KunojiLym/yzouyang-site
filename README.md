@@ -45,6 +45,8 @@ horizontally with active-slide animation.
 
 CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty). Contract tests + Playwright usability e2e run on every PR.
 
+Optional repo secret **`NTFY_TOPIC_URL`** (full ntfy HTTPS URL; same topic as Alertmanager is fine): on `lint-build` or Pages `deploy` **failure**, CI POSTs the Actions run URL only. Unset = skip, job stays green. Never commit the URL.
+
 Refresh export:
 
 ```bash
