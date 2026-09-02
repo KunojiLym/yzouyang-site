@@ -8,7 +8,7 @@
   --text-strong: #f2f7f3;
   --text-default: #e8efe9;
   --text-muted: #9aada3;
-  --text-faint: #6f8178;
+  --text-faint: #8a9c94;
   --ink: var(--text-default);
   --muted: var(--text-muted);
   --accent: #d4a35c;
@@ -78,10 +78,12 @@
 
   --bp-sm: 800px  — hero two-column -> stacked (home.css)
   --bp-md: 900px  — nav collapse (chrome.css) + long-form sidebar collapse
-                     (longform.css currently uses 960px; converges to 900px
-                     in the Phase 2 migration — see token-migration-checklist.md)
+                     (longform.css)
+  --bp-lg: 1024px — outcome-strip 3-column so three metrics share one row
+                     (home.css)
 
-  These stay as two values, not one, because the hero's two-column layout
+  --bp-sm and --bp-md stay distinct because the hero's two-column layout
   and the chrome/sidebar collapse are different layout concerns that happen
-  to be close in width, not the same concern duplicated three times.
+  to be close in width. --bp-lg is the outcome-strip row lock, not a
+  third chrome collapse.
 */

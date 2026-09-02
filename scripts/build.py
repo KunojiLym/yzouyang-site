@@ -200,7 +200,15 @@ def longform_page(
     search: bool = True,
 ) -> str:
     """Long-page shell: sticky sidebar TOC + main column (design-system longform)."""
-    search_html = '        <div id="search"></div>\n' if search else ""
+    search_html = (
+        '        <div class="page-search">\n'
+        '          <label class="page-search-label" for="pagefind-search-input">'
+        "Search this page</label>\n"
+        '          <div id="search"></div>\n'
+        "        </div>\n"
+        if search
+        else ""
+    )
     return f"""    <div class="page-with-toc">
 {toc_html(toc, sidebar=True)}      <div class="page-main">
         <h1>{title}</h1>
@@ -241,26 +249,35 @@ def figma_embed_html(
     link_label: str = "Open deck",
     tall: bool = False,
 ) -> str:
-    frame_class = "embed-frame embed-frame-tall" if tall else "embed-frame"
+    """Dark static Figma surface + Open link (no live iframe).
+
+    Figma's embed canvas paints white and blows out the charcoal page.
+    Design-system embed classes stay; policy is site-builder (fallback
+    must remain usable; embeds are not primary proof).
+    """
+    href = link or embed
+    frame_class = "embed-frame embed-frame-static"
+    if tall:
+        frame_class += " embed-frame-tall"
     fallback = ""
-    if link:
+    if href:
         fallback = (
-            f'<a class="embed-fallback" href="{esc(link)}" target="_blank" '
+            f'<a class="embed-fallback" href="{esc(href)}" target="_blank" '
             f'rel="noopener noreferrer"><strong>{esc(link_label)}</strong>'
-            f" — opens in Figma if the embed does not load</a>"
+            f" — opens in Figma</a>"
+        )
+    preview = ""
+    if href:
+        preview = (
+            f'<a class="{frame_class}" href="{esc(href)}" target="_blank" '
+            f'rel="noopener noreferrer">'
+            f'<span class="embed-frame-label">{esc(title)}</span>'
+            f'<span class="embed-frame-action">Open in Figma</span></a>'
         )
     return f"""
       <div class="embed-wrap">
         {fallback}
-        <div class="{frame_class}">
-          <iframe
-            title="{esc(title)}"
-            src="{esc(embed)}"
-            allowfullscreen
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
+        {preview}
       </div>"""
 
 
@@ -632,6 +649,10 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
       const mount = document.querySelector("#search");
       if (mount && window.PagefindUI) {{
         new PagefindUI({{ element: "#search", showSubResults: true }});
+        const input = mount.querySelector(".pagefind-ui__search-input");
+        if (input) {{
+          input.id = "pagefind-search-input";
+        }}
       }}
     }});
   </script>"""
@@ -855,12 +876,14 @@ def build_about(site: dict, export: dict, cj: dict | None = None) -> str:
                 f'rel="noopener noreferrer">{esc(str(original_label))}</a>'
             )
         journey_inner = (
-            f'<div class="cj-link-card">\n'
-            f"        <h3>{cj_title}</h3>\n"
-            + (f"        <p>{cj_desc}</p>\n" if cj_desc else "")
-            + f'        <p class="links"><a href="{cj_href}"><strong>Read my career journey →</strong></a>'
+            f'<ul class="item-list highlight-list">\n'
+            f"        <li>\n"
+            f"          <h3>{cj_title}</h3>\n"
+            + (f"          <p>{cj_desc}</p>\n" if cj_desc else "")
+            + f'          <p class="links"><a href="{cj_href}">Read my career journey</a>'
             f"{original_bit}</p>\n"
-            f"      </div>"
+            f"        </li>\n"
+            f"      </ul>"
         )
     elif isinstance(journey, dict) and (journey.get("embed") or journey.get("link")):
         # Fallback: no native page built yet — keep the legacy Figma embed.
@@ -993,7 +1016,7 @@ def _link_label(url: str) -> str:
     if "yzouyang.com" in u:
         return "Article archive"
     if "bit.ly" in u:
-        return url
+        return "Verify"
     return "Link"
 
 
@@ -1218,14 +1241,11 @@ def _cert_item_html(row: dict) -> str:
     issued = esc(row.get("issued") or "")
     expires = esc(row.get("expires") or "")
     primary, bitly = primary_and_short(urls_from_bullets(row.get("bullets")))
+    verify_href = primary or bitly
     links = []
-    if primary:
+    if verify_href:
         links.append(
-            f'<a href="{esc(primary)}" target="_blank" rel="noopener noreferrer">Verify</a>'
-        )
-    if bitly:
-        links.append(
-            f'<a href="{esc(bitly)}" target="_blank" rel="noopener noreferrer">{esc(bitly)}</a>'
+            f'<a href="{esc(verify_href)}" target="_blank" rel="noopener noreferrer">Verify</a>'
         )
     link_html = f'<p class="links">{" · ".join(links)}</p>' if links else ""
     validity = f"issued {issued}" if issued else ""
@@ -1412,8 +1432,8 @@ def build_credentials(site: dict, export: dict) -> str:
 
     body = "\n".join(blocks) if blocks else "    <p>No PUBLIC credentials in export.</p>"
     lede_html = (
-        f'<p class="page-lede">{esc(lede)} Short link: '
-        f'<a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>'
+        f'<p class="page-lede">{esc(lede)} '
+        f'<a href="{short}" target="_blank" rel="noopener noreferrer">Short link</a></p>'
     )
     return longform_page(
         title="Credentials &amp; Verifications",

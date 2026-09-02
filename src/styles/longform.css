@@ -24,7 +24,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--text-muted);
 }
 
 .page-toc ul {
@@ -78,7 +78,7 @@
 
 .page-toc-sub a {
   font-size: var(--text-sm);
-  color: var(--text-faint);
+  color: var(--text-muted);
 }
 
 .page-toc-sub a:hover {

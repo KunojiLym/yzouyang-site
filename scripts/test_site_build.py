@@ -99,6 +99,8 @@ def main() -> None:
         re.S,
     ):
         fail("hero h1 must set font-size: var(--text-display-hero)")
+    if "repeat(3, minmax(0, 1fr))" not in css:
+        fail("styles.css missing outcome-strip 3-column grid at --bp-lg")
     if "background-color: var(--bg-deep)" not in css:
         fail("styles.css missing solid background-color: var(--bg-deep)")
     if "position: sticky" not in css:
@@ -123,6 +125,10 @@ def main() -> None:
             fail(f"{name} missing page-with-toc layout")
         if "page-toc-sidebar" not in html:
             fail(f"{name} missing sticky sidebar TOC class")
+        if 'class="page-search-label"' not in html:
+            fail(f"{name} missing visible search label")
+        if 'for="pagefind-search-input"' not in html:
+            fail(f"{name} search label missing for=pagefind-search-input")
 
     styles_dir = ROOT / "src" / "styles"
     for part in (
@@ -142,6 +148,8 @@ def main() -> None:
 
     if 'class="issuer-group"' not in credentials:
         fail("credentials missing issuer-group headings")
+    if re.search(r">https?://[^<]+<", credentials):
+        fail("credentials must not print raw verify URLs as link text")
 
     about = (DIST / "about" / "index.html").read_text(encoding="utf-8")
     if 'class="page-with-toc"' not in about:
@@ -162,6 +170,8 @@ def main() -> None:
             fail(f"{name} section-fold missing visually-hidden heading for outline")
     if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
         fail("about missing Figma open/fallback link")
+    if "cj-link-card" in about:
+        fail("about Career Journey must use editorial item-list rows, not cj-link-card")
     if 'id="selected-writing"' not in about:
         fail("about missing Selected writing section")
     if "medium.com/@kunojilym" not in about:
@@ -169,6 +179,10 @@ def main() -> None:
 
     if portfolio.count("github.com/") < 5:
         fail("portfolio missing expected public GitHub project links")
+    if "<iframe" in portfolio:
+        fail("portfolio must not load a live Figma iframe (white canvas on dark page)")
+    if "embed-wrap" in portfolio and "embed-frame-static" not in portfolio:
+        fail("portfolio Figma surface missing embed-frame-static dark preview")
     if 'class="page-toc-sub"' not in portfolio:
         fail("portfolio TOC missing nested subcategory list")
     if 'class="section-fold"' not in portfolio or 'class="section-fold"' not in credentials:

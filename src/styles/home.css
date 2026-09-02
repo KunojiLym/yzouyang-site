@@ -93,8 +93,8 @@ main.page .hero h1 {
 }
 
 .outcome-strip {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--space-3) var(--space-5);
   list-style: none;
   margin: 0 0 var(--space-5);
@@ -103,7 +103,7 @@ main.page .hero h1 {
 }
 
 .outcome-strip li {
-  min-width: 8rem;
+  min-width: 0;
 }
 
 .outcome-strip .metric {
@@ -120,7 +120,7 @@ main.page .hero h1 {
   font-size: var(--text-sm);
   color: var(--text-muted);
   margin-top: var(--space-1);
-  max-width: 14rem;
+  max-width: none;
 }
 
 .proof-strip {
@@ -135,15 +135,15 @@ main.page .hero h1 {
 
 .proof-strip li {
   font-size: var(--text-sm);
-  color: var(--text-muted);
+  color: var(--text-default);
   padding: var(--space-tight) var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
-  background: var(--bg-panel);
+  background: transparent;
 }
 
 .proof-strip strong {
-  color: var(--text-default);
+  color: inherit;
   font-weight: 600;
 }
 
@@ -213,5 +213,13 @@ main.page .hero h1 {
     justify-self: start;
     order: 1;
     width: min(100%, 16rem);
+  }
+}
+
+/* --bp-lg: 1024px (see tokens.css) — three outcome metrics on one row */
+@media (width >= 1024px) {
+  .outcome-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
   }
 }

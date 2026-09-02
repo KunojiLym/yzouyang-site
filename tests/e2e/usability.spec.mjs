@@ -77,6 +77,32 @@ test.describe("home", () => {
     expect(type.fontSize).toBeTruthy();
   });
 
+  test("outcome strip is three columns at desktop, proof pills match", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/");
+    const items = page.locator(".outcome-strip li");
+    await expect(items).toHaveCount(3);
+    const boxes = await items.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { y: r.y, x: r.x };
+      })
+    );
+    expect(Math.abs(boxes[0].y - boxes[2].y)).toBeLessThan(2);
+    expect(boxes[2].x).toBeGreaterThan(boxes[1].x);
+    const pillPaint = await page.locator(".proof-strip li").evaluateAll((els) =>
+      els.map((el) => {
+        const cs = getComputedStyle(el);
+        return { bg: cs.backgroundColor, border: cs.borderTopColor };
+      })
+    );
+    expect(pillPaint.length).toBeGreaterThan(1);
+    for (const pill of pillPaint) {
+      expect(pill.bg).toBe(pillPaint[0].bg);
+      expect(pill.border).toBe(pillPaint[0].border);
+    }
+  });
+
   test("proof strip, CTAs, portrait chip, contact section", async ({ page }, testInfo) => {
     await page.goto("/");
     await expect(page.locator(".outcome-strip")).toBeVisible();
@@ -170,6 +196,10 @@ test.describe("search", () => {
     await page.goto("/portfolio/");
     const input = page.locator(".pagefind-ui__search-input");
     await expect(input).toBeVisible({ timeout: 20_000 });
+    const searchLabel = page.locator("label.page-search-label");
+    await expect(searchLabel).toBeVisible();
+    await expect(searchLabel).toHaveText("Search this page");
+    await expect(input).toHaveAttribute("id", "pagefind-search-input");
     await input.fill("databricks");
     await expect(page.locator(".pagefind-ui__result").first()).toBeVisible({
       timeout: 15_000,
@@ -186,6 +216,8 @@ test.describe("toc + credentials", () => {
     test.skip(test.info().project.name === "mobile", "desktop toc coverage enough");
     await page.goto("/credentials/");
     await expect(page.locator("h3.issuer-group").first()).toBeVisible();
+    const rawUrlLinks = page.locator(".item-list a").filter({ hasText: /https?:\/\// });
+    await expect(rawUrlLinks).toHaveCount(0);
     const tocLink = page.locator(".page-toc a").first();
     await expect(tocLink).toBeVisible();
     const href = await tocLink.getAttribute("href");
@@ -208,6 +240,17 @@ test.describe("toc + credentials", () => {
     await page.evaluate(() => window.scrollTo(0, 1400));
     await expect(toc).toBeInViewport();
   });
+
+  test("portfolio Figma surface is dark preview not iframe", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/portfolio/");
+    await expect(page.locator("iframe")).toHaveCount(0);
+    const preview = page.locator(".embed-frame-static").first();
+    await expect(preview).toBeVisible();
+    const bg = await preview.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bg).not.toMatch(/^rgb\(\s*255,\s*255,\s*255/);
+    await expect(page.locator(".embed-fallback").first()).toBeVisible();
+  });
 });
 
 test.describe("about writing + figma", () => {
@@ -216,6 +259,8 @@ test.describe("about writing + figma", () => {
     await page.goto("/about/");
     await expect(page.locator("#selected-writing")).toBeVisible();
     await expect(page.locator(".writing-list a.external").first()).toBeVisible();
+    await expect(page.locator(".cj-link-card")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Read my career journey" })).toBeVisible();
     const open = page.locator("a.figma-open, a.embed-fallback").first();
     await expect(open).toBeVisible();
     await expect(open).toHaveAttribute("target", "_blank");

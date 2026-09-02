@@ -80,11 +80,12 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 ## Progressive embeds
 
-Figma (and similar) iframes are an implementation pattern, not brand chrome:
+Figma (and similar) embeds are an implementation pattern, not brand chrome:
 
-- Always pair the iframe with a visible **Open deck** / `.embed-fallback` link
+- Always pair the surface with a visible **Open deck** / `.embed-fallback` link
 - Prefer a direct Figma URL from project bullets when available
-- Blank or blocked iframes must still leave the fallback usable
+- Do not load a live Figma iframe (the embed canvas paints white on the dark dossier). Use `.embed-frame-static` as a dark preview plus the fallback link
+- Blank or blocked previews must still leave the fallback usable
 - Do not treat embeds as the primary proof signal — case copy (outcome → scope → tools) comes first
 
 ## Adding a new page or component
@@ -92,7 +93,7 @@ Figma (and similar) iframes are an implementation pattern, not brand chrome:
 A checklist for adding a new page, section, or component without reintroducing the raw-value drift Phase 1–3 cleaned up. Read [design-system.md](design-system.md) first for the visual contract (palette, type/spacing/radius scales, IA rules); this section is the mechanical "what do I touch, in what order" companion.
 
 1. **Reach for a token before writing a number.** Every `font-size` needs a `--text-*` (or `--text-display-*` if it's a fluid heading); every `margin`/`padding`/`gap` needs a `--space-*`; every `border-radius` needs a `--radius-*`. The full tables are in design-system.md's "Layer A" section. If nothing fits, that's a signal to reconsider the layout — don't invent a one-off. If a one-off is genuinely unavoidable (e.g. something intentionally relative to a parent font-size), add it with a `/* intentional one-off: why */` comment and register it in `.stylelintrc.json`'s `ignoreValues`, the same way the `chrome.css` arrow markers are handled.
-2. **Reuse an existing breakpoint.** `--bp-sm` (800px, hero-style two-column collapse) and `--bp-md` (900px, nav/sidebar collapse) are the only two in use — see design-system.md's "Breakpoints" table. A new third breakpoint is a design decision to write down in design-system.md, not a silent `@media` addition (custom properties can't be read inside `@media`, so breakpoints are documented constants, not `var()`).
+2. **Reuse an existing breakpoint.** `--bp-sm` (800px, hero-style two-column collapse), `--bp-md` (900px, nav/sidebar collapse), and `--bp-lg` (1024px, outcome-strip 3-column row) are the documented widths — see design-system.md's "Breakpoints" table. A new additional breakpoint is a design decision to write down in design-system.md, not a silent `@media` addition (custom properties can't be read inside `@media`, so breakpoints are documented constants, not `var()`).
 3. **Pick the right CSS module.** `src/styles/README.md` has the file-by-file responsibility table (chrome vs. home vs. components vs. longform vs. search vs. motion). Add rules to the module that already owns that concern rather than starting a new file.
 4. **Colors and fonts come from `tokens.css` only.** No raw hex codes or `font-family` literals in any other CSS file — `scripts/check_token_drift.py` fails CI on both.
 5. **Update `data/site.json` / builder in `scripts/build.py`**, not a hardcoded HTML string, if the new page/section needs new content fields — see the `site.json` map and Page builders tables above.
