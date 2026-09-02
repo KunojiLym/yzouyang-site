@@ -129,6 +129,19 @@
   padding: var(--space-2) var(--space-4) var(--space-5);
 }
 
+/* Clip, don't display:none — the heading must stay in the a11y tree. */
+main.page .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* --bp-md: 900px (see tokens.css) — converges from the previous 960px so
    nav collapse and long-form sidebar collapse share one reference width. */
 @media (width <= 900px) {

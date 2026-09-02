@@ -215,15 +215,17 @@ def section_fold_open(section_id: str, heading: str, *, level: str = "h2") -> st
     """Start a collapsible long-form section (default open).
 
     Summary is the section title (design-system) as phrasing content, not a
-    heading. Nested h2/h3 inside <summary> breaks disclosure semantics and
-    heading navigation. `level` is accepted so existing call sites stay valid.
+    heading — nested h2/h3 inside <summary> breaks disclosure semantics.
+    A visually hidden heading in the body keeps the document outline
+    (h1 → section h2 → item h3) for assistive tech.
     """
-    _ = level
+    tag = "h2" if level == "h2" else "h3"
     return (
         f'    <details class="section-fold" open>\n'
         f'      <summary class="section-fold-summary" id="{esc(section_id)}">'
         f"{heading}</summary>\n"
         f'      <div class="section-fold-body">\n'
+        f'        <{tag} class="visually-hidden">{heading}</{tag}>\n'
     )
 
 

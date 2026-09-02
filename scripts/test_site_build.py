@@ -158,6 +158,8 @@ def main() -> None:
             fail(f"{name} section-fold summary must not wrap a heading")
         if not re.search(r'<summary class="section-fold-summary" id="[^"]+">', html):
             fail(f"{name} section-fold summary missing id for TOC anchors")
+        if 'class="visually-hidden"' not in html:
+            fail(f"{name} section-fold missing visually-hidden heading for outline")
     if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
         fail("about missing Figma open/fallback link")
     if 'id="selected-writing"' not in about:
