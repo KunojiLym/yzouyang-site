@@ -38,6 +38,13 @@
   padding: var(--space-3) var(--space-6);
 }
 
+/* Long-form routes share one shell measure with main.page so brand / Contact
+   lock to the dossier column. Home keeps --max. */
+body:has(.page-with-toc) .site-header,
+body:has(.page-with-toc) .site-footer {
+  max-width: var(--max-longform);
+}
+
 .header-actions {
   display: flex;
   flex-wrap: wrap;

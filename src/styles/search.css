@@ -13,6 +13,8 @@
 
 #search {
   margin-bottom: 0;
+  margin-left: 0;
+  padding-left: 0;
 
   --pagefind-ui-scale: 0.92;
   --pagefind-ui-primary: var(--accent);
@@ -25,6 +27,12 @@
   --pagefind-ui-image-border-radius: var(--radius-md);
   --pagefind-ui-image-box-ratio: 3 / 2;
   --pagefind-ui-font: var(--font-body);
+}
+
+#search .pagefind-ui,
+#search .pagefind-ui__form {
+  margin-left: 0;
+  padding-left: 0;
 }
 
 #search .pagefind-ui__form {

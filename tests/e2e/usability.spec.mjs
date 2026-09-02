@@ -473,6 +473,109 @@ async function assertTocSearch(page) {
   await noHorizontalOverflow(page);
 }
 
+async function portfolioAxisMetrics(page) {
+  await page.evaluate(() => document.fonts.ready);
+  return page.evaluate(() => {
+    const textX = (el) => {
+      if (!el) return null;
+      const range = document.createRange();
+      const node = [...el.childNodes].find(
+        (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim()
+      );
+      if (node) {
+        range.setStart(node, 0);
+        range.setEnd(node, Math.min(1, node.textContent.length));
+        return range.getBoundingClientRect().x;
+      }
+      return el.getBoundingClientRect().x;
+    };
+    const textY = (el) => {
+      if (!el) return null;
+      const range = document.createRange();
+      const node = [...el.childNodes].find(
+        (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim()
+      );
+      if (node) {
+        range.setStart(node, 0);
+        range.setEnd(node, Math.min(1, node.textContent.length));
+        return range.getBoundingClientRect().y;
+      }
+      return el.getBoundingClientRect().y;
+    };
+    const h1 = document.querySelector(".page-main > h1");
+    const lede = document.querySelector(".page-main > .page-lede");
+    const searchInput = document.querySelector("#search .pagefind-ui__search-input");
+    const summary = document.querySelector(".section-fold > summary");
+    const bodyH3 = document.querySelector(".section-fold-body h3");
+    const bullet = document.querySelector(
+      ".section-fold-body .item-list ul li, .section-fold-body .competency-list li"
+    );
+    const tocLabel = document.querySelector(".page-toc-label");
+    const tocLink = document.querySelector(".page-toc-sidebar > ul > li > a");
+    const contact = document.querySelector(".header-actions > .header-contact");
+    const main = document.querySelector("main.page");
+    const mainCs = main ? getComputedStyle(main) : null;
+    const mainContentRight = main
+      ? main.getBoundingClientRect().right - parseFloat(mainCs.paddingRight || "0")
+      : null;
+    return {
+      h1: textX(h1),
+      lede: textX(lede),
+      searchBox: searchInput ? searchInput.getBoundingClientRect().x : null,
+      summary: textX(summary),
+      bodyH3: textX(bodyH3),
+      bullet: textX(bullet),
+      tocLabel: textX(tocLabel),
+      tocLink: textX(tocLink),
+      tocLabelY: textY(tocLabel),
+      h1Y: textY(h1),
+      contactRight: contact ? contact.getBoundingClientRect().right : null,
+      mainContentRight,
+      overflow: document.documentElement.scrollWidth > window.innerWidth + 2,
+      viewport: window.innerWidth,
+    };
+  });
+}
+
+function assertPrimaryAxis(m, tolerance = 3) {
+  const primary = [m.h1, m.lede, m.searchBox, m.summary, m.bodyH3];
+  for (const value of primary) {
+    expect(value, "primary-axis metric missing").not.toBeNull();
+  }
+  const min = Math.min(...primary);
+  const max = Math.max(...primary);
+  expect(
+    max - min,
+    `primary axis spread ${max - min}px (h1=${m.h1} lede=${m.lede} search=${m.searchBox} summary=${m.summary} h3=${m.bodyH3})`
+  ).toBeLessThanOrEqual(tolerance);
+  expect(m.bullet).toBeGreaterThan(m.bodyH3 + 8);
+  expect(m.overflow).toBe(false);
+}
+
+test.describe("portfolio alignment axes", () => {
+  test("1280: three text axes, TOC optical top, Contact locks to main", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop 1280");
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/portfolio/", { waitUntil: "networkidle" });
+    await expect(page.locator(".pagefind-ui__search-input")).toBeVisible({ timeout: 20_000 });
+    const m = await portfolioAxisMetrics(page);
+    assertPrimaryAxis(m);
+    expect(Math.abs(m.tocLabel - m.tocLink)).toBeLessThanOrEqual(2);
+    expect(m.tocLabel).toBeLessThan(m.h1 - 40);
+    expect(Math.abs(m.tocLabelY - m.h1Y)).toBeLessThanOrEqual(4);
+    expect(Math.abs(m.contactRight - m.mainContentRight)).toBeLessThanOrEqual(2);
+  });
+
+  test("900: same main axes after TOC collapse, no overflow", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "explicit 900");
+    await page.setViewportSize({ width: 900, height: 900 });
+    await page.goto("/portfolio/", { waitUntil: "networkidle" });
+    await expect(page.locator(".pagefind-ui__search-input")).toBeVisible({ timeout: 20_000 });
+    const m = await portfolioAxisMetrics(page);
+    assertPrimaryAxis(m);
+  });
+});
+
 test.describe("site critic acceptance", () => {
   test("desktop ≥1024: CTA rhythm, Elsewhere, skip-link, TOC/search, no overflow", async ({
     page,
