@@ -28,7 +28,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 | `--text-strong` | Emphasized text | `#f2f7f3` |
 | `--text-default` / `--ink` | Primary text | `#e8efe9` |
 | `--text-muted` / `--muted` | Secondary text | `#9aada3` |
-| `--text-faint` | Tertiary / chrome hints | `#6f8178` |
+| `--text-faint` | Tertiary / chrome hints (AA on `--bg-deep` / `--bg-elevated`) | `#8a9c94` |
 | `--accent` | Links / specialist line / primary CTA border | `#d4a35c` |
 | `--accent-soft` | Soft accent fill | `rgb(212 163 92 / 18%)` |
 | `--accent-hover` | Link / accent hover | `#f0c27a` |
@@ -99,12 +99,13 @@ Formalizes the 3 values already in use — no visual drift:
 
 ### Breakpoints
 
-Two documented widths, not one shared value, because the hero's two-column layout and the chrome/sidebar collapse are different layout concerns that happen to sit close in width:
+`--bp-sm` and `--bp-md` stay distinct because the hero's two-column layout and the chrome/sidebar collapse are different layout concerns that happen to sit close in width. `--bp-lg` only locks the Home outcome-strip to three columns:
 
 | Reference | Value | Applies to |
 |---|---|---|
 | `--bp-sm` | `800px` | Hero two-column → stacked (`home.css`) |
 | `--bp-md` | `900px` | Nav collapse (`chrome.css`) + long-form sidebar collapse (`longform.css` — converged from its pre-migration `960px`) |
+| `--bp-lg` | `1024px` | Outcome-strip 3-column row (`home.css`) — keeps three metrics on one line instead of a 2+1 wrap |
 
 These are documented constants, not live custom properties — `@media` conditions can't consume `var()` without a preprocessing step. Treat the table above as the source of truth until/unless the build adds one.
 

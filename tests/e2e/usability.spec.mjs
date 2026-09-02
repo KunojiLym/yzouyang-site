@@ -24,7 +24,13 @@ test.describe("a11y light + contrast", () => {
   test("landmarks and non-transparent body bg", async ({ page }, testInfo) => {
     await page.goto("/");
     await expect(page.locator("html[lang]")).toHaveCount(1);
-    await expect(page.locator("main.page")).toHaveCount(1);
+    await expect(page.locator("main#main.page")).toHaveCount(1);
+    const skip = page.locator("a.skip-link");
+    await expect(skip).toHaveCount(1);
+    await expect(skip).toHaveAttribute("href", "#main");
+    await skip.focus();
+    await expect(skip).toBeFocused();
+    await expect(skip).toBeVisible();
     if (testInfo.project.name === "mobile") {
       await expect(page.locator("details.nav-menu")).toBeVisible();
       await expect(page.locator("details.nav-menu nav[aria-label='Primary']")).toHaveCount(1);
@@ -53,23 +59,93 @@ test.describe("a11y light + contrast", () => {
     const solid = (c) => c && c !== "transparent" && !/^rgba\(\s*0,\s*0,\s*0,\s*0\s*\)$/.test(c);
     expect(solid(paint.htmlBg) || solid(paint.bodyBg)).toBe(true);
   });
+
+  test("prefers-reduced-motion uses auto scroll-behavior", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const behavior = await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior);
+    expect(behavior).toBe("auto");
+  });
 });
 
 test.describe("home", () => {
+  test("hero h1 uses Fraunces display token", async ({ page }) => {
+    await page.goto("/");
+    const heroTitle = page.locator(".hero h1");
+    await expect(heroTitle).toBeVisible();
+    const type = await heroTitle.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      const probe = document.createElement("span");
+      probe.style.fontFamily = "var(--font-display)";
+      probe.style.fontSize = "var(--text-display-hero)";
+      el.appendChild(probe);
+      const expected = getComputedStyle(probe);
+      const out = {
+        fontFamily: cs.fontFamily,
+        fontSize: cs.fontSize,
+        fontWeight: cs.fontWeight,
+        expectedFamily: expected.fontFamily,
+        expectedSize: expected.fontSize,
+        fontDisplay: cs.getPropertyValue("--font-display").trim(),
+        displayHero: cs.getPropertyValue("--text-display-hero").trim(),
+      };
+      probe.remove();
+      return out;
+    });
+    expect(type.fontFamily.toLowerCase()).toContain("fraunces");
+    expect(type.fontFamily.toLowerCase()).not.toContain("sora");
+    expect(type.expectedFamily.toLowerCase()).toContain("fraunces");
+    expect(type.fontFamily).toBe(type.expectedFamily);
+    expect(type.fontSize).toBe(type.expectedSize);
+    expect(type.fontDisplay.toLowerCase()).toContain("fraunces");
+    expect(type.displayHero).toMatch(/clamp\(/);
+    expect(Number.parseInt(type.fontWeight, 10)).toBeGreaterThanOrEqual(600);
+  });
+
+  test("outcome strip is three columns at desktop, proof pills match", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/");
+    const items = page.locator(".outcome-strip li");
+    await expect(items).toHaveCount(3);
+    const boxes = await items.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { y: r.y, x: r.x };
+      })
+    );
+    expect(Math.abs(boxes[0].y - boxes[2].y)).toBeLessThan(2);
+    expect(boxes[2].x).toBeGreaterThan(boxes[1].x);
+    const pillPaint = await page.locator(".proof-strip li").evaluateAll((els) =>
+      els.map((el) => {
+        const cs = getComputedStyle(el);
+        return { bg: cs.backgroundColor, border: cs.borderTopColor };
+      })
+    );
+    expect(pillPaint.length).toBeGreaterThan(1);
+    for (const pill of pillPaint) {
+      expect(pill.bg).toBe(pillPaint[0].bg);
+      expect(pill.border).toBe(pillPaint[0].border);
+    }
+  });
+
   test("proof strip, CTAs, portrait chip, contact section", async ({ page }, testInfo) => {
     await page.goto("/");
     await expect(page.locator(".outcome-strip")).toBeVisible();
     await expect(page.locator(".outcome-strip .metric").first()).toBeVisible();
     await expect(page.locator(".proof-strip")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("professional credentials");
+    await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+    await expect(page.locator(".nav-menu .header-contact")).toHaveCount(0);
     if (testInfo.project.name === "mobile") {
-      const menu = page.locator("details.nav-menu");
-      await menu.locator("summary").click();
-      await expect(menu.locator(".header-contact")).toBeVisible();
-    } else {
-      await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+      await expect(page.locator("details.nav-menu")).toBeVisible();
     }
     await expect(page.getByRole("link", { name: "Digital card" })).toBeVisible();
+    const ctaRow = page.locator(".cta-row");
+    await expect(ctaRow.locator(".btn-primary")).toHaveCount(1);
+    await expect(ctaRow.locator(".btn-primary")).toHaveText("Contact");
+    await expect(ctaRow.locator("a.btn")).toHaveCount(2);
+    await expect(page.locator(".hero .btn-primary")).toHaveCount(1);
+    await expect(page.locator(".header-actions > .header-contact.btn-primary")).toHaveCount(0);
     await expect(page.locator(".portrait-chip")).toBeVisible();
     await expect(page.locator("#contact")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("Static migration");
@@ -143,6 +219,11 @@ test.describe("search", () => {
     await page.goto("/portfolio/");
     const input = page.locator(".pagefind-ui__search-input");
     await expect(input).toBeVisible({ timeout: 20_000 });
+    const searchLabel = page.locator("label.page-search-label");
+    await expect(searchLabel).toBeVisible();
+    await expect(searchLabel).toHaveText("Search this page");
+    await expect(input).toHaveAttribute("id", "pagefind-search-input");
+    await expect(input).toHaveAttribute("name", "q");
     await input.fill("databricks");
     await expect(page.locator(".pagefind-ui__result").first()).toBeVisible({
       timeout: 15_000,
@@ -159,6 +240,10 @@ test.describe("toc + credentials", () => {
     test.skip(test.info().project.name === "mobile", "desktop toc coverage enough");
     await page.goto("/credentials/");
     await expect(page.locator("h3.issuer-group").first()).toBeVisible();
+    await expect(page.locator("h3.issuer-group + ul h4").first()).toBeVisible();
+    await expect(page.locator("h3.issuer-group + ul h3")).toHaveCount(0);
+    const rawUrlLinks = page.locator(".item-list a").filter({ hasText: /https?:\/\// });
+    await expect(rawUrlLinks).toHaveCount(0);
     const tocLink = page.locator(".page-toc a").first();
     await expect(tocLink).toBeVisible();
     const href = await tocLink.getAttribute("href");
@@ -181,6 +266,17 @@ test.describe("toc + credentials", () => {
     await page.evaluate(() => window.scrollTo(0, 1400));
     await expect(toc).toBeInViewport();
   });
+
+  test("portfolio Figma surface is dark preview not iframe", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/portfolio/");
+    await expect(page.locator("iframe")).toHaveCount(0);
+    const preview = page.locator(".embed-frame-static").first();
+    await expect(preview).toBeVisible();
+    const bg = await preview.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bg).not.toMatch(/^rgb\(\s*255,\s*255,\s*255/);
+    await expect(page.locator(".embed-fallback").first()).toBeVisible();
+  });
 });
 
 test.describe("about writing + figma", () => {
@@ -189,6 +285,8 @@ test.describe("about writing + figma", () => {
     await page.goto("/about/");
     await expect(page.locator("#selected-writing")).toBeVisible();
     await expect(page.locator(".writing-list a.external").first()).toBeVisible();
+    await expect(page.locator(".cj-link-card")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Read my career journey" })).toBeVisible();
     const open = page.locator("a.figma-open, a.embed-fallback").first();
     await expect(open).toBeVisible();
     await expect(open).toHaveAttribute("target", "_blank");
@@ -202,6 +300,12 @@ test.describe("about writing + figma", () => {
     await expect(page.locator(".page-toc-sidebar a").first()).toBeVisible();
     await expect(page.locator("details.section-fold").first()).toBeVisible();
     await expect(page.locator("details.section-fold").first()).toHaveAttribute("open", "");
+    await expect(
+      page.locator("details.section-fold > summary :is(h1, h2, h3, h4, h5, h6)")
+    ).toHaveCount(0);
+    const firstSummary = page.locator("details.section-fold > summary").first();
+    await expect(firstSummary).toHaveAttribute("id", /.+/);
+    await expect(firstSummary).not.toHaveText("");
   });
 });
 

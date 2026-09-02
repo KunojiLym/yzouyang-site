@@ -1,6 +1,18 @@
 /* Pagefind dark theme hooks */
-#search {
+.page-search {
   margin-bottom: var(--space-8);
+}
+
+.page-search-label {
+  display: block;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+#search {
+  margin-bottom: 0;
 
   --pagefind-ui-scale: 0.92;
   --pagefind-ui-primary: var(--accent);
@@ -27,7 +39,7 @@
 }
 
 #search .pagefind-ui__search-input::placeholder {
-  color: var(--text-faint);
+  color: var(--text-muted);
   opacity: 1;
 }
 
