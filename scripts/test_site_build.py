@@ -117,6 +117,14 @@ def main() -> None:
     css = (DIST / "styles.css").read_text(encoding="utf-8")
     if "main.page .hero h1" not in css:
         fail("styles.css missing main.page .hero h1 (must beat main.page h1 for Fraunces)")
+    if "main.page .selected-systems h2" not in css:
+        fail("styles.css missing main.page .selected-systems h2 (must beat main.page h2)")
+    if not re.search(
+        r"main\.page \.selected-systems h2\s*\{[^}]*margin:\s*0 0 var\(--space-5\)",
+        css,
+        re.S,
+    ):
+        fail("selected-systems h2 must set margin: 0 0 var(--space-5)")
     if not re.search(
         r"main\.page \.hero h1\s*\{[^}]*font-family:\s*var\(--font-display\)",
         css,
@@ -162,6 +170,10 @@ def main() -> None:
         fail("portfolio missing case-tools class")
     if "Technical Documentation" in portfolio:
         fail("tutorial tools must be curated to at most 5 labels")
+    for match in re.finditer(r'class="case-tools[^"]*"[^>]*>([^<]+)', portfolio):
+        labels = [part.strip() for part in match.group(1).removeprefix("Tools:").split(",") if part.strip()]
+        if len(labels) > 5:
+            fail(f"case-tools exceeds 5 labels: {labels}")
     if "first-party LinkedIn analytics" not in portfolio:
         fail("tutorial blurb must lead with the user outcome")
     ent_pos = portfolio.find("Enterprise Data")

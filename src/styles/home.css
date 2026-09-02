@@ -203,7 +203,9 @@ main.page .hero h1 {
   padding: 0 0 var(--space-8);
 }
 
-.selected-systems h2 {
+/* Beat main.page h2 (assembled later in components.css) so Selected systems
+   keeps 0 top margin instead of --space-10. */
+main.page .selected-systems h2 {
   font-family: var(--font-body);
   font-size: var(--text-display-2);
   font-weight: 600;

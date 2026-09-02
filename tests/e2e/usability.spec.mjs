@@ -382,6 +382,30 @@ async function assertSelectedSingleColumn(page) {
   expect(Math.abs(xs[0] - xs[1])).toBeLessThan(2);
 }
 
+async function assertSelectedHeadingSpacing(page) {
+  const heading = page.locator(".selected-systems h2");
+  await expect(heading).toBeVisible();
+  const spacing = await heading.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    const probe = document.createElement("span");
+    probe.style.marginTop = "var(--space-10)";
+    probe.style.marginBottom = "var(--space-5)";
+    el.appendChild(probe);
+    const expected = getComputedStyle(probe);
+    const out = {
+      marginTop: cs.marginTop,
+      marginBottom: cs.marginBottom,
+      space10: expected.marginTop,
+      space5: expected.marginBottom,
+    };
+    probe.remove();
+    return out;
+  });
+  expect(spacing.marginTop).toBe("0px");
+  expect(spacing.marginTop).not.toBe(spacing.space10);
+  expect(spacing.marginBottom).toBe(spacing.space5);
+}
+
 async function assertContactBesideMenu(page) {
   await expect(page.locator("nav.site-nav-desktop")).toBeHidden();
   const menu = page.locator("details.nav-menu");
@@ -442,6 +466,7 @@ test.describe("site critic acceptance", () => {
     await assertCtaRhythm(page);
     await assertElsewhereDesktop(page);
     await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(2);
+    await assertSelectedHeadingSpacing(page);
     await noHorizontalOverflow(page);
     await assertTocSearch(page);
   });
