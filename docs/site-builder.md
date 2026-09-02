@@ -52,8 +52,11 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 | `outcomes` | Curated Home proof: `{ "metric", "label" }` (2–3; public CV facts only) |
 | `contact` | PUBLIC email + phone (never work/university domains) |
 | `external` | Blog, Medium, LinkedIn, GitHub, Bitly shorts, digital card hub |
-| `nav` | Primary links (internal + external). **No Contact item** |
+| `nav` | Primary dossier links + external Blog/Medium/LinkedIn (rendered under **Elsewhere**, not as equal desktop buttons). **No Contact item** |
 | `writing_highlights` | Curated About list: `title`, `url`, `venue`, `date` |
+| `home_selected` | Home selected-systems rows (2–3): `title`, `outcome`, `scope`, `tools` (≤5), `href` → `/portfolio/` |
+| `project_copy` | Optional per-project `outcome` / `scope` / `tools` overrides (tools ≤5) |
+| `section_copy` | Optional portfolio section intro overrides keyed by export section id |
 | `analytics` | Jetpack / optional GA4 / DIY beacon |
 | `base_path` | Overridden by CLI/env at build time |
 
@@ -61,17 +64,18 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Route | Builder | Sources |
 |---|---|---|
-| `/` | `build_home` | `person` + `outcomes` + platform proof strip; `#contact` from `contact`/`external` |
+| `/` | `build_home` | `person` + `outcomes` + proof strip + `home_selected` rows; `#contact` from `contact`/`external` |
 | `/about/` | `build_about` | export `about` + `writing_highlights`; longform sidebar (no Pagefind) |
-| `/portfolio/` | `build_portfolio` | export `portfolio` + `projects` + Pagefind (case rows: outcome → scope → tools) |
+| `/portfolio/` | `build_portfolio` | export `portfolio` + `projects` + `project_copy` / `section_copy`; enterprise summaries first; Pagefind (case rows: outcome → scope → tools ≤5) |
 | `/credentials/` | `build_credentials` | export `credentials` + certs/edu + Pagefind |
 | `/career-journey/` | `build_career_journey` | `data/career-journey.yaml`; only built if that file exists. Not in primary nav — reachable from an About link card + direct/shared URL, same tier as Contact. See [career-journey-native-plan.md](career-journey-native-plan.md) |
 | `/contact/` | `build_contact_redirect` | Meta refresh + link to `/#contact` |
 
 ## IA rules
 
-- Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → `#contact`
+- Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → selected systems → `#contact`
 - **Sticky header** — always reachable; **Contact** control jumps to `/#contact`
+- Desktop primary nav is dossier links only; Blog / Medium / LinkedIn sit under an **Elsewhere** control (mobile menu uses the same grouping label)
 - Portfolio / Credentials / About — **sticky sidebar TOC** (`.page-with-toc`) with nested subcategories; major sections are collapsible (`.section-fold`)
 - Contact is **not** a primary nav page; no cert-count vanity chip on Home
 - Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; About shows curated external titles only (publications-style)

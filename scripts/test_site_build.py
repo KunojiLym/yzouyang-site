@@ -65,6 +65,28 @@ def main() -> None:
         fail("home missing portrait-chip")
     if 'id="contact"' not in home:
         fail("home missing #contact section")
+    if 'class="selected-systems"' not in home:
+        fail("home missing selected-systems strip")
+    if home.find('class="selected-systems"') > home.find('id="contact"'):
+        fail("selected-systems must appear before #contact")
+    if home.find('class="cta-row"') > home.find('class="selected-systems"'):
+        fail("selected-systems must appear after CTAs")
+    selected = home.split('class="selected-systems"', 1)[1].split('id="contact"', 1)[0]
+    if selected.count("<li>") < 2 or selected.count("<li>") > 3:
+        fail("selected-systems must have 2–3 editorial rows")
+    if "Prudential" not in selected or "SPH Media" not in selected:
+        fail("selected-systems must include Prudential / SPH-class enterprise cases")
+    if 'class="case-outcome"' not in selected or "Tools:" not in selected:
+        fail("selected-systems rows must follow outcome → tools-last")
+    if "/portfolio/" not in selected:
+        fail("selected-systems must link through to /portfolio/")
+    if 'class="nav-elsewhere"' not in home:
+        fail("desktop nav missing Elsewhere disclosure")
+    desktop_nav = home.split('class="site-nav site-nav-desktop"', 1)[1].split("</nav>", 1)[0]
+    if "nav-elsewhere" not in desktop_nav:
+        fail("Elsewhere control must live in desktop primary nav")
+    if ">Blog</a>" not in desktop_nav.split("nav-elsewhere-panel", 1)[-1]:
+        fail("Elsewhere panel must still contain Blog")
     if "Static migration" in home or "Phase 1 pages" in home:
         fail("home footer still has migration chrome")
     if "&copy;" not in home and "©" not in home:
@@ -95,6 +117,14 @@ def main() -> None:
     css = (DIST / "styles.css").read_text(encoding="utf-8")
     if "main.page .hero h1" not in css:
         fail("styles.css missing main.page .hero h1 (must beat main.page h1 for Fraunces)")
+    if "main.page .selected-systems h2" not in css:
+        fail("styles.css missing main.page .selected-systems h2 (must beat main.page h2)")
+    if not re.search(
+        r"main\.page \.selected-systems h2\s*\{[^}]*margin:\s*0 0 var\(--space-5\)",
+        css,
+        re.S,
+    ):
+        fail("selected-systems h2 must set margin: 0 0 var(--space-5)")
     if not re.search(
         r"main\.page \.hero h1\s*\{[^}]*font-family:\s*var\(--font-display\)",
         css,
@@ -138,6 +168,22 @@ def main() -> None:
         fail("portfolio missing case-outcome class on project rows")
     if 'class="case-tools' not in portfolio:
         fail("portfolio missing case-tools class")
+    if "Technical Documentation" in portfolio:
+        fail("tutorial tools must be curated to at most 5 labels")
+    for match in re.finditer(r'class="case-tools[^"]*"[^>]*>([^<]+)', portfolio):
+        labels = [part.strip() for part in match.group(1).removeprefix("Tools:").split(",") if part.strip()]
+        if len(labels) > 5:
+            fail(f"case-tools exceeds 5 labels: {labels}")
+    if "first-party LinkedIn analytics" not in portfolio:
+        fail("tutorial blurb must lead with the user outcome")
+    ent_pos = portfolio.find("Enterprise Data")
+    tut_pos = portfolio.find("Featured Tutorial")
+    if ent_pos == -1 or tut_pos == -1 or ent_pos > tut_pos:
+        fail("enterprise summaries must precede tutorial/bootcamp sections")
+    if 'id="prudential-singapore-senior-data-engineer-solutioning-architecture"' not in portfolio:
+        fail("portfolio missing Prudential heading id for home selected-systems links")
+    if 'id="sph-media-lead-data-engineer"' not in portfolio:
+        fail("portfolio missing SPH heading id for home selected-systems links")
     for name, html in (("portfolio", portfolio), ("credentials", credentials)):
         if 'id="search"' not in html:
             fail(f"{name} missing #search")
@@ -264,6 +310,8 @@ def main() -> None:
                 fail(f"career-journey page has an <img> with missing/empty alt: {tag}")
         if 'src="/career-journey.js"' not in cj_html and 'src="./career-journey.js"' not in cj_html and "career-journey.js" not in cj_html:
             fail("career-journey page missing scroll-reveal script tag")
+        if cj_html.lower().count("<h1") != 1:
+            fail("career-journey page must have a single h1 (page chrome; slide titles are h2+)")
 
     print("test_site_build ok")
 

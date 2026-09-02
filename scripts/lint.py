@@ -128,6 +128,38 @@ def main() -> None:
             if not (str(row.get("metric") or "").strip() and str(row.get("label") or "").strip()):
                 fail("outcomes entries need metric and label")
 
+    home_selected = site.get("home_selected")
+    if home_selected is not None:
+        if not isinstance(home_selected, list) or not (2 <= len(home_selected) <= 3):
+            fail("site.home_selected must be a list of 2–3 rows when set")
+        for row in home_selected:
+            if not isinstance(row, dict):
+                fail("home_selected entries must be objects")
+            if not (str(row.get("title") or "").strip() and str(row.get("outcome") or "").strip()):
+                fail("home_selected entries need title and outcome")
+            tools = row.get("tools") or []
+            if tools and (not isinstance(tools, list) or len(tools) > 5):
+                fail("home_selected tools must be a list of at most 5 labels")
+            href = str(row.get("href") or "")
+            if href and not href.startswith("/portfolio"):
+                fail("home_selected href must link through to /portfolio/")
+
+    project_copy = site.get("project_copy")
+    if project_copy is not None:
+        if not isinstance(project_copy, dict):
+            fail("site.project_copy must be an object when set")
+        for pid, override in project_copy.items():
+            if not isinstance(override, dict):
+                fail(f"project_copy[{pid!r}] must be an object")
+            tools = override.get("tools")
+            if tools is not None and (not isinstance(tools, list) or len(tools) > 5):
+                fail(f"project_copy[{pid!r}] tools must be a list of at most 5 labels")
+
+    section_copy = site.get("section_copy")
+    if section_copy is not None:
+        if not isinstance(section_copy, dict):
+            fail("site.section_copy must be an object when set")
+
     platforms = (site.get("person") or {}).get("platforms")
     if platforms is not None:
         if not isinstance(platforms, list):

@@ -10,7 +10,7 @@ Routes: `/`, `/about/`, `/portfolio/`, `/credentials/`. Contact lives on Home as
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
-**Writing** stays on Blog / Medium / LinkedIn until **C2b**. About shows a curated **Selected writing** list of external links. Nav still links out with an external marker.
+**Writing** stays on Blog / Medium / LinkedIn until **C2b**. About shows a curated **Selected writing** list of external links. Nav groups those destinations under **Elsewhere**, still marked external.
 
 Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 

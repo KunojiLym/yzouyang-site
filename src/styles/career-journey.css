@@ -382,7 +382,6 @@ main.page:has(.cj-page) {
   color: var(--text-strong);
 }
 
-.cj-block-heading h1,
 .cj-block-heading h2 {
   margin: 0;
   font-family: var(--font-display);
