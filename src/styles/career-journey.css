@@ -332,31 +332,15 @@ main.page:has(.cj-page) {
   object-fit: cover;
 }
 
-@keyframes cj-active-enter {
-  from {
-    opacity: 0;
-    transform: translateY(var(--space-4));
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .cj-js .cj-slide {
   opacity: 0.45;
-  transform: scale(0.985);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transform: none;
+  transition: opacity 0.25s ease;
 }
 
 .cj-js .cj-slide.is-active {
   opacity: 1;
   transform: none;
-}
-
-.cj-js .cj-slide.is-active > * {
-  animation: cj-active-enter 0.45s ease both;
 }
 
 .cj-js .cj-slide[data-transition="fade"] {
@@ -366,8 +350,8 @@ main.page:has(.cj-page) {
 /* Staged step-by-step reveal for points / timeline items */
 .cj-js .cj-slide [data-step] {
   opacity: 0;
-  transform: translateY(var(--space-3));
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transform: none;
+  transition: opacity 0.25s ease;
   pointer-events: none;
 }
 
@@ -375,6 +359,21 @@ main.page:has(.cj-page) {
   opacity: 1;
   transform: none;
   pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cj-js .cj-slide,
+  .cj-js .cj-slide.is-active {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .cj-js .cj-slide [data-step],
+  .cj-js .cj-slide [data-step].is-revealed {
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto;
+  }
 }
 
 /* Heading overlay block (title slide) */

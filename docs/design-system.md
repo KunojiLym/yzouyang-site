@@ -12,7 +12,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 **Positioning:** Senior Data and AI Transformation Leader. Platform, governance, FinOps, multi-cloud, and agentic AI appear as **disciplined capability signals**, not product theater.
 
-**Palette:** Deep charcoal-green / green-black; **one** muted gold accent; neutral text. Avoid generic blue-purple AI palettes. Gold-on-dark is allowed only with discipline (enterprise rigor, not boutique luxury).
+**Palette:** Deep charcoal with a restrained green undertone (boardroom, not matrix/terminal); **one** muted gold accent; neutral text. Avoid generic blue-purple AI palettes. Gold-on-dark is allowed only with discipline (enterprise rigor, not boutique luxury). Large empty surfaces use `--bg-elevated` charcoal, not a saturated forest fill.
 
 **Atmosphere:** **One** ambient glow layer maximum; solid `--bg-deep` under gradients. No particles, neon, glassmorphism, terminal motifs, gradient text, or oversized AI imagery.
 
@@ -21,8 +21,8 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 | Token | Role | Approx value |
 |---|---|---|
 | `--bg-deep` | Page fill / sticky header base | `#0c1412` |
-| `--bg-mid` | Secondary surface | `#152a24` |
-| `--bg-elevated` | Slightly lifted surface | `#1a3028` |
+| `--bg-mid` | Secondary surface | `#15201c` |
+| `--bg-elevated` | Slightly lifted surface | `#1a2420` |
 | `--bg-panel` | TOC / search / panel fills | `rgb(255 255 255 / 3%)` |
 | `--bg-hover` | Hover wash | `rgb(255 255 255 / 6%)` |
 | `--text-strong` | Emphasized text | `#f2f7f3` |
@@ -37,9 +37,9 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 | `--line-strong` | Stronger dividers | `rgb(232 239 233 / 22%)` |
 | `--line-soft` / `--line` | Hairline borders | `rgb(232 239 233 / 12%)` |
 | `--success` / `--warning` / `--danger` | Status (reserved; use sparingly) | muted green / amber / rose |
-| `--glow` | Single ambient green glow | `rgb(70 140 120 / 35%)` |
-| `--bg-gradient-mid` | Body background gradient, 45% stop | `#12201c` |
-| `--bg-gradient-end` | Body background gradient, 100% stop | `#0e1815` |
+| `--glow` | Single ambient glow (one layer max) | `rgb(55 90 78 / 22%)` |
+| `--bg-gradient-mid` | Body background gradient, 45% stop | `#121a17` |
+| `--bg-gradient-end` | Body background gradient, 100% stop | `#0e1412` |
 | `--font-display` | Hero title + brand wordmark only | Fraunces |
 | `--font-body` | Everything else | Sora |
 | `--max` | Content measure (Home, About) | `68rem` |
@@ -180,7 +180,7 @@ Site reads as a senior professional dossier:
 
 **Long-form TOC (design-system rule):** Every multi-section dossier page (About, Portfolio, Credentials) uses `.page-with-toc` with a sticky `.page-toc-sidebar`. Nested `.page-toc-sub` lists expose subcategories (e.g. portfolio child sections, credential issuers). Major sections use `.section-fold` (`<details open>`) so readers can collapse dense blocks without losing the sidebar map.
 
-**Motion:** Short, minimal entrance (`rise`); honor `prefers-reduced-motion`. No novelty animation.
+**Motion:** Short, minimal entrance (`rise`); honor `prefers-reduced-motion`. No novelty animation. Career Journey slide chrome is **opacity-only** (≤0.25s, no `scale()`, no `translateY` snap). Under `prefers-reduced-motion`, `.cj-slide` is `opacity: 1` / `transform: none` and every `[data-step]` is revealed — resting dim/scale must not survive `animation: none`.
 
 External nav links use `.external` (↗ via CSS `::after`).
 

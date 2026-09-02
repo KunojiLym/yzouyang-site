@@ -29,6 +29,10 @@
 
   container.classList.add("cj-js");
 
+  var reduceMotion = !!(
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+
   function clampIndex(index) {
     return Math.max(0, Math.min(slides.length - 1, index));
   }
@@ -56,9 +60,9 @@
     var steppedEls = Array.prototype.slice.call(slide.querySelectorAll("[data-step]"));
     steppedEls.forEach(function (el) {
       var elStep = parseInt(el.getAttribute("data-step") || "0", 10);
-      el.classList.toggle("is-revealed", elStep <= step);
+      el.classList.toggle("is-revealed", reduceMotion || elStep <= step);
     });
-    slideCurrentSteps[slideIndex] = step;
+    slideCurrentSteps[slideIndex] = reduceMotion ? (slideStepCounts[slideIndex] || 0) : step;
   }
 
   function setActive(index) {
@@ -70,8 +74,8 @@
       slide.setAttribute("aria-hidden", active ? "false" : "true");
       if (active) revealStep(i, slideCurrentSteps[i]);
     });
-    if (prev) prev.disabled = activeIndex === 0 && slideCurrentSteps[activeIndex] === 0;
-    if (next) next.disabled = activeIndex === slides.length - 1 && slideCurrentSteps[activeIndex] >= slideStepCounts[activeIndex];
+    if (prev) prev.disabled = activeIndex === 0 && (reduceMotion || slideCurrentSteps[activeIndex] === 0);
+    if (next) next.disabled = activeIndex === slides.length - 1 && (reduceMotion || slideCurrentSteps[activeIndex] >= slideStepCounts[activeIndex]);
     if (current) current.textContent = "Slide " + String(activeIndex + 1) + " of " + slides.length;
     if (gotoInput) gotoInput.value = String(activeIndex + 1);
   }
@@ -96,7 +100,7 @@
 
   if (prev) {
     prev.addEventListener("click", function () {
-      if (slideCurrentSteps[activeIndex] > 0) {
+      if (!reduceMotion && slideCurrentSteps[activeIndex] > 0) {
         revealStep(activeIndex, slideCurrentSteps[activeIndex] - 1);
         if (prev) prev.disabled = activeIndex === 0 && slideCurrentSteps[activeIndex] === 0;
         if (next) next.disabled = false;
@@ -109,7 +113,7 @@
   if (next) {
     next.addEventListener("click", function () {
       var maxSteps = slideStepCounts[activeIndex];
-      if (maxSteps > 0 && slideCurrentSteps[activeIndex] < maxSteps) {
+      if (!reduceMotion && maxSteps > 0 && slideCurrentSteps[activeIndex] < maxSteps) {
         revealStep(activeIndex, slideCurrentSteps[activeIndex] + 1);
         if (prev) prev.disabled = false;
         if (next) next.disabled = activeIndex === slides.length - 1 && slideCurrentSteps[activeIndex] >= maxSteps;
@@ -122,9 +126,13 @@
   if (resetBtn) {
     resetBtn.addEventListener("click", function () {
       slides.forEach(function (slide, i) {
-        slideCurrentSteps[i] = 0;
-        var steppedEls = Array.prototype.slice.call(slide.querySelectorAll("[data-step]"));
-        steppedEls.forEach(function (el) { el.classList.remove("is-revealed"); });
+        if (reduceMotion) {
+          revealStep(i, slideStepCounts[i]);
+        } else {
+          slideCurrentSteps[i] = 0;
+          var steppedEls = Array.prototype.slice.call(slide.querySelectorAll("[data-step]"));
+          steppedEls.forEach(function (el) { el.classList.remove("is-revealed"); });
+        }
       });
       goTo(0);
     });
@@ -177,6 +185,12 @@
     var hash = decodeURIComponent(window.location.hash.slice(1));
     hashIndex = slides.findIndex(function (slide) {
       return slide.id === hash;
+    });
+  }
+
+  if (reduceMotion) {
+    slides.forEach(function (_slide, i) {
+      revealStep(i, slideStepCounts[i]);
     });
   }
 

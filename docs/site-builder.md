@@ -86,10 +86,12 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 Figma (and similar) embeds are an implementation pattern, not brand chrome:
 
-- Always pair the surface with a visible **Open deck** / `.embed-fallback` link
+- Always keep a visible **Open deck** / `.embed-fallback` **or** the project’s existing Figma `.links` row (do not drop the compact link)
 - Prefer a direct Figma URL from project bullets when available
-- Do not load a live Figma iframe (the embed canvas paints white on the dark dossier). Use `.embed-frame-static` as a dark preview plus the fallback link
-- Blank or blocked previews must still leave the fallback usable
+- Do **not** load a live Figma iframe (the embed canvas paints white on the dark dossier)
+- **Empty static frames are forbidden.** Do not emit `a.embed-frame-static` without a real `<img>` poster. A fill-only `aspect-ratio` box on `var(--bg-elevated)` is not a preview
+- If a poster asset exists (`poster` on the project row / `site.json` `project_copy`), render a real `<img>` (max-height ~12–14rem / `13rem`), never a 16/10 empty panel
+- Without a poster, keep the compact Figma link row only
 - Do not treat embeds as the primary proof signal — case copy (outcome → scope → tools) comes first
 
 ## Adding a new page or component

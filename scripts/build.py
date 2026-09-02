@@ -277,36 +277,40 @@ def figma_embed_html(
     *,
     link_label: str = "Open deck",
     tall: bool = False,
+    poster: str | None = None,
+    include_fallback: bool = True,
 ) -> str:
-    """Dark static Figma surface + Open link (no live iframe).
+    """Compact Figma link, plus an optional real poster image (no live iframe).
 
     Figma's embed canvas paints white and blows out the charcoal page.
-    Design-system embed classes stay; policy is site-builder (fallback
-    must remain usable; embeds are not primary proof).
+    Empty ``.embed-frame-static`` fill boxes are forbidden — a static frame
+    is emitted only when ``poster`` is a real image src. Policy: site-builder
+    (fallback / ``.links`` must remain usable; embeds are not primary proof).
     """
-    href = link or embed
-    frame_class = "embed-frame embed-frame-static"
-    if tall:
-        frame_class += " embed-frame-tall"
-    fallback = ""
-    if href:
-        fallback = (
+    href = (link or embed or "").strip()
+    poster_src = (poster or "").strip()
+    bits: list[str] = []
+    if include_fallback and href:
+        bits.append(
             f'<a class="embed-fallback" href="{esc(href)}" target="_blank" '
             f'rel="noopener noreferrer"><strong>{esc(link_label)}</strong>'
             f" — opens in Figma</a>"
         )
-    preview = ""
-    if href:
-        preview = (
+    if poster_src and href:
+        frame_class = "embed-frame embed-frame-static"
+        if tall:
+            frame_class += " embed-frame-tall"
+        bits.append(
             f'<a class="{frame_class}" href="{esc(href)}" target="_blank" '
             f'rel="noopener noreferrer">'
-            f'<span class="embed-frame-label">{esc(title)}</span>'
-            f'<span class="embed-frame-action">Open in Figma</span></a>'
+            f'<img src="{esc(poster_src)}" alt="{esc(title)}"></a>'
         )
+    if not bits:
+        return ""
+    inner = "\n        ".join(bits)
     return f"""
       <div class="embed-wrap">
-        {fallback}
-        {preview}
+        {inner}
       </div>"""
 
 
@@ -755,7 +759,7 @@ def _merge_project_copy(row: dict, copy_map: dict) -> dict:
     merged = dict(row)
     override = copy_map.get(str(row.get("id") or ""))
     if isinstance(override, dict):
-        for key in ("outcome", "scope", "tools", "description"):
+        for key in ("outcome", "scope", "tools", "description", "poster"):
             if override.get(key):
                 merged[key] = override[key]
     merged["tools"] = _curated_tools(merged.get("tools"))
@@ -1150,11 +1154,20 @@ def _project_item_html(row: dict) -> str:
             )
             + "</p>"
         )
-    embed = row.get("embed") or ""
+    embed = str(row.get("embed") or "").strip()
+    poster = str(row.get("poster") or "").strip()
+    figma_link = next((u for u in links if "figma.com" in u.lower()), None)
     embed_html = ""
-    if embed:
-        figma_link = next((u for u in links if "figma.com" in u.lower()), None)
-        embed_html = figma_embed_html(str(row.get("name") or "Deck"), str(embed), figma_link)
+    if poster:
+        embed_html = figma_embed_html(
+            str(row.get("name") or "Deck"),
+            embed or (figma_link or ""),
+            figma_link,
+            poster=poster,
+            include_fallback=not bool(figma_link),
+        )
+    elif embed and not figma_link:
+        embed_html = figma_embed_html(str(row.get("name") or "Deck"), embed, None)
     return (
         f"      <li>\n"
         f"        <h3>{name}</h3>\n"

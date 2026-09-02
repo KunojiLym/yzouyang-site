@@ -1,8 +1,8 @@
 /* Brand tokens — see docs/design-system.md Layer A */
 :root {
   --bg-deep: #0c1412;
-  --bg-mid: #152a24;
-  --bg-elevated: #1a3028;
+  --bg-mid: #15201c;
+  --bg-elevated: #1a2420;
   --bg-panel: rgb(255 255 255 / 3%);
   --bg-hover: rgb(255 255 255 / 6%);
   --text-strong: #f2f7f3;
@@ -22,9 +22,9 @@
   --success: #6a9a7a;
   --warning: #c4a35a;
   --danger: #c47a6a;
-  --glow: rgb(70 140 120 / 35%);
-  --bg-gradient-mid: #12201c;
-  --bg-gradient-end: #0e1815;
+  --glow: rgb(55 90 78 / 22%);
+  --bg-gradient-mid: #121a17;
+  --bg-gradient-end: #0e1412;
   --font-display: "Fraunces", "Palatino Linotype", palatino, serif;
   --font-body: "Sora", "Segoe UI", sans-serif;
   --max: 68rem;
