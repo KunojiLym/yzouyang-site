@@ -351,7 +351,9 @@ test.describe("site critic qa viewports", () => {
     await noHorizontalOverflow(page);
     await page.goto("/portfolio/");
     await expect(page.locator(".case-outcome").first()).toBeVisible();
-    await expect(page.getByText("Enterprise Data & AI Solutioning")).toBeVisible();
+    await expect(
+      page.locator("#enterprise-data-ai-solutioning-selected-work-summaries")
+    ).toBeVisible();
     await noHorizontalOverflow(page);
   });
 
