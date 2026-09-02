@@ -357,7 +357,8 @@ def _cj_block_html(site: dict, block: dict) -> str:
         body = esc(str(block.get("body") or "").strip())
         return f'      <div class="cj-block cj-block-text"{style}><p>{body}</p></div>'
     if btype == "heading":
-        level = max(1, min(6, int(block.get("level") or 1)))
+        # Page chrome already has the single h1; slide titles start at h2.
+        level = max(2, min(6, int(block.get("level") or 2)))
         text = esc(str(block.get("body") or "").strip())
         sub = esc(str(block.get("sub") or "").strip())
         sub_html = f"<p>{sub}</p>" if sub else ""

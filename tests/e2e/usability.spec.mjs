@@ -18,6 +18,15 @@ test.describe("smoke", () => {
       await noHorizontalOverflow(page);
     });
   }
+
+  test("/career-journey/ has a single document h1", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop outline coverage enough");
+    await page.goto("/career-journey/");
+    await expect(page.locator("h1")).toHaveCount(1);
+    await expect(page.locator(".cj-header h1")).toHaveText(/Career Journey/i);
+    await expect(page.locator(".cj-slide h1")).toHaveCount(0);
+    await expect(page.locator(".cj-slide--composed h2").first()).toBeVisible();
+  });
 });
 
 test.describe("a11y light + contrast", () => {

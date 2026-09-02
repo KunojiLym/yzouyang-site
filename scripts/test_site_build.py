@@ -298,6 +298,8 @@ def main() -> None:
                 fail(f"career-journey page has an <img> with missing/empty alt: {tag}")
         if 'src="/career-journey.js"' not in cj_html and 'src="./career-journey.js"' not in cj_html and "career-journey.js" not in cj_html:
             fail("career-journey page missing scroll-reveal script tag")
+        if cj_html.lower().count("<h1") != 1:
+            fail("career-journey page must have a single h1 (page chrome; slide titles are h2+)")
 
     print("test_site_build ok")
 
