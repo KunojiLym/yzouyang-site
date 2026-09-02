@@ -127,8 +127,8 @@ Site reads as a senior professional dossier:
 1. **Headline** — name → role → specialist line
 2. **Quantified proof** — 2–3 outcomes from `site.outcomes`
 3. **Platform scope + location** — proof strip (≤4 platforms; **no cert wall / vanity counters on Home**)
-4. **Selected systems / work** — portfolio case rows
-5. **Writing / speaking** — publications-style lists (About Selected writing; external Blog/Medium/LinkedIn)
+4. **Selected systems / work** — Home `.selected-systems` editorial `.item-list` rows (enterprise cases) plus `/portfolio/` case rows
+5. **Writing / speaking** — publications-style lists (About Selected writing; external Blog/Medium/LinkedIn under nav **Elsewhere**)
 6. **Credentials** — issuer-grouped; curated on `/credentials/`
 7. **Contact** — Home `#contact`; sticky header control; not primary nav
 
@@ -164,7 +164,8 @@ Site reads as a senior professional dossier:
 | `.btn` / `.btn-primary` | **One** primary accent CTA (Contact); other actions understated `.btn` |
 | `.header-contact` | Sticky jump to `/#contact` |
 | `.cta-row` | Home button group |
-| `.site-nav` / `.nav-menu` | Primary nav + mobile menu |
+| `.selected-systems` | Home editorial case rows between CTAs and `#contact` (not cards) |
+| `.site-nav` / `.nav-menu` / `.nav-elsewhere` | Primary dossier links; Blog/Medium/LinkedIn under Elsewhere (desktop disclosure / mobile label) |
 | `.page-toc` / `.page-toc-sidebar` / `.page-toc-sub` | On-this-page anchors; sticky sidebar on **all** long pages (About, Portfolio, Credentials) via `.page-with-toc`; nested subcategory links |
 | `.section-fold` | Collapsible long-form sections (default open); summary = section title |
 | `.item-list` | Portfolio / credentials / contact rows (editorial, not cards) |

@@ -197,6 +197,34 @@ main.page .hero h1 {
   color: var(--text-strong);
 }
 
+.selected-systems {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 0 var(--space-8);
+}
+
+.selected-systems h2 {
+  font-family: var(--font-body);
+  font-size: var(--text-display-2);
+  font-weight: 600;
+  margin: 0 0 var(--space-5);
+  color: var(--text-strong);
+}
+
+.selected-systems .item-list {
+  max-width: 44rem;
+}
+
+.selected-systems .item-list h3 a {
+  color: var(--text-strong);
+  text-decoration: none;
+}
+
+.selected-systems .item-list h3 a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
 /* --bp-sm: 800px (see tokens.css) — hero two-column to stacked */
 @media (width <= 800px) {
   .hero {
@@ -213,6 +241,10 @@ main.page .hero h1 {
     justify-self: start;
     order: 1;
     width: min(100%, 16rem);
+  }
+
+  .selected-systems .item-list {
+    max-width: none;
   }
 }
 

@@ -11,7 +11,7 @@
 - [ ] Preview URL serves `/`, `/about/`, `/portfolio/`, `/credentials/` from PUBLIC export
 - [ ] Home `#contact` reachable from sticky header Contact; `/contact/` redirects to Home contact
 - [ ] Pagefind works on portfolio or credentials
-- [ ] Blog / Medium / LinkedIn still reachable from nav (external)
+- [ ] Blog / Medium / LinkedIn still reachable from nav **Elsewhere** (external)
 - [ ] About Selected writing links out (no full post import until C2b)
 - [ ] Bitly shorts still resolve: portfolio `bit.ly/3GGyiXF`, credentials `bit.ly/4m4fqki`
 - [ ] Digital card (`bit.ly/m/yzouyang`) reachable from home CTA

@@ -65,6 +65,28 @@ def main() -> None:
         fail("home missing portrait-chip")
     if 'id="contact"' not in home:
         fail("home missing #contact section")
+    if 'class="selected-systems"' not in home:
+        fail("home missing selected-systems strip")
+    if home.find('class="selected-systems"') > home.find('id="contact"'):
+        fail("selected-systems must appear before #contact")
+    if home.find('class="cta-row"') > home.find('class="selected-systems"'):
+        fail("selected-systems must appear after CTAs")
+    selected = home.split('class="selected-systems"', 1)[1].split('id="contact"', 1)[0]
+    if selected.count("<li>") < 2 or selected.count("<li>") > 3:
+        fail("selected-systems must have 2–3 editorial rows")
+    if "Prudential" not in selected or "SPH Media" not in selected:
+        fail("selected-systems must include Prudential / SPH-class enterprise cases")
+    if 'class="case-outcome"' not in selected or "Tools:" not in selected:
+        fail("selected-systems rows must follow outcome → tools-last")
+    if "/portfolio/" not in selected:
+        fail("selected-systems must link through to /portfolio/")
+    if 'class="nav-elsewhere"' not in home:
+        fail("desktop nav missing Elsewhere disclosure")
+    desktop_nav = home.split('class="site-nav site-nav-desktop"', 1)[1].split("</nav>", 1)[0]
+    if "nav-elsewhere" not in desktop_nav:
+        fail("Elsewhere control must live in desktop primary nav")
+    if ">Blog</a>" not in desktop_nav.split("nav-elsewhere-panel", 1)[-1]:
+        fail("Elsewhere panel must still contain Blog")
     if "Static migration" in home or "Phase 1 pages" in home:
         fail("home footer still has migration chrome")
     if "&copy;" not in home and "©" not in home:
@@ -138,6 +160,18 @@ def main() -> None:
         fail("portfolio missing case-outcome class on project rows")
     if 'class="case-tools' not in portfolio:
         fail("portfolio missing case-tools class")
+    if "Technical Documentation" in portfolio:
+        fail("tutorial tools must be curated to at most 5 labels")
+    if "first-party LinkedIn analytics" not in portfolio:
+        fail("tutorial blurb must lead with the user outcome")
+    ent_pos = portfolio.find("Enterprise Data")
+    tut_pos = portfolio.find("Featured Tutorial")
+    if ent_pos == -1 or tut_pos == -1 or ent_pos > tut_pos:
+        fail("enterprise summaries must precede tutorial/bootcamp sections")
+    if 'id="prudential-singapore-senior-data-engineer-solutioning-architecture"' not in portfolio:
+        fail("portfolio missing Prudential heading id for home selected-systems links")
+    if 'id="sph-media-lead-data-engineer"' not in portfolio:
+        fail("portfolio missing SPH heading id for home selected-systems links")
     for name, html in (("portfolio", portfolio), ("credentials", credentials)):
         if 'id="search"' not in html:
             fail(f"{name} missing #search")

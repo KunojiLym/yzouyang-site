@@ -82,6 +82,62 @@
       "date": "2025-10"
     }
   ],
+  "home_selected": [
+    {
+      "title": "Prudential — platform architecture and FinOps",
+      "outcome": "Documentation cycle cut from eight weeks to four; about 20% query-cost reduction and about 30% Unity Catalog migration efficiency on the CEI platform.",
+      "scope": "Senior data-platform architecture, governance, and cloud economics for Global Technology Infrastructure — medallion lakehouse, Unity Catalog, and cross-application cost attribution.",
+      "tools": ["Azure Databricks", "BigQuery", "Unity Catalog", "Grafana", "OpenTelemetry"],
+      "href": "/portfolio/#prudential-singapore-senior-data-engineer-solutioning-architecture"
+    },
+    {
+      "title": "SPH Media — media data platform",
+      "outcome": "Resilient, cost-saving ingestion for audience engagement and app backends, with the analytics platform moved onto AWS.",
+      "scope": "Lead data engineer for batch and streaming pipelines, documentation standards, and team upskilling across enterprise media operations.",
+      "tools": ["AWS", "Glue", "Athena", "S3", "Terraform"],
+      "href": "/portfolio/#sph-media-lead-data-engineer"
+    }
+  ],
+  "section_copy": {
+    "featured_tutorial": {
+      "intro": "A personal analytics product operators can run themselves — from export to dashboard — rather than a tool walkthrough. Outcome first; tools last."
+    },
+    "metis_bootcamp": {
+      "intro": "Bootcamp work framed as the decision or user it served — campaign placement, score prediction, vessel monitoring, claim review, generative verse — not as a tool catalogue."
+    }
+  },
+  "project_copy": {
+    "linkedin-analytics-databricks": {
+      "outcome": "Give a professional a first-party LinkedIn analytics workspace they can run themselves — from export to dashboard — without waiting on vendor reporting.",
+      "scope": "Public tutorial series documenting the end-to-end data product for educational reuse.",
+      "tools": ["Databricks", "Python", "Spark", "SQL", "Dashboarding"]
+    },
+    "metis-mta-edaproject": {
+      "outcome": "Point a campaign toward the stations where footfall actually concentrates, using public turnstile counts.",
+      "scope": "Exploratory analysis of NYC MTA station usage and a placement recommendation.",
+      "tools": ["Python", "Pandas", "Seaborn"]
+    },
+    "metis-animelist-score-prediction": {
+      "outcome": "Surface which titles the crowd over- or under-rates, so a catalog decision is not just a raw score.",
+      "scope": "Scraping, feature engineering, regression, and bias analysis on MyAnimeList scores.",
+      "tools": ["Python", "Scikit-learn", "BeautifulSoup"]
+    },
+    "metis-global-fishing-watch": {
+      "outcome": "Separate fishing from other maritime traffic at F1 0.90 and AUC 0.98, so activity can be monitored rather than inspected by hand.",
+      "scope": "Supervised classification on Global Fishing Watch vessel data.",
+      "tools": ["Python", "PostgreSQL", "Random Forest"]
+    },
+    "metis-fake-news-detection": {
+      "outcome": "Route dubious claims to review instead of treating every statement as equal — automated fact-checking on the LIAR dataset.",
+      "scope": "NLP, topic modeling, and word embeddings for claim classification.",
+      "tools": ["Python", "NLP", "GloVe", "LDA"]
+    },
+    "metis-generative-poetry-lstm": {
+      "outcome": "Let a reader generate original verse in the browser, as a small creative product rather than a training-loop write-up.",
+      "scope": "LSTM text generation with a Flask and PostgreSQL path to the page.",
+      "tools": ["Python", "Keras", "LSTM", "Flask"]
+    }
+  },
   "about": {
     "note": "Prefer export_public.json about (from personal-content data/about.yaml). site.about is fallback only."
   },

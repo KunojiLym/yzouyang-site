@@ -101,29 +101,58 @@ def run_pagefind() -> None:
     subprocess.run(cmd, cwd=str(ROOT), check=True)
 
 
+MAX_CASE_TOOLS = 5
+
+
+def _nav_anchor_html(site: dict, item: dict, active: str) -> str:
+    label = esc(item.get("label", ""))
+    raw_href = str(item.get("href", "#"))
+    external = bool(item.get("external"))
+    href = esc(raw_href if external else with_base(site, raw_href))
+    classes = []
+    if external:
+        classes.append("external")
+    attrs = f' href="{href}"'
+    if classes:
+        attrs += f' class="{" ".join(classes)}"'
+    if external:
+        attrs += ' target="_blank" rel="noopener noreferrer"'
+    if not external and item.get("label") == active:
+        attrs += ' aria-current="page"'
+    return f"<a{attrs}>{label}</a>"
+
+
 def nav_html(site: dict, active: str, *, grouped: bool = False) -> str:
-    parts: list[str] = []
-    external_started = False
+    """Primary dossier links, then Blog/Medium/LinkedIn under Elsewhere.
+
+    Desktop (grouped=False): disclosure control. Mobile menu (grouped=True):
+    uppercase label, then the same external links — still `.external` ↗.
+    """
+    primary: list[str] = []
+    external_links: list[str] = []
     for item in site.get("nav") or []:
-        label = esc(item.get("label", ""))
-        raw_href = str(item.get("href", "#"))
-        external = bool(item.get("external"))
-        if grouped and external and not external_started:
-            parts.append('<p class="nav-group-label">Elsewhere</p>')
-            external_started = True
-        href = esc(raw_href if external else with_base(site, raw_href))
-        classes = []
-        if external:
-            classes.append("external")
-        attrs = f' href="{href}"'
-        if classes:
-            attrs += f' class="{" ".join(classes)}"'
-        if external:
-            attrs += ' target="_blank" rel="noopener noreferrer"'
-        if not external and item.get("label") == active:
-            attrs += ' aria-current="page"'
-        parts.append(f"<a{attrs}>{label}</a>")
-    return "\n      ".join(parts)
+        if not isinstance(item, dict):
+            continue
+        markup = _nav_anchor_html(site, item, active)
+        if item.get("external"):
+            external_links.append(markup)
+        else:
+            primary.append(markup)
+    if not external_links:
+        return "\n      ".join(primary)
+    if grouped:
+        parts = primary + ['<p class="nav-group-label">Elsewhere</p>'] + external_links
+        return "\n      ".join(parts)
+    panel = "\n        ".join(external_links)
+    elsewhere = (
+        '<details class="nav-elsewhere">\n'
+        "        <summary>Elsewhere</summary>\n"
+        '        <div class="nav-elsewhere-panel">\n'
+        f"        {panel}\n"
+        "        </div>\n"
+        "      </details>"
+    )
+    return "\n      ".join(primary + [elsewhere])
 
 
 STYLE_PARTS = (
@@ -707,6 +736,73 @@ def write(path: Path, content: str) -> None:
     path.write_text(content.replace("\r\n", "\n"), encoding="utf-8")
 
 
+def _curated_tools(tools: object) -> list[str]:
+    out: list[str] = []
+    if not isinstance(tools, list):
+        return out
+    for item in tools:
+        label = str(item).strip()
+        if not label:
+            continue
+        out.append(label)
+        if len(out) >= MAX_CASE_TOOLS:
+            break
+    return out
+
+
+def _merge_project_copy(row: dict, copy_map: dict) -> dict:
+    merged = dict(row)
+    override = copy_map.get(str(row.get("id") or ""))
+    if isinstance(override, dict):
+        for key in ("outcome", "scope", "tools", "description"):
+            if override.get(key):
+                merged[key] = override[key]
+    merged["tools"] = _curated_tools(merged.get("tools"))
+    return merged
+
+
+def _selected_systems_html(site: dict) -> str:
+    """Home editorial rows: outcome → scope → tools-last, linking to /portfolio/."""
+    rows = [r for r in (site.get("home_selected") or []) if isinstance(r, dict)][:3]
+    if len(rows) < 2:
+        return ""
+    items: list[str] = []
+    for row in rows:
+        title = str(row.get("title") or "").strip()
+        outcome = str(row.get("outcome") or "").strip()
+        if not title or not outcome:
+            continue
+        href = with_base(site, str(row.get("href") or "/portfolio/"))
+        scope = str(row.get("scope") or "").strip()
+        tools = _curated_tools(row.get("tools"))
+        scope_html = f"          <p>{esc(scope)}</p>\n" if scope else ""
+        tools_html = ""
+        if tools:
+            tools_html = (
+                f'          <p class="case-tools meta">Tools: {esc(", ".join(tools))}</p>\n'
+            )
+        items.append(
+            "        <li>\n"
+            f"          <h3><a href=\"{esc(href)}\">{esc(title)}</a></h3>\n"
+            f'          <p class="case-outcome">{esc(outcome)}</p>\n'
+            f"{scope_html}"
+            f"{tools_html}"
+            "        </li>"
+        )
+    if len(items) < 2:
+        return ""
+    portfolio = esc(with_base(site, "/portfolio/"))
+    return (
+        '    <section class="selected-systems" aria-labelledby="selected-systems-heading">\n'
+        '      <h2 id="selected-systems-heading">Selected systems</h2>\n'
+        '      <ul class="item-list">\n'
+        + "\n".join(items)
+        + "\n      </ul>\n"
+        f'      <p class="links"><a href="{portfolio}">All selected work</a></p>\n'
+        "    </section>\n"
+    )
+
+
 def build_home(site: dict, export: dict) -> str:
     person = site["person"]
     photo = person.get("photo") or ""
@@ -765,6 +861,7 @@ def build_home(site: dict, export: dict) -> str:
     contact = site["contact"]
     ext = site["external"]
     contact_href = esc(with_base(site, "/#contact"))
+    selected_html = _selected_systems_html(site)
     contact_section = f"""
     <section id="contact" class="contact-section">
       <h2>Contact</h2>
@@ -805,6 +902,7 @@ def build_home(site: dict, export: dict) -> str:
         </div>
       </div>{photo_html}
     </section>
+{selected_html}
 {contact_section}
 """
 
@@ -1030,12 +1128,12 @@ def _project_item_html(row: dict) -> str:
         scope = ""
     start = esc(row.get("start") or "")
     end = esc(row.get("end") or "present")
-    tools = row.get("tools") or []
+    tools = _curated_tools(row.get("tools"))
     tools_html = ""
     if tools:
         tools_html = (
             f'<p class="case-tools meta">Tools: '
-            f'{esc(", ".join(str(t) for t in tools))}</p>'
+            f'{esc(", ".join(tools))}</p>'
         )
     outcome_html = f'<p class="case-outcome">{esc(outcome)}</p>' if outcome else ""
     scope_html = f"<p>{esc(scope)}</p>" if scope else ""
@@ -1074,6 +1172,8 @@ def build_portfolio(site: dict, export: dict) -> str:
     page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
     lede = (page.get("lede") or "Selected PUBLIC projects.").strip()
     projects = [p for p in (export.get("projects") or []) if isinstance(p, dict)]
+    copy_map = site.get("project_copy") if isinstance(site.get("project_copy"), dict) else {}
+    section_copy = site.get("section_copy") if isinstance(site.get("section_copy"), dict) else {}
     by_section: dict[str, list] = {}
     for p in projects:
         by_section.setdefault(str(p.get("section") or "other"), []).append(p)
@@ -1100,6 +1200,34 @@ def build_portfolio(site: dict, export: dict) -> str:
         if fold_open:
             sections_html.append(section_fold_close())
             fold_open = False
+
+    # Elevate enterprise solutioning above tutorial / bootcamp rows.
+    enterprise = page.get("enterprise_summaries") or {}
+    if isinstance(enterprise, dict) and enterprise.get("items"):
+        etitle = str(enterprise.get("title") or "Enterprise summaries")
+        eid = unique_id(etitle)
+        ent_node = {"id": eid, "label": etitle, "children": []}
+        toc.append(ent_node)
+        sections_html.append(section_fold_open(eid, esc(etitle), level="h2"))
+        fold_open = True
+        for item in enterprise.get("items") or []:
+            if not isinstance(item, dict):
+                continue
+            item_title = str(item.get("title") or "")
+            item_id = unique_id(item_title) if item_title else ""
+            if item_id:
+                ent_node["children"].append(
+                    {"id": item_id, "label": item_title, "children": []}
+                )
+            bullets = "\n".join(
+                f"        <li>{esc(b)}</li>" for b in (item.get("bullets") or [])
+            )
+            id_attr = f' id="{item_id}"' if item_id else ""
+            sections_html.append(
+                f"      <h3{id_attr}>{esc(item_title)}</h3>\n"
+                f'      <ul class="competency-list">\n{bullets}\n      </ul>'
+            )
+        close_fold()
 
     for section in page.get("sections") or []:
         if not isinstance(section, dict):
@@ -1132,12 +1260,16 @@ def build_portfolio(site: dict, export: dict) -> str:
             sections_html.append(section_fold_open(hid, esc(title), level="h2"))
             fold_open = True
 
-        intro = (section.get("intro") or "").strip()
+        sc = section_copy.get(sid)
+        intro_override = (
+            str(sc.get("intro") or "").strip() if isinstance(sc, dict) else ""
+        )
+        intro = intro_override or (section.get("intro") or "").strip()
         if intro:
             sections_html.append(f'      <p class="page-lede">{esc(intro)}</p>')
         sections_html.append(
             '      <ul class="item-list">\n'
-            + "\n".join(_project_item_html(r) for r in rows)
+            + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
         footer_link = section.get("footer_link") or ""
@@ -1163,37 +1295,9 @@ def build_portfolio(site: dict, export: dict) -> str:
         fold_open = True
         sections_html.append(
             '      <ul class="item-list">\n'
-            + "\n".join(_project_item_html(r) for r in rows)
+            + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
-        close_fold()
-
-    enterprise = page.get("enterprise_summaries") or {}
-    if isinstance(enterprise, dict) and enterprise.get("items"):
-        close_fold()
-        etitle = str(enterprise.get("title") or "Enterprise summaries")
-        eid = unique_id(etitle)
-        ent_node = {"id": eid, "label": etitle, "children": []}
-        toc.append(ent_node)
-        sections_html.append(section_fold_open(eid, esc(etitle), level="h2"))
-        fold_open = True
-        for item in enterprise.get("items") or []:
-            if not isinstance(item, dict):
-                continue
-            item_title = str(item.get("title") or "")
-            item_id = unique_id(item_title) if item_title else ""
-            if item_id:
-                ent_node["children"].append(
-                    {"id": item_id, "label": item_title, "children": []}
-                )
-            bullets = "\n".join(
-                f"        <li>{esc(b)}</li>" for b in (item.get("bullets") or [])
-            )
-            id_attr = f' id="{item_id}"' if item_id else ""
-            sections_html.append(
-                f"      <h3{id_attr}>{esc(item_title)}</h3>\n"
-                f'      <ul class="competency-list">\n{bullets}\n      </ul>'
-            )
         close_fold()
 
     verify = page.get("verify") or {}

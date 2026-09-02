@@ -149,6 +149,15 @@ test.describe("home", () => {
     await expect(page.locator(".portrait-chip")).toBeVisible();
     await expect(page.locator("#contact")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("Static migration");
+    const selected = page.locator(".selected-systems");
+    await expect(selected).toBeVisible();
+    await expect(selected.locator(".item-list > li")).toHaveCount(2);
+    await expect(selected.locator(".case-outcome").first()).toBeVisible();
+    await expect(selected.locator(".case-tools").first()).toBeVisible();
+    await expect(selected.getByRole("link", { name: /Prudential/ })).toHaveAttribute(
+      "href",
+      /\/portfolio\//
+    );
 
     if (testInfo.project.name === "mobile") {
       const h1Box = await page.locator("h1").first().boundingBox();
@@ -188,7 +197,15 @@ test.describe("nav", () => {
         "page"
       );
       await expect(nav.getByRole("link", { name: "Contact" })).toHaveCount(0);
-      await expect(nav.getByRole("link", { name: /Blog/ })).toBeVisible();
+      const elsewhere = nav.locator("details.nav-elsewhere");
+      await expect(elsewhere).toBeVisible();
+      await expect(elsewhere.getByRole("link", { name: /Blog/ })).toBeHidden();
+      await elsewhere.locator("summary").click();
+      const blog = elsewhere.getByRole("link", { name: /Blog/ });
+      await expect(blog).toBeVisible();
+      await expect(blog).toHaveClass(/external/);
+      await expect(elsewhere.getByRole("link", { name: /Medium/ })).toBeVisible();
+      await expect(elsewhere.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
     }
   });
 });
@@ -319,5 +336,78 @@ test.describe("sticky header", () => {
     expect(position).toBe("sticky");
     await page.evaluate(() => window.scrollTo(0, 1200));
     await expect(wrap).toBeInViewport();
+  });
+});
+
+test.describe("site critic qa viewports", () => {
+  test("1280 home + portfolio: selected rows, Elsewhere, no overflow", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop 1280");
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await expect(page.locator("nav.site-nav-desktop")).toBeVisible();
+    await expect(page.locator(".nav-elsewhere")).toBeVisible();
+    await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+    await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(2);
+    await noHorizontalOverflow(page);
+    await page.goto("/portfolio/");
+    await expect(page.locator(".case-outcome").first()).toBeVisible();
+    await expect(page.getByText("Enterprise Data & AI Solutioning")).toBeVisible();
+    await noHorizontalOverflow(page);
+  });
+
+  test("800 hero stacks copy before photo; selected single-column", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "explicit 800");
+    await page.setViewportSize({ width: 800, height: 900 });
+    await page.goto("/");
+    const h1Box = await page.locator("h1").first().boundingBox();
+    const photoBox = await page.locator(".hero-photo").boundingBox();
+    expect(h1Box && photoBox).toBeTruthy();
+    expect(h1Box.y).toBeLessThan(photoBox.y);
+    const xs = await page.locator(".selected-systems .item-list > li").evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect().x)
+    );
+    expect(xs.length).toBe(2);
+    expect(Math.abs(xs[0] - xs[1])).toBeLessThan(2);
+    await noHorizontalOverflow(page);
+  });
+
+  test("900 Contact stays beside Menu; Elsewhere usable in menu", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "explicit 900");
+    await page.setViewportSize({ width: 900, height: 800 });
+    await page.goto("/");
+    await expect(page.locator("nav.site-nav-desktop")).toBeHidden();
+    const menu = page.locator("details.nav-menu");
+    await expect(menu).toBeVisible();
+    await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+    const contactBox = await page.locator(".header-actions > .header-contact").boundingBox();
+    const menuBox = await menu.locator("summary").boundingBox();
+    expect(contactBox && menuBox).toBeTruthy();
+    expect(Math.abs(contactBox.y - menuBox.y)).toBeLessThan(24);
+    expect(contactBox.x).toBeLessThan(menuBox.x);
+    await menu.locator("summary").click();
+    await expect(menu.locator(".nav-group-label")).toHaveText(/Elsewhere/i);
+    await expect(menu.getByRole("link", { name: /Blog/ })).toBeVisible();
+    await expect(menu.getByRole("link", { name: /LinkedIn/ })).toHaveClass(/external/);
+    await noHorizontalOverflow(page);
+  });
+
+  test("375 home + portfolio: stack, selected column, Contact beside Menu", async ({ page }) => {
+    test.skip(test.info().project.name === "desktop", "mobile 375");
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/");
+    const h1Box = await page.locator("h1").first().boundingBox();
+    const photoBox = await page.locator(".hero-photo").boundingBox();
+    expect(h1Box && photoBox).toBeTruthy();
+    expect(h1Box.y).toBeLessThan(photoBox.y);
+    const xs = await page.locator(".selected-systems .item-list > li").evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect().x)
+    );
+    expect(xs.length).toBe(2);
+    expect(Math.abs(xs[0] - xs[1])).toBeLessThan(2);
+    await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+    await expect(page.locator("details.nav-menu")).toBeVisible();
+    await noHorizontalOverflow(page);
+    await page.goto("/portfolio/");
+    await noHorizontalOverflow(page);
   });
 });
