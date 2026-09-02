@@ -78,6 +78,14 @@ def main() -> None:
         fail("home missing sticky site-header-wrap")
     if 'class="header-contact' not in home:
         fail("home missing header Contact control")
+    if home.count("header-contact") != 1:
+        fail("header Contact must appear once (sticky control, not duplicated in Menu)")
+    if ".nav-menu" in home and 'class="header-contact' in home.split('class="nav-menu"')[1].split("</details>")[0]:
+        fail("nav-menu must not duplicate header Contact")
+    if 'class="skip-link"' not in home or 'href="#main"' not in home:
+        fail("home missing skip-link to #main")
+    if 'id="main"' not in home:
+        fail("home missing main#main skip target")
     if 'href="/contact/"' in home and 'nav' in home:
         # primary nav must not point at /contact/ as a page
         if 'aria-label="Primary"' in home and ">Contact</a>" in home.split('aria-label="Primary"')[1].split("</nav>")[0]:
@@ -99,6 +107,20 @@ def main() -> None:
         re.S,
     ):
         fail("hero h1 must set font-size: var(--text-display-hero)")
+    if not re.search(
+        r"main\.page \.hero h1\s*\{[^}]*font-weight:\s*600",
+        css,
+        re.S,
+    ):
+        fail("hero h1 must set font-weight: 600")
+    if re.search(
+        r"\.header-actions\s*>\s*\.header-contact\s*\{[^}]*display:\s*none",
+        css,
+        re.S,
+    ):
+        fail("header Contact must stay visible beside Menu at --bp-md (do not display:none)")
+    if "scroll-behavior: auto" not in css:
+        fail("styles.css missing scroll-behavior: auto for prefers-reduced-motion")
     if "repeat(3, minmax(0, 1fr))" not in css:
         fail("styles.css missing outcome-strip 3-column grid at --bp-lg")
     if "background-color: var(--bg-deep)" not in css:
@@ -129,6 +151,8 @@ def main() -> None:
             fail(f"{name} missing visible search label")
         if 'for="pagefind-search-input"' not in html:
             fail(f"{name} search label missing for=pagefind-search-input")
+        if 'setAttribute("name", "q")' not in html:
+            fail(f"{name} Pagefind input missing name attribute wiring")
 
     styles_dir = ROOT / "src" / "styles"
     for part in (
@@ -148,6 +172,8 @@ def main() -> None:
 
     if 'class="issuer-group"' not in credentials:
         fail("credentials missing issuer-group headings")
+    if "<h4>" not in credentials:
+        fail("credentials issuer groups must list cert titles as h4")
     if re.search(r">https?://[^<]+<", credentials):
         fail("credentials must not print raw verify URLs as link text")
 

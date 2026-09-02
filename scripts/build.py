@@ -652,6 +652,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
         const input = mount.querySelector(".pagefind-ui__search-input");
         if (input) {{
           input.id = "pagefind-search-input";
+          input.setAttribute("name", "q");
         }}
       }}
     }});
@@ -673,6 +674,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
 {head_analytics}
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="site-header-wrap">
   <header class="site-header">
     <p class="brand"><a href="{home}">{brand}</a></p>
@@ -686,12 +688,11 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
         <nav class="site-nav" aria-label="Primary">
         {mobile_nav}
         </nav>
-        <a class="header-contact btn" href="{contact_href}">Contact</a>
       </details>
     </div>
   </header>
   </div>
-  <main class="page" aria-label="{esc(title)}"{pf_attr}>
+  <main id="main" class="page" aria-label="{esc(title)}"{pf_attr}>
 {body}
   </main>
 {footer_html(site)}{pf_script}
@@ -1235,7 +1236,7 @@ def build_portfolio(site: dict, export: dict) -> str:
     return longform_page(title="Portfolio", lede_html=lede_html, toc=toc, body=body)
 
 
-def _cert_item_html(row: dict) -> str:
+def _cert_item_html(row: dict, *, heading: str = "h3") -> str:
     name = esc(row.get("name") or "")
     issuer = esc(row.get("issuer") or "")
     issued = esc(row.get("issued") or "")
@@ -1251,9 +1252,10 @@ def _cert_item_html(row: dict) -> str:
     validity = f"issued {issued}" if issued else ""
     if expires:
         validity += f" · expires {expires}" if validity else f"expires {expires}"
+    tag = "h4" if heading == "h4" else "h3"
     return (
         f"      <li>\n"
-        f"        <h3>{name}</h3>\n"
+        f"        <{tag}>{name}</{tag}>\n"
         f'        <p class="meta">{issuer}'
         + (f" · {validity}" if validity else "")
         + "</p>\n"
@@ -1305,7 +1307,7 @@ def _certs_by_issuer_html(
         out.append(f'      <h3 class="issuer-group" id="{iid}">{esc(issuer)}</h3>')
         out.append(
             '      <ul class="item-list">\n'
-            + "\n".join(_cert_item_html(r) for r in group)
+            + "\n".join(_cert_item_html(r, heading="h4") for r in group)
             + "\n      </ul>"
         )
     return out, children

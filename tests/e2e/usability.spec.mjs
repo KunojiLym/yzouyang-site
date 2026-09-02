@@ -24,7 +24,13 @@ test.describe("a11y light + contrast", () => {
   test("landmarks and non-transparent body bg", async ({ page }, testInfo) => {
     await page.goto("/");
     await expect(page.locator("html[lang]")).toHaveCount(1);
-    await expect(page.locator("main.page")).toHaveCount(1);
+    await expect(page.locator("main#main.page")).toHaveCount(1);
+    const skip = page.locator("a.skip-link");
+    await expect(skip).toHaveCount(1);
+    await expect(skip).toHaveAttribute("href", "#main");
+    await skip.focus();
+    await expect(skip).toBeFocused();
+    await expect(skip).toBeVisible();
     if (testInfo.project.name === "mobile") {
       await expect(page.locator("details.nav-menu")).toBeVisible();
       await expect(page.locator("details.nav-menu nav[aria-label='Primary']")).toHaveCount(1);
@@ -53,28 +59,47 @@ test.describe("a11y light + contrast", () => {
     const solid = (c) => c && c !== "transparent" && !/^rgba\(\s*0,\s*0,\s*0,\s*0\s*\)$/.test(c);
     expect(solid(paint.htmlBg) || solid(paint.bodyBg)).toBe(true);
   });
+
+  test("prefers-reduced-motion uses auto scroll-behavior", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const behavior = await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior);
+    expect(behavior).toBe("auto");
+  });
 });
 
 test.describe("home", () => {
   test("hero h1 uses Fraunces display token", async ({ page }) => {
-    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/");
     const heroTitle = page.locator(".hero h1");
     await expect(heroTitle).toBeVisible();
     const type = await heroTitle.evaluate((el) => {
       const cs = getComputedStyle(el);
-      return {
+      const probe = document.createElement("span");
+      probe.style.fontFamily = "var(--font-display)";
+      probe.style.fontSize = "var(--text-display-hero)";
+      el.appendChild(probe);
+      const expected = getComputedStyle(probe);
+      const out = {
         fontFamily: cs.fontFamily,
         fontSize: cs.fontSize,
-        displayHero: cs.getPropertyValue("--text-display-hero").trim(),
+        fontWeight: cs.fontWeight,
+        expectedFamily: expected.fontFamily,
+        expectedSize: expected.fontSize,
         fontDisplay: cs.getPropertyValue("--font-display").trim(),
+        displayHero: cs.getPropertyValue("--text-display-hero").trim(),
       };
+      probe.remove();
+      return out;
     });
     expect(type.fontFamily.toLowerCase()).toContain("fraunces");
     expect(type.fontFamily.toLowerCase()).not.toContain("sora");
+    expect(type.expectedFamily.toLowerCase()).toContain("fraunces");
+    expect(type.fontFamily).toBe(type.expectedFamily);
+    expect(type.fontSize).toBe(type.expectedSize);
     expect(type.fontDisplay.toLowerCase()).toContain("fraunces");
     expect(type.displayHero).toMatch(/clamp\(/);
-    expect(type.fontSize).toBeTruthy();
+    expect(Number.parseInt(type.fontWeight, 10)).toBeGreaterThanOrEqual(600);
   });
 
   test("outcome strip is three columns at desktop, proof pills match", async ({ page }) => {
@@ -109,12 +134,10 @@ test.describe("home", () => {
     await expect(page.locator(".outcome-strip .metric").first()).toBeVisible();
     await expect(page.locator(".proof-strip")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("professional credentials");
+    await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+    await expect(page.locator(".nav-menu .header-contact")).toHaveCount(0);
     if (testInfo.project.name === "mobile") {
-      const menu = page.locator("details.nav-menu");
-      await menu.locator("summary").click();
-      await expect(menu.locator(".header-contact")).toBeVisible();
-    } else {
-      await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+      await expect(page.locator("details.nav-menu")).toBeVisible();
     }
     await expect(page.getByRole("link", { name: "Digital card" })).toBeVisible();
     const ctaRow = page.locator(".cta-row");
@@ -200,6 +223,7 @@ test.describe("search", () => {
     await expect(searchLabel).toBeVisible();
     await expect(searchLabel).toHaveText("Search this page");
     await expect(input).toHaveAttribute("id", "pagefind-search-input");
+    await expect(input).toHaveAttribute("name", "q");
     await input.fill("databricks");
     await expect(page.locator(".pagefind-ui__result").first()).toBeVisible({
       timeout: 15_000,
@@ -216,6 +240,8 @@ test.describe("toc + credentials", () => {
     test.skip(test.info().project.name === "mobile", "desktop toc coverage enough");
     await page.goto("/credentials/");
     await expect(page.locator("h3.issuer-group").first()).toBeVisible();
+    await expect(page.locator("h3.issuer-group + ul h4").first()).toBeVisible();
+    await expect(page.locator("h3.issuer-group + ul h3")).toHaveCount(0);
     const rawUrlLinks = page.locator(".item-list a").filter({ hasText: /https?:\/\// });
     await expect(rawUrlLinks).toHaveCount(0);
     const tocLink = page.locator(".page-toc a").first();

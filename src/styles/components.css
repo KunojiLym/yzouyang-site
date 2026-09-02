@@ -79,7 +79,8 @@ main.page h3.issuer-group {
 }
 
 .item-list h2,
-.item-list h3 {
+.item-list h3,
+.item-list h4 {
   font-family: var(--font-body);
   font-size: var(--text-lg);
   font-weight: 600;
