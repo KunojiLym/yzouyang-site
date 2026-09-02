@@ -49,6 +49,18 @@ def main() -> None:
         fail("home missing proof-strip")
     if "Digital card" not in home or bitly not in home:
         fail("home missing Digital card CTA / bitly_hub")
+    cta_row = re.search(r'<div class="cta-row">(.*?)</div>', home, re.S)
+    if not cta_row:
+        fail("home missing cta-row")
+    cta_html = cta_row.group(1)
+    if cta_html.count("btn-primary") != 1:
+        fail("home cta-row must have exactly one btn-primary (Contact)")
+    if 'class="btn btn-primary"' not in cta_html or ">Contact</a>" not in cta_html:
+        fail("home cta-row missing primary Contact CTA")
+    if cta_html.count('class="btn"') != 1:
+        fail("home cta-row must keep Digital card as the only secondary .btn")
+    if 'class="btn" href="' not in cta_html or "Digital card" not in cta_html:
+        fail("home cta-row missing secondary Digital card .btn")
     if 'class="portrait-chip"' not in home:
         fail("home missing portrait-chip")
     if 'id="contact"' not in home:
@@ -73,6 +85,20 @@ def main() -> None:
                 fail("primary nav still links to /contact/")
 
     css = (DIST / "styles.css").read_text(encoding="utf-8")
+    if "main.page .hero h1" not in css:
+        fail("styles.css missing main.page .hero h1 (must beat main.page h1 for Fraunces)")
+    if not re.search(
+        r"main\.page \.hero h1\s*\{[^}]*font-family:\s*var\(--font-display\)",
+        css,
+        re.S,
+    ):
+        fail("hero h1 must set font-family: var(--font-display)")
+    if not re.search(
+        r"main\.page \.hero h1\s*\{[^}]*font-size:\s*var\(--text-display-hero\)",
+        css,
+        re.S,
+    ):
+        fail("hero h1 must set font-size: var(--text-display-hero)")
     if "background-color: var(--bg-deep)" not in css:
         fail("styles.css missing solid background-color: var(--bg-deep)")
     if "position: sticky" not in css:
@@ -124,6 +150,14 @@ def main() -> None:
         fail("about missing sticky sidebar TOC")
     if 'class="section-fold"' not in about:
         fail("about missing collapsible section-fold (must match portfolio/credentials)")
+    for name, html in (("about", about), ("portfolio", portfolio), ("credentials", credentials)):
+        if re.search(
+            r'<summary class="section-fold-summary"[^>]*>\s*<h[1-6]\b',
+            html,
+        ):
+            fail(f"{name} section-fold summary must not wrap a heading")
+        if not re.search(r'<summary class="section-fold-summary" id="[^"]+">', html):
+            fail(f"{name} section-fold summary missing id for TOC anchors")
     if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
         fail("about missing Figma open/fallback link")
     if 'id="selected-writing"' not in about:

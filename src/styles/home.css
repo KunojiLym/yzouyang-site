@@ -66,7 +66,8 @@
   border-radius: var(--radius-md);
 }
 
-.hero h1 {
+/* Beat main.page h1 (Sora / --text-display-1) so Home hero uses Fraunces. */
+main.page .hero h1 {
   font-family: var(--font-display);
   font-size: var(--text-display-hero);
   font-weight: 550;
@@ -149,6 +150,7 @@
 .cta-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-3) var(--space-4);
 }
 

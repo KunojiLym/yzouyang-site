@@ -212,12 +212,17 @@ def longform_page(
 
 
 def section_fold_open(section_id: str, heading: str, *, level: str = "h2") -> str:
-    """Start a collapsible long-form section (default open)."""
-    tag = "h2" if level == "h2" else "h3"
+    """Start a collapsible long-form section (default open).
+
+    Summary is the section title (design-system) as phrasing content, not a
+    heading. Nested h2/h3 inside <summary> breaks disclosure semantics and
+    heading navigation. `level` is accepted so existing call sites stay valid.
+    """
+    _ = level
     return (
         f'    <details class="section-fold" open>\n'
-        f'      <summary class="section-fold-summary">'
-        f'<{tag} id="{esc(section_id)}">{heading}</{tag}></summary>\n'
+        f'      <summary class="section-fold-summary" id="{esc(section_id)}">'
+        f"{heading}</summary>\n"
         f'      <div class="section-fold-body">\n'
     )
 
@@ -652,13 +657,13 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
       <nav class="site-nav site-nav-desktop" aria-label="Primary">
         {desktop_nav}
       </nav>
-      <a class="header-contact btn btn-primary" href="{contact_href}">Contact</a>
+      <a class="header-contact btn" href="{contact_href}">Contact</a>
       <details class="nav-menu">
         <summary>Menu</summary>
         <nav class="site-nav" aria-label="Primary">
         {mobile_nav}
         </nav>
-        <a class="header-contact btn btn-primary" href="{contact_href}">Contact</a>
+        <a class="header-contact btn" href="{contact_href}">Contact</a>
       </details>
     </div>
   </header>
@@ -771,8 +776,8 @@ def build_home(site: dict, export: dict) -> str:
         <div class="cta-row">
           <a class="btn btn-primary" href="{contact_href}">Contact</a>
           <a class="btn" href="{card}" target="_blank" rel="noopener noreferrer">Digital card</a>
-          <a class="btn" href="{esc(with_base(site, '/about/'))}">About</a>
-          <a class="btn" href="{esc(with_base(site, '/portfolio/'))}">Portfolio</a>
+          <a href="{esc(with_base(site, '/about/'))}">About</a>
+          <a href="{esc(with_base(site, '/portfolio/'))}">Portfolio</a>
         </div>
       </div>{photo_html}
     </section>

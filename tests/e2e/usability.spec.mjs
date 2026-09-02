@@ -56,6 +56,27 @@ test.describe("a11y light + contrast", () => {
 });
 
 test.describe("home", () => {
+  test("hero h1 uses Fraunces display token", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "desktop coverage enough");
+    await page.goto("/");
+    const heroTitle = page.locator(".hero h1");
+    await expect(heroTitle).toBeVisible();
+    const type = await heroTitle.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        fontFamily: cs.fontFamily,
+        fontSize: cs.fontSize,
+        displayHero: cs.getPropertyValue("--text-display-hero").trim(),
+        fontDisplay: cs.getPropertyValue("--font-display").trim(),
+      };
+    });
+    expect(type.fontFamily.toLowerCase()).toContain("fraunces");
+    expect(type.fontFamily.toLowerCase()).not.toContain("sora");
+    expect(type.fontDisplay.toLowerCase()).toContain("fraunces");
+    expect(type.displayHero).toMatch(/clamp\(/);
+    expect(type.fontSize).toBeTruthy();
+  });
+
   test("proof strip, CTAs, portrait chip, contact section", async ({ page }, testInfo) => {
     await page.goto("/");
     await expect(page.locator(".outcome-strip")).toBeVisible();
@@ -70,6 +91,12 @@ test.describe("home", () => {
       await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
     }
     await expect(page.getByRole("link", { name: "Digital card" })).toBeVisible();
+    const ctaRow = page.locator(".cta-row");
+    await expect(ctaRow.locator(".btn-primary")).toHaveCount(1);
+    await expect(ctaRow.locator(".btn-primary")).toHaveText("Contact");
+    await expect(ctaRow.locator("a.btn")).toHaveCount(2);
+    await expect(page.locator(".hero .btn-primary")).toHaveCount(1);
+    await expect(page.locator(".header-actions > .header-contact.btn-primary")).toHaveCount(0);
     await expect(page.locator(".portrait-chip")).toBeVisible();
     await expect(page.locator("#contact")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("Static migration");
@@ -202,6 +229,12 @@ test.describe("about writing + figma", () => {
     await expect(page.locator(".page-toc-sidebar a").first()).toBeVisible();
     await expect(page.locator("details.section-fold").first()).toBeVisible();
     await expect(page.locator("details.section-fold").first()).toHaveAttribute("open", "");
+    await expect(
+      page.locator("details.section-fold > summary :is(h1, h2, h3, h4, h5, h6)")
+    ).toHaveCount(0);
+    const firstSummary = page.locator("details.section-fold > summary").first();
+    await expect(firstSummary).toHaveAttribute("id", /.+/);
+    await expect(firstSummary).not.toHaveText("");
   });
 });
 

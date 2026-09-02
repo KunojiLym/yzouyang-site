@@ -97,6 +97,12 @@
   cursor: pointer;
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-display-3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+  scroll-margin-top: calc(var(--header-offset) + 0.5rem);
 }
 
 .section-fold > summary::-webkit-details-marker {
@@ -117,13 +123,6 @@
 
 .section-fold[open] > summary {
   border-bottom-color: var(--line-soft);
-}
-
-.section-fold-summary h2,
-.section-fold-summary h3 {
-  display: inline;
-  margin: 0;
-  font-size: var(--text-display-3);
 }
 
 .section-fold-body {
