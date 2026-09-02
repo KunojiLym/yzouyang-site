@@ -67,6 +67,21 @@ test.describe("a11y light + contrast", () => {
     expect(paint.cssOk).toBe(true);
     const solid = (c) => c && c !== "transparent" && !/^rgba\(\s*0,\s*0,\s*0,\s*0\s*\)$/.test(c);
     expect(solid(paint.htmlBg) || solid(paint.bodyBg)).toBe(true);
+    const tokens = await page.evaluate(() => {
+      const cs = getComputedStyle(document.documentElement);
+      return {
+        elevated: cs.getPropertyValue("--bg-elevated").trim(),
+        mid: cs.getPropertyValue("--bg-mid").trim(),
+        glow: cs.getPropertyValue("--glow").trim(),
+        accent: cs.getPropertyValue("--accent").trim(),
+        glowLayers: getComputedStyle(document.body).backgroundImage.split("radial-gradient").length - 1,
+      };
+    });
+    expect(tokens.elevated.toLowerCase()).toBe("#1a2420");
+    expect(tokens.mid.toLowerCase()).toBe("#15201c");
+    expect(tokens.accent.toLowerCase()).toBe("#d4a35c");
+    expect(tokens.glow).toMatch(/55\s+90\s+78/);
+    expect(tokens.glowLayers).toBe(1);
   });
 
   test("prefers-reduced-motion uses auto scroll-behavior", async ({ page }) => {
@@ -293,15 +308,19 @@ test.describe("toc + credentials", () => {
     await expect(toc).toBeInViewport();
   });
 
-  test("portfolio Figma surface is dark preview not iframe", async ({ page }) => {
+  test("portfolio Figma is compact links not an empty static frame", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/portfolio/");
     await expect(page.locator("iframe")).toHaveCount(0);
-    const preview = page.locator(".embed-frame-static").first();
-    await expect(preview).toBeVisible();
-    const bg = await preview.evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(bg).not.toMatch(/^rgb\(\s*255,\s*255,\s*255/);
-    await expect(page.locator(".embed-fallback").first()).toBeVisible();
+    const frames = page.locator(".embed-frame-static");
+    const frameCount = await frames.count();
+    for (let i = 0; i < frameCount; i += 1) {
+      await expect(frames.nth(i).locator("img")).toHaveCount(1);
+    }
+    const klook = page.locator("li").filter({ hasText: "Klook Travel Planner Capstone" });
+    await expect(klook.getByRole("link", { name: "Figma deck" })).toBeVisible();
+    await expect(klook.locator(".embed-frame-static")).toHaveCount(0);
+    await expect(klook.locator(".embed-fallback")).toHaveCount(0);
   });
 });
 

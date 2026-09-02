@@ -8,6 +8,8 @@ import re
 import sys
 from pathlib import Path
 
+from build import figma_embed_html
+
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
 DATA = ROOT / "data"
@@ -24,6 +26,45 @@ ROUTES = (
 def fail(msg: str) -> None:
     print(f"test_site_build error: {msg}", file=sys.stderr)
     raise SystemExit(1)
+
+
+def _rel_lum(hex_color: str) -> float:
+    h = hex_color.strip().lstrip("#")
+    if len(h) == 3:
+        h = "".join(ch * 2 for ch in h)
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+
+    def chan(c: int) -> float:
+        x = c / 255.0
+        return x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4
+
+    return 0.2126 * chan(r) + 0.7152 * chan(g) + 0.0722 * chan(b)
+
+
+def _contrast(fg: str, bg: str) -> float:
+    l1, l2 = _rel_lum(fg), _rel_lum(bg)
+    lighter, darker = max(l1, l2), min(l1, l2)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def _token_hex(css: str, name: str) -> str:
+    match = re.search(rf"{re.escape(name)}:\s*(#[0-9a-fA-F]{{3,8}})", css)
+    if not match:
+        fail(f"styles.css missing hex token {name}")
+    return match.group(1)
+
+
+def assert_no_empty_static_frames(html: str, label: str) -> None:
+    for match in re.finditer(
+        r"<a\b[^>]*embed-frame-static[^>]*>(.*?)</a>",
+        html,
+        re.S | re.I,
+    ):
+        if "<img" not in match.group(1).lower():
+            fail(
+                f"{label}: empty embed-frame-static is forbidden "
+                "(needs a real poster <img>, not a fill-only box)"
+            )
 
 
 def main() -> None:
@@ -161,6 +202,56 @@ def main() -> None:
         fail("styles.css missing semantic tokens (--bg-elevated / --focus-ring)")
     if "--text-default" not in css:
         fail("styles.css missing --text-default")
+    if css.count("var(--glow)") != 1:
+        fail("styles.css must use a single var(--glow) layer")
+    if "rgb(55 90 78 / 22%)" not in css:
+        fail("styles.css glow token must stay the desaturated boardroom value")
+    if re.search(r"\.cj-js\s+\.cj-slide[^{]*\{[^}]*scale\s*\(", css):
+        fail("career journey .cj-slide must not use scale transforms")
+    if "transform: scale(" in css:
+        fail("assembled CSS must not include scale() transforms")
+    if not re.search(
+        r"@media \(prefers-reduced-motion: reduce\).*?\.cj-js \.cj-slide,"
+        r".*?opacity:\s*1 !important.*?transform:\s*none !important",
+        css,
+        re.S,
+    ):
+        fail("prefers-reduced-motion must force .cj-slide opacity 1 / transform none")
+    if not re.search(
+        r"@media \(prefers-reduced-motion: reduce\).*?\[data-step\].*?"
+        r"opacity:\s*1 !important.*?transform:\s*none !important",
+        css,
+        re.S,
+    ):
+        fail("prefers-reduced-motion must reveal all [data-step] (not animation:none alone)")
+
+    bg_deep = _token_hex(css, "--bg-deep")
+    bg_mid = _token_hex(css, "--bg-mid")
+    bg_elevated = _token_hex(css, "--bg-elevated")
+    text_default = _token_hex(css, "--text-default")
+    text_muted = _token_hex(css, "--text-muted")
+    text_faint = _token_hex(css, "--text-faint")
+    accent = _token_hex(css, "--accent")
+    if bg_elevated.lower() != "#1a2420":
+        fail(f"--bg-elevated must be charcoal #1a2420, got {bg_elevated}")
+    if bg_mid.lower() != "#15201c":
+        fail(f"--bg-mid must be charcoal #15201c, got {bg_mid}")
+    if accent.lower() != "#d4a35c":
+        fail(f"--accent gold must stay #d4a35c, got {accent}")
+    pairs = (
+        ("--text-default on --bg-deep", text_default, bg_deep, 4.5),
+        ("--text-default on --bg-elevated", text_default, bg_elevated, 4.5),
+        ("--text-muted on --bg-deep", text_muted, bg_deep, 4.5),
+        ("--text-muted on --bg-elevated", text_muted, bg_elevated, 4.5),
+        ("--text-faint on --bg-deep", text_faint, bg_deep, 4.5),
+        ("--text-faint on --bg-elevated", text_faint, bg_elevated, 4.5),
+        ("--accent on --bg-deep", accent, bg_deep, 3.0),
+        ("--accent on --bg-elevated", accent, bg_elevated, 3.0),
+    )
+    for label, fg, bg, minimum in pairs:
+        ratio = _contrast(fg, bg)
+        if ratio < minimum:
+            fail(f"a11y contrast {label} is {ratio:.2f}:1 (need ≥ {minimum}:1)")
 
     portfolio = (DIST / "portfolio" / "index.html").read_text(encoding="utf-8")
     credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
@@ -253,8 +344,29 @@ def main() -> None:
         fail("portfolio missing expected public GitHub project links")
     if "<iframe" in portfolio:
         fail("portfolio must not load a live Figma iframe (white canvas on dark page)")
-    if "embed-wrap" in portfolio and "embed-frame-static" not in portfolio:
-        fail("portfolio Figma surface missing embed-frame-static dark preview")
+    if "Klook Travel Planner" in portfolio and "Figma deck" not in portfolio:
+        fail("Klook row must keep the compact Figma deck .links row")
+    assert_no_empty_static_frames(portfolio, "portfolio")
+    assert_no_empty_static_frames(about, "about")
+    empty_preview = figma_embed_html(
+        "Klook Travel Planner Capstone",
+        "https://embed.figma.com/deck/example",
+        "https://www.figma.com/deck/example",
+    )
+    if "embed-frame-static" in empty_preview:
+        fail("figma_embed_html must not emit embed-frame-static without a poster")
+    if "embed-fallback" not in empty_preview:
+        fail("figma_embed_html without poster must keep the compact fallback link")
+    poster_preview = figma_embed_html(
+        "Klook Travel Planner Capstone",
+        "https://embed.figma.com/deck/example",
+        "https://www.figma.com/deck/example",
+        poster="/assets/klook-poster.png",
+    )
+    if "<img" not in poster_preview or "embed-frame-static" not in poster_preview:
+        fail("figma_embed_html with poster must emit a real <img> inside embed-frame-static")
+    if "aspect-ratio" in poster_preview:
+        fail("poster markup must not hardcode a fill-only aspect-ratio box")
     if 'class="page-toc-sub"' not in portfolio:
         fail("portfolio TOC missing nested subcategory list")
     if 'class="section-fold"' not in portfolio or 'class="section-fold"' not in credentials:
