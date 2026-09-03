@@ -42,8 +42,8 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 | `--bg-gradient-end` | Body background gradient, 100% stop | `#0e1412` |
 | `--font-display` | Hero title + brand wordmark only | Fraunces |
 | `--font-body` | Everything else | Sora |
-| `--max` | Content measure (Home, About) | `68rem` |
-| `--max-longform` | Content measure (Portfolio, Credentials — wider for sidebar TOC layout) | `80rem` |
+| `--max` | Content measure (Home; header/footer on non-TOC routes) | `68rem` |
+| `--max-longform` | Content measure (Portfolio, Credentials, About dossier column) **and** matching header/footer on `.page-with-toc` routes | `80rem` |
 | `--header-offset` | Sticky header height; used for `scroll-padding-top` and sidebar `max-height` math | `4.75rem` |
 
 `html` / `body` set `background-color: var(--bg-deep)`. Gradients use `background-image` only.
@@ -179,6 +179,16 @@ Site reads as a senior professional dossier:
 **Sticky header:** `.site-header-wrap` — opaque ≥94% `--bg-deep`; blur additive only.
 
 **Long-form TOC (design-system rule):** Every multi-section dossier page (About, Portfolio, Credentials) uses `.page-with-toc` with a sticky `.page-toc-sidebar`. Nested `.page-toc-sub` lists expose subcategories (e.g. portfolio child sections, credential issuers). Major sections use `.section-fold` (`<details open>`) so readers can collapse dense blocks without losing the sidebar map.
+
+**Long-form alignment axes:** Dossier pages share **at most three text left edges**. This is a composition rule, not extra chrome.
+
+1. **TOC top-level** — sidebar label + parent links (sidebar chrome). Nested `.page-toc-sub` links indent **once inside the sidebar only**; they must not create a fourth body axis.
+2. **Main primary text** — page `h1` = `.page-lede` = Pagefind outer box = `.section-fold` summary text = fold body `h3`. The disclosure chevron (`summary::before`) is `position: absolute` in a `--space-5` (1.25rem) gutter so it does not invent an axis. Summary and `.section-fold-body` share that left padding; do not add a further `h3` indent.
+3. **List hang** — bullets only (`.item-list ul` / `.competency-list` `padding-left: var(--space-5)`). One hang from the primary axis.
+
+**Shell measure:** On `.page-with-toc` routes, `.site-header` and `.site-footer` use `--max-longform` with the same `--space-6` horizontal padding as `main.page`, so brand / Contact lock to the dossier column. Home keeps `--max`. At ≤`--bp-md` (900px) the Menu control is the rightmost header item; Contact matching main-right is a **≥1280** check (tolerance ±2px).
+
+**Optical top:** `.page-toc-sidebar` uses `padding-top: var(--space-1)` (one token, overriding `.page-toc`’s `--space-3`) so “ON THIS PAGE” caps optically align with the page `h1` caps at 1280. Do not add a second offset.
 
 **Motion:** Short, minimal entrance (`rise`); honor `prefers-reduced-motion`. No novelty animation. Career Journey slide chrome is **opacity-only** (≤0.25s, no `scale()`, no `translateY` snap). Under `prefers-reduced-motion`, `.cj-slide` is `opacity: 1` / `transform: none` and every `[data-step]` is revealed — resting dim/scale must not survive `animation: none`.
 

@@ -10,6 +10,15 @@
   min-width: 0;
 }
 
+/* Primary text axis = page-main left + --space-5 chevron gutter.
+   h1 / lede / search sit on that axis with fold summary text and body h3.
+   The chevron is absolute in the gutter and is not a text axis. */
+.page-main > h1,
+.page-main > .page-lede,
+.page-main > .page-search {
+  padding-left: var(--space-5);
+}
+
 .page-toc {
   margin: 0 0 var(--space-7);
   padding: var(--space-3) var(--space-4);
@@ -52,6 +61,11 @@
   top: calc(var(--header-offset) + 0.75rem);
   z-index: 10;
   margin: 0;
+
+  /* Optical top: --space-1 (4px) so "ON THIS PAGE" caps sit with the page h1
+     caps @1280. Overrides the --space-3 padding-top from .page-toc.
+     See docs/design-system.md (long-form alignment axes). */
+  padding-top: var(--space-1);
   max-height: calc(100vh - var(--header-offset) - 1.5rem);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -93,9 +107,13 @@
 }
 
 .section-fold > summary {
+  position: relative;
   list-style: none;
   cursor: pointer;
-  padding: var(--space-3) var(--space-4);
+
+  /* Same horizontal padding as .section-fold-body; extra left is the
+     --space-5 gutter for the absolute chevron, not a second text axis. */
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-5);
   border-bottom: 1px solid transparent;
   font-family: var(--font-body);
   font-size: var(--text-display-3);
@@ -111,10 +129,12 @@
 
 .section-fold > summary::before {
   content: "▸";
-  display: inline-block;
-  width: 1rem;
+  position: absolute;
+  left: 0;
+  width: var(--space-5);
+  text-align: center;
   color: var(--text-faint);
-  margin-right: var(--space-tight);
+  pointer-events: none;
 }
 
 .section-fold[open] > summary::before {
@@ -126,7 +146,7 @@
 }
 
 .section-fold-body {
-  padding: var(--space-2) var(--space-4) var(--space-5);
+  padding: var(--space-2) var(--space-4) var(--space-5) var(--space-5);
 }
 
 /* Clip, don't display:none — the heading must stay in the a11y tree. */
