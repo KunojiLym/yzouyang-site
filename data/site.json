@@ -88,11 +88,14 @@
   "enterprise_copy": {
     "prudential-singapore-senior-data-engineer-solutioning-architecture": {
       "title": "Prudential (Singapore) — Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning)",
-      "problem": "Enterprise cloud spend and lakehouse ops lacked application-level cost attribution and a governed medallion standard.",
+      "problem": "Prudential’s Global Technology Infrastructure lacked application-level cost attribution — spend was visible at project level but not traceable to business applications. The Azure Databricks environment also lacked enforced governance — ambiguous lineage, inconsistent dev/ops separation, and thin documentation.",
       "role": "Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning), Global Technology Infrastructure.",
-      "decision": "Unity Catalog and medallion architecture; map applications to cloud projects; serverless pipelines with OpenTelemetry and Grafana.",
-      "outcome": "Documentation 8→4 weeks (~50%); ~20% query-cost reduction; ~30% Unity Catalog UAT migration efficiency on the CEI platform.",
-      "evidence": "CEI platform work summarized here; tools last."
+      "decision": "For cost attribution: an attestation and mapping layer that cross-references cloud projects against enterprise application records. For Databricks governance: Unity Catalog, Declarative Asset Bundles with enforced tagging, serverless execution, and medallion patterns — with lineage treated as a first-class artifact.",
+      "outcome": "New-hire ramp 6→4 weeks (~33%) after documentation standards; lineage ambiguities down ~40%; BigQuery framework query costs ~20% via partitioning; first actionable app-level cost view across multi-region operations.",
+      "evidence": "Public role on LinkedIn. CEI internals are not published.",
+      "evidence_href": "https://www.linkedin.com/in/yzouyang/",
+      "evidence_label": "LinkedIn",
+      "tools": ["Azure Databricks", "BigQuery", "Unity Catalog", "Grafana", "OpenTelemetry"]
     },
     "sph-media-lead-data-engineer": {
       "title": "SPH Media — Lead Data Engineer",
@@ -100,7 +103,21 @@
       "role": "Lead Data Engineer.",
       "decision": "Idempotent social ingestion; Composer → Glue/Athena/S3; documentation standards and mentoring.",
       "outcome": "Cost-saving, resilient pipelines for audience engagement and app backends; analytics platform on AWS.",
-      "evidence": "Public summary on this page."
+      "evidence": "Public role on LinkedIn.",
+      "evidence_href": "https://www.linkedin.com/in/yzouyang/",
+      "evidence_label": "LinkedIn",
+      "tools": ["AWS", "Glue", "Athena", "S3", "Terraform"]
+    },
+    "stb-data-engineer-applied-ml": {
+      "title": "Singapore Tourism Board — production ML for arrival forecasts",
+      "problem": "Tourism arrival forecasts lived in data-science workflows that operations could not run as a production service.",
+      "role": "Data Engineer, Singapore Tourism Board.",
+      "decision": "Deploy models on AWS SageMaker with vendor NCS; add CI/CD for production ML; run the team’s ingestion and processing pipelines.",
+      "outcome": "Arrival forecasts served from SageMaker with a repeatable deploy path.",
+      "evidence": "Public role on LinkedIn.",
+      "evidence_href": "https://www.linkedin.com/in/yzouyang/",
+      "evidence_label": "LinkedIn",
+      "tools": ["AWS SageMaker", "CI/CD", "Python"]
     }
   },
   "writing_highlights": [
@@ -154,18 +171,17 @@
     {
       "id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
       "title": "Prudential — cloud economics and governed lakehouse",
-      "evidence": "Public summary on Work; CEI platform (Azure Databricks, BigQuery, Grafana, OpenTelemetry).",
       "tools": ["Azure Databricks", "BigQuery", "Unity Catalog", "Grafana", "OpenTelemetry"]
     },
     {
       "id": "sph-media-lead-data-engineer",
       "title": "SPH Media — media data platform",
-      "evidence": "Public summary on Work.",
       "tools": ["AWS", "Glue", "Athena", "S3", "Terraform"]
     },
     {
-      "id": "skillup-mtech-capstone",
-      "title": "SkillUP — applied AI learning-path coach"
+      "id": "stb-data-engineer-applied-ml",
+      "title": "STB — production ML for tourism forecasts",
+      "tools": ["AWS SageMaker", "CI/CD", "Python"]
     }
   ],
   "section_copy": {
@@ -174,6 +190,10 @@
     },
     "metis_bootcamp": {
       "intro": "Bootcamp work framed as the decision or user it served — campaign placement, score prediction, vessel monitoring, claim review, generative verse — not as a tool catalogue."
+    },
+    "other": {
+      "title": "Public architectures & studies",
+      "intro": "Capstone, hackathon, and tutorial work you can click through. These are public architectures — not the same as enterprise delivery above."
     }
   },
   "project_copy": {
@@ -213,6 +233,8 @@
       "decision": "CSP, fuzzy logic, and RAG explainability for a personalised learning-path coach.",
       "outcome": "Explainable course recommendations operators can inspect.",
       "evidence": "Public GitHub repository.",
+      "evidence_href": "https://github.com/KunojiLym/IRS-PM-2026-01-17-AIS08PT-GRP-SkillUP-Course-Recommender",
+      "evidence_label": "GitHub",
       "tools": ["Python", "CSP", "Fuzzy logic", "RAG"]
     }
   },

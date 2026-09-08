@@ -252,13 +252,30 @@ def person_json_ld(site: dict) -> str:
     return f'  <script type="application/ld+json">{payload}</script>'
 
 
+def _beat_value_html(row: dict, key: str) -> str:
+    val = str(row.get(key) or "").strip()
+    if key != "evidence":
+        return esc(val)
+    href = str(row.get("evidence_href") or "").strip()
+    label = str(row.get("evidence_label") or "").strip()
+    if not href:
+        return esc(val)
+    link = (
+        f'<a class="external" href="{esc(href)}" target="_blank" '
+        f'rel="noopener noreferrer">{esc(label or _link_label(href))}</a>'
+    )
+    if val:
+        return f"{esc(val)} {link}"
+    return link
+
+
 def case_beats_html(row: dict, indent: str = "          ") -> str:
     parts: list[str] = []
     for key, label in CASE_BEAT_KEYS:
-        val = str(row.get(key) or "").strip()
-        if not val:
+        html = _beat_value_html(row, key)
+        if not html:
             continue
-        parts.append(f"{indent}  <div><dt>{esc(label)}</dt><dd>{esc(val)}</dd></div>")
+        parts.append(f"{indent}  <div><dt>{esc(label)}</dt><dd>{html}</dd></div>")
     if len(parts) < 2:
         return ""
     inner = "\n".join(parts)
@@ -382,21 +399,32 @@ def longform_page(
 """
 
 
-def section_fold_open(section_id: str, heading: str, *, level: str = "h2") -> str:
+def section_fold_open(
+    section_id: str,
+    heading: str,
+    *,
+    level: str = "h2",
+    variant: str = "",
+    kicker: str = "",
+) -> str:
     """Start a collapsible long-form section (default open).
 
-    Summary is the section title (design-system) as phrasing content, not a
-    heading — nested h2/h3 inside <summary> breaks disclosure semantics.
-    A visually hidden heading in the body keeps the document outline
-    (h1 → section h2 → item h3) for assistive tech.
+    Summary is the visible section title. Nested h2/h3 inside <summary>
+    breaks disclosure semantics, so the summary carries role=heading
+    instead of a second, visually-hidden heading that duplicated the title.
     """
-    tag = "h2" if level == "h2" else "h3"
+    aria_level = "2" if level == "h2" else "3"
+    extra = f" section-fold--{variant}" if variant else ""
+    kicker_html = (
+        f'        <p class="section-kicker">{esc(kicker)}</p>\n' if kicker else ""
+    )
     return (
-        f'    <details class="section-fold" open>\n'
-        f'      <summary class="section-fold-summary" id="{esc(section_id)}">'
+        f'    <details class="section-fold{extra}" open>\n'
+        f'      <summary class="section-fold-summary" id="{esc(section_id)}" '
+        f'role="heading" aria-level="{aria_level}">'
         f"{heading}</summary>\n"
         f'      <div class="section-fold-body">\n'
-        f'        <{tag} class="visually-hidden">{heading}</{tag}>\n'
+        f"{kicker_html}"
     )
 
 
@@ -917,7 +945,19 @@ def _merge_project_copy(row: dict, copy_map: dict) -> dict:
     merged = dict(row)
     override = copy_map.get(str(row.get("id") or ""))
     if isinstance(override, dict):
-        for key in ("outcome", "scope", "tools", "description", "poster", "problem", "role", "decision", "evidence"):
+        for key in (
+            "outcome",
+            "scope",
+            "tools",
+            "description",
+            "poster",
+            "problem",
+            "role",
+            "decision",
+            "evidence",
+            "evidence_href",
+            "evidence_label",
+        ):
             if override.get(key):
                 merged[key] = override[key]
     merged["tools"] = _curated_tools(merged.get("tools"))
@@ -944,10 +984,19 @@ def compose_home_selected_row(site: dict, row: dict) -> dict:
     composed: dict = {}
     if case_id:
         composed["id"] = case_id
-    for key in ("problem", "role", "decision", "outcome", "evidence", "tools"):
+    for key in (
+        "problem",
+        "role",
+        "decision",
+        "outcome",
+        "evidence",
+        "evidence_href",
+        "evidence_label",
+        "tools",
+    ):
         if source.get(key):
             composed[key] = source[key]
-    for key in ("title", "evidence", "tools"):
+    for key in ("title", "evidence", "evidence_href", "evidence_label", "tools"):
         if row.get(key):
             composed[key] = row[key]
     href = str(row.get("href") or "").strip()
@@ -1362,6 +1411,8 @@ def _link_label(url: str) -> str:
     u = url.lower()
     if "github.com" in u:
         return "GitHub"
+    if "linkedin.com" in u:
+        return "LinkedIn"
     if "medium.com" in u or "towardsdatascience.com" in u:
         return "Article"
     if "figma.com" in u:
@@ -1432,6 +1483,35 @@ def _project_item_html(row: dict) -> str:
     )
 
 
+def _case_tools_html(row: dict, indent: str = "      ") -> str:
+    tools = _curated_tools(row.get("tools"))
+    if not tools:
+        return ""
+    return (
+        f'{indent}<p class="case-tools meta">Tools: '
+        f'{esc(", ".join(tools))}</p>\n'
+    )
+
+
+def _enterprise_case_html(display_title: str, item_id: str, overlay: dict, fallback: dict) -> str:
+    beats = case_beats_html(overlay, indent="        ")
+    if beats:
+        body_inner = beats
+    else:
+        bullets = "\n".join(
+            f"          <li>{esc(b)}</li>" for b in (fallback.get("bullets") or [])
+        )
+        body_inner = f'        <ul class="competency-list">\n{bullets}\n        </ul>\n'
+    id_attr = f' id="{item_id}"' if item_id else ""
+    return (
+        "        <article class=\"proof-case\">\n"
+        f"          <h3{id_attr}>{esc(display_title)}</h3>\n"
+        f"{body_inner}"
+        f"{_case_tools_html(overlay, indent='          ')}"
+        "        </article>"
+    )
+
+
 def build_portfolio(site: dict, export: dict) -> str:
     short = esc(site["external"].get("portfolio_short", ""))
     page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
@@ -1468,41 +1548,55 @@ def build_portfolio(site: dict, export: dict) -> str:
 
     # Elevate enterprise solutioning above tutorial / bootcamp rows.
     enterprise = page.get("enterprise_summaries") or {}
-    if isinstance(enterprise, dict) and enterprise.get("items"):
+    ent_copy = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
+    export_items = [
+        item for item in (enterprise.get("items") or []) if isinstance(item, dict)
+    ]
+    used_overlay_ids: set[str] = set()
+    if export_items or ent_copy:
         etitle = str(enterprise.get("title") or "Enterprise summaries")
         eid = unique_id(etitle)
         ent_node = {"id": eid, "label": etitle, "children": []}
         toc.append(ent_node)
-        sections_html.append(section_fold_open(eid, esc(etitle), level="h2"))
+        sections_html.append(
+            section_fold_open(
+                eid,
+                esc(etitle),
+                level="h2",
+                variant="enterprise",
+                kicker="Enterprise delivery",
+            )
+        )
         fold_open = True
-        ent_copy = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
-        for item in enterprise.get("items") or []:
-            if not isinstance(item, dict):
-                continue
-            item_title = str(item.get("title") or "")
-            overlay_id, overlay = resolve_enterprise_overlay(item, ent_copy)
+        cases: list[str] = []
+
+        def append_enterprise_case(item_title: str, overlay_id: str, overlay: dict, fallback: dict) -> None:
             display_title = str(overlay.get("title") or item_title)
             item_id = str(overlay.get("heading_id") or overlay_id or "").strip()
             if not item_id:
                 item_id = unique_id(display_title) if display_title else ""
             elif item_id not in used_ids:
                 used_ids.add(item_id)
+            if overlay_id:
+                used_overlay_ids.add(overlay_id)
             if item_id:
+                used_overlay_ids.add(item_id)
                 ent_node["children"].append(
                     {"id": item_id, "label": display_title, "children": []}
                 )
-            beats = case_beats_html(overlay, indent="      ")
-            if beats:
-                body_inner = beats
-            else:
-                bullets = "\n".join(
-                    f"        <li>{esc(b)}</li>" for b in (item.get("bullets") or [])
-                )
-                body_inner = f'      <ul class="competency-list">\n{bullets}\n      </ul>'
-            id_attr = f' id="{item_id}"' if item_id else ""
+            cases.append(_enterprise_case_html(display_title, item_id, overlay, fallback))
+
+        for item in export_items:
+            item_title = str(item.get("title") or "")
+            overlay_id, overlay = resolve_enterprise_overlay(item, ent_copy)
+            append_enterprise_case(item_title, overlay_id, overlay, item)
+        for key, overlay in ent_copy.items():
+            if not isinstance(overlay, dict) or key in used_overlay_ids:
+                continue
+            append_enterprise_case(str(overlay.get("title") or key), key, overlay, {})
+        if cases:
             sections_html.append(
-                f"      <h3{id_attr}>{esc(display_title)}</h3>\n"
-                f"{body_inner}"
+                '      <div class="proof-deck">\n' + "\n".join(cases) + "\n      </div>"
             )
         close_fold()
 
@@ -1514,9 +1608,11 @@ def build_portfolio(site: dict, export: dict) -> str:
         if not rows and sid != "other":
             continue
         parent = section.get("parent")
-        title = str(section.get("title") or sid)
+        sc = section_copy.get(sid) if isinstance(section_copy.get(sid), dict) else {}
+        title = str((sc or {}).get("title") or section.get("title") or sid)
         hid = unique_id(title)
         child_node = {"id": hid, "label": title, "children": []}
+        public_kicker = "Public architectures — not enterprise delivery"
 
         if parent:
             parent_key = str(parent)
@@ -1526,7 +1622,15 @@ def build_portfolio(site: dict, export: dict) -> str:
                 parent_node = {"id": pid, "label": parent_key, "children": []}
                 toc.append(parent_node)
                 parent_nodes[parent_key] = parent_node
-                sections_html.append(section_fold_open(pid, esc(parent_key), level="h2"))
+                sections_html.append(
+                    section_fold_open(
+                        pid,
+                        esc(parent_key),
+                        level="h2",
+                        variant="public",
+                        kicker=public_kicker,
+                    )
+                )
                 fold_open = True
                 seen_parents.add(parent_key)
             parent_nodes[parent_key]["children"].append(child_node)
@@ -1534,13 +1638,18 @@ def build_portfolio(site: dict, export: dict) -> str:
         else:
             close_fold()
             toc.append(child_node)
-            sections_html.append(section_fold_open(hid, esc(title), level="h2"))
+            sections_html.append(
+                section_fold_open(
+                    hid,
+                    esc(title),
+                    level="h2",
+                    variant="public",
+                    kicker=public_kicker,
+                )
+            )
             fold_open = True
 
-        sc = section_copy.get(sid)
-        intro_override = (
-            str(sc.get("intro") or "").strip() if isinstance(sc, dict) else ""
-        )
+        intro_override = str((sc or {}).get("intro") or "").strip()
         intro = intro_override or (section.get("intro") or "").strip()
         if intro:
             sections_html.append(f'      <p class="page-lede">{esc(intro)}</p>')

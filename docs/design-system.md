@@ -200,7 +200,9 @@ Site reads as a senior professional dossier:
 | `.folio-deck` | Editorial list default for Home selected-systems and Work case rows (no view switcher) |
 | `.site-nav` / `.nav-menu` / `.nav-elsewhere` | Work · Perspectives · About · Credentials · Contact; Blog/Medium/LinkedIn/GitHub under Elsewhere |
 | `.page-toc` / `.page-toc-sidebar` / `.page-toc-sub` | On-this-page anchors; gold underline on `aria-current="location"` |
-| `.section-fold` | Collapsible long-form sections (default open); summary = section title |
+| `.section-fold` | Collapsible long-form sections (default open); summary = section title (`role="heading"`) |
+| `.section-fold--enterprise` / `.proof-deck` | Enterprise delivery cases (higher visual weight) |
+| `.section-fold--public` | Public architectures and studies (lower visual weight) |
 | `.item-list` | Portfolio / credentials / contact rows (editorial, not cards) |
 | `.issuer-group` | Credentials vendor subgroups |
 | `.writing-list` | Publications rows (title / venue·date / external link) |
@@ -211,7 +213,7 @@ Site reads as a senior professional dossier:
 
 **Sticky header:** `.site-header-wrap` — opaque ≥94% `--header-bg`; blur additive only. Theme toggle is the rightmost compact control beside Menu at `--bp-md`.
 
-**Long-form TOC (design-system rule):** Every multi-section dossier page (About, Portfolio, Credentials) uses `.page-with-toc` with a sticky `.page-toc-sidebar`. Nested `.page-toc-sub` lists expose subcategories (e.g. portfolio child sections, credential issuers). Major sections use `.section-fold` (`<details open>`) so readers can collapse dense blocks without losing the sidebar map.
+**Long-form TOC (design-system rule):** Every multi-section dossier page (About, Portfolio, Credentials) uses `.page-with-toc` with a sticky `.page-toc-sidebar`. Nested `.page-toc-sub` lists expose subcategories (e.g. portfolio child sections, credential issuers). Major sections use `.section-fold` (`<details open>`) so readers can collapse dense blocks without losing the sidebar map. The fold `<summary>` is the section heading (`role="heading"`); do not also emit a visually-hidden `h2` with the same title. Enterprise delivery uses `.section-fold--enterprise` / `.proof-deck`; public architectures use `.section-fold--public` at lower visual weight.
 
 **Long-form alignment axes:** Dossier pages share **at most three text left edges**. This is a composition rule, not extra chrome.
 
