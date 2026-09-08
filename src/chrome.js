@@ -59,8 +59,19 @@
       }
     };
 
+    const headerOffset = getComputedStyle(document.documentElement)
+      .getPropertyValue("--header-offset")
+      .trim();
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:absolute;visibility:hidden;pointer-events:none;height:calc(" +
+      (headerOffset || "4.75rem") +
+      " + 0.5rem)";
+    document.documentElement.appendChild(probe);
+    const offset = probe.getBoundingClientRect().height || 0;
+    probe.remove();
+
     const pick = () => {
-      const offset = 96;
       let current = targets[0];
       for (const item of targets) {
         const top = item.el.getBoundingClientRect().top;

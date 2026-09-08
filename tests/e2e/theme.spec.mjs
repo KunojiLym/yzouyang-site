@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const ROUTES = ["/", "/portfolio/", "/credentials/"];
+const ROUTES = ["/", "/portfolio/", "/credentials/", "/about/", "/perspectives/"];
 const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];
 
 async function setTheme(page, theme) {

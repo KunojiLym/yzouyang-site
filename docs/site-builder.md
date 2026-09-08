@@ -58,17 +58,22 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 | `operating_themes` | Four Home theme rows |
 | `credentials_verify` | VERIFY panel links (issuer records already in export) |
 | `writing_highlights` | Curated About / Perspectives list: `title`, `url`, `venue`, `date`, optional `start_here` |
-| `home_selected` | Home selected-systems rows (2–3): problem → role → decision → outcome → evidence, `tools` (≤5), `href` → `/portfolio/` |
+| `home_selected` | Home selected-systems (2–3): `{ id, title, tools?, evidence? }`. Beats compose from `enterprise_copy` / `project_copy` by `id`; `href` defaults to `/portfolio/#{id}` |
+| `enterprise_copy` | Work enterprise overlays keyed by stable `heading_id` (not the export title string). See deep-link note below |
 | `project_copy` | Optional per-project `outcome` / `scope` / `tools` overrides (tools ≤5) |
 | `section_copy` | Optional portfolio section intro overrides keyed by export section id |
 | `analytics` | Jetpack / optional GA4 / DIY beacon |
 | `base_path` | Overridden by CLI/env at build time |
 
+### Enterprise heading ids
+
+`enterprise_copy` is keyed by the Work heading `id`, not the live export title. Prudential keeps `prudential-singapore-senior-data-engineer-solutioning-architecture` so Home selected-systems links (and saved `#` URLs) stay valid after the visible title became Senior Manager (master CV). Lookup matches `slugify(export title)` first, then overlay `title` if the export string catches up. Do not rename that id without a redirect.
+
 ## Page builders
 
 | Route | Builder | Sources |
 |---|---|---|
-| `/` | `build_home` | `person` + `outcomes` + proof strip + CTAs (View selected work / Contact) + `home_selected` rows + operating themes; `#contact` from `contact`/`external` |
+| `/` | `build_home` | `person` + `outcomes` + proof strip + CTAs (View selected work / Contact) + `home_selected` composed from `enterprise_copy` / `project_copy` + operating themes; `#contact` from `contact`/`external` |
 | `/about/` | `build_about` | export `about` + `writing_highlights`; longform sidebar (no Pagefind) |
 | `/portfolio/` (nav **Work**; `/work/` redirects here) | `build_portfolio` | export `portfolio` + `projects` + `project_copy` / `enterprise_copy` / `section_copy`; enterprise summaries first; Pagefind; `.folio-deck` rows |
 | `/perspectives/` | `build_perspectives` | `writing_highlights` start-here (3) + remainder; no Pagefind |

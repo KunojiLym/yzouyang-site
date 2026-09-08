@@ -197,7 +197,7 @@ Site reads as a senior professional dossier:
 | `.operating-themes` / `.theme-list` | Four operating-theme rows + contribution note |
 | `.case-beats` | Problem / role / decision / outcome / evidence definition list |
 | `.verify-panel` | Credentials VERIFY block under the page lede |
-| `.folio-deck` | List / View all default for case and credential rows; deck is progressive enhancement |
+| `.folio-deck` | Editorial list default for Home selected-systems and Work case rows (no view switcher) |
 | `.site-nav` / `.nav-menu` / `.nav-elsewhere` | Work · Perspectives · About · Credentials · Contact; Blog/Medium/LinkedIn/GitHub under Elsewhere |
 | `.page-toc` / `.page-toc-sidebar` / `.page-toc-sub` | On-this-page anchors; gold underline on `aria-current="location"` |
 | `.section-fold` | Collapsible long-form sections (default open); summary = section title |

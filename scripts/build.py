@@ -294,15 +294,6 @@ def verify_panel_html(site: dict) -> str:
     )
 
 
-def folio_toolbar_html() -> str:
-    return (
-        '      <p class="folio-toolbar">\n'
-        '        <span aria-current="true">List</span>\n'
-        "        <span>View all</span>\n"
-        "      </p>\n"
-    )
-
-
 def writing_items_html(rows: list[dict]) -> list[str]:
     out: list[str] = []
     for row in rows:
@@ -370,7 +361,6 @@ def longform_page(
     body: str,
     search: bool = True,
     extra_lede: str = "",
-    toolbar: str = "",
 ) -> str:
     """Long-page shell: sticky sidebar TOC + main column (design-system longform)."""
     search_html = (
@@ -386,7 +376,7 @@ def longform_page(
 {toc_html(toc, sidebar=True)}      <div class="page-main">
         <h1>{title}</h1>
         {lede_html}
-{extra_lede}{toolbar}{search_html}{body}
+{extra_lede}{search_html}{body}
       </div>
     </div>
 """
@@ -934,9 +924,67 @@ def _merge_project_copy(row: dict, copy_map: dict) -> dict:
     return merged
 
 
+def case_copy_by_id(site: dict, case_id: str) -> dict:
+    """Beats live in enterprise_copy / project_copy, keyed by stable heading id."""
+    if not case_id:
+        return {}
+    ent = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
+    overlay = ent.get(case_id)
+    if isinstance(overlay, dict):
+        return overlay
+    projects = site.get("project_copy") if isinstance(site.get("project_copy"), dict) else {}
+    overlay = projects.get(case_id)
+    return overlay if isinstance(overlay, dict) else {}
+
+
+def compose_home_selected_row(site: dict, row: dict) -> dict:
+    """Home titles/tools compose from shared case copy; beats are not re-authored."""
+    case_id = str(row.get("id") or "").strip()
+    source = case_copy_by_id(site, case_id)
+    composed: dict = {}
+    if case_id:
+        composed["id"] = case_id
+    for key in ("problem", "role", "decision", "outcome", "evidence", "tools"):
+        if source.get(key):
+            composed[key] = source[key]
+    for key in ("title", "evidence", "tools"):
+        if row.get(key):
+            composed[key] = row[key]
+    href = str(row.get("href") or "").strip()
+    if not href and case_id:
+        href = f"/portfolio/#{case_id}"
+    if href:
+        composed["href"] = href
+    return composed
+
+
+def resolve_enterprise_overlay(item: dict, ent_copy: dict) -> tuple[str, dict]:
+    """Match an export enterprise row to overlay copy keyed by heading_id."""
+    if not isinstance(ent_copy, dict):
+        ent_copy = {}
+    item_title = str(item.get("title") or "").strip()
+    slug = slugify(item_title) if item_title else ""
+    if slug and isinstance(ent_copy.get(slug), dict):
+        return slug, ent_copy[slug]
+    for key, overlay in ent_copy.items():
+        if not isinstance(overlay, dict):
+            continue
+        display = str(overlay.get("title") or "").strip()
+        if display and display == item_title:
+            return str(key), overlay
+        pinned = str(overlay.get("heading_id") or "").strip()
+        if pinned and pinned == slug:
+            return pinned, overlay
+    return slug, {}
+
+
 def _selected_systems_html(site: dict) -> str:
     """Home editorial rows: problem → role → decision → outcome → evidence."""
-    rows = [r for r in (site.get("home_selected") or []) if isinstance(r, dict)][:3]
+    rows = [
+        compose_home_selected_row(site, r)
+        for r in (site.get("home_selected") or [])
+        if isinstance(r, dict)
+    ][:3]
     if len(rows) < 2:
         return ""
     items: list[str] = []
@@ -972,7 +1020,6 @@ def _selected_systems_html(site: dict) -> str:
     return (
         '    <section class="selected-systems" aria-labelledby="selected-systems-heading">\n'
         '      <h2 id="selected-systems-heading">Selected systems</h2>\n'
-        f"{folio_toolbar_html()}"
         '      <ul class="item-list folio-deck">\n'
         + "\n".join(items)
         + "\n      </ul>\n"
@@ -1428,16 +1475,14 @@ def build_portfolio(site: dict, export: dict) -> str:
         toc.append(ent_node)
         sections_html.append(section_fold_open(eid, esc(etitle), level="h2"))
         fold_open = True
+        ent_copy = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
         for item in enterprise.get("items") or []:
             if not isinstance(item, dict):
                 continue
             item_title = str(item.get("title") or "")
-            overlay = {}
-            ent_copy = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
-            if item_title in ent_copy and isinstance(ent_copy[item_title], dict):
-                overlay = ent_copy[item_title]
+            overlay_id, overlay = resolve_enterprise_overlay(item, ent_copy)
             display_title = str(overlay.get("title") or item_title)
-            item_id = str(overlay.get("heading_id") or "").strip()
+            item_id = str(overlay.get("heading_id") or overlay_id or "").strip()
             if not item_id:
                 item_id = unique_id(display_title) if display_title else ""
             elif item_id not in used_ids:
@@ -1574,7 +1619,6 @@ def build_portfolio(site: dict, export: dict) -> str:
         lede_html=lede_html,
         toc=toc,
         body=body,
-        toolbar=folio_toolbar_html(),
     )
 
 
@@ -1785,7 +1829,6 @@ def build_credentials(site: dict, export: dict) -> str:
         toc=toc,
         body=body,
         extra_lede=verify_panel_html(site),
-        toolbar=folio_toolbar_html(),
     )
 
 

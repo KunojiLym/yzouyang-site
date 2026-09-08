@@ -8,7 +8,7 @@ import re
 import sys
 from pathlib import Path
 
-from build import figma_embed_html
+from build import figma_embed_html, resolve_enterprise_overlay
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -84,6 +84,39 @@ def main() -> None:
     if not bitly:
         fail("site.external.bitly_hub required for Digital card CTA")
 
+    ent_copy = site.get("enterprise_copy") or {}
+    if not isinstance(ent_copy, dict):
+        fail("site.enterprise_copy must be an object")
+    for key in ent_copy:
+        if " " in key or "—" in key:
+            fail(f"enterprise_copy must be keyed by heading_id, not export title: {key!r}")
+    pru_id = "prudential-singapore-senior-data-engineer-solutioning-architecture"
+    if pru_id not in ent_copy:
+        fail("enterprise_copy missing Prudential heading_id key")
+    export_title = (
+        "Prudential (Singapore) — Senior Data Engineer, Solutioning & Architecture"
+    )
+    oid, overlay = resolve_enterprise_overlay({"title": export_title}, ent_copy)
+    if oid != pru_id or not overlay:
+        fail("enterprise overlay must resolve from current export title via heading_id")
+    display = str((ent_copy[pru_id] or {}).get("title") or "")
+    oid2, overlay2 = resolve_enterprise_overlay({"title": display}, ent_copy)
+    if oid2 != pru_id or not overlay2:
+        fail("enterprise overlay must still resolve after export title matches display title")
+
+    for row in site.get("home_selected") or []:
+        if not str(row.get("id") or "").strip():
+            fail("home_selected rows must reference a case id")
+        for beat in ("problem", "role", "decision", "outcome"):
+            if str(row.get(beat) or "").strip():
+                fail(f"home_selected must not duplicate {beat}; compose from copy maps")
+
+    chrome_src = (ROOT / "src" / "chrome.js").read_text(encoding="utf-8")
+    if "offset = 96" in chrome_src:
+        fail("TOC spy must not hardcode 96px; use --header-offset")
+    if "--header-offset" not in chrome_src:
+        fail("TOC spy missing --header-offset")
+
     for rel, label in ROUTES:
         path = DIST / rel
         if not path.is_file():
@@ -141,6 +174,10 @@ def main() -> None:
         fail("selected-systems rows must keep tools last")
     if "/portfolio/" not in selected:
         fail("selected-systems must link through to /portfolio/")
+    if "folio-toolbar" in home:
+        fail("home must not ship an inert folio-toolbar")
+    if "View all" in selected:
+        fail("selected-systems must not ship an unwired View all control")
     if 'class="operating-themes"' not in home:
         fail("home missing operating-themes")
     if home.count("<h3>") < 4 or "Cloud economics" not in home:
@@ -361,6 +398,10 @@ def main() -> None:
         fail("portfolio missing case-tools class")
     if "folio-deck" not in portfolio:
         fail("work page missing folio-deck list default")
+    if "folio-toolbar" in portfolio:
+        fail("work page must not ship an inert folio-toolbar")
+    if "folio-toolbar" in credentials:
+        fail("credentials must not ship an inert folio-toolbar")
     if ">Work<" not in portfolio and "Work —" not in portfolio:
         fail("work page must title as Work")
     if "Senior Manager, Cloud Economics and Intelligence" not in portfolio:

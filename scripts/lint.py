@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -12,7 +13,12 @@ import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
 # Reuse build.py's constants rather than duplicating the layout/kind lists —
 # scripts/ is on sys.path[0] when this file is run directly, so this is a
 # plain sibling import, not a package import.
-from build import CJ_LAYOUTS, CJ_SLIDE_KINDS, CJ_SLIDES_DIR
+from build import (
+    CJ_LAYOUTS,
+    CJ_SLIDE_KINDS,
+    CJ_SLIDES_DIR,
+    compose_home_selected_row,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -147,6 +153,19 @@ def main() -> None:
             if not (str(row.get("metric") or "").strip() and str(row.get("label") or "").strip()):
                 fail("outcomes entries need metric and label")
 
+    enterprise_copy = site.get("enterprise_copy")
+    if enterprise_copy is not None:
+        if not isinstance(enterprise_copy, dict):
+            fail("site.enterprise_copy must be an object when set")
+        for eid, overlay in enterprise_copy.items():
+            if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", str(eid)):
+                fail(
+                    f"enterprise_copy key {eid!r} must be a heading_id slug, "
+                    "not an export title string"
+                )
+            if not isinstance(overlay, dict):
+                fail(f"enterprise_copy[{eid!r}] must be an object")
+
     home_selected = site.get("home_selected")
     if home_selected is not None:
         if not isinstance(home_selected, list) or not (2 <= len(home_selected) <= 3):
@@ -154,15 +173,35 @@ def main() -> None:
         for row in home_selected:
             if not isinstance(row, dict):
                 fail("home_selected entries must be objects")
-            if not (str(row.get("title") or "").strip() and (
-                str(row.get("outcome") or "").strip()
-                or str(row.get("problem") or "").strip()
+            case_id = str(row.get("id") or "").strip()
+            if not case_id:
+                fail("home_selected entries need id pointing at enterprise_copy or project_copy")
+            copy_ids = set()
+            if isinstance(enterprise_copy, dict):
+                copy_ids.update(enterprise_copy)
+            pc = site.get("project_copy")
+            if isinstance(pc, dict):
+                copy_ids.update(pc)
+            if case_id not in copy_ids:
+                fail(
+                    f"home_selected id {case_id!r} is not in enterprise_copy or project_copy"
+                )
+            for beat in ("problem", "role", "decision", "outcome"):
+                if str(row.get(beat) or "").strip():
+                    fail(
+                        f"home_selected[{case_id!r}] must not re-author {beat}; "
+                        "compose from enterprise_copy / project_copy"
+                    )
+            composed = compose_home_selected_row(site, row)
+            if not (str(composed.get("title") or "").strip() and (
+                str(composed.get("outcome") or "").strip()
+                or str(composed.get("problem") or "").strip()
             )):
-                fail("home_selected entries need title and outcome or problem")
-            tools = row.get("tools") or []
+                fail("home_selected entries need title and a composed outcome or problem")
+            tools = composed.get("tools") or []
             if tools and (not isinstance(tools, list) or len(tools) > 5):
                 fail("home_selected tools must be a list of at most 5 labels")
-            href = str(row.get("href") or "")
+            href = str(composed.get("href") or "")
             if href and not href.startswith("/portfolio"):
                 fail("home_selected href must link through to /portfolio/")
 

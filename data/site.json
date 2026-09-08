@@ -86,17 +86,16 @@
     ]
   },
   "enterprise_copy": {
-    "Prudential (Singapore) — Senior Data Engineer, Solutioning & Architecture": {
+    "prudential-singapore-senior-data-engineer-solutioning-architecture": {
       "title": "Prudential (Singapore) — Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning)",
-      "heading_id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
       "problem": "Enterprise cloud spend and lakehouse ops lacked application-level cost attribution and a governed medallion standard.",
       "role": "Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning), Global Technology Infrastructure.",
       "decision": "Unity Catalog and medallion architecture; map applications to cloud projects; serverless pipelines with OpenTelemetry and Grafana.",
       "outcome": "Documentation 8→4 weeks (~50%); ~20% query-cost reduction; ~30% Unity Catalog UAT migration efficiency on the CEI platform.",
       "evidence": "CEI platform work summarized here; tools last."
     },
-    "SPH Media — Lead Data Engineer": {
-      "heading_id": "sph-media-lead-data-engineer",
+    "sph-media-lead-data-engineer": {
+      "title": "SPH Media — Lead Data Engineer",
       "problem": "Audience ingestion and analytics needed a resilient, maintainable AWS home after Composer-era pipelines.",
       "role": "Lead Data Engineer.",
       "decision": "Idempotent social ingestion; Composer → Glue/Athena/S3; documentation standards and mentoring.",
@@ -153,34 +152,20 @@
   ],
   "home_selected": [
     {
+      "id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
       "title": "Prudential — cloud economics and governed lakehouse",
-      "problem": "Enterprise cloud spend and lakehouse ops lacked application-level cost attribution and a governed medallion standard.",
-      "role": "Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning), Global Technology Infrastructure.",
-      "decision": "Unity Catalog and medallion architecture; map applications to cloud projects; serverless pipelines with OpenTelemetry and Grafana.",
-      "outcome": "Documentation 8→4 weeks (~50%); ~20% query-cost reduction; ~30% Unity Catalog UAT migration efficiency on the CEI platform.",
       "evidence": "Public summary on Work; CEI platform (Azure Databricks, BigQuery, Grafana, OpenTelemetry).",
-      "tools": ["Azure Databricks", "BigQuery", "Unity Catalog", "Grafana", "OpenTelemetry"],
-      "href": "/portfolio/#prudential-singapore-senior-data-engineer-solutioning-architecture"
+      "tools": ["Azure Databricks", "BigQuery", "Unity Catalog", "Grafana", "OpenTelemetry"]
     },
     {
+      "id": "sph-media-lead-data-engineer",
       "title": "SPH Media — media data platform",
-      "problem": "Audience ingestion and analytics needed a resilient, maintainable AWS home after Composer-era pipelines.",
-      "role": "Lead Data Engineer.",
-      "decision": "Idempotent social ingestion; Composer → Glue/Athena/S3; documentation standards and mentoring.",
-      "outcome": "Cost-saving, resilient pipelines for audience engagement and app backends; analytics platform on AWS.",
       "evidence": "Public summary on Work.",
-      "tools": ["AWS", "Glue", "Athena", "S3", "Terraform"],
-      "href": "/portfolio/#sph-media-lead-data-engineer"
+      "tools": ["AWS", "Glue", "Athena", "S3", "Terraform"]
     },
     {
-      "title": "SkillUP — applied AI learning-path coach",
-      "problem": "Course catalogues rarely explain why a path fits a learner.",
-      "role": "NUS-ISS MTech AIS capstone (public architecture).",
-      "decision": "CSP, fuzzy logic, and RAG explainability for a personalised learning-path coach.",
-      "outcome": "Explainable course recommendations operators can inspect.",
-      "evidence": "Public GitHub repository.",
-      "tools": ["Python", "CSP", "Fuzzy logic", "RAG"],
-      "href": "/portfolio/#skillup-mtech-capstone"
+      "id": "skillup-mtech-capstone",
+      "title": "SkillUP — applied AI learning-path coach"
     }
   ],
   "section_copy": {

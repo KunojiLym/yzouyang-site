@@ -16,7 +16,6 @@
 .page-main > h1,
 .page-main > .page-lede,
 .page-main > .verify-panel,
-.page-main > .folio-toolbar,
 .page-main > .page-search {
   padding-left: var(--space-5);
 }
@@ -140,21 +139,6 @@
 
 .folio-deck {
   list-style: none;
-}
-
-.folio-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3) var(--space-4);
-  margin: 0 0 var(--space-5);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
-.folio-toolbar [aria-current="true"] {
-  color: var(--text-strong);
-  box-shadow: inset 0 -2px 0 var(--accent);
-  text-decoration: none;
 }
 
 .section-fold {
