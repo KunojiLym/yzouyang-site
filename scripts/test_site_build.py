@@ -18,7 +18,8 @@ FORBIDDEN = ("prudential.com", "u.nus.edu", "gatech.edu")
 ROUTES = (
     ("index.html", "Home"),
     ("about/index.html", "About"),
-    ("portfolio/index.html", "Portfolio"),
+    ("portfolio/index.html", "Work"),
+    ("perspectives/index.html", "Perspectives"),
     ("credentials/index.html", "Credentials"),
 )
 
@@ -51,6 +52,13 @@ def _token_hex(css: str, name: str) -> str:
     match = re.search(rf"{re.escape(name)}:\s*(#[0-9a-fA-F]{{3,8}})", css)
     if not match:
         fail(f"styles.css missing hex token {name}")
+    return match.group(1)
+
+
+def _light_block(css: str) -> str:
+    match = re.search(r'\[data-theme="light"\]\s*\{([^}]+)\}', css, re.S)
+    if not match:
+        fail('styles.css missing [data-theme="light"] token block')
     return match.group(1)
 
 
@@ -95,13 +103,17 @@ def main() -> None:
         fail("home missing cta-row")
     cta_html = cta_row.group(1)
     if cta_html.count("btn-primary") != 1:
-        fail("home cta-row must have exactly one btn-primary (Contact)")
-    if 'class="btn btn-primary"' not in cta_html or ">Contact</a>" not in cta_html:
-        fail("home cta-row missing primary Contact CTA")
+        fail("home cta-row must have exactly one btn-primary (View selected work)")
+    if 'class="btn btn-primary"' not in cta_html or "View selected work" not in cta_html:
+        fail("home cta-row missing primary View selected work CTA")
     if cta_html.count('class="btn"') != 1:
-        fail("home cta-row must keep Digital card as the only secondary .btn")
-    if 'class="btn" href="' not in cta_html or "Digital card" not in cta_html:
-        fail("home cta-row missing secondary Digital card .btn")
+        fail("home cta-row must keep Contact as the only secondary .btn")
+    if ">Contact</a>" not in cta_html:
+        fail("home cta-row missing secondary Contact .btn")
+    if "Specialist" in home.split("<h1>", 1)[-1].split("</section>", 1)[0]:
+        fail("hero must not use vague Specialist positioning")
+    if "CTO" in home or "CDAO" in home.split("hero-copy", 1)[-1].split("</section>", 1)[0]:
+        fail("hero must not claim CTO/CDAO")
     if 'class="portrait-chip"' not in home:
         fail("home missing portrait-chip")
     if 'id="contact"' not in home:
@@ -112,15 +124,33 @@ def main() -> None:
         fail("selected-systems must appear before #contact")
     if home.find('class="cta-row"') > home.find('class="selected-systems"'):
         fail("selected-systems must appear after CTAs")
-    selected = home.split('class="selected-systems"', 1)[1].split('id="contact"', 1)[0]
+    selected = home.split('class="selected-systems"', 1)[1]
+    if 'class="operating-themes"' in selected:
+        selected = selected.split('class="operating-themes"', 1)[0]
+    else:
+        selected = selected.split('id="contact"', 1)[0]
     if selected.count("<li>") < 2 or selected.count("<li>") > 3:
         fail("selected-systems must have 2–3 editorial rows")
     if "Prudential" not in selected or "SPH Media" not in selected:
         fail("selected-systems must include Prudential / SPH-class enterprise cases")
-    if 'class="case-outcome"' not in selected or "Tools:" not in selected:
-        fail("selected-systems rows must follow outcome → tools-last")
+    if "SkillUP" not in selected:
+        fail("selected-systems must include a third FinOps / governed / applied-AI case")
+    if 'class="case-beats"' not in selected:
+        fail("selected-systems rows must follow problem → role → decision → outcome → evidence")
+    if "Tools:" not in selected:
+        fail("selected-systems rows must keep tools last")
     if "/portfolio/" not in selected:
         fail("selected-systems must link through to /portfolio/")
+    if 'class="operating-themes"' not in home:
+        fail("home missing operating-themes")
+    if home.count("<h3>") < 4 or "Cloud economics" not in home:
+        fail("home must list four operating themes")
+    if "class=\"theme-note\"" not in home and "theme-note" not in home:
+        fail("home missing public-architecture / mentoring contribution note")
+    if "tel:" in home or "+65" in home:
+        fail("home must not expose a visitor-facing phone number")
+    if "PUBLIC contacts only" in home:
+        fail("home must not show the visitor-facing contacts governance note")
     if 'class="nav-elsewhere"' not in home:
         fail("desktop nav missing Elsewhere disclosure")
     desktop_nav = home.split('class="site-nav site-nav-desktop"', 1)[1].split("</nav>", 1)[0]
@@ -128,6 +158,16 @@ def main() -> None:
         fail("Elsewhere control must live in desktop primary nav")
     if ">Blog</a>" not in desktop_nav.split("nav-elsewhere-panel", 1)[-1]:
         fail("Elsewhere panel must still contain Blog")
+    if ">GitHub</a>" not in desktop_nav.split("nav-elsewhere-panel", 1)[-1]:
+        fail("Elsewhere panel must contain GitHub")
+    if ">Work</a>" not in desktop_nav:
+        fail("desktop nav missing Work")
+    if ">Perspectives</a>" not in desktop_nav:
+        fail("desktop nav missing Perspectives")
+    if ">Contact</a>" not in desktop_nav:
+        fail("desktop nav missing Contact")
+    if ">Portfolio</a>" in desktop_nav.split("nav-elsewhere", 1)[0]:
+        fail("desktop nav still labels Work as Portfolio")
     if "Static migration" in home or "Phase 1 pages" in home:
         fail("home footer still has migration chrome")
     if "&copy;" not in home and "©" not in home:
@@ -139,21 +179,38 @@ def main() -> None:
         fail("home missing mobile nav-menu")
     if 'class="site-header-wrap"' not in home:
         fail("home missing sticky site-header-wrap")
-    if 'class="header-contact' not in home:
-        fail("home missing header Contact control")
-    if home.count("header-contact") != 1:
-        fail("header Contact must appear once (sticky control, not duplicated in Menu)")
-    if ".nav-menu" in home and 'class="header-contact' in home.split('class="nav-menu"')[1].split("</details>")[0]:
-        fail("nav-menu must not duplicate header Contact")
+    if 'class="theme-toggle"' not in home:
+        fail("home missing theme toggle")
+    if home.count("data-theme-toggle") < 1:
+        fail("theme toggle missing data-theme-toggle hook")
+    if 'data-theme="dark"' not in home:
+        fail("html must default data-theme=dark")
+    boot_idx = home.find('var KEY = "yz-theme"')
+    css_idx = home.find('rel="stylesheet"')
+    if boot_idx == -1 or css_idx == -1 or boot_idx > css_idx:
+        fail("FOUC-safe theme boot script must appear before stylesheet")
+    if "application/ld+json" not in home or '"@type":"Person"' not in home:
+        fail("home missing Person JSON-LD")
+    if 'rel="canonical"' not in home:
+        fail("home missing canonical URL")
+    if "og:description" not in home:
+        fail("home missing Open Graph description")
+    headline = (site.get("person") or {}).get("headline") or ""
+    home_desc = re.search(r'<meta name="description" content="([^"]+)"', home)
+    if not home_desc:
+        fail("home missing meta description")
+    if home_desc.group(1) == headline:
+        fail("home meta description must not be the raw role headline")
+    if 'class="header-contact' in home:
+        fail("header Contact control must not duplicate Contact now that it is in primary nav")
     if 'class="skip-link"' not in home or 'href="#main"' not in home:
         fail("home missing skip-link to #main")
     if 'id="main"' not in home:
         fail("home missing main#main skip target")
     if 'href="/contact/"' in home and 'nav' in home:
-        # primary nav must not point at /contact/ as a page
-        if 'aria-label="Primary"' in home and ">Contact</a>" in home.split('aria-label="Primary"')[1].split("</nav>")[0]:
-            if 'href="/contact/"' in home.split('aria-label="Primary"')[1].split("</nav>")[0]:
-                fail("primary nav still links to /contact/")
+        # /contact/ remains a redirect, not a primary nav href
+        if 'aria-label="Primary"' in home and 'href="/contact/"' in home.split('aria-label="Primary"')[1].split("</nav>")[0]:
+            fail("primary nav still links to /contact/ instead of /#contact")
 
     css = (DIST / "styles.css").read_text(encoding="utf-8")
     if "main.page .hero h1" not in css:
@@ -185,11 +242,11 @@ def main() -> None:
     ):
         fail("hero h1 must set font-weight: 600")
     if re.search(
-        r"\.header-actions\s*>\s*\.header-contact\s*\{[^}]*display:\s*none",
+        r"\.header-actions\s*>\s*\.theme-toggle\s*\{[^}]*display:\s*none",
         css,
         re.S,
     ):
-        fail("header Contact must stay visible beside Menu at --bp-md (do not display:none)")
+        fail("theme toggle must stay visible beside Menu at --bp-md (do not display:none)")
     if "scroll-behavior: auto" not in css:
         fail("styles.css missing scroll-behavior: auto for prefers-reduced-motion")
     if "repeat(3, minmax(0, 1fr))" not in css:
@@ -205,7 +262,11 @@ def main() -> None:
     if css.count("var(--glow)") != 1:
         fail("styles.css must use a single var(--glow) layer")
     if "rgb(55 90 78 / 22%)" not in css:
-        fail("styles.css glow token must stay the desaturated boardroom value")
+        fail("styles.css dark glow token must stay the desaturated boardroom value")
+    if "rgb(55 90 78 / 10%)" not in css:
+        fail("styles.css light glow must be a soft sage wash (10%)")
+    if "--accent-link" not in css:
+        fail("styles.css missing --accent-link for light body links")
     if re.search(r"\.cj-js\s+\.cj-slide[^{]*\{[^}]*scale\s*\(", css):
         fail("career journey .cj-slide must not use scale transforms")
     if "transform: scale(" in css:
@@ -253,12 +314,61 @@ def main() -> None:
         if ratio < minimum:
             fail(f"a11y contrast {label} is {ratio:.2f}:1 (need ≥ {minimum}:1)")
 
+    light = _light_block(css)
+    light_bg = _token_hex(light, "--bg-deep")
+    light_mid = _token_hex(light, "--bg-mid")
+    light_elev = _token_hex(light, "--bg-elevated")
+    light_strong = _token_hex(light, "--text-strong")
+    light_text = _token_hex(light, "--text-default")
+    light_muted = _token_hex(light, "--text-muted")
+    light_link = _token_hex(light, "--accent-link")
+    light_hover = _token_hex(light, "--accent-hover")
+    if light_bg.lower() != "#f4f0e8":
+        fail(f"light --bg-deep must be #F4F0E8, got {light_bg}")
+    if light_mid.lower() != "#ebe6dc":
+        fail(f"light --bg-mid must be #EBE6DC, got {light_mid}")
+    if light_elev.lower() != "#fffbf5":
+        fail(f"light --bg-elevated must be #FFFBF5, got {light_elev}")
+    if light_strong.lower() != "#171414":
+        fail(f"light --text-strong must be #171414, got {light_strong}")
+    if light_text.lower() != "#2a2724":
+        fail(f"light --text-default must be #2A2724, got {light_text}")
+    if light_muted.lower() != "#5c6b63":
+        fail(f"light --text-muted must be #5C6B63, got {light_muted}")
+    if light_link.lower() != "#856012":
+        fail(f"light --accent-link must be #856012, got {light_link}")
+    if light_hover.lower() != "#7a5a12":
+        fail(f"light --accent-hover must be #7A5A12, got {light_hover}")
+    if "#ffffff" in light.lower() or "#fff;" in light.lower():
+        fail("light theme must not use pure #FFFFFF")
+    light_pairs = (
+        ("light --text-default on --bg-deep", light_text, light_bg, 4.5),
+        ("light --text-muted on --bg-deep", light_muted, light_bg, 4.5),
+        ("light --accent-link on --bg-deep", light_link, light_bg, 4.5),
+        ("light --accent-link on --bg-mid", light_link, light_mid, 4.5),
+        ("light --text-default on --bg-elevated", light_text, light_elev, 4.5),
+    )
+    for label, fg, bg, minimum in light_pairs:
+        ratio = _contrast(fg, bg)
+        if ratio < minimum:
+            fail(f"a11y contrast {label} is {ratio:.2f}:1 (need ≥ {minimum}:1)")
+
     portfolio = (DIST / "portfolio" / "index.html").read_text(encoding="utf-8")
     credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
     if 'class="case-outcome"' not in portfolio:
         fail("portfolio missing case-outcome class on project rows")
     if 'class="case-tools' not in portfolio:
         fail("portfolio missing case-tools class")
+    if "folio-deck" not in portfolio:
+        fail("work page missing folio-deck list default")
+    if ">Work<" not in portfolio and "Work —" not in portfolio:
+        fail("work page must title as Work")
+    if "Senior Manager, Cloud Economics and Intelligence" not in portfolio:
+        fail("Prudential title must match master CV (Senior Manager, Cloud Economics…)")
+    if "Senior Data Engineer, Solutioning" in portfolio:
+        fail("Prudential title must not remain Senior Data Engineer")
+    if 'id="skillup-mtech-capstone"' not in portfolio:
+        fail("work page missing SkillUP heading id for home selected-systems links")
     if "Technical Documentation" in portfolio:
         fail("tutorial tools must be curated to at most 5 labels")
     for match in re.finditer(r'class="case-tools[^"]*"[^>]*>([^<]+)', portfolio):
@@ -309,6 +419,10 @@ def main() -> None:
 
     if 'class="issuer-group"' not in credentials:
         fail("credentials missing issuer-group headings")
+    if 'class="verify-panel"' not in credentials:
+        fail("credentials missing VERIFY panel under the lede")
+    if "Credly" not in credentials or "Databricks" not in credentials:
+        fail("VERIFY panel must include issuer hubs from public records")
     if "<h4>" not in credentials:
         fail("credentials issuer groups must list cert titles as h4")
     if re.search(r">https?://[^<]+<", credentials):
@@ -373,6 +487,20 @@ def main() -> None:
         fail("portfolio/credentials missing collapsible section-fold")
     if 'class="page-toc-sub"' not in credentials:
         fail("credentials TOC missing issuer subcategory list")
+
+    perspectives = DIST / "perspectives" / "index.html"
+    if not perspectives.is_file():
+        fail("perspectives/index.html missing")
+    perspectives_html = perspectives.read_text(encoding="utf-8")
+    if "Start here" not in perspectives_html:
+        fail("perspectives missing start-here section")
+    if "medium.com/@kunojilym" not in perspectives_html:
+        fail("perspectives missing Medium writing links")
+    if DIST.joinpath("chrome.js").is_file() is False:
+        fail("dist/chrome.js missing")
+    work_page = DIST / "work" / "index.html"
+    if not work_page.is_file():
+        fail("work/index.html redirect missing")
 
     contact_page = DIST / "contact" / "index.html"
     if not contact_page.is_file():

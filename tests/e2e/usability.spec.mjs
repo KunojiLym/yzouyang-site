@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/career-journey/"];
+const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/perspectives/", "/career-journey/"];
 
 async function noHorizontalOverflow(page) {
   const overflow = await page.evaluate(() => {
@@ -82,6 +82,7 @@ test.describe("a11y light + contrast", () => {
     expect(tokens.accent.toLowerCase()).toBe("#d4a35c");
     expect(tokens.glow).toMatch(/55\s+90\s+78/);
     expect(tokens.glowLayers).toBe(1);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   });
 
   test("prefers-reduced-motion uses auto scroll-behavior", async ({ page }) => {
@@ -158,15 +159,15 @@ test.describe("home", () => {
     await expect(page.locator(".outcome-strip .metric").first()).toBeVisible();
     await expect(page.locator(".proof-strip")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("professional credentials");
-    await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
-    await expect(page.locator(".nav-menu .header-contact")).toHaveCount(0);
+    await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
+    await expect(page.locator(".header-actions > .header-contact")).toHaveCount(0);
     if (testInfo.project.name === "mobile") {
       await expect(page.locator("details.nav-menu")).toBeVisible();
     }
     await expect(page.getByRole("link", { name: "Digital card" })).toBeVisible();
     const ctaRow = page.locator(".cta-row");
     await expect(ctaRow.locator(".btn-primary")).toHaveCount(1);
-    await expect(ctaRow.locator(".btn-primary")).toHaveText("Contact");
+    await expect(ctaRow.locator(".btn-primary")).toHaveText("View selected work");
     await expect(ctaRow.locator("a.btn")).toHaveCount(2);
     await expect(page.locator(".hero .btn-primary")).toHaveCount(1);
     await expect(page.locator(".header-actions > .header-contact.btn-primary")).toHaveCount(0);
@@ -175,8 +176,8 @@ test.describe("home", () => {
     await expect(page.locator("body")).not.toContainText("Static migration");
     const selected = page.locator(".selected-systems");
     await expect(selected).toBeVisible();
-    await expect(selected.locator(".item-list > li")).toHaveCount(2);
-    await expect(selected.locator(".case-outcome").first()).toBeVisible();
+    await expect(selected.locator(".item-list > li")).toHaveCount(3);
+    await expect(selected.locator(".case-beats").first()).toBeVisible();
     await expect(selected.locator(".case-tools").first()).toBeVisible();
     await expect(selected.getByRole("link", { name: /Prudential/ })).toHaveAttribute(
       "href",
@@ -191,10 +192,10 @@ test.describe("home", () => {
     }
   });
 
-  test("header contact jumps to #contact", async ({ page }) => {
+  test("nav Contact jumps to #contact", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/about/");
-    await page.locator(".header-actions > .header-contact").click();
+    await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Contact" }).click();
     await expect(page).toHaveURL(/#contact$/);
     await expect(page.locator("#contact")).toBeInViewport();
   });
@@ -209,18 +210,23 @@ test.describe("nav", () => {
       await menu.locator("summary").click();
       await expect(menu.locator('a[href$="/portfolio/"]')).toBeVisible();
       await expect(menu.locator('a[href$="/credentials/"]')).toBeVisible();
+      await expect(menu.locator('a[href$="/perspectives/"]')).toBeVisible();
       await expect(menu.locator('a[href$="/about/"][aria-current="page"]')).toBeVisible();
-      await expect(menu.locator('a[href$="/contact/"]')).toHaveCount(0);
+      await expect(menu.getByRole("link", { name: "Contact" })).toBeVisible();
       await expect(menu.getByRole("link", { name: /Blog/ })).toBeVisible();
       await expect(menu.getByRole("link", { name: /Medium/ })).toBeVisible();
       await expect(menu.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
+      await expect(menu.getByRole("link", { name: /GitHub/ })).toBeVisible();
     } else {
       const nav = page.locator("nav.site-nav-desktop");
       await expect(nav.getByRole("link", { name: "About" })).toHaveAttribute(
         "aria-current",
         "page"
       );
-      await expect(nav.getByRole("link", { name: "Contact" })).toHaveCount(0);
+      await expect(nav.getByRole("link", { name: "Work" })).toBeVisible();
+      await expect(nav.getByRole("link", { name: "Perspectives" })).toBeVisible();
+      await expect(nav.getByRole("link", { name: "Contact" })).toBeVisible();
+      await expect(nav.getByRole("link", { name: "Portfolio" })).toHaveCount(0);
       const elsewhere = nav.locator("details.nav-elsewhere");
       await expect(elsewhere).toBeVisible();
       await expect(elsewhere.getByRole("link", { name: /Blog/ })).toBeHidden();
@@ -230,6 +236,7 @@ test.describe("nav", () => {
       await expect(blog).toHaveClass(/external/);
       await expect(elsewhere.getByRole("link", { name: /Medium/ })).toBeVisible();
       await expect(elsewhere.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
+      await expect(elsewhere.getByRole("link", { name: /GitHub/ })).toBeVisible();
     }
   });
 });
@@ -379,11 +386,11 @@ async function assertSkipLink(page) {
 async function assertCtaRhythm(page) {
   const ctaRow = page.locator(".cta-row");
   await expect(ctaRow.locator(".btn-primary")).toHaveCount(1);
-  await expect(ctaRow.locator(".btn-primary")).toHaveText("Contact");
+  await expect(ctaRow.locator(".btn-primary")).toHaveText("View selected work");
   await expect(ctaRow.locator("a.btn")).toHaveCount(2);
   await expect(page.locator(".hero .btn-primary")).toHaveCount(1);
-  await expect(page.locator(".header-actions > .header-contact.btn-primary")).toHaveCount(0);
-  await expect(page.locator(".header-actions > .header-contact")).toBeVisible();
+  await expect(page.locator(".header-actions > .header-contact")).toHaveCount(0);
+  await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
 }
 
 async function assertCopyBeforePhoto(page) {
@@ -397,7 +404,7 @@ async function assertSelectedSingleColumn(page) {
   const xs = await page.locator(".selected-systems .item-list > li").evaluateAll((els) =>
     els.map((el) => el.getBoundingClientRect().x)
   );
-  expect(xs.length).toBe(2);
+  expect(xs.length).toBe(3);
   expect(Math.abs(xs[0] - xs[1])).toBeLessThan(2);
 }
 
@@ -425,17 +432,17 @@ async function assertSelectedHeadingSpacing(page) {
   expect(spacing.marginBottom).toBe(spacing.space5);
 }
 
-async function assertContactBesideMenu(page) {
+async function assertThemeToggleBesideMenu(page) {
   await expect(page.locator("nav.site-nav-desktop")).toBeHidden();
   const menu = page.locator("details.nav-menu");
   await expect(menu).toBeVisible();
-  const contact = page.locator(".header-actions > .header-contact");
-  await expect(contact).toBeVisible();
-  const contactBox = await contact.boundingBox();
+  const toggle = page.locator(".header-actions > [data-theme-toggle]");
+  await expect(toggle).toBeVisible();
+  const toggleBox = await toggle.boundingBox();
   const menuBox = await menu.locator("summary").boundingBox();
-  expect(contactBox && menuBox).toBeTruthy();
-  expect(Math.abs(contactBox.y - menuBox.y)).toBeLessThan(24);
-  expect(contactBox.x).toBeLessThan(menuBox.x);
+  expect(toggleBox && menuBox).toBeTruthy();
+  expect(Math.abs(toggleBox.y - menuBox.y)).toBeLessThan(24);
+  expect(toggleBox.x).toBeLessThan(menuBox.x);
 }
 
 async function assertElsewhereDesktop(page) {
@@ -448,6 +455,7 @@ async function assertElsewhereDesktop(page) {
   await expect(blog).toHaveClass(/external/);
   await expect(elsewhere.getByRole("link", { name: /Medium/ })).toBeVisible();
   await expect(elsewhere.getByRole("link", { name: /LinkedIn/ })).toHaveClass(/external/);
+  await expect(elsewhere.getByRole("link", { name: /GitHub/ })).toHaveClass(/external/);
 }
 
 async function assertElsewhereMobile(page) {
@@ -457,6 +465,7 @@ async function assertElsewhereMobile(page) {
   await expect(menu.getByRole("link", { name: /Blog/ })).toBeVisible();
   await expect(menu.getByRole("link", { name: /Medium/ })).toBeVisible();
   await expect(menu.getByRole("link", { name: /LinkedIn/ })).toHaveClass(/external/);
+  await expect(menu.getByRole("link", { name: /GitHub/ })).toHaveClass(/external/);
 }
 
 async function assertTocSearch(page) {
@@ -512,7 +521,7 @@ async function portfolioAxisMetrics(page) {
     );
     const tocLabel = document.querySelector(".page-toc-label");
     const tocLink = document.querySelector(".page-toc-sidebar > ul > li > a");
-    const contact = document.querySelector(".header-actions > .header-contact");
+    const toggle = document.querySelector(".header-actions > [data-theme-toggle]");
     const main = document.querySelector("main.page");
     const mainCs = main ? getComputedStyle(main) : null;
     const mainContentRight = main
@@ -529,7 +538,7 @@ async function portfolioAxisMetrics(page) {
       tocLink: textX(tocLink),
       tocLabelY: textY(tocLabel),
       h1Y: textY(h1),
-      contactRight: contact ? contact.getBoundingClientRect().right : null,
+      toggleRight: toggle ? toggle.getBoundingClientRect().right : null,
       mainContentRight,
       overflow: document.documentElement.scrollWidth > window.innerWidth + 2,
       viewport: window.innerWidth,
@@ -563,7 +572,7 @@ test.describe("portfolio alignment axes", () => {
     expect(Math.abs(m.tocLabel - m.tocLink)).toBeLessThanOrEqual(2);
     expect(m.tocLabel).toBeLessThan(m.h1 - 40);
     expect(Math.abs(m.tocLabelY - m.h1Y)).toBeLessThanOrEqual(4);
-    expect(Math.abs(m.contactRight - m.mainContentRight)).toBeLessThanOrEqual(2);
+    expect(Math.abs(m.toggleRight - m.mainContentRight)).toBeLessThanOrEqual(2);
   });
 
   test("900: same main axes after TOC collapse, no overflow", async ({ page }) => {
@@ -587,7 +596,7 @@ test.describe("site critic acceptance", () => {
     await assertSkipLink(page);
     await assertCtaRhythm(page);
     await assertElsewhereDesktop(page);
-    await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(2);
+    await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(3);
     await assertSelectedHeadingSpacing(page);
     await noHorizontalOverflow(page);
     await assertTocSearch(page);
@@ -600,7 +609,7 @@ test.describe("site critic acceptance", () => {
     await expect(page.locator("nav.site-nav-desktop")).toBeVisible();
     await assertCtaRhythm(page);
     await assertElsewhereDesktop(page);
-    await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(2);
+    await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(3);
     await noHorizontalOverflow(page);
     await page.goto("/portfolio/");
     await expect(page.locator(".case-outcome").first()).toBeVisible();
@@ -620,17 +629,17 @@ test.describe("site critic acceptance", () => {
     await noHorizontalOverflow(page);
   });
 
-  test("900 Contact stays beside Menu; Elsewhere usable in menu", async ({ page }) => {
+  test("900 theme toggle stays beside Menu; Elsewhere usable in menu", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "explicit 900");
     await page.setViewportSize({ width: 900, height: 800 });
     await page.goto("/");
     await assertCtaRhythm(page);
-    await assertContactBesideMenu(page);
+    await assertThemeToggleBesideMenu(page);
     await assertElsewhereMobile(page);
     await noHorizontalOverflow(page);
   });
 
-  test("375 home + portfolio: stack, selected column, Contact beside Menu", async ({ page }) => {
+  test("375 home + portfolio: stack, selected column, theme toggle beside Menu", async ({ page }) => {
     test.skip(test.info().project.name === "desktop", "mobile 375");
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
@@ -638,7 +647,7 @@ test.describe("site critic acceptance", () => {
     await assertCopyBeforePhoto(page);
     await assertCtaRhythm(page);
     await assertSelectedSingleColumn(page);
-    await assertContactBesideMenu(page);
+    await assertThemeToggleBesideMenu(page);
     await assertElsewhereMobile(page);
     await noHorizontalOverflow(page);
     await page.goto("/portfolio/");

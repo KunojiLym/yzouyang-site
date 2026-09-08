@@ -2,7 +2,7 @@
 .page-with-toc {
   display: grid;
   grid-template-columns: minmax(11.5rem, 15rem) minmax(0, 1fr);
-  gap: var(--space-7) var(--space-9);
+  gap: var(--space-8) var(--space-10);
   align-items: start;
 }
 
@@ -15,6 +15,8 @@
    The chevron is absolute in the gutter and is not a text axis. */
 .page-main > h1,
 .page-main > .page-lede,
+.page-main > .verify-panel,
+.page-main > .folio-toolbar,
 .page-main > .page-search {
   padding-left: var(--space-5);
 }
@@ -53,7 +55,12 @@
 }
 
 .page-toc a:hover {
-  color: var(--accent);
+  color: var(--accent-link);
+}
+
+.page-toc a[aria-current="location"] {
+  color: var(--text-strong);
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 
 .page-toc-sidebar {
@@ -96,14 +103,65 @@
 }
 
 .page-toc-sub a:hover {
-  color: var(--accent);
+  color: var(--accent-link);
 }
 
-.section-fold {
-  margin: 0 0 var(--space-5);
+.page-lede {
+  max-width: 40rem;
+  margin: 0 0 var(--space-6);
+  color: var(--text-default);
+}
+
+.verify-panel {
+  margin: 0 0 var(--space-7);
+  padding: var(--space-5) var(--space-5) var(--space-6);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--bg-panel);
+}
+
+.verify-label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.verify-panel p {
+  margin: 0 0 var(--space-3);
+  color: var(--text-default);
+}
+
+.verify-panel .links {
+  margin-top: var(--space-1);
+}
+
+.folio-deck {
+  list-style: none;
+}
+
+.folio-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.folio-toolbar [aria-current="true"] {
+  color: var(--text-strong);
+  box-shadow: inset 0 -2px 0 var(--accent);
+  text-decoration: none;
+}
+
+.section-fold {
+  margin: 0 0 var(--space-6);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-mid);
 }
 
 .section-fold > summary {
@@ -133,7 +191,7 @@
   left: 0;
   width: var(--space-5);
   text-align: center;
-  color: var(--text-faint);
+  color: var(--text-muted);
   pointer-events: none;
 }
 

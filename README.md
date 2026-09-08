@@ -6,11 +6,11 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/about/`, `/portfolio/`, `/credentials/`. Contact lives on Home as `#contact` (sticky header CTA); `/contact/` redirects there.
+Routes: `/`, `/about/`, `/portfolio/` (Work), `/perspectives/`, `/credentials/`. Contact lives on Home as `#contact` and in primary nav; `/contact/` redirects there.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
-**Writing** stays on Blog / Medium / LinkedIn until **C2b**. About shows a curated **Selected writing** list of external links. Nav groups those destinations under **Elsewhere**, still marked external.
+**Writing** stays on Blog / Medium / LinkedIn until **C2b**. `/perspectives/` is a start-here index; About still shows curated external titles. Nav groups Blog/Medium/LinkedIn/GitHub under **Elsewhere**.
 
 Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 

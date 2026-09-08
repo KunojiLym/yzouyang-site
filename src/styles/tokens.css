@@ -1,10 +1,18 @@
 /* Brand tokens — see docs/design-system.md Layer A */
-:root {
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
   --bg-deep: #0c1412;
   --bg-mid: #15201c;
   --bg-elevated: #1a2420;
   --bg-panel: rgb(255 255 255 / 3%);
   --bg-hover: rgb(255 255 255 / 6%);
+  --header-bg: rgb(12 20 18 / 96%);
+  --search-surface: rgb(12 20 18 / 94%);
+  --photo-scrim: rgb(12 20 18 / 55%);
+  --photo-chip: rgb(12 20 18 / 88%);
+  --photo-ink: #e8efe9;
   --text-strong: #f2f7f3;
   --text-default: #e8efe9;
   --text-muted: #9aada3;
@@ -12,6 +20,7 @@
   --ink: var(--text-default);
   --muted: var(--text-muted);
   --accent: #d4a35c;
+  --accent-link: #d4a35c;
   --accent-soft: rgb(212 163 92 / 18%);
   --accent-hover: #f0c27a;
   --accent-active: #c4924a;
@@ -70,6 +79,43 @@
   --radius-sm: 0.15rem;
   --radius-md: 0.2rem;
   --radius-lg: 0.25rem;
+}
+
+/* Paper/ink editorial — AA-hardened parchment. Gold is decorative only. */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-deep: #f4f0e8;
+  --bg-mid: #ebe6dc;
+  --bg-elevated: #fffbf5;
+  --bg-panel: rgb(12 20 18 / 4%);
+  --bg-hover: rgb(12 20 18 / 7%);
+  --header-bg: rgb(244 240 232 / 94%);
+  --search-surface: rgb(255 251 245 / 96%);
+  --photo-scrim: rgb(12 20 18 / 55%);
+  --photo-chip: rgb(12 20 18 / 88%);
+  --photo-ink: #e8efe9;
+  --text-strong: #171414;
+  --text-default: #2a2724;
+  --text-muted: #5c6b63;
+  --text-faint: #7a877f;
+  --ink: var(--text-default);
+  --muted: var(--text-muted);
+  --accent: #d4a35c;
+  --accent-link: #856012;
+  --accent-soft: rgb(212 163 92 / 22%);
+  --accent-hover: #7a5a12;
+  --accent-active: #7a5a12;
+  --focus-ring: rgb(212 163 92 / 65%);
+  --line-strong: rgb(55 90 78 / 22%);
+  --line-soft: rgb(55 90 78 / 12%);
+  --line: var(--line-soft);
+  --success: #3d6b4d;
+  --warning: #8a6a2a;
+  --danger: #9a4a3a;
+  --glow: rgb(55 90 78 / 10%);
+  --bg-gradient-mid: #ede8df;
+  --bg-gradient-end: #e8e2d8;
 }
 
 /*

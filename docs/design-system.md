@@ -10,13 +10,17 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 ## Layer A — Brand tokens
 
-**Positioning:** Senior Data and AI Transformation Leader. Platform, governance, FinOps, multi-cloud, and agentic AI appear as **disciplined capability signals**, not product theater.
+**Positioning:** Platform leader for governed, cost-aware enterprise systems. Platform, governance, FinOps, multi-cloud, and agentic AI appear as **disciplined capability signals**, not product theatre. Do not use vague “Specialist” or claim CTO/CDAO.
 
-**Palette:** Deep charcoal with a restrained green undertone (boardroom, not matrix/terminal); **one** muted gold accent; neutral text. Avoid generic blue-purple AI palettes. Gold-on-dark is allowed only with discipline (enterprise rigor, not boutique luxury). Large empty surfaces use `--bg-elevated` charcoal, not a saturated forest fill.
+**Palette:** Dual theme, same brand. **Dark** (default) is deep charcoal with a restrained green undertone; **light** is paper/ink parchment. **One** muted gold accent, used sparingly (≤10% of the surface) — CTA borders, hairline rules, TOC/chapter underlines. Avoid generic blue-purple AI palettes and WordPress blue. Gold-on-dark is allowed only with discipline. Large empty surfaces use `--bg-elevated`, not a saturated forest fill (dark) or pure `#FFFFFF` (light).
 
-**Atmosphere:** **One** ambient glow layer maximum; solid `--bg-deep` under gradients. No particles, neon, glassmorphism, terminal motifs, gradient text, or oversized AI imagery.
+**Atmosphere:** **One** ambient glow layer maximum; solid `--bg-deep` under gradients. Light glow is a soft sage wash (10%) or none — not a spotlight. No particles, neon, glassmorphism, terminal motifs, gradient text, or oversized AI imagery. Light must read as the same brand, not a second product.
 
-### Semantic tokens (`:root`)
+### Semantic tokens (`:root` / `[data-theme]`)
+
+Default is **dark** (`data-theme="dark"` on `<html>`). If `localStorage` key `yz-theme` is empty, follow `prefers-color-scheme` (light only when that media query matches; otherwise dark). A blocking head script sets `data-theme` before CSS paint (FOUC-safe). Honor `prefers-reduced-motion`: theme changes are instant — no hue theatre.
+
+#### Dark (Keep & Tighten — live tokens, unchanged)
 
 | Token | Role | Approx value |
 |---|---|---|
@@ -29,7 +33,8 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 | `--text-default` / `--ink` | Primary text | `#e8efe9` |
 | `--text-muted` / `--muted` | Secondary text | `#9aada3` |
 | `--text-faint` | Tertiary / chrome hints (AA on `--bg-deep` / `--bg-elevated`) | `#8a9c94` |
-| `--accent` | Links / specialist line / primary CTA border | `#d4a35c` |
+| `--accent` | Specialist line / primary CTA border / TOC underline | `#d4a35c` |
+| `--accent-link` | Body links (same gold on dark) | `#d4a35c` |
 | `--accent-soft` | Soft accent fill | `rgb(212 163 92 / 18%)` |
 | `--accent-hover` | Link / accent hover | `#f0c27a` |
 | `--accent-active` | Pressed accent | `#c4924a` |
@@ -40,13 +45,36 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 | `--glow` | Single ambient glow (one layer max) | `rgb(55 90 78 / 22%)` |
 | `--bg-gradient-mid` | Body background gradient, 45% stop | `#121a17` |
 | `--bg-gradient-end` | Body background gradient, 100% stop | `#0e1412` |
-| `--font-display` | Hero title + brand wordmark only | Fraunces |
-| `--font-body` | Everything else | Sora |
-| `--max` | Content measure (Home; header/footer on non-TOC routes) | `68rem` |
-| `--max-longform` | Content measure (Portfolio, Credentials, About dossier column) **and** matching header/footer on `.page-with-toc` routes | `80rem` |
-| `--header-offset` | Sticky header height; used for `scroll-padding-top` and sidebar `max-height` math | `4.75rem` |
 
-`html` / `body` set `background-color: var(--bg-deep)`. Gradients use `background-image` only.
+#### Light (paper/ink — AA-hardened parchment)
+
+Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underline. Body links use `--accent-link`. `--text-faint` is chrome/meta only — never body copy.
+
+| Token | Role | Approx value |
+|---|---|---|
+| `--bg-deep` | Page fill / sticky header base | `#F4F0E8` |
+| `--bg-mid` | Secondary / fold surface | `#EBE6DC` |
+| `--bg-elevated` | Lifted surface (not `#FFFFFF`) | `#FFFBF5` |
+| `--bg-panel` | TOC / panel fills | `rgb(12 20 18 / 4%)` |
+| `--bg-hover` | Hover wash | `rgb(12 20 18 / 7%)` |
+| `--text-strong` | Emphasized text | `#171414` |
+| `--text-default` / `--ink` | Primary text | `#2A2724` |
+| `--text-muted` / `--muted` | Secondary text | `#5C6B63` |
+| `--text-faint` | Chrome/meta only (never body) | `#7A877F` |
+| `--accent` | CTA border / rules / TOC underline | `#d4a35c` |
+| `--accent-link` | Body links | `#856012` |
+| `--accent-hover` / `--accent-active` | Link hover / press | `#7A5A12` |
+| `--accent-soft` | Soft accent fill | `rgb(212 163 92 / 22%)` |
+| `--focus-ring` | `:focus-visible` outline | `rgb(212 163 92 / 65%)` |
+| `--line-strong` | Sage hairlines (stronger) | `rgb(55 90 78 / 22%)` |
+| `--line-soft` / `--line` | Sage hairlines | `rgb(55 90 78 / 12%)` |
+| `--glow` | Soft sage wash (not spotlight) | `rgb(55 90 78 / 10%)` |
+| `--bg-gradient-mid` | Warm parchment mid stop | `#EDE8DF` |
+| `--bg-gradient-end` | Warm parchment end stop | `#E8E2D8` |
+
+Shared (both themes): `--font-display` Fraunces; `--font-body` Sora; `--max` `68rem`; `--max-longform` `80rem`; `--header-offset` `4.75rem`. Photo overlays use `--photo-scrim` / `--photo-chip` / `--photo-ink` so the portrait stays charcoal in both themes.
+
+`html` / `body` set `background-color: var(--bg-deep)`. Gradients use `background-image` only. Theme control: `.theme-toggle` (`aria-pressed`, visible Light/Dark label, gold focus ring).
 
 ### Type scale
 
@@ -124,21 +152,22 @@ No serif in dense scanning contexts (portfolio rows, writing lists, credentials,
 
 Site reads as a senior professional dossier:
 
-1. **Headline** — name → role → specialist line
-2. **Quantified proof** — 2–3 outcomes from `site.outcomes`
+1. **Headline** — name → platform-leader proposition → lede
+2. **Quantified proof** — 2–3 outcomes from `site.outcomes` (metric + system + intervention)
 3. **Platform scope + location** — proof strip (≤4 platforms; **no cert wall / vanity counters on Home**)
-4. **Selected systems / work** — Home `.selected-systems` editorial `.item-list` rows (enterprise cases) plus `/portfolio/` case rows
-5. **Writing / speaking** — publications-style lists (About Selected writing; external Blog/Medium/LinkedIn under nav **Elsewhere**)
-6. **Credentials** — issuer-grouped; curated on `/credentials/`
-7. **Contact** — Home `#contact`; sticky header control; not primary nav
+4. **Selected systems / work** — Home `.selected-systems` editorial `.folio-deck` rows (problem → role → decision → outcome → evidence) plus `/portfolio/` (nav label **Work**)
+5. **Operating themes** — four Bassem-shaped rows (cloud economics; governed data platforms; AI-enabled engineering; operational observability). Public architectures / mentoring are contribution, not corporate scale.
+6. **Writing / speaking** — `/perspectives/` start-here index; About Selected writing; external Blog/Medium/LinkedIn/GitHub under nav **Elsewhere**
+7. **Credentials** — issuer-grouped; curated on `/credentials/` with a VERIFY panel under the lede
+8. **Contact** — Home `#contact`; primary nav item; email + elsewhere (no visitor-facing phone)
 
 ### Long-form scanning
 
 - Narrow-to-medium measure (`--max`), **left-aligned** copy, strong section rhythm
 - Prefer editorial rows, compact lists, proof/outcome strips — **cards sparingly**
 - Metadata order: title → org/issuer → date → links
-- Case studies: **business outcome → architecture scope → tools** (tools last; description stands in for outcome when export has no separate field)
-- Writing/speaking: publications page density, not blog card grid
+- Case studies: **problem → role → decision → outcome → evidence** at about one-third typical case-study density (**rows, not cards**). Tools last.
+- Writing/speaking: publications page density, not blog card grid; Perspectives is a start-here index until C2b
 - Search / TOC / archive chrome must feel deliberate
 - Emphasize measurable outcomes and platform breadth **before** tool buzzwords
 
@@ -161,12 +190,16 @@ Site reads as a senior professional dossier:
 | `.outcome-strip` | 2–3 quantified proof points |
 | `.proof-strip` | Location + platforms |
 | `.portrait-chip` | Role · location over photo |
-| `.btn` / `.btn-primary` | **One** primary accent CTA (Contact); other actions understated `.btn` |
-| `.header-contact` | Sticky jump to `/#contact` |
+| `.btn` / `.btn-primary` | **One** primary accent CTA on Home (**View selected work**); Contact is the secondary `.btn` |
+| `.theme-toggle` | Accessible Light/Dark control in `.header-actions` (`aria-pressed`, visible label, gold focus ring) |
 | `.cta-row` | Home button group |
-| `.selected-systems` | Home editorial case rows between CTAs and `#contact` (not cards) |
-| `.site-nav` / `.nav-menu` / `.nav-elsewhere` | Primary dossier links; Blog/Medium/LinkedIn under Elsewhere (desktop disclosure / mobile label) |
-| `.page-toc` / `.page-toc-sidebar` / `.page-toc-sub` | On-this-page anchors; sticky sidebar on **all** long pages (About, Portfolio, Credentials) via `.page-with-toc`; nested subcategory links |
+| `.selected-systems` | Home editorial case rows between CTAs and operating themes (not cards) |
+| `.operating-themes` / `.theme-list` | Four operating-theme rows + contribution note |
+| `.case-beats` | Problem / role / decision / outcome / evidence definition list |
+| `.verify-panel` | Credentials VERIFY block under the page lede |
+| `.folio-deck` | List / View all default for case and credential rows; deck is progressive enhancement |
+| `.site-nav` / `.nav-menu` / `.nav-elsewhere` | Work · Perspectives · About · Credentials · Contact; Blog/Medium/LinkedIn/GitHub under Elsewhere |
+| `.page-toc` / `.page-toc-sidebar` / `.page-toc-sub` | On-this-page anchors; gold underline on `aria-current="location"` |
 | `.section-fold` | Collapsible long-form sections (default open); summary = section title |
 | `.item-list` | Portfolio / credentials / contact rows (editorial, not cards) |
 | `.issuer-group` | Credentials vendor subgroups |
@@ -176,7 +209,7 @@ Site reads as a senior professional dossier:
 | `.site-footer` | © + mailto + social |
 | `#search` + Pagefind vars | Dark panel search on portfolio/credentials |
 
-**Sticky header:** `.site-header-wrap` — opaque ≥94% `--bg-deep`; blur additive only.
+**Sticky header:** `.site-header-wrap` — opaque ≥94% `--header-bg`; blur additive only. Theme toggle is the rightmost compact control beside Menu at `--bp-md`.
 
 **Long-form TOC (design-system rule):** Every multi-section dossier page (About, Portfolio, Credentials) uses `.page-with-toc` with a sticky `.page-toc-sidebar`. Nested `.page-toc-sub` lists expose subcategories (e.g. portfolio child sections, credential issuers). Major sections use `.section-fold` (`<details open>`) so readers can collapse dense blocks without losing the sidebar map.
 
@@ -186,7 +219,7 @@ Site reads as a senior professional dossier:
 2. **Main primary text** — page `h1` = `.page-lede` = Pagefind outer box = `.section-fold` summary text = fold body `h3`. The disclosure chevron (`summary::before`) is `position: absolute` in a `--space-5` (1.25rem) gutter so it does not invent an axis. Summary and `.section-fold-body` share that left padding; do not add a further `h3` indent.
 3. **List hang** — bullets only (`.item-list ul` / `.competency-list` `padding-left: var(--space-5)`). One hang from the primary axis.
 
-**Shell measure:** On `.page-with-toc` routes, `.site-header` and `.site-footer` use `--max-longform` with the same `--space-6` horizontal padding as `main.page`, so brand / Contact lock to the dossier column. Home keeps `--max`. At ≤`--bp-md` (900px) the Menu control is the rightmost header item; Contact matching main-right is a **≥1280** check (tolerance ±2px).
+**Shell measure:** On `.page-with-toc` routes, `.site-header` and `.site-footer` use `--max-longform` with the same `--space-6` horizontal padding as `main.page`, so brand / theme toggle lock to the dossier column. Home keeps `--max`. At ≤`--bp-md` (900px) the Menu control is the rightmost header item; theme toggle matching main-right is a **≥1280** check (tolerance ±2px).
 
 **Optical top:** `.page-toc-sidebar` uses `padding-top: var(--space-1)` (one token, overriding `.page-toc`’s `--space-3`) so “ON THIS PAGE” caps optically align with the page `h1` caps at 1280. Do not add a second offset.
 
@@ -228,7 +261,8 @@ The hook is not a substitute for CI: `stylelint-config-standard` is pinned with 
 - Deliberate TOC, search, and metadata chrome
 - Outcomes + platform breadth before tool buzzwords
 - Curate platforms and writing highlights; fewer strong signals
-- Keep primary nav short; Contact stays a sticky control
+- Keep primary nav short: **Work · Perspectives · About · Credentials · Contact**
+- Keep gold at ≤10%; sage/green hairlines; chapter air on long pages
 
 **Don’t**
 
@@ -237,5 +271,7 @@ The hook is not a substitute for CI: `stylelint-config-standard` is pinned with 
 - Overuse serif in dense sections
 - SaaS conversion button stacks (one primary CTA is enough)
 - Put migration / Phase 1 changelog in footer or header
-- Reintroduce Contact as a primary nav page
+- Reintroduce a sticky header Contact that duplicates the primary nav item
 - Invent proof metrics — derive from export / `site.json` only
+- Use `--text-faint` for body copy on light
+- Recolor light as cool grey/blue or WordPress blue

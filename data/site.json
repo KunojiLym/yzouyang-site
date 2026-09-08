@@ -3,8 +3,8 @@
   "person": {
     "full_name": "Yingzhao Ouyang",
     "brand": "yzouyang",
-    "headline": "Data and AI Transformation Specialist",
-    "tagline": "Driving value in cloud, data and generative AI solutions for enterprises",
+    "headline": "Platform leader for governed, cost-aware enterprise systems",
+    "tagline": "I design and lead cloud data platforms and generative AI solutions for enterprises — with a bias toward governance, cost visibility, and systems that operators can trust.",
     "location": "Singapore",
     "platforms": ["Azure", "GCP", "AWS", "Databricks"],
     "photo": "/assets/profile.jpg",
@@ -13,21 +13,19 @@
   "outcomes": [
     {
       "metric": "50%",
-      "label": "Documentation acceleration on platform delivery"
+      "label": "CEI documentation cycle (8 weeks → 4) after standardizing medallion docs"
     },
     {
       "metric": "20%",
-      "label": "Query cost reduction through platform FinOps"
+      "label": "Query-cost reduction on CEI BigQuery ingest after partitioning"
     },
     {
       "metric": "30%",
-      "label": "Migration and process efficiency gains"
+      "label": "Unity Catalog UAT migration efficiency on the CEI lakehouse"
     }
   ],
   "contact": {
-    "email": "kunojilym@gmail.com",
-    "phone": "+65 8468 4623",
-    "note": "PUBLIC contacts only — no work or university emails"
+    "email": "kunojilym@gmail.com"
   },
   "external": {
     "blog": "https://www.yzouyang.com/blog/",
@@ -38,16 +36,99 @@
     "portfolio_short": "https://bit.ly/3GGyiXF",
     "credentials_short": "https://bit.ly/4m4fqki"
   },
+  "public_origin": "https://www.yzouyang.com",
+  "page_meta": {
+    "Home": "Yingzhao Ouyang — platform leader for governed, cost-aware enterprise systems. Selected outcomes in cloud economics, lakehouse platforms, and applied AI.",
+    "Work": "Selected systems and public architectures: problem, role, decision, outcome, and evidence from enterprise and applied-AI work.",
+    "Perspectives": "Start-here writing on AI, platforms, and industrial policy. Essays live on Medium, Blog, and LinkedIn until the corpus is unified.",
+    "About": "Operating themes, career highlights, and selected writing for Yingzhao Ouyang — cloud economics, governed platforms, and applied AI.",
+    "Credentials": "Public certifications and issuer verification — Credly, Databricks, Microsoft Learn, and a short link for this page.",
+    "Career Journey": "A native walkthrough of Yingzhao Ouyang’s career chapters — platforms, economics, and applied AI — with the original Figma deck as a source credit."
+  },
+  "operating_themes": [
+    {
+      "title": "Cloud economics",
+      "body": "Application-level cost attribution, FinOps on the CEI platform, and warehouse design that makes spend inspectable."
+    },
+    {
+      "title": "Governed data platforms",
+      "body": "Medallion lakehouse, Unity Catalog, and documentation that operators can run — not a tool catalogue."
+    },
+    {
+      "title": "AI-enabled engineering workflows",
+      "body": "GenAI and MLOps solutioning in the platform, plus public applied-AI architectures with explainability in the open."
+    },
+    {
+      "title": "Operational observability",
+      "body": "Grafana, OpenTelemetry, and SLAs so pipeline health is a shared operating picture — not pager theatre."
+    }
+  ],
+  "theme_note": "Public architectures and mentoring are how I contribute in the open — not a claim of corporate scale.",
+  "credentials_verify": {
+    "lede": "Canonical issuer records first. Bitly is a short path, not a second source of truth.",
+    "items": [
+      {
+        "label": "Credly",
+        "href": "https://www.credly.com/badges/73b32658-3fe5-4ebc-a911-9610bfaf334c/public_url"
+      },
+      {
+        "label": "Databricks",
+        "href": "https://credentials.databricks.com/597dd3da-2d98-4e97-a4fd-70d2a6ffc054"
+      },
+      {
+        "label": "Microsoft Learn",
+        "href": "https://learn.microsoft.com/en-us/users/YingzhaoOuyang-3447/credentials/863B0A450000D46"
+      },
+      {
+        "label": "Short link",
+        "href": "https://bit.ly/4m4fqki"
+      }
+    ]
+  },
+  "enterprise_copy": {
+    "Prudential (Singapore) — Senior Data Engineer, Solutioning & Architecture": {
+      "title": "Prudential (Singapore) — Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning)",
+      "heading_id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
+      "problem": "Enterprise cloud spend and lakehouse ops lacked application-level cost attribution and a governed medallion standard.",
+      "role": "Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning), Global Technology Infrastructure.",
+      "decision": "Unity Catalog and medallion architecture; map applications to cloud projects; serverless pipelines with OpenTelemetry and Grafana.",
+      "outcome": "Documentation 8→4 weeks (~50%); ~20% query-cost reduction; ~30% Unity Catalog UAT migration efficiency on the CEI platform.",
+      "evidence": "CEI platform work summarized here; tools last."
+    },
+    "SPH Media — Lead Data Engineer": {
+      "heading_id": "sph-media-lead-data-engineer",
+      "problem": "Audience ingestion and analytics needed a resilient, maintainable AWS home after Composer-era pipelines.",
+      "role": "Lead Data Engineer.",
+      "decision": "Idempotent social ingestion; Composer → Glue/Athena/S3; documentation standards and mentoring.",
+      "outcome": "Cost-saving, resilient pipelines for audience engagement and app backends; analytics platform on AWS.",
+      "evidence": "Public summary on this page."
+    }
+  },
   "writing_highlights": [
     {
-      "title": "A Chinese Open-Weights Model Just Saved Hugging Face. That’s the Problem.",
-      "url": "https://medium.com/@kunojilym/a-chinese-open-weights-model-just-saved-hugging-face-thats-the-problem-139bf1afdacc",
+      "title": "The AI Disruption Part 1: How AI is Reshaping Work Before Our Institutions are Ready",
+      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-1-how-ai-is-reshaping-work-before-our-institutions-are-ready-713e2cd7c3a8",
       "venue": "Medium",
-      "date": "2026-07"
+      "date": "2026-05",
+      "start_here": true
     },
     {
       "title": "Teaching Graphify to Understand Databricks Notebooks",
       "url": "https://medium.com/@kunojilym/teaching-graphify-to-understand-databricks-notebooks-13856e2a09b9",
+      "venue": "Medium",
+      "date": "2026-07",
+      "start_here": true
+    },
+    {
+      "title": "Chips, Cells and Code: How Singapore is Applying its 40-Year Industrial Playbook to AI",
+      "url": "https://medium.com/@kunojilym/chips-cells-and-code-how-singapore-is-applying-its-40-year-industrial-playbook-to-ai-26889d5f5d91",
+      "venue": "Medium",
+      "date": "2026-02",
+      "start_here": true
+    },
+    {
+      "title": "A Chinese Open-Weights Model Just Saved Hugging Face. That’s the Problem.",
+      "url": "https://medium.com/@kunojilym/a-chinese-open-weights-model-just-saved-hugging-face-thats-the-problem-139bf1afdacc",
       "venue": "Medium",
       "date": "2026-07"
     },
@@ -64,18 +145,6 @@
       "date": "2026-06"
     },
     {
-      "title": "The AI Disruption Part 1: How AI is Reshaping Work Before Our Institutions are Ready",
-      "url": "https://medium.com/@kunojilym/the-ai-disruption-part-1-how-ai-is-reshaping-work-before-our-institutions-are-ready-713e2cd7c3a8",
-      "venue": "Medium",
-      "date": "2026-05"
-    },
-    {
-      "title": "Chips, Cells and Code: How Singapore is Applying its 40-Year Industrial Playbook to AI",
-      "url": "https://medium.com/@kunojilym/chips-cells-and-code-how-singapore-is-applying-its-40-year-industrial-playbook-to-ai-26889d5f5d91",
-      "venue": "Medium",
-      "date": "2026-02"
-    },
-    {
       "title": "Build Your Own LinkedIn Analytics Part 1: Why It Matters (and What You’ll Learn)",
       "url": "https://medium.com/@kunojilym/build-your-own-linkedin-analytics-part-1-why-it-matters-and-what-youll-learn-314a4de63988",
       "venue": "Medium",
@@ -84,18 +153,34 @@
   ],
   "home_selected": [
     {
-      "title": "Prudential — platform architecture and FinOps",
-      "outcome": "Documentation cycle cut from eight weeks to four; about 20% query-cost reduction and about 30% Unity Catalog migration efficiency on the CEI platform.",
-      "scope": "Senior data-platform architecture, governance, and cloud economics for Global Technology Infrastructure — medallion lakehouse, Unity Catalog, and cross-application cost attribution.",
+      "title": "Prudential — cloud economics and governed lakehouse",
+      "problem": "Enterprise cloud spend and lakehouse ops lacked application-level cost attribution and a governed medallion standard.",
+      "role": "Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning), Global Technology Infrastructure.",
+      "decision": "Unity Catalog and medallion architecture; map applications to cloud projects; serverless pipelines with OpenTelemetry and Grafana.",
+      "outcome": "Documentation 8→4 weeks (~50%); ~20% query-cost reduction; ~30% Unity Catalog UAT migration efficiency on the CEI platform.",
+      "evidence": "Public summary on Work; CEI platform (Azure Databricks, BigQuery, Grafana, OpenTelemetry).",
       "tools": ["Azure Databricks", "BigQuery", "Unity Catalog", "Grafana", "OpenTelemetry"],
       "href": "/portfolio/#prudential-singapore-senior-data-engineer-solutioning-architecture"
     },
     {
       "title": "SPH Media — media data platform",
-      "outcome": "Resilient, cost-saving ingestion for audience engagement and app backends, with the analytics platform moved onto AWS.",
-      "scope": "Lead data engineer for batch and streaming pipelines, documentation standards, and team upskilling across enterprise media operations.",
+      "problem": "Audience ingestion and analytics needed a resilient, maintainable AWS home after Composer-era pipelines.",
+      "role": "Lead Data Engineer.",
+      "decision": "Idempotent social ingestion; Composer → Glue/Athena/S3; documentation standards and mentoring.",
+      "outcome": "Cost-saving, resilient pipelines for audience engagement and app backends; analytics platform on AWS.",
+      "evidence": "Public summary on Work.",
       "tools": ["AWS", "Glue", "Athena", "S3", "Terraform"],
       "href": "/portfolio/#sph-media-lead-data-engineer"
+    },
+    {
+      "title": "SkillUP — applied AI learning-path coach",
+      "problem": "Course catalogues rarely explain why a path fits a learner.",
+      "role": "NUS-ISS MTech AIS capstone (public architecture).",
+      "decision": "CSP, fuzzy logic, and RAG explainability for a personalised learning-path coach.",
+      "outcome": "Explainable course recommendations operators can inspect.",
+      "evidence": "Public GitHub repository.",
+      "tools": ["Python", "CSP", "Fuzzy logic", "RAG"],
+      "href": "/portfolio/#skillup-mtech-capstone"
     }
   ],
   "section_copy": {
@@ -136,6 +221,14 @@
       "outcome": "Let a reader generate original verse in the browser, as a small creative product rather than a training-loop write-up.",
       "scope": "LSTM text generation with a Flask and PostgreSQL path to the page.",
       "tools": ["Python", "Keras", "LSTM", "Flask"]
+    },
+    "skillup-mtech-capstone": {
+      "problem": "Course catalogues rarely explain why a path fits a learner.",
+      "role": "NUS-ISS MTech AIS capstone (public architecture).",
+      "decision": "CSP, fuzzy logic, and RAG explainability for a personalised learning-path coach.",
+      "outcome": "Explainable course recommendations operators can inspect.",
+      "evidence": "Public GitHub repository.",
+      "tools": ["Python", "CSP", "Fuzzy logic", "RAG"]
     }
   },
   "about": {
@@ -151,7 +244,9 @@
       "pages": {
         "Home": "225",
         "About": "2",
+        "Work": "125",
         "Portfolio": "125",
+        "Perspectives": "0",
         "Credentials": "45",
         "Contact": "0"
       }
@@ -163,12 +258,14 @@
     }
   },
   "nav": [
-    { "label": "Home", "href": "/", "external": false },
+    { "label": "Work", "href": "/portfolio/", "external": false },
+    { "label": "Perspectives", "href": "/perspectives/", "external": false },
     { "label": "About", "href": "/about/", "external": false },
-    { "label": "Portfolio", "href": "/portfolio/", "external": false },
     { "label": "Credentials", "href": "/credentials/", "external": false },
+    { "label": "Contact", "href": "/#contact", "external": false },
     { "label": "Blog", "href": "https://www.yzouyang.com/blog/", "external": true },
     { "label": "Medium", "href": "https://medium.com/@kunojilym", "external": true },
-    { "label": "LinkedIn", "href": "https://www.linkedin.com/in/yzouyang/", "external": true }
+    { "label": "LinkedIn", "href": "https://www.linkedin.com/in/yzouyang/", "external": true },
+    { "label": "GitHub", "href": "https://www.github.com/KunojiLym", "external": true }
   ]
 }

@@ -19,7 +19,7 @@
   --pagefind-ui-scale: 0.92;
   --pagefind-ui-primary: var(--accent);
   --pagefind-ui-text: var(--text-default);
-  --pagefind-ui-background: rgb(12 20 18 / 94%);
+  --pagefind-ui-background: var(--search-surface);
   --pagefind-ui-border: var(--line-soft);
   --pagefind-ui-tag: var(--bg-mid);
   --pagefind-ui-border-width: 1px;
@@ -57,7 +57,7 @@
 }
 
 #search .pagefind-ui__drawer {
-  background: rgb(12 20 18 / 96%) !important;
+  background: var(--search-surface) !important;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-lg);
   margin-top: var(--space-2);

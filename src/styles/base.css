@@ -23,7 +23,7 @@ body {
 }
 
 a {
-  color: var(--accent);
+  color: var(--accent-link);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.18em;
 }

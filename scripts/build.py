@@ -102,6 +102,28 @@ def run_pagefind() -> None:
 
 
 MAX_CASE_TOOLS = 5
+CASE_BEAT_KEYS = (
+    ("problem", "Problem"),
+    ("role", "Role"),
+    ("decision", "Decision"),
+    ("outcome", "Outcome"),
+    ("evidence", "Evidence"),
+)
+THEME_BOOT_SCRIPT = """<script>
+(function () {
+  var KEY = "yz-theme";
+  var theme = "dark";
+  try {
+    var stored = localStorage.getItem(KEY);
+    if (stored === "light" || stored === "dark") {
+      theme = stored;
+    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+      theme = "light";
+    }
+  } catch (e) {}
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>"""
 
 
 def _nav_anchor_html(site: dict, item: dict, active: str) -> str:
@@ -123,10 +145,11 @@ def _nav_anchor_html(site: dict, item: dict, active: str) -> str:
 
 
 def nav_html(site: dict, active: str, *, grouped: bool = False) -> str:
-    """Primary dossier links, then Blog/Medium/LinkedIn under Elsewhere.
+    """Primary dossier links, then Blog/Medium/LinkedIn/GitHub under Elsewhere.
 
     Desktop (grouped=False): disclosure control. Mobile menu (grouped=True):
     uppercase label, then the same external links — still `.external` ↗.
+    Contact may be a primary item pointing at `/#contact`.
     """
     primary: list[str] = []
     external_links: list[str] = []
@@ -183,6 +206,125 @@ def assemble_styles() -> str:
     return "".join(chunks)
 
 
+def public_origin(site: dict) -> str:
+    return str(site.get("public_origin") or "https://www.yzouyang.com").rstrip("/")
+
+
+def canonical_url(site: dict, path: str) -> str:
+    origin = public_origin(site)
+    if not path or path == "/" or path == "/index.html":
+        return origin + "/"
+    rel = path.replace("index.html", "")
+    if not rel.startswith("/"):
+        rel = "/" + rel
+    return origin + rel
+
+
+def page_description(site: dict, active: str, title: str) -> str:
+    meta = site.get("page_meta") if isinstance(site.get("page_meta"), dict) else {}
+    for key in (active, title):
+        text = str(meta.get(key) or "").strip()
+        if text:
+            return text
+    return str((site.get("person") or {}).get("tagline") or "").strip()
+
+
+def person_json_ld(site: dict) -> str:
+    person = site.get("person") or {}
+    ext = site.get("external") or {}
+    contact = site.get("contact") or {}
+    same_as = [
+        str(ext.get(k) or "").strip()
+        for k in ("linkedin", "github", "medium", "blog")
+        if str(ext.get(k) or "").strip()
+    ]
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": person.get("full_name") or "Yingzhao Ouyang",
+        "url": public_origin(site) + "/",
+        "jobTitle": person.get("headline") or "",
+        "email": contact.get("email") or "",
+        "image": canonical_url(site, str(person.get("photo") or "/assets/profile.jpg")),
+        "sameAs": same_as,
+    }
+    payload = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
+    return f'  <script type="application/ld+json">{payload}</script>'
+
+
+def case_beats_html(row: dict, indent: str = "          ") -> str:
+    parts: list[str] = []
+    for key, label in CASE_BEAT_KEYS:
+        val = str(row.get(key) or "").strip()
+        if not val:
+            continue
+        parts.append(f"{indent}  <div><dt>{esc(label)}</dt><dd>{esc(val)}</dd></div>")
+    if len(parts) < 2:
+        return ""
+    inner = "\n".join(parts)
+    return f'{indent}<dl class="case-beats">\n{inner}\n{indent}</dl>\n'
+
+
+def verify_panel_html(site: dict) -> str:
+    block = site.get("credentials_verify") if isinstance(site.get("credentials_verify"), dict) else {}
+    items = [i for i in (block.get("items") or []) if isinstance(i, dict)]
+    if not items:
+        return ""
+    lede = str(block.get("lede") or "").strip()
+    links = []
+    for item in items:
+        label = str(item.get("label") or "").strip()
+        href = str(item.get("href") or "").strip()
+        if not label or not href:
+            continue
+        abs_href = href if href.startswith("http") else with_base(site, href)
+        links.append(
+            f'<a class="external" href="{esc(abs_href)}" target="_blank" '
+            f'rel="noopener noreferrer">{esc(label)}</a>'
+        )
+    if not links:
+        return ""
+    lede_html = f"        <p>{esc(lede)}</p>\n" if lede else ""
+    return (
+        '      <aside class="verify-panel" aria-label="Verify credentials">\n'
+        '        <p class="verify-label">Verify</p>\n'
+        f"{lede_html}"
+        f'        <p class="links">{" · ".join(links)}</p>\n'
+        "      </aside>\n"
+    )
+
+
+def folio_toolbar_html() -> str:
+    return (
+        '      <p class="folio-toolbar">\n'
+        '        <span aria-current="true">List</span>\n'
+        "        <span>View all</span>\n"
+        "      </p>\n"
+    )
+
+
+def writing_items_html(rows: list[dict]) -> list[str]:
+    out: list[str] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        title = (row.get("title") or "").strip()
+        url = (row.get("url") or "").strip()
+        if not title or not url:
+            continue
+        venue = esc(row.get("venue") or "Article")
+        date_s = esc(row.get("date") or "")
+        meta = " · ".join(x for x in (venue, date_s) if x)
+        out.append(
+            f"      <li>\n"
+            f'        <h3><a class="external" href="{esc(url)}" target="_blank" '
+            f'rel="noopener noreferrer">{esc(title)}</a></h3>\n'
+            f'        <p class="meta">{meta}</p>\n'
+            f"      </li>"
+        )
+    return out
+
+
 def toc_html(entries: list[dict], *, sidebar: bool = False) -> str:
     """Render on-this-page nav. entries: {id, label, children?} trees."""
     if not entries:
@@ -227,6 +369,8 @@ def longform_page(
     toc: list[dict],
     body: str,
     search: bool = True,
+    extra_lede: str = "",
+    toolbar: str = "",
 ) -> str:
     """Long-page shell: sticky sidebar TOC + main column (design-system longform)."""
     search_html = (
@@ -242,7 +386,7 @@ def longform_page(
 {toc_html(toc, sidebar=True)}      <div class="page-main">
         <h1>{title}</h1>
         {lede_html}
-{search_html}{body}
+{extra_lede}{toolbar}{search_html}{body}
       </div>
     </div>
 """
@@ -654,24 +798,36 @@ def footer_html(site: dict) -> str:
     <p class="footer-links">
       <a href="mailto:{esc(contact.get("email") or "")}">{esc(contact.get("email") or "")}</a>
       <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a class="external" href="{esc(ext.get("github") or "")}" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" rel="noopener noreferrer">Medium</a>
       <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" rel="noopener noreferrer">Blog</a>
     </p>
   </footer>"""
 
 
-def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = False) -> str:
+def layout(
+    site: dict,
+    title: str,
+    active: str,
+    body: str,
+    *,
+    pagefind: bool = False,
+    path: str = "/",
+) -> str:
     person = site["person"]
     brand = esc(person.get("brand", "yzouyang"))
     page_title = f"{esc(title)} — {brand}"
+    description = esc(page_description(site, active, title))
+    canonical = esc(canonical_url(site, path))
+    og_image = esc(canonical_url(site, str(person.get("photo") or "/assets/profile.jpg")))
     pf_attr = " data-pagefind-body" if pagefind else ""
     head_analytics = analytics_head(site)
     body_analytics = analytics_body(site, active)
     css = esc(with_base(site, "/styles.css"))
+    chrome_js = esc(with_base(site, "/chrome.js"))
     pf_css = esc(with_base(site, "/pagefind/pagefind-ui.css"))
     pf_js = esc(with_base(site, "/pagefind/pagefind-ui.js"))
     home = esc(with_base(site, "/"))
-    contact_href = esc(with_base(site, "/#contact"))
     desktop_nav = nav_html(site, active)
     mobile_nav = nav_html(site, active, grouped=True)
     pf_css_tag = f'\n  <link rel="stylesheet" href="{pf_css}" />' if pagefind else ""
@@ -695,16 +851,25 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
         else ""
     )
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{page_title}</title>
-  <meta name="description" content="{esc(person.get('headline', ''))}" />
+  <meta name="description" content="{description}" />
+  <link rel="canonical" href="{canonical}" />
+  <meta property="og:title" content="{page_title}" />
+  <meta property="og:description" content="{description}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{canonical}" />
+  <meta property="og:image" content="{og_image}" />
+  <meta name="twitter:card" content="summary" />
+{THEME_BOOT_SCRIPT}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{css}" />{pf_css_tag}
+{person_json_ld(site)}
 {head_analytics}
 </head>
 <body>
@@ -716,7 +881,9 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
       <nav class="site-nav site-nav-desktop" aria-label="Primary">
         {desktop_nav}
       </nav>
-      <a class="header-contact btn" href="{contact_href}">Contact</a>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Theme: dark">
+        <span class="theme-toggle-label">Dark</span>
+      </button>
       <details class="nav-menu">
         <summary>Menu</summary>
         <nav class="site-nav" aria-label="Primary">
@@ -730,6 +897,7 @@ def layout(site: dict, title: str, active: str, body: str, *, pagefind: bool = F
 {body}
   </main>
 {footer_html(site)}{pf_script}
+  <script src="{chrome_js}" defer></script>
 {body_analytics}
 </body>
 </html>
@@ -759,7 +927,7 @@ def _merge_project_copy(row: dict, copy_map: dict) -> dict:
     merged = dict(row)
     override = copy_map.get(str(row.get("id") or ""))
     if isinstance(override, dict):
-        for key in ("outcome", "scope", "tools", "description", "poster"):
+        for key in ("outcome", "scope", "tools", "description", "poster", "problem", "role", "decision", "evidence"):
             if override.get(key):
                 merged[key] = override[key]
     merged["tools"] = _curated_tools(merged.get("tools"))
@@ -767,20 +935,25 @@ def _merge_project_copy(row: dict, copy_map: dict) -> dict:
 
 
 def _selected_systems_html(site: dict) -> str:
-    """Home editorial rows: outcome → scope → tools-last, linking to /portfolio/."""
+    """Home editorial rows: problem → role → decision → outcome → evidence."""
     rows = [r for r in (site.get("home_selected") or []) if isinstance(r, dict)][:3]
     if len(rows) < 2:
         return ""
     items: list[str] = []
     for row in rows:
         title = str(row.get("title") or "").strip()
-        outcome = str(row.get("outcome") or "").strip()
-        if not title or not outcome:
+        if not title:
             continue
         href = with_base(site, str(row.get("href") or "/portfolio/"))
-        scope = str(row.get("scope") or "").strip()
+        beats = case_beats_html(row)
+        if not beats:
+            outcome = str(row.get("outcome") or "").strip()
+            if not outcome:
+                continue
+            scope = str(row.get("scope") or "").strip()
+            scope_html = f"          <p>{esc(scope)}</p>\n" if scope else ""
+            beats = f'          <p class="case-outcome">{esc(outcome)}</p>\n{scope_html}'
         tools = _curated_tools(row.get("tools"))
-        scope_html = f"          <p>{esc(scope)}</p>\n" if scope else ""
         tools_html = ""
         if tools:
             tools_html = (
@@ -789,8 +962,7 @@ def _selected_systems_html(site: dict) -> str:
         items.append(
             "        <li>\n"
             f"          <h3><a href=\"{esc(href)}\">{esc(title)}</a></h3>\n"
-            f'          <p class="case-outcome">{esc(outcome)}</p>\n'
-            f"{scope_html}"
+            f"{beats}"
             f"{tools_html}"
             "        </li>"
         )
@@ -800,10 +972,42 @@ def _selected_systems_html(site: dict) -> str:
     return (
         '    <section class="selected-systems" aria-labelledby="selected-systems-heading">\n'
         '      <h2 id="selected-systems-heading">Selected systems</h2>\n'
-        '      <ul class="item-list">\n'
+        f"{folio_toolbar_html()}"
+        '      <ul class="item-list folio-deck">\n'
         + "\n".join(items)
         + "\n      </ul>\n"
         f'      <p class="links"><a href="{portfolio}">All selected work</a></p>\n'
+        "    </section>\n"
+    )
+
+
+def _operating_themes_html(site: dict) -> str:
+    rows = [r for r in (site.get("operating_themes") or []) if isinstance(r, dict)]
+    if len(rows) < 4:
+        return ""
+    items = []
+    for row in rows[:4]:
+        title = str(row.get("title") or "").strip()
+        body = str(row.get("body") or "").strip()
+        if not title or not body:
+            continue
+        items.append(
+            f"        <li>\n"
+            f"          <h3>{esc(title)}</h3>\n"
+            f"          <p>{esc(body)}</p>\n"
+            "        </li>"
+        )
+    if len(items) < 4:
+        return ""
+    note = str(site.get("theme_note") or "").strip()
+    note_html = f'      <p class="theme-note">{esc(note)}</p>\n' if note else ""
+    return (
+        '    <section class="operating-themes" aria-labelledby="operating-themes-heading">\n'
+        '      <h2 id="operating-themes-heading">How I operate</h2>\n'
+        '      <ol class="theme-list">\n'
+        + "\n".join(items)
+        + "\n      </ol>\n"
+        f"{note_html}"
         "    </section>\n"
     )
 
@@ -866,19 +1070,17 @@ def build_home(site: dict, export: dict) -> str:
     contact = site["contact"]
     ext = site["external"]
     contact_href = esc(with_base(site, "/#contact"))
+    work_href = esc(with_base(site, "/portfolio/"))
     selected_html = _selected_systems_html(site)
+    themes_html = _operating_themes_html(site)
+    email = esc(contact.get("email") or "")
     contact_section = f"""
     <section id="contact" class="contact-section">
       <h2>Contact</h2>
-      <p class="page-lede">{esc(contact.get("note", ""))}</p>
       <ul class="item-list">
         <li>
           <h3>Email</h3>
-          <p><a href="mailto:{esc(contact["email"])}">{esc(contact["email"])}</a></p>
-        </li>
-        <li>
-          <h3>Phone</h3>
-          <p><a href="tel:{esc(contact["phone"].replace(" ", ""))}">{esc(contact["phone"])}</a></p>
+          <p><a href="mailto:{email}">{email}</a></p>
         </li>
         <li>
           <h3>Elsewhere</h3>
@@ -886,7 +1088,8 @@ def build_home(site: dict, export: dict) -> str:
             <a class="external" href="{esc(ext["linkedin"])}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
             <a class="external" href="{esc(ext["medium"])}" target="_blank" rel="noopener noreferrer">Medium</a>
             <a class="external" href="{esc(ext["github"])}" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a class="external" href="{esc(ext["blog"])}" target="_blank" rel="noopener noreferrer">Blog (WordPress)</a>
+            <a class="external" href="{esc(ext["blog"])}" target="_blank" rel="noopener noreferrer">Blog</a>
+            <a class="external" href="{card}" target="_blank" rel="noopener noreferrer">Digital card</a>
           </p>
         </li>
       </ul>
@@ -900,14 +1103,13 @@ def build_home(site: dict, export: dict) -> str:
 {outcome_html}
 {proof_html}
         <div class="cta-row">
-          <a class="btn btn-primary" href="{contact_href}">Contact</a>
-          <a class="btn" href="{card}" target="_blank" rel="noopener noreferrer">Digital card</a>
-          <a href="{esc(with_base(site, '/about/'))}">About</a>
-          <a href="{esc(with_base(site, '/portfolio/'))}">Portfolio</a>
+          <a class="btn btn-primary" href="{work_href}">View selected work</a>
+          <a class="btn" href="{contact_href}">Contact</a>
         </div>
       </div>{photo_html}
     </section>
 {selected_html}
+{themes_html}
 {contact_section}
 """
 
@@ -1126,33 +1328,36 @@ def _link_label(url: str) -> str:
 
 def _project_item_html(row: dict) -> str:
     name = esc(row.get("name") or row.get("id") or "Project")
-    # Outcome → scope → tools. Export may only have description (outcome stand-in).
+    hid = slugify(str(row.get("id") or row.get("name") or "project"))
+    beats = case_beats_html(row, indent="        ")
     outcome = str(row.get("outcome") or row.get("impact") or row.get("description") or "").strip()
     scope = str(row.get("scope") or row.get("context") or "").strip()
     if scope and scope == outcome:
         scope = ""
+    if not beats:
+        outcome_html = f'        <p class="case-outcome">{esc(outcome)}</p>\n' if outcome else ""
+        scope_html = f"        <p>{esc(scope)}</p>\n" if scope else ""
+        beats = f"{outcome_html}{scope_html}"
     start = esc(row.get("start") or "")
     end = esc(row.get("end") or "present")
     tools = _curated_tools(row.get("tools"))
     tools_html = ""
     if tools:
         tools_html = (
-            f'<p class="case-tools meta">Tools: '
-            f'{esc(", ".join(tools))}</p>'
+            f'        <p class="case-tools meta">Tools: '
+            f'{esc(", ".join(tools))}</p>\n'
         )
-    outcome_html = f'<p class="case-outcome">{esc(outcome)}</p>' if outcome else ""
-    scope_html = f"<p>{esc(scope)}</p>" if scope else ""
     links = urls_from_bullets(row.get("bullets"))
     link_html = ""
     if links:
         link_html = (
-            '<p class="links">'
+            '        <p class="links">'
             + " · ".join(
                 f'<a class="external" href="{esc(u)}" target="_blank" rel="noopener noreferrer">'
                 f"{esc(_link_label(u))}</a>"
                 for u in links
             )
-            + "</p>"
+            + "</p>\n"
         )
     embed = str(row.get("embed") or "").strip()
     poster = str(row.get("poster") or "").strip()
@@ -1170,12 +1375,11 @@ def _project_item_html(row: dict) -> str:
         embed_html = figma_embed_html(str(row.get("name") or "Deck"), embed, None)
     return (
         f"      <li>\n"
-        f"        <h3>{name}</h3>\n"
+        f'        <h3 id="{esc(hid)}">{name}</h3>\n'
         f'        <p class="meta">{start} – {end}</p>\n'
-        f"        {outcome_html}\n"
-        f"        {scope_html}\n"
-        f"        {tools_html}\n"
-        f"        {link_html}\n"
+        f"{beats}"
+        f"{tools_html}"
+        f"{link_html}"
         f"        {embed_html}\n"
         f"      </li>"
     )
@@ -1228,18 +1432,32 @@ def build_portfolio(site: dict, export: dict) -> str:
             if not isinstance(item, dict):
                 continue
             item_title = str(item.get("title") or "")
-            item_id = unique_id(item_title) if item_title else ""
+            overlay = {}
+            ent_copy = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
+            if item_title in ent_copy and isinstance(ent_copy[item_title], dict):
+                overlay = ent_copy[item_title]
+            display_title = str(overlay.get("title") or item_title)
+            item_id = str(overlay.get("heading_id") or "").strip()
+            if not item_id:
+                item_id = unique_id(display_title) if display_title else ""
+            elif item_id not in used_ids:
+                used_ids.add(item_id)
             if item_id:
                 ent_node["children"].append(
-                    {"id": item_id, "label": item_title, "children": []}
+                    {"id": item_id, "label": display_title, "children": []}
                 )
-            bullets = "\n".join(
-                f"        <li>{esc(b)}</li>" for b in (item.get("bullets") or [])
-            )
+            beats = case_beats_html(overlay, indent="      ")
+            if beats:
+                body_inner = beats
+            else:
+                bullets = "\n".join(
+                    f"        <li>{esc(b)}</li>" for b in (item.get("bullets") or [])
+                )
+                body_inner = f'      <ul class="competency-list">\n{bullets}\n      </ul>'
             id_attr = f' id="{item_id}"' if item_id else ""
             sections_html.append(
-                f"      <h3{id_attr}>{esc(item_title)}</h3>\n"
-                f'      <ul class="competency-list">\n{bullets}\n      </ul>'
+                f"      <h3{id_attr}>{esc(display_title)}</h3>\n"
+                f"{body_inner}"
             )
         close_fold()
 
@@ -1282,7 +1500,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         if intro:
             sections_html.append(f'      <p class="page-lede">{esc(intro)}</p>')
         sections_html.append(
-            '      <ul class="item-list">\n'
+            '      <ul class="item-list folio-deck">\n'
             + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
@@ -1308,7 +1526,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         sections_html.append(section_fold_open(hid, esc(title), level="h2"))
         fold_open = True
         sections_html.append(
-            '      <ul class="item-list">\n'
+            '      <ul class="item-list folio-deck">\n'
             + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
@@ -1351,7 +1569,13 @@ def build_portfolio(site: dict, export: dict) -> str:
         f'<p class="page-lede">{esc(lede)} Short link: '
         f'<a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>'
     )
-    return longform_page(title="Portfolio", lede_html=lede_html, toc=toc, body=body)
+    return longform_page(
+        title="Work",
+        lede_html=lede_html,
+        toc=toc,
+        body=body,
+        toolbar=folio_toolbar_html(),
+    )
 
 
 def _cert_item_html(row: dict, *, heading: str = "h3") -> str:
@@ -1560,6 +1784,66 @@ def build_credentials(site: dict, export: dict) -> str:
         lede_html=lede_html,
         toc=toc,
         body=body,
+        extra_lede=verify_panel_html(site),
+        toolbar=folio_toolbar_html(),
+    )
+
+
+def build_perspectives(site: dict) -> str:
+    """Thin writing index: 3 start-here pieces, then the rest. Bodies stay off-site."""
+    rows = [r for r in (site.get("writing_highlights") or []) if isinstance(r, dict)]
+    start = [r for r in rows if r.get("start_here")]
+    rest = [r for r in rows if not r.get("start_here")]
+    if not start:
+        start, rest = rows[:3], rows[3:]
+    start_items = writing_items_html(start)
+    rest_items = writing_items_html(rest)
+    ext = site.get("external") or {}
+    toc = [{"id": "start-here", "label": "Start here", "children": []}]
+    parts = [
+        section_fold_open("start-here", "Start here", level="h2"),
+        '      <p class="page-lede">Three places to begin. Full essays stay on Medium, Blog, and LinkedIn until the writing corpus is unified.</p>',
+        '      <ul class="item-list writing-list start-here">\n'
+        + (chr(10).join(start_items) if start_items else "      <li>No start-here pieces curated.</li>")
+        + "\n      </ul>",
+        section_fold_close(),
+    ]
+    if rest_items:
+        toc.append({"id": "more-writing", "label": "More writing", "children": []})
+        parts.extend(
+            [
+                section_fold_open("more-writing", "More writing", level="h2"),
+                '      <ul class="item-list writing-list">\n'
+                + chr(10).join(rest_items)
+                + "\n      </ul>",
+                section_fold_close(),
+            ]
+        )
+    toc.append({"id": "elsewhere", "label": "Elsewhere", "children": []})
+    parts.extend(
+        [
+            section_fold_open("elsewhere", "Elsewhere", level="h2"),
+            '      <p class="links">\n'
+            f'        <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" '
+            'rel="noopener noreferrer">Blog</a>\n'
+            f'        <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" '
+            'rel="noopener noreferrer">Medium</a>\n'
+            f'        <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" '
+            'rel="noopener noreferrer">LinkedIn</a>\n'
+            "      </p>",
+            section_fold_close(),
+        ]
+    )
+    lede = (
+        '<p class="page-lede">Selected writing, tagged cheaply by venue. '
+        "This is a start-here index, not a topic hub.</p>"
+    )
+    return longform_page(
+        title="Perspectives",
+        lede_html=lede,
+        toc=toc,
+        body="\n".join(parts),
+        search=False,
     )
 
 
@@ -1622,19 +1906,35 @@ def main() -> None:
     DIST.mkdir(parents=True, exist_ok=True)
 
     pages = [
-        ("index.html", "Home", "Home", build_home(site, export), False),
-        ("about/index.html", "About", "About", build_about(site, export, cj), False),
-        ("portfolio/index.html", "Portfolio", "Portfolio", build_portfolio(site, export), True),
+        ("index.html", "/", "Home", "Home", build_home(site, export), False),
+        ("about/index.html", "/about/", "About", "About", build_about(site, export, cj), False),
+        (
+            "portfolio/index.html",
+            "/portfolio/",
+            "Work",
+            "Work",
+            build_portfolio(site, export),
+            True,
+        ),
         (
             "credentials/index.html",
+            "/credentials/",
             "Credentials",
             "Credentials",
             build_credentials(site, export),
             True,
         ),
+        (
+            "perspectives/index.html",
+            "/perspectives/",
+            "Perspectives",
+            "Perspectives",
+            build_perspectives(site),
+            False,
+        ),
     ]
-    for rel, title, active, body, pf in pages:
-        write(DIST / rel, layout(site, title, active, body, pagefind=pf))
+    for rel, path, title, active, body, pf in pages:
+        write(DIST / rel, layout(site, title, active, body, pagefind=pf, path=path))
 
     if cj:
         # Not in primary nav (same tier as Contact) — reachable via the
@@ -1644,15 +1944,42 @@ def main() -> None:
         cj_title = str(cj.get("title") or "Career Journey")
         write(
             DIST / "career-journey" / "index.html",
-            layout(site, cj_title, cj_title, build_career_journey(site, cj), pagefind=False),
+            layout(
+                site,
+                cj_title,
+                cj_title,
+                build_career_journey(site, cj),
+                pagefind=False,
+                path="/career-journey/",
+            ),
         )
         cj_js = SRC / "career-journey.js"
         if cj_js.is_file():
             shutil.copyfile(cj_js, DIST / "career-journey.js")
 
     write(DIST / "contact" / "index.html", build_contact_redirect(site))
+    work_target = with_base(site, "/portfolio/")
+    write(
+        DIST / "work" / "index.html",
+        f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="refresh" content="0;url={esc(work_target)}" />
+  <link rel="canonical" href="{esc(canonical_url(site, "/portfolio/"))}" />
+  <title>Work</title>
+</head>
+<body>
+  <p>Selected work lives at <a href="{esc(work_target)}">/portfolio/</a>.</p>
+</body>
+</html>
+""",
+    )
 
     write(DIST / "styles.css", assemble_styles())
+    chrome_js = SRC / "chrome.js"
+    if chrome_js.is_file():
+        shutil.copyfile(chrome_js, DIST / "chrome.js")
     assets_src = ROOT / "assets"
     if assets_src.is_dir():
         shutil.copytree(assets_src, DIST / "assets", dirs_exist_ok=True)
@@ -1667,13 +1994,16 @@ def main() -> None:
     base = site["base_path"]
     redirects = f"""{base}/about {base}/about/ 301
 {base}/portfolio {base}/portfolio/ 301
+{base}/work {base}/portfolio/ 301
+{base}/work/ {base}/portfolio/ 301
+{base}/perspectives {base}/perspectives/ 301
 {base}/credentials {base}/credentials/ 301
 {base}/contact {base}/ 302
 {base}/contact/ {base}/ 302
 """
     write(DIST / "_redirects", redirects)
 
-    print(f"built {len(pages)} pages + contact redirect -> {DIST} (base_path={base or '/'})")
+    print(f"built {len(pages)} pages + contact/work redirects -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:
         run_pagefind()

@@ -16,7 +16,7 @@ from build import CJ_LAYOUTS, CJ_SLIDE_KINDS, CJ_SLIDES_DIR
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
-REQUIRED_PAGES = ("/", "/about/", "/portfolio/", "/credentials/")
+REQUIRED_PAGES = ("/about/", "/portfolio/", "/credentials/", "/perspectives/")
 NON_PUBLIC_VISIBILITY = {
     "PRIVATE_ONLY",
     "NEVER_EXPORT",
@@ -81,9 +81,8 @@ def main() -> None:
                 fail(f"non-PUBLIC record in export: {row.get('id') or row.get('name')} ({vis})")
 
     contact = site.get("contact") or {}
-    for field in ("email", "phone"):
-        if not contact.get(field):
-            fail(f"site.contact.{field} required")
+    if not contact.get("email"):
+        fail("site.contact.email required")
 
     forbidden = ("prudential.com", "u.nus.edu", "gatech.edu")
     blob = json.dumps(site).lower()
@@ -97,14 +96,34 @@ def main() -> None:
         if path not in hrefs:
             fail(f"nav missing {path}")
 
-    for item in nav:
-        if item.get("label") == "Contact" or item.get("href") in ("/contact/", "/contact"):
-            fail("Contact must not be a primary nav item (use Home #contact)")
+    nav_labels = [item.get("label") for item in nav if not item.get("external")]
+    for label in ("Work", "Perspectives", "About", "Credentials", "Contact"):
+        if label not in nav_labels:
+            fail(f"nav missing primary item {label}")
+    if "Portfolio" in nav_labels:
+        fail("nav still labels Work as Portfolio")
+    if "Home" in nav_labels:
+        fail("Home must be the brand mark, not a primary nav item")
 
-    external_labels = {"Blog", "Medium", "LinkedIn"}
+    themes = site.get("operating_themes")
+    if not isinstance(themes, list) or len(themes) != 4:
+        fail("site.operating_themes must be a list of 4")
+    for row in themes:
+        if not isinstance(row, dict) or not (row.get("title") and row.get("body")):
+            fail("operating_themes entries need title and body")
+
+    if not (site.get("page_meta") or {}).get("Home"):
+        fail("site.page_meta.Home required (do not reuse the role headline as every description)")
+    if not str(site.get("public_origin") or "").startswith("http"):
+        fail("site.public_origin must be an absolute http(s) origin")
+
+    external_labels = {"Blog", "Medium", "LinkedIn", "GitHub"}
     for item in nav:
         if item.get("label") in external_labels and not item.get("external"):
             fail(f"{item.get('label')} nav entry must be external until C2b")
+    seen_external = {item.get("label") for item in nav if item.get("external")}
+    if "GitHub" not in seen_external:
+        fail("nav Elsewhere must include GitHub")
 
     highlights = site.get("writing_highlights")
     if highlights is not None:
@@ -135,8 +154,11 @@ def main() -> None:
         for row in home_selected:
             if not isinstance(row, dict):
                 fail("home_selected entries must be objects")
-            if not (str(row.get("title") or "").strip() and str(row.get("outcome") or "").strip()):
-                fail("home_selected entries need title and outcome")
+            if not (str(row.get("title") or "").strip() and (
+                str(row.get("outcome") or "").strip()
+                or str(row.get("problem") or "").strip()
+            )):
+                fail("home_selected entries need title and outcome or problem")
             tools = row.get("tools") or []
             if tools and (not isinstance(tools, list) or len(tools) > 5):
                 fail("home_selected tools must be a list of at most 5 labels")
@@ -177,7 +199,7 @@ def main() -> None:
         if not str(jetpack.get("blog_id") or "").strip():
             fail("analytics.jetpack.blog_id required when jetpack.enabled")
         pages = jetpack.get("pages") or {}
-        for label in ("Home", "About", "Portfolio", "Credentials", "Contact"):
+        for label in ("Home", "About", "Work", "Portfolio", "Perspectives", "Credentials", "Contact"):
             if label not in pages:
                 fail(f"analytics.jetpack.pages missing {label}")
 
