@@ -22,7 +22,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: rgb(12 20 18 / 96%);
+  background-color: var(--header-bg);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line-soft);
 }
@@ -53,13 +53,33 @@ body:has(.page-with-toc) .site-footer {
   margin-left: auto;
 }
 
-/* Beat later .btn padding so sticky Contact stays compact beside Menu. */
-.header-actions > .header-contact.btn {
+.theme-toggle {
+  appearance: none;
+  font: inherit;
   font-size: var(--text-sm);
+  line-height: 1.2;
   padding: var(--space-2) var(--space-3);
-  text-decoration: none;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  color: var(--text-default);
+  cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-hover);
+  border-color: var(--line-strong);
+}
+
+.theme-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .brand {
@@ -205,7 +225,7 @@ body:has(.page-with-toc) .site-footer {
     gap: var(--space-2) var(--space-3);
   }
 
-  .header-actions > .header-contact.btn {
+  .theme-toggle {
     padding: var(--space-tight) var(--space-3);
   }
 }

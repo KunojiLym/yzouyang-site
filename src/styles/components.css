@@ -214,6 +214,19 @@ a.embed-frame-static:hover {
   color: var(--text-strong);
 }
 
+.writing-list.start-here {
+  margin-bottom: var(--space-8);
+}
+
+.start-here-label {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .philosophy {
   margin: 0 0 var(--space-8);
   padding: var(--space-5) 0 var(--space-5) var(--space-5);

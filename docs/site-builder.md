@@ -48,38 +48,48 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Key | Purpose |
 |---|---|
-| `person` | Name, brand, headline, tagline, location, platforms (≤4 on Home), photo |
-| `outcomes` | Curated Home proof: `{ "metric", "label" }` (2–3; public CV facts only) |
-| `contact` | PUBLIC email + phone (never work/university domains) |
+| `person` | Name, brand, headline (platform-leader proposition), tagline, location, platforms (≤4 on Home), photo |
+| `outcomes` | Curated Home proof: `{ "metric", "label" }` (2–3; system + intervention; public CV facts only) |
+| `contact` | PUBLIC email only (no visitor-facing phone) |
 | `external` | Blog, Medium, LinkedIn, GitHub, Bitly shorts, digital card hub |
-| `nav` | Primary dossier links + external Blog/Medium/LinkedIn (rendered under **Elsewhere**, not as equal desktop buttons). **No Contact item** |
-| `writing_highlights` | Curated About list: `title`, `url`, `venue`, `date` |
-| `home_selected` | Home selected-systems rows (2–3): `title`, `outcome`, `scope`, `tools` (≤5), `href` → `/portfolio/` |
+| `nav` | Work · Perspectives · About · Credentials · Contact, then external Blog/Medium/LinkedIn/GitHub under **Elsewhere** |
+| `page_meta` | Per-page meta descriptions (never reuse the role headline for every route) |
+| `public_origin` | Canonical / OG origin (`https://www.yzouyang.com`) |
+| `operating_themes` | Four Home theme rows |
+| `credentials_verify` | VERIFY panel links (issuer records already in export) |
+| `writing_highlights` | Curated About / Perspectives list: `title`, `url`, `venue`, `date`, optional `start_here` |
+| `home_selected` | Home selected-systems (2–3): `{ id, title, tools?, evidence? }`. Beats compose from `enterprise_copy` / `project_copy` by `id`; `href` defaults to `/portfolio/#{id}` |
+| `enterprise_copy` | Work enterprise overlays keyed by stable `heading_id` (not the export title string). See deep-link note below |
 | `project_copy` | Optional per-project `outcome` / `scope` / `tools` overrides (tools ≤5) |
 | `section_copy` | Optional portfolio section intro overrides keyed by export section id |
 | `analytics` | Jetpack / optional GA4 / DIY beacon |
 | `base_path` | Overridden by CLI/env at build time |
 
+### Enterprise heading ids
+
+`enterprise_copy` is keyed by the Work heading `id`, not the live export title. Prudential keeps `prudential-singapore-senior-data-engineer-solutioning-architecture` so Home selected-systems links (and saved `#` URLs) stay valid after the visible title became Senior Manager (master CV). Lookup matches `slugify(export title)` first, then overlay `title` if the export string catches up. Do not rename that id without a redirect.
+
 ## Page builders
 
 | Route | Builder | Sources |
 |---|---|---|
-| `/` | `build_home` | `person` + `outcomes` + proof strip + `home_selected` rows; `#contact` from `contact`/`external` |
+| `/` | `build_home` | `person` + `outcomes` + proof strip + CTAs (View selected work / Contact) + `home_selected` composed from `enterprise_copy` / `project_copy` + operating themes; `#contact` from `contact`/`external` |
 | `/about/` | `build_about` | export `about` + `writing_highlights`; longform sidebar (no Pagefind) |
-| `/portfolio/` | `build_portfolio` | export `portfolio` + `projects` + `project_copy` / `section_copy`; enterprise summaries first; Pagefind (case rows: outcome → scope → tools ≤5) |
-| `/credentials/` | `build_credentials` | export `credentials` + certs/edu + Pagefind |
-| `/career-journey/` | `build_career_journey` | `data/career-journey.yaml`; only built if that file exists. Not in primary nav — reachable from an About link card + direct/shared URL, same tier as Contact. See [career-journey-native-plan.md](career-journey-native-plan.md) |
+| `/portfolio/` (nav **Work**; `/work/` redirects here) | `build_portfolio` | export `portfolio` + `projects` + `project_copy` / `enterprise_copy` / `section_copy`; enterprise summaries first; Pagefind; `.folio-deck` rows |
+| `/perspectives/` | `build_perspectives` | `writing_highlights` start-here (3) + remainder; no Pagefind |
+| `/credentials/` | `build_credentials` | export `credentials` + certs/edu + VERIFY panel + Pagefind |
+| `/career-journey/` | `build_career_journey` | `data/career-journey.yaml`; only built if that file exists. Not in primary nav — reachable from an About link + direct/shared URL. See [career-journey-native-plan.md](career-journey-native-plan.md) |
 | `/contact/` | `build_contact_redirect` | Meta refresh + link to `/#contact` |
 
 ## IA rules
 
-- Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → selected systems → `#contact`
-- **Sticky header** — always reachable; **Contact** control jumps to `/#contact`
-- Desktop primary nav is dossier links only; Blog / Medium / LinkedIn sit under an **Elsewhere** control (mobile menu uses the same grouping label)
-- Portfolio / Credentials / About — **sticky sidebar TOC** (`.page-with-toc`) with nested subcategories; major sections are collapsible (`.section-fold`)
-- Contact is **not** a primary nav page; no cert-count vanity chip on Home
-- Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; About shows curated external titles only (publications-style)
-- Blog / Medium / LinkedIn remain external (`↗`)
+- Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → selected systems → operating themes → `#contact`
+- **Sticky header** — always reachable; **theme toggle** in `.header-actions`; Contact is a primary nav item to `/#contact`
+- Desktop primary nav is **Work · Perspectives · About · Credentials · Contact**; Blog / Medium / LinkedIn / GitHub sit under **Elsewhere**
+- Portfolio / Credentials / About / Perspectives — **sticky sidebar TOC** (`.page-with-toc`) with nested subcategories; major sections are collapsible (`.section-fold`)
+- No cert-count vanity chip on Home; no visitor-facing phone
+- Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; `/perspectives/` is a start-here index (phase 1 tags + 3 start-here)
+- Blog / Medium / LinkedIn / GitHub remain external (`↗`)
 - Public footer (© + mailto + social) — no migration changelog in chrome
 
 ## Progressive embeds
@@ -101,7 +111,7 @@ A checklist for adding a new page, section, or component without reintroducing t
 1. **Reach for a token before writing a number.** Every `font-size` needs a `--text-*` (or `--text-display-*` if it's a fluid heading); every `margin`/`padding`/`gap` needs a `--space-*`; every `border-radius` needs a `--radius-*`. The full tables are in design-system.md's "Layer A" section. If nothing fits, that's a signal to reconsider the layout — don't invent a one-off. If a one-off is genuinely unavoidable (e.g. something intentionally relative to a parent font-size), add it with a `/* intentional one-off: why */` comment and register it in `.stylelintrc.json`'s `ignoreValues`, the same way the `chrome.css` arrow markers are handled.
 2. **Reuse an existing breakpoint.** `--bp-sm` (800px, hero-style two-column collapse), `--bp-md` (900px, nav/sidebar collapse), and `--bp-lg` (1024px, outcome-strip 3-column row) are the documented widths — see design-system.md's "Breakpoints" table. A new additional breakpoint is a design decision to write down in design-system.md, not a silent `@media` addition (custom properties can't be read inside `@media`, so breakpoints are documented constants, not `var()`).
 3. **Pick the right CSS module.** `src/styles/README.md` has the file-by-file responsibility table (chrome vs. home vs. components vs. longform vs. search vs. motion). Add rules to the module that already owns that concern rather than starting a new file.
-4. **Colors and fonts come from `tokens.css` only.** No raw hex codes or `font-family` literals in any other CSS file — `scripts/check_token_drift.py` fails CI on both.
+4. **Colors and fonts come from `tokens.css` only.** Dual-theme color tokens live in `:root, [data-theme="dark"]` and `[data-theme="light"]`. No raw hex codes or `font-family` literals in any other CSS file — `scripts/check_token_drift.py` fails CI on both.
 5. **Update `data/site.json` / builder in `scripts/build.py`**, not a hardcoded HTML string, if the new page/section needs new content fields — see the `site.json` map and Page builders tables above.
 6. **Run the checks locally before opening a PR** (all also run in CI, `.github/workflows/ci.yml`):
    - `python scripts/lint.py` — data contract

@@ -273,9 +273,9 @@ main.page:has(.cj-page) {
   place-self: end start;
   max-width: calc(var(--space-12) * 8);
   padding: var(--space-5) var(--space-6);
-  background: rgb(12 20 18 / 70%);
+  background: var(--photo-chip);
   border-radius: var(--radius-md);
-  color: var(--text-strong);
+  color: var(--photo-ink);
 }
 
 .cj-layout--overlay-caption .cj-block[style*="grid-area: bg"] {
@@ -398,10 +398,10 @@ main.page:has(.cj-page) {
   place-self: center;
   z-index: 1;
   padding: var(--space-6) var(--space-8);
-  background: rgb(12 20 18 / 80%);
+  background: var(--photo-chip);
   border-radius: var(--radius-md);
   text-align: center;
-  color: var(--text-strong);
+  color: var(--photo-ink);
 }
 
 .cj-layout--full-bleed-text-overlay .cj-block-heading p {

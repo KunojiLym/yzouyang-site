@@ -4,7 +4,7 @@ Source of truth for the site's CSS. [`scripts/build.py`](../../scripts/build.py)
 
 | File | Responsibility |
 |---|---|
-| `tokens.css` | Semantic design tokens (`:root`): color, type scale, spacing scale, radius scale, documented breakpoints |
+| `tokens.css` | Semantic design tokens (`:root` / `[data-theme]`): dual-theme color, type scale, spacing scale, radius scale, documented breakpoints |
 | `base.css` | Document defaults, links, focus, scroll padding |
 | `chrome.css` | Sticky header, brand, nav, footer |
 | `home.css` | Hero, outcomes, proof strip, CTAs, contact section |
