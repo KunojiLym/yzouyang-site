@@ -63,7 +63,6 @@ test.describe("dual theme", () => {
   });
 
   test("toggle is labeled, pressed, and persists", async ({ page }) => {
-    await setTheme(page, "dark");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     const toggle = page.locator("[data-theme-toggle]").first();
     await expect(toggle).toBeVisible();
@@ -72,6 +71,7 @@ test.describe("dual theme", () => {
     await toggle.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(await page.evaluate(() => localStorage.getItem("yz-theme"))).toBe("light");
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
