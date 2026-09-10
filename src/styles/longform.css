@@ -245,7 +245,8 @@
 
 .section-fold--public .case-beats dt {
   font-size: var(--text-xs);
-  color: var(--text-faint);
+  /* --text-faint is 3.0:1 on light --bg-mid; --text-muted is AA. */
+  color: var(--text-muted);
 }
 
 .section-fold--public .case-beats dd {

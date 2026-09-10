@@ -383,6 +383,7 @@ def main() -> None:
     light_pairs = (
         ("light --text-default on --bg-deep", light_text, light_bg, 4.5),
         ("light --text-muted on --bg-deep", light_muted, light_bg, 4.5),
+        ("light --text-muted on --bg-mid", light_muted, light_mid, 4.5),
         ("light --accent-link on --bg-deep", light_link, light_bg, 4.5),
         ("light --accent-link on --bg-mid", light_link, light_mid, 4.5),
         ("light --text-default on --bg-elevated", light_text, light_elev, 4.5),
@@ -418,6 +419,16 @@ def main() -> None:
         fail("work page missing enterprise delivery fold")
     if "section-fold--public" not in portfolio:
         fail("work page missing public-architecture fold")
+    if not re.search(
+        r"\.section-fold--public \.case-beats dt\s*\{[^}]*color:\s*var\(--text-muted\)",
+        css,
+    ):
+        fail("public fold dt must use --text-muted (AA on light --bg-mid)")
+    if re.search(
+        r"\.section-fold--public \.case-beats dt\s*\{[^}]*color:\s*var\(--text-faint\)",
+        css,
+    ):
+        fail("public fold dt must not use --text-faint on --bg-mid")
     if "Enterprise delivery" not in portfolio:
         fail("work page missing enterprise delivery kicker")
     if "Public architectures" not in portfolio:
