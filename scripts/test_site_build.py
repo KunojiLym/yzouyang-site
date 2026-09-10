@@ -8,7 +8,7 @@ import re
 import sys
 from pathlib import Path
 
-from build import figma_embed_html, resolve_enterprise_overlay
+from build import _beat_value_html, figma_embed_html, resolve_enterprise_overlay
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -62,6 +62,31 @@ def _light_block(css: str) -> str:
     return match.group(1)
 
 
+def assert_evidence_href_https_only() -> None:
+    js = _beat_value_html(
+        {"evidence": "Role write-up", "evidence_href": "javascript:alert(1)"},
+        "evidence",
+    )
+    if "<a" in js.lower() or "javascript:" in js:
+        fail("evidence_href javascript: must not render an anchor")
+    http = _beat_value_html(
+        {"evidence": "Role write-up", "evidence_href": "http://example.com"},
+        "evidence",
+    )
+    if "<a" in http.lower():
+        fail("evidence_href http:// must not render an anchor")
+    https = _beat_value_html(
+        {
+            "evidence": "Role write-up",
+            "evidence_href": "https://www.linkedin.com/in/yzouyang",
+            "evidence_label": "LinkedIn",
+        },
+        "evidence",
+    )
+    if 'href="https://www.linkedin.com/in/yzouyang"' not in https:
+        fail("https evidence_href must render an escaped HTTPS anchor")
+
+
 def assert_no_empty_static_frames(html: str, label: str) -> None:
     for match in re.finditer(
         r"<a\b[^>]*embed-frame-static[^>]*>(.*?)</a>",
@@ -78,6 +103,7 @@ def assert_no_empty_static_frames(html: str, label: str) -> None:
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
+    assert_evidence_href_https_only()
 
     site = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
     bitly = str((site.get("external") or {}).get("bitly_hub") or "")
@@ -166,8 +192,10 @@ def main() -> None:
         fail("selected-systems must have 2–3 editorial rows")
     if "Prudential" not in selected or "SPH Media" not in selected:
         fail("selected-systems must include Prudential / SPH-class enterprise cases")
-    if "SkillUP" not in selected:
-        fail("selected-systems must include a third FinOps / governed / applied-AI case")
+    if "SkillUP" in selected:
+        fail("selected-systems must not equate a capstone with enterprise delivery")
+    if "Tourism Board" not in selected and "STB" not in selected:
+        fail("selected-systems must include a third enterprise case (applied AI / STB)")
     if 'class="case-beats"' not in selected:
         fail("selected-systems rows must follow problem → role → decision → outcome → evidence")
     if "Tools:" not in selected:
@@ -381,6 +409,7 @@ def main() -> None:
     light_pairs = (
         ("light --text-default on --bg-deep", light_text, light_bg, 4.5),
         ("light --text-muted on --bg-deep", light_muted, light_bg, 4.5),
+        ("light --text-muted on --bg-mid", light_muted, light_mid, 4.5),
         ("light --accent-link on --bg-deep", light_link, light_bg, 4.5),
         ("light --accent-link on --bg-mid", light_link, light_mid, 4.5),
         ("light --text-default on --bg-elevated", light_text, light_elev, 4.5),
@@ -409,7 +438,43 @@ def main() -> None:
     if "Senior Data Engineer, Solutioning" in portfolio:
         fail("Prudential title must not remain Senior Data Engineer")
     if 'id="skillup-mtech-capstone"' not in portfolio:
-        fail("work page missing SkillUP heading id for home selected-systems links")
+        fail("work page missing SkillUP heading id")
+    if 'id="stb-data-engineer-applied-ml"' not in portfolio:
+        fail("work page missing STB applied-ML enterprise case")
+    if "section-fold--enterprise" not in portfolio or "proof-deck" not in portfolio:
+        fail("work page missing enterprise delivery fold")
+    if "section-fold--public" not in portfolio:
+        fail("work page missing public-architecture fold")
+    if not re.search(
+        r"\.section-fold--public \.case-beats dt\s*\{[^}]*color:\s*var\(--text-muted\)",
+        css,
+    ):
+        fail("public fold dt must use --text-muted (AA on light --bg-mid)")
+    if re.search(
+        r"\.section-fold--public \.case-beats dt\s*\{[^}]*color:\s*var\(--text-faint\)",
+        css,
+    ):
+        fail("public fold dt must not use --text-faint on --bg-mid")
+    if "Enterprise delivery" not in portfolio:
+        fail("work page missing enterprise delivery kicker")
+    if "Public architectures" not in portfolio:
+        fail("work page missing public-architecture kicker")
+    if "summarized here" in portfolio or "Public summary on this page" in portfolio:
+        fail("enterprise evidence must link out, not use a page-summary placeholder")
+    if "application-level cost attribution" not in portfolio:
+        fail("Prudential problem must state the FinOps attribution gap")
+    if "Unity Catalog" not in portfolio or "Declarative Asset Bundles" not in portfolio:
+        fail("Prudential decision must map governance tools to the governance gap")
+    if 'evidence_href' not in (DATA / "site.json").read_text(encoding="utf-8"):
+        fail("site.json missing evidence_href for verifiable evidence beats")
+    if portfolio.count('class="proof-case"') < 3:
+        fail("enterprise section must feature at least three cases")
+    if not re.search(
+        r'class="case-beats"[^>]*>[\s\S]*linkedin\.com/in/yzouyang',
+        portfolio,
+        re.I,
+    ):
+        fail("enterprise evidence must link to an external artifact")
     if "Technical Documentation" in portfolio:
         fail("tutorial tools must be curated to at most 5 labels")
     for match in re.finditer(r'class="case-tools[^"]*"[^>]*>([^<]+)', portfolio):
@@ -426,6 +491,8 @@ def main() -> None:
         fail("portfolio missing Prudential heading id for home selected-systems links")
     if 'id="sph-media-lead-data-engineer"' not in portfolio:
         fail("portfolio missing SPH heading id for home selected-systems links")
+    if "/portfolio/#stb-data-engineer-applied-ml" not in home:
+        fail("home selected-systems must deep-link the STB case")
     for name, html in (("portfolio", portfolio), ("credentials", credentials)):
         if 'id="search"' not in html:
             fail(f"{name} missing #search")
@@ -482,10 +549,18 @@ def main() -> None:
             html,
         ):
             fail(f"{name} section-fold summary must not wrap a heading")
-        if not re.search(r'<summary class="section-fold-summary" id="[^"]+">', html):
+        if not re.search(r'<summary class="section-fold-summary" id="[^"]+"', html):
             fail(f"{name} section-fold summary missing id for TOC anchors")
-        if 'class="visually-hidden"' not in html:
-            fail(f"{name} section-fold missing visually-hidden heading for outline")
+        if not re.search(
+            r'<summary class="section-fold-summary"[^>]*role="heading"[^>]*aria-level="2"',
+            html,
+        ):
+            fail(f"{name} section-fold summary must be the heading (role=heading)")
+        if re.search(
+            r'<h2 class="visually-hidden">',
+            html,
+        ):
+            fail(f"{name} must not duplicate fold titles with a visually-hidden h2")
     if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
         fail("about missing Figma open/fallback link")
     if "cj-link-card" in about:

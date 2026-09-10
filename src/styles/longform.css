@@ -191,8 +191,73 @@
   padding: var(--space-2) var(--space-4) var(--space-5) var(--space-5);
 }
 
-/* Clip, don't display:none — the heading must stay in the a11y tree. */
-main.page .visually-hidden {
+.section-kicker {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section-fold--enterprise {
+  background: var(--bg-elevated);
+}
+
+.section-fold--enterprise .section-kicker {
+  color: var(--accent-link);
+}
+
+.section-fold--enterprise .proof-deck {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.section-fold--enterprise .proof-case {
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.section-fold--enterprise .proof-case:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.section-fold--enterprise .proof-case h3 {
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-4);
+}
+
+.section-fold--public {
+  background: var(--bg-mid);
+}
+
+.section-fold--public .section-fold-summary {
+  font-size: var(--text-display-4);
+  font-weight: 600;
+  color: var(--text-default);
+}
+
+.section-fold--public h3 {
+  font-size: var(--text-md);
+}
+
+.section-fold--public .case-beats dt {
+  font-size: var(--text-xs);
+
+  /* --text-faint is 3.0:1 on light --bg-mid; --text-muted is AA. */
+  color: var(--text-muted);
+}
+
+.section-fold--public .case-beats dd {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Clip, don't display:none — keep for skip/chrome utilities. */
+main.page .visually-hidden,
+main.page h2.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;

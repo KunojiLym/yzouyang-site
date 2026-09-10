@@ -165,6 +165,11 @@ def main() -> None:
                 )
             if not isinstance(overlay, dict):
                 fail(f"enterprise_copy[{eid!r}] must be an object")
+            href = str(overlay.get("evidence_href") or "").strip()
+            if href and not href.startswith("https://"):
+                fail(f"enterprise_copy[{eid!r}] evidence_href must be an https URL")
+        if len(enterprise_copy) < 3:
+            fail("enterprise_copy must include at least three cases")
 
     home_selected = site.get("home_selected")
     if home_selected is not None:

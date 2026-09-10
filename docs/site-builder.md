@@ -59,7 +59,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 | `credentials_verify` | VERIFY panel links (issuer records already in export) |
 | `writing_highlights` | Curated About / Perspectives list: `title`, `url`, `venue`, `date`, optional `start_here` |
 | `home_selected` | Home selected-systems (2–3): `{ id, title, tools?, evidence? }`. Beats compose from `enterprise_copy` / `project_copy` by `id`; `href` defaults to `/portfolio/#{id}` |
-| `enterprise_copy` | Work enterprise overlays keyed by stable `heading_id` (not the export title string). See deep-link note below |
+| `enterprise_copy` | Work enterprise overlays keyed by stable `heading_id` (not the export title string). Extra keys not in the export are appended as additional cases. Optional `evidence_href` / `evidence_label` turn Evidence into a verification link. See deep-link note below |
 | `project_copy` | Optional per-project `outcome` / `scope` / `tools` overrides (tools ≤5) |
 | `section_copy` | Optional portfolio section intro overrides keyed by export section id |
 | `analytics` | Jetpack / optional GA4 / DIY beacon |
