@@ -17,8 +17,10 @@ test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
     test(`${route} has no axe violations`, async ({ page }, testInfo) => {
       await page.goto(route, { waitUntil: "networkidle" });
 
+      // AxeBuilder#options replaces the whole run-options object, so withTags
+      // must come after it or WCAG-only filtering is wiped (best-practice
+      // rules such as aria-allowed-role would then fail the suite).
       const builder = new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa"])
         .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
         // Belt-and-suspenders attempt to keep axe out of the Figma embed's
         // iframe. In practice @axe-core/playwright still walks into
@@ -27,7 +29,8 @@ test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
         // verified by running this suite locally and seeing violations with
         // target[0] === "iframe" even with both of those in place. The real
         // filter is below, against the actual result nodes.
-        .options({ iframes: false });
+        .options({ iframes: false })
+        .withTags(["wcag2a", "wcag2aa"]);
 
       const results = await builder.analyze();
 
