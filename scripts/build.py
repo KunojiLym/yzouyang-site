@@ -258,7 +258,7 @@ def _beat_value_html(row: dict, key: str) -> str:
         return esc(val)
     href = str(row.get("evidence_href") or "").strip()
     label = str(row.get("evidence_label") or "").strip()
-    if not href:
+    if not href.startswith("https://"):
         return esc(val)
     link = (
         f'<a class="external" href="{esc(href)}" target="_blank" '

@@ -8,7 +8,7 @@ import re
 import sys
 from pathlib import Path
 
-from build import figma_embed_html, resolve_enterprise_overlay
+from build import _beat_value_html, figma_embed_html, resolve_enterprise_overlay
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -62,6 +62,31 @@ def _light_block(css: str) -> str:
     return match.group(1)
 
 
+def assert_evidence_href_https_only() -> None:
+    js = _beat_value_html(
+        {"evidence": "Role write-up", "evidence_href": "javascript:alert(1)"},
+        "evidence",
+    )
+    if "<a" in js.lower() or "javascript:" in js:
+        fail("evidence_href javascript: must not render an anchor")
+    http = _beat_value_html(
+        {"evidence": "Role write-up", "evidence_href": "http://example.com"},
+        "evidence",
+    )
+    if "<a" in http.lower():
+        fail("evidence_href http:// must not render an anchor")
+    https = _beat_value_html(
+        {
+            "evidence": "Role write-up",
+            "evidence_href": "https://www.linkedin.com/in/yzouyang",
+            "evidence_label": "LinkedIn",
+        },
+        "evidence",
+    )
+    if 'href="https://www.linkedin.com/in/yzouyang"' not in https:
+        fail("https evidence_href must render an escaped HTTPS anchor")
+
+
 def assert_no_empty_static_frames(html: str, label: str) -> None:
     for match in re.finditer(
         r"<a\b[^>]*embed-frame-static[^>]*>(.*?)</a>",
@@ -78,6 +103,7 @@ def assert_no_empty_static_frames(html: str, label: str) -> None:
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
+    assert_evidence_href_https_only()
 
     site = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
     bitly = str((site.get("external") or {}).get("bitly_hub") or "")
