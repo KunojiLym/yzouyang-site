@@ -3,8 +3,8 @@
   "person": {
     "full_name": "Yingzhao Ouyang",
     "brand": "yzouyang",
-    "headline": "Platform leader for governed, cost-aware enterprise systems",
-    "tagline": "I design and lead cloud data platforms and generative AI solutions for enterprises — with a bias toward governance, cost visibility, and systems that operators can trust.",
+    "headline": "Building intelligible systems for data, AI, and decision-making.",
+    "tagline": "I design cloud data platforms, cost-intelligence capabilities, and governed AI systems that help organisations turn technical complexity into durable operational value.",
     "location": "Singapore",
     "platforms": ["Azure", "GCP", "AWS", "Databricks"],
     "photo": "/assets/profile.jpg",
@@ -38,11 +38,15 @@
   },
   "public_origin": "https://www.yzouyang.com",
   "page_meta": {
-    "Home": "Yingzhao Ouyang — platform leader for governed, cost-aware enterprise systems. Selected outcomes in cloud economics, lakehouse platforms, and applied AI.",
+    "Home": "Yingzhao Ouyang — building intelligible systems for data, AI, and decision-making. Selected system records, notes, and workshop experiments.",
     "Work": "Selected systems and public architectures: problem, role, decision, outcome, and evidence from enterprise and applied-AI work.",
+    "Systems": "Selected systems and public architectures: problem, role, decision, outcome, and evidence from enterprise and applied-AI work.",
     "Perspectives": "Start-here writing on AI, platforms, and industrial policy. Essays live on Medium, Blog, and LinkedIn until the corpus is unified.",
+    "Notes": "Start-here writing on AI, platforms, and industrial policy. Essays live on Medium, Blog, and LinkedIn until the corpus is unified.",
     "About": "Operating themes, career highlights, and selected writing for Yingzhao Ouyang — cloud economics, governed platforms, and applied AI.",
+    "Profile": "Operating themes, career highlights, and selected writing for Yingzhao Ouyang — cloud economics, governed platforms, and applied AI.",
     "Credentials": "Public certifications and issuer verification — Credly, Databricks, Microsoft Learn, and a short link for this page.",
+    "Contact": "Public email and profiles for Yingzhao Ouyang — no visitor-facing phone.",
     "Career Journey": "A native walkthrough of Yingzhao Ouyang’s career chapters — platforms, economics, and applied AI — with the original Figma deck as a source credit."
   },
   "operating_themes": [
@@ -167,21 +171,132 @@
       "date": "2025-10"
     }
   ],
+  "atmosphere": {
+    "entrance": {
+      "src": "/assets/atmosphere/entrance.jpg",
+      "alt": "Atmosphere still: a vaulted transit hall with warm-lit balconies and a green train on central tracks",
+      "credit": "Atmosphere still",
+      "width": 682,
+      "height": 1024,
+      "object_position": "center center"
+    },
+    "reading": {
+      "src": "/assets/atmosphere/reading.jpg",
+      "alt": "Atmosphere still: dark wooden bookshelves with leather-bound volumes and a small brass lamp",
+      "credit": "Atmosphere still",
+      "width": 608,
+      "height": 1024,
+      "object_position": "center center"
+    },
+    "workshop": {
+      "src": "/assets/atmosphere/workshop.jpg",
+      "alt": "Atmosphere still: an open notebook, fountain pen, and study tools on a wooden desk",
+      "credit": "Atmosphere still",
+      "width": 682,
+      "height": 461,
+      "object_position": "center 85%"
+    }
+  },
+  "current_index": [
+    {
+      "status": "studying",
+      "label": "AI governance operating models and retrieval patterns",
+      "href": "/perspectives/"
+    },
+    {
+      "status": "building",
+      "label": "Cost intelligence and governed lakehouse platforms",
+      "href": "/portfolio/#prudential-singapore-senior-data-engineer-solutioning-architecture"
+    },
+    {
+      "status": "writing",
+      "label": "How AI is reshaping work before institutions are ready",
+      "href": "https://medium.com/@kunojilym/the-ai-disruption-part-1-how-ai-is-reshaping-work-before-our-institutions-are-ready-713e2cd7c3a8"
+    }
+  ],
+  "system_map": [
+    {
+      "id": "data-platforms",
+      "label": "Cloud data platforms",
+      "related": ["SYS-01", "SYS-02"]
+    },
+    {
+      "id": "finops",
+      "label": "FinOps and cost intelligence",
+      "related": ["SYS-01"]
+    },
+    {
+      "id": "ai-architecture",
+      "label": "AI architecture and orchestration",
+      "related": ["SYS-03", "LAB-02"]
+    },
+    {
+      "id": "ai-governance",
+      "label": "AI governance and operating models",
+      "related": ["SYS-01", "NOTE-2026-005"]
+    },
+    {
+      "id": "knowledge-systems",
+      "label": "Knowledge systems and retrieval",
+      "related": ["LAB-01", "NOTE-2026-007"]
+    },
+    {
+      "id": "local-ai",
+      "label": "Local AI experimentation",
+      "related": ["LAB-01", "LAB-03"]
+    }
+  ],
   "home_selected": [
     {
       "id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
-      "title": "Prudential — cloud economics and governed lakehouse",
+      "record_id": "SYS-01",
+      "domains": ["Data Platform", "FinOps", "AI Governance"],
+      "title": "Cost intelligence as platform capability",
       "tools": ["Azure Databricks", "BigQuery", "Unity Catalog", "Grafana", "OpenTelemetry"]
     },
     {
       "id": "sph-media-lead-data-engineer",
-      "title": "SPH Media — media data platform",
+      "record_id": "SYS-02",
+      "domains": ["Data Platform"],
+      "title": "Resilient media data platform on AWS",
       "tools": ["AWS", "Glue", "Athena", "S3", "Terraform"]
     },
     {
       "id": "stb-data-engineer-applied-ml",
-      "title": "STB — production ML for tourism forecasts",
+      "record_id": "SYS-03",
+      "domains": ["Applied AI"],
+      "title": "Production ML for tourism arrival forecasts",
       "tools": ["AWS SageMaker", "CI/CD", "Python"]
+    }
+  ],
+  "workshop": [
+    {
+      "record_id": "LAB-01",
+      "category": "Knowledge systems",
+      "title": "Graphify — codebase knowledge graphs",
+      "constraint": "AST-first extraction keeps personal corpora local; semantic edges stay auditable.",
+      "href": "https://medium.com/@kunojilym/teaching-graphify-to-understand-databricks-notebooks-13856e2a09b9"
+    },
+    {
+      "record_id": "LAB-02",
+      "category": "Agent systems",
+      "title": "SkillUP — explainable course recommendations",
+      "constraint": "CSP and RAG explainability over opaque ranking — capstone architecture, not enterprise scale.",
+      "href": "https://github.com/KunojiLym/IRS-PM-2026-01-17-AIS08PT-GRP-SkillUP-Course-Recommender"
+    },
+    {
+      "record_id": "LAB-03",
+      "category": "Infrastructure",
+      "title": "Homelab GitOps and local inference",
+      "constraint": "Prefer Mac Ollama for PII-adjacent graphs; cloud backends only on an explicit allowlist.",
+      "href": "/portfolio/#skillup-mtech-capstone"
+    },
+    {
+      "record_id": "LAB-04",
+      "category": "Build notes",
+      "title": "LinkedIn analytics on Databricks",
+      "constraint": "First-party export to dashboard — operators run it themselves, not a vendor report.",
+      "href": "https://medium.com/@kunojilym/build-your-own-linkedin-analytics-part-1-why-it-matters-and-what-youll-learn-314a4de63988"
     }
   ],
   "section_copy": {
@@ -265,11 +380,11 @@
     }
   },
   "nav": [
-    { "label": "Work", "href": "/portfolio/", "external": false },
-    { "label": "Perspectives", "href": "/perspectives/", "external": false },
-    { "label": "About", "href": "/about/", "external": false },
+    { "label": "Systems", "href": "/portfolio/", "external": false },
+    { "label": "Notes", "href": "/perspectives/", "external": false },
+    { "label": "Profile", "href": "/about/", "external": false },
     { "label": "Credentials", "href": "/credentials/", "external": false },
-    { "label": "Contact", "href": "/#contact", "external": false },
+    { "label": "Connect", "href": "/contact/", "external": false },
     { "label": "Blog", "href": "https://www.yzouyang.com/blog/", "external": true },
     { "label": "Medium", "href": "https://medium.com/@kunojilym", "external": true },
     { "label": "LinkedIn", "href": "https://www.linkedin.com/in/yzouyang/", "external": true },

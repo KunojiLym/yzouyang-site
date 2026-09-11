@@ -22,7 +22,7 @@ from build import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
-REQUIRED_PAGES = ("/about/", "/portfolio/", "/credentials/", "/perspectives/")
+REQUIRED_PAGES = ("/about/", "/portfolio/", "/credentials/", "/perspectives/", "/contact/")
 NON_PUBLIC_VISIBILITY = {
     "PRIVATE_ONLY",
     "NEVER_EXPORT",
@@ -103,11 +103,11 @@ def main() -> None:
             fail(f"nav missing {path}")
 
     nav_labels = [item.get("label") for item in nav if not item.get("external")]
-    for label in ("Work", "Perspectives", "About", "Credentials", "Contact"):
+    for label in ("Systems", "Notes", "Profile", "Credentials", "Connect"):
         if label not in nav_labels:
             fail(f"nav missing primary item {label}")
-    if "Portfolio" in nav_labels:
-        fail("nav still labels Work as Portfolio")
+    if "Portfolio" in nav_labels or "Work" in nav_labels:
+        fail("nav must label /portfolio/ as Systems, not Work or Portfolio")
     if "Home" in nav_labels:
         fail("Home must be the brand mark, not a primary nav item")
 

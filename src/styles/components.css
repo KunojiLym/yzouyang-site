@@ -78,6 +78,7 @@ main.page h3.issuer-group {
   border-bottom: 1px solid var(--line-soft);
 }
 
+main.page .item-list h2,
 .item-list h2,
 .item-list h3,
 .item-list h4 {
@@ -241,4 +242,21 @@ a.embed-frame-static:hover {
   line-height: 1.5;
   color: var(--text-default);
   font-weight: 500;
+}
+
+.profile-portrait {
+  max-width: 12rem;
+  margin: 0 0 var(--space-6);
+}
+
+.profile-portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 22%);
+}
+
+.profile-portrait .meta {
+  margin: var(--space-2) 0 0;
 }

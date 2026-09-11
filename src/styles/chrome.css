@@ -250,6 +250,16 @@ body:has(.page-with-toc) .site-footer {
   margin-top: var(--space-2);
 }
 
+.site-footer.library-card .library-card-meta {
+  color: var(--text-default);
+  font-size: var(--text-base);
+  margin-bottom: var(--space-2);
+}
+
+.site-footer.library-card .footer-links {
+  margin-top: var(--space-3);
+}
+
 .site-footer .footer-links a.external::after {
   content: " ↗";
   font-size: 0.75em; /* intentional one-off: relative to parent, not the fixed ramp */

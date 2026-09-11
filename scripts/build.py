@@ -149,7 +149,7 @@ def nav_html(site: dict, active: str, *, grouped: bool = False) -> str:
 
     Desktop (grouped=False): disclosure control. Mobile menu (grouped=True):
     uppercase label, then the same external links — still `.external` ↗.
-    Contact may be a primary item pointing at `/#contact`.
+    Contact is a primary item pointing at `/contact/`, same as About.
     """
     primary: list[str] = []
     external_links: list[str] = []
@@ -322,12 +322,13 @@ def writing_items_html(rows: list[dict]) -> list[str]:
             continue
         venue = esc(row.get("venue") or "Article")
         date_s = esc(row.get("date") or "")
-        meta = " · ".join(x for x in (venue, date_s) if x)
+        note_id = _note_catalog_id(row, len(out))
+        meta = " · ".join(x for x in (note_id, venue, date_s) if x)
         out.append(
             f"      <li>\n"
+            f'        <p class="catalogue-line meta">{meta}</p>\n'
             f'        <h3><a class="external" href="{esc(url)}" target="_blank" '
             f'rel="noopener noreferrer">{esc(title)}</a></h3>\n'
-            f'        <p class="meta">{meta}</p>\n'
             f"      </li>"
         )
     return out
@@ -360,7 +361,7 @@ def toc_html(entries: list[dict], *, sidebar: bool = False) -> str:
 
     classes = "page-toc page-toc-sidebar" if sidebar else "page-toc"
     label = (
-        '    <p class="page-toc-label">On this page</p>\n' if sidebar else ""
+        '    <p class="page-toc-label">In this record</p>\n' if sidebar else ""
     )
     return (
         f'    <nav class="{classes}" aria-label="On this page">\n'
@@ -383,7 +384,7 @@ def longform_page(
     search_html = (
         '        <div class="page-search">\n'
         '          <label class="page-search-label" for="pagefind-search-input">'
-        "Search this page</label>\n"
+        "Search the catalogue</label>\n"
         '          <div id="search"></div>\n'
         "        </div>\n"
         if search
@@ -811,14 +812,23 @@ def footer_html(site: dict) -> str:
     contact = site["contact"]
     ext = site["external"]
     year = date.today().year
-    return f"""  <footer class="site-footer">
-    <p>&copy; {year} {esc(person.get("full_name") or "yzouyang")}</p>
+    location = str(person.get("location") or "").strip()
+    focus = ""
+    for row in site.get("current_index") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("status") or "").strip() == "building":
+            focus = str(row.get("label") or "").strip()
+            break
+    meta_bits = [x for x in (location, focus) if x]
+    meta_line = " · ".join(meta_bits)
+    meta_html = f'    <p class="library-card-meta">{esc(meta_line)}</p>\n' if meta_line else ""
+    return f"""  <footer class="site-footer library-card">
+{meta_html}    <p>&copy; {year} {esc(person.get("full_name") or "yzouyang")}</p>
     <p class="footer-links">
       <a href="mailto:{esc(contact.get("email") or "")}">{esc(contact.get("email") or "")}</a>
       <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a class="external" href="{esc(ext.get("github") or "")}" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" rel="noopener noreferrer">Medium</a>
-      <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" rel="noopener noreferrer">Blog</a>
     </p>
   </footer>"""
 
@@ -885,7 +895,7 @@ def layout(
 {THEME_BOOT_SCRIPT}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{css}" />{pf_css_tag}
 {person_json_ld(site)}
 {head_analytics}
@@ -996,7 +1006,7 @@ def compose_home_selected_row(site: dict, row: dict) -> dict:
     ):
         if source.get(key):
             composed[key] = source[key]
-    for key in ("title", "evidence", "evidence_href", "evidence_label", "tools"):
+    for key in ("title", "evidence", "evidence_href", "evidence_label", "tools", "record_id", "domains"):
         if row.get(key):
             composed[key] = row[key]
     href = str(row.get("href") or "").strip()
@@ -1027,40 +1037,216 @@ def resolve_enterprise_overlay(item: dict, ent_copy: dict) -> tuple[str, dict]:
     return slug, {}
 
 
+def _atmosphere_slot(site: dict, key: str) -> dict:
+    block = site.get("atmosphere") if isinstance(site.get("atmosphere"), dict) else {}
+    row = block.get(key)
+    return row if isinstance(row, dict) else {}
+
+
+def _atmosphere_figure_html(
+    site: dict,
+    key: str,
+    *,
+    figure_class: str = "atmosphere-figure",
+    loading: str = "lazy",
+    fetchpriority: str | None = None,
+) -> str:
+    row = _atmosphere_slot(site, key)
+    src_path = str(row.get("src") or "").strip()
+    if not src_path:
+        return ""
+    src = esc(with_base(site, src_path))
+    alt = esc(str(row.get("alt") or "Atmosphere still"))
+    credit = esc(str(row.get("credit") or "Atmosphere still"))
+    width = int(row.get("width") or 0) or None
+    height = int(row.get("height") or 0) or None
+    obj_pos = esc(str(row.get("object_position") or "center center"))
+    wh = ""
+    if width and height:
+        wh = f' width="{width}" height="{height}"'
+    fp = f' fetchpriority="{fetchpriority}"' if fetchpriority else ""
+    loading_attr = f' loading="{loading}"' if loading else ""
+    return (
+        f'      <figure class="{figure_class}">\n'
+        f'        <img src="{src}" alt="{alt}"{wh} decoding="async"{loading_attr}{fp} '
+        f'style="object-position: {obj_pos}" />\n'
+        f'        <figcaption class="meta">{credit}</figcaption>\n'
+        f"      </figure>"
+    )
+
+
+def _note_catalog_id(row: dict, index: int = 0) -> str:
+    custom = str(row.get("record_id") or "").strip()
+    if custom:
+        return custom
+    date_s = str(row.get("date") or "").strip()
+    if len(date_s) >= 7:
+        parts = date_s.split("-")
+        if len(parts) >= 2:
+            return f"NOTE-{parts[0]}-{parts[1].zfill(3)}"
+    return f"NOTE-2026-{index + 1:03d}"
+
+
+def _current_index_html(site: dict) -> str:
+    rows = [r for r in (site.get("current_index") or []) if isinstance(r, dict)][:3]
+    if not rows:
+        return ""
+    items: list[str] = []
+    for row in rows:
+        status = esc(str(row.get("status") or "").strip())
+        label = esc(str(row.get("label") or "").strip())
+        href = str(row.get("href") or "").strip()
+        if not status or not label:
+            continue
+        if href.startswith("/"):
+            link = esc(with_base(site, href))
+            label_html = f'<a href="{link}">{label}</a>'
+        elif href.startswith("http"):
+            link = esc(href)
+            label_html = (
+                f'<a class="external" href="{link}" target="_blank" '
+                f'rel="noopener noreferrer">{label}</a>'
+            )
+        else:
+            label_html = label
+        items.append(
+            f"          <li><span class=\"index-status\">{status}</span> {label_html}</li>"
+        )
+    if not items:
+        return ""
+    return (
+        '        <ul class="current-index" aria-label="Current work">\n'
+        + "\n".join(items)
+        + "\n        </ul>"
+    )
+
+
+def _system_map_html(site: dict) -> str:
+    domains = [d for d in (site.get("system_map") or []) if isinstance(d, dict)]
+    if len(domains) < 4:
+        return ""
+    nodes_svg: list[str] = []
+    list_items: list[str] = []
+    positions = [
+        (80, 40),
+        (220, 40),
+        (360, 40),
+        (80, 120),
+        (220, 120),
+        (360, 120),
+    ]
+    for idx, domain in enumerate(domains[:6]):
+        did = esc(str(domain.get("id") or f"domain-{idx}"))
+        label = esc(str(domain.get("label") or did))
+        related = domain.get("related") or []
+        rel_attr = " ".join(esc(str(r)) for r in related if str(r).strip())
+        x, y = positions[idx] if idx < len(positions) else (220, 80)
+        nodes_svg.append(
+            f'          <g class="map-node" data-domain="{did}" tabindex="0" '
+            f'role="button" aria-label="{label}">'
+            f'<circle cx="{x}" cy="{y}" r="6" />'
+            f'<title>{label}</title></g>'
+        )
+        list_items.append(
+            f'          <li data-domain="{did}" data-related="{rel_attr}">{label}</li>'
+        )
+    lines = [
+        '          <line x1="80" y1="40" x2="220" y2="40" />',
+        '          <line x1="220" y1="40" x2="360" y2="40" />',
+        '          <line x1="80" y1="120" x2="220" y2="120" />',
+        '          <line x1="220" y1="120" x2="360" y2="120" />',
+        '          <line x1="140" y1="40" x2="140" y2="120" />',
+        '          <line x1="280" y1="40" x2="280" y2="120" />',
+    ]
+    svg = (
+        '      <div class="system-map" aria-labelledby="system-map-heading">\n'
+        '        <svg class="system-map-svg" viewBox="0 0 440 160" role="img" '
+        'aria-label="Principal domains and their connections">\n'
+        + "\n".join(lines)
+        + "\n"
+        + "\n".join(nodes_svg)
+        + "\n        </svg>\n"
+        '        <ol class="system-map-fallback visually-hidden">\n'
+        + "\n".join(list_items)
+        + "\n        </ol>\n"
+        "      </div>"
+    )
+    return (
+        '    <section class="system-map-section" aria-labelledby="system-map-heading">\n'
+        '      <h2 id="system-map-heading">System map</h2>\n'
+        f"{svg}\n"
+        "    </section>\n"
+    )
+
+
+def _record_impact_html(site: dict, record_id: str) -> str:
+    if record_id != "SYS-01":
+        return ""
+    bits: list[str] = []
+    for row in (site.get("outcomes") or [])[:3]:
+        if not isinstance(row, dict):
+            continue
+        metric = str(row.get("metric") or "").strip()
+        label = str(row.get("label") or "").strip()
+        if metric and label:
+            bits.append(f"{metric} — {label}")
+    if not bits:
+        return ""
+    return f'          <p class="record-impact">{esc("; ".join(bits))}</p>\n'
+
+
 def _selected_systems_html(site: dict) -> str:
-    """Home editorial rows: problem → role → decision → outcome → evidence."""
+    """Home system records — archive cards, not full case beats."""
     rows = [
         compose_home_selected_row(site, r)
         for r in (site.get("home_selected") or [])
         if isinstance(r, dict)
-    ][:3]
+    ][:5]
     if len(rows) < 2:
         return ""
     items: list[str] = []
     for row in rows:
+        record_id = str(row.get("record_id") or "").strip()
         title = str(row.get("title") or "").strip()
         if not title:
             continue
         href = with_base(site, str(row.get("href") or "/portfolio/"))
-        beats = case_beats_html(row)
-        if not beats:
-            outcome = str(row.get("outcome") or "").strip()
-            if not outcome:
-                continue
-            scope = str(row.get("scope") or "").strip()
-            scope_html = f"          <p>{esc(scope)}</p>\n" if scope else ""
-            beats = f'          <p class="case-outcome">{esc(outcome)}</p>\n{scope_html}'
-        tools = _curated_tools(row.get("tools"))
-        tools_html = ""
-        if tools:
-            tools_html = (
-                f'          <p class="case-tools meta">Tools: {esc(", ".join(tools))}</p>\n'
-            )
+        problem = str(row.get("problem") or "").strip()
+        domains = row.get("domains") or []
+        domain_line = " · ".join(str(d).strip() for d in domains if str(d).strip())
+        methods = _curated_tools(row.get("tools"))
+        methods_line = ", ".join(methods) if methods else ""
+        impact = _record_impact_html(site, record_id)
+        domain_html = (
+            f'          <p class="record-domains">{esc(domain_line)}</p>\n'
+            if domain_line
+            else ""
+        )
+        methods_html = (
+            f'          <p class="record-methods meta">Components: {esc(methods_line)}</p>\n'
+            if methods_line
+            else ""
+        )
+        id_html = (
+            f'          <p class="record-id">{esc(record_id)}</p>\n' if record_id else ""
+        )
+        context_html = (
+            f'          <p class="record-context">{esc(problem)}</p>\n' if problem else ""
+        )
+        domain_key = "data-platforms"
+        if record_id == "SYS-01":
+            domain_key = "finops"
+        elif record_id == "SYS-03":
+            domain_key = "ai-architecture"
         items.append(
-            "        <li>\n"
-            f"          <h3><a href=\"{esc(href)}\">{esc(title)}</a></h3>\n"
-            f"{beats}"
-            f"{tools_html}"
+            "        <li class=\"system-record\" "
+            f'data-record="{esc(record_id)}" data-domain="{domain_key}">\n'
+            f"{id_html}"
+            f'          <h3><a href="{esc(href)}">{esc(title)}</a></h3>\n'
+            f"{context_html}"
+            f"{domain_html}"
+            f"{methods_html}"
+            f"{impact}"
             "        </li>"
         )
     if len(items) < 2:
@@ -1069,70 +1255,132 @@ def _selected_systems_html(site: dict) -> str:
     return (
         '    <section class="selected-systems" aria-labelledby="selected-systems-heading">\n'
         '      <h2 id="selected-systems-heading">Selected systems</h2>\n'
-        '      <ul class="item-list folio-deck">\n'
+        '      <ul class="item-list system-records">\n'
         + "\n".join(items)
         + "\n      </ul>\n"
-        f'      <p class="links"><a href="{portfolio}">All selected work</a></p>\n'
+        f'      <p class="links"><a href="{portfolio}">All systems</a></p>\n'
+        "    </section>\n"
+    )
+
+
+def _reading_room_html(site: dict) -> str:
+    rows = [r for r in (site.get("writing_highlights") or []) if isinstance(r, dict)]
+    start = [r for r in rows if r.get("start_here")]
+    rest = [r for r in rows if not r.get("start_here")]
+    if not start:
+        start, rest = rows[:1], rows[1:]
+    if not start and not rest:
+        return ""
+    featured = start[0] if start else None
+    figure = _atmosphere_figure_html(site, "reading", figure_class="reading-figure")
+    featured_html = ""
+    if featured:
+        note_id = _note_catalog_id(featured, 0)
+        title = esc(str(featured.get("title") or ""))
+        url = esc(str(featured.get("url") or ""))
+        venue = esc(str(featured.get("venue") or "Article"))
+        date_s = esc(str(featured.get("date") or ""))
+        meta = " · ".join(x for x in (note_id, venue, date_s) if x)
+        featured_html = (
+            '      <article class="reading-featured" '
+            f'data-record="{esc(note_id)}">\n'
+            f'        <p class="catalogue-line meta">{meta}</p>\n'
+            f'        <h3><a class="external" href="{url}" target="_blank" '
+            f'rel="noopener noreferrer">{title}</a></h3>\n'
+            "      </article>\n"
+        )
+    compact_rows: list[str] = []
+    for idx, row in enumerate(rest[:6], start=1):
+        note_id = _note_catalog_id(row, idx)
+        title = esc(str(row.get("title") or ""))
+        url = esc(str(row.get("url") or ""))
+        venue = esc(str(row.get("venue") or "Article"))
+        date_s = esc(str(row.get("date") or ""))
+        meta = " · ".join(x for x in (note_id, venue, date_s) if x)
+        compact_rows.append(
+            f'        <li data-record="{esc(note_id)}">\n'
+            f'          <a class="external" href="{url}" target="_blank" '
+            f'rel="noopener noreferrer">{title}</a>\n'
+            f'          <span class="catalogue-line meta">{meta}</span>\n'
+            f"        </li>"
+        )
+    compact_html = ""
+    if compact_rows:
+        compact_html = (
+            '      <ul class="reading-index">\n'
+            + "\n".join(compact_rows)
+            + "\n      </ul>\n"
+        )
+    notes_href = esc(with_base(site, "/perspectives/"))
+    layout = (
+        '      <div class="reading-room-grid">\n'
+        f"{featured_html}"
+        f"{compact_html}"
+        + (f"\n{figure}" if figure else "")
+        + "\n      </div>"
+    )
+    return (
+        '    <section class="reading-room" aria-labelledby="reading-room-heading">\n'
+        '      <h2 id="reading-room-heading">Reading room</h2>\n'
+        f"{layout}\n"
+        f'      <p class="links"><a href="{notes_href}">All notes</a></p>\n'
+        "    </section>\n"
+    )
+
+
+def _workshop_html(site: dict) -> str:
+    rows = [r for r in (site.get("workshop") or []) if isinstance(r, dict)][:5]
+    if len(rows) < 2:
+        return ""
+    items: list[str] = []
+    for row in rows:
+        record_id = esc(str(row.get("record_id") or "").strip())
+        title = esc(str(row.get("title") or "").strip())
+        constraint = esc(str(row.get("constraint") or "").strip())
+        category = esc(str(row.get("category") or "").strip())
+        href = str(row.get("href") or "").strip()
+        if not title or not href:
+            continue
+        if href.startswith("/"):
+            link = esc(with_base(site, href))
+            ext = ""
+        else:
+            link = esc(href)
+            ext = ' class="external" target="_blank" rel="noopener noreferrer"'
+        cat_html = f'          <p class="record-domains">{category}</p>\n' if category else ""
+        items.append(
+            f'        <li class="workshop-record" data-record="{record_id}">\n'
+            f'          <p class="record-id">{record_id}</p>\n'
+            f'          <h3><a href="{link}"{ext}>{title}</a></h3>\n'
+            f"{cat_html}"
+            f'          <p class="record-lesson">{constraint}</p>\n'
+            "        </li>"
+        )
+    if len(items) < 2:
+        return ""
+    figure = _atmosphere_figure_html(site, "workshop", figure_class="workshop-figure")
+    figure_block = f"\n{figure}\n" if figure else ""
+    return (
+        '    <section class="workshop" aria-labelledby="workshop-heading">\n'
+        '      <h2 id="workshop-heading">Workshop</h2>\n'
+        '      <div class="workshop-grid">\n'
+        '      <ul class="item-list workshop-records">\n'
+        + "\n".join(items)
+        + "\n      </ul>"
+        + figure_block
+        + "      </div>\n"
         "    </section>\n"
     )
 
 
 def _operating_themes_html(site: dict) -> str:
-    rows = [r for r in (site.get("operating_themes") or []) if isinstance(r, dict)]
-    if len(rows) < 4:
-        return ""
-    items = []
-    for row in rows[:4]:
-        title = str(row.get("title") or "").strip()
-        body = str(row.get("body") or "").strip()
-        if not title or not body:
-            continue
-        items.append(
-            f"        <li>\n"
-            f"          <h3>{esc(title)}</h3>\n"
-            f"          <p>{esc(body)}</p>\n"
-            "        </li>"
-        )
-    if len(items) < 4:
-        return ""
-    note = str(site.get("theme_note") or "").strip()
-    note_html = f'      <p class="theme-note">{esc(note)}</p>\n' if note else ""
-    return (
-        '    <section class="operating-themes" aria-labelledby="operating-themes-heading">\n'
-        '      <h2 id="operating-themes-heading">How I operate</h2>\n'
-        '      <ol class="theme-list">\n'
-        + "\n".join(items)
-        + "\n      </ol>\n"
-        f"{note_html}"
-        "    </section>\n"
-    )
+    return ""
 
 
 def build_home(site: dict, export: dict) -> str:
     person = site["person"]
-    photo = person.get("photo") or ""
     location = str(person.get("location") or "").strip()
     platforms = [str(p) for p in (person.get("platforms") or []) if str(p).strip()][:4]
-
-    outcome_bits: list[str] = []
-    for row in (site.get("outcomes") or [])[:3]:
-        if not isinstance(row, dict):
-            continue
-        metric = str(row.get("metric") or "").strip()
-        label = str(row.get("label") or "").strip()
-        if not metric or not label:
-            continue
-        outcome_bits.append(
-            f"<li><span class=\"metric\">{esc(metric)}</span>"
-            f"<span class=\"label\">{esc(label)}</span></li>"
-        )
-    outcome_html = ""
-    if outcome_bits:
-        outcome_html = (
-            '        <ul class="outcome-strip" aria-label="Selected outcomes">\n'
-            + "\n".join(f"          {b}" for b in outcome_bits)
-            + "\n        </ul>"
-        )
 
     proof_bits: list[str] = []
     if location:
@@ -1147,66 +1395,53 @@ def build_home(site: dict, export: dict) -> str:
             + "\n        </ul>"
         )
 
-    chip = " · ".join(
-        x for x in (str(person.get("headline") or "").strip(), location) if x
-    )
-    chip_html = f'<p class="portrait-chip">{esc(chip)}</p>' if chip else ""
+    atmosphere = _atmosphere_slot(site, "entrance")
+    entrance_src = str(atmosphere.get("src") or "").strip()
+    entrance_img = ""
+    if entrance_src:
+        src = esc(with_base(site, entrance_src))
+        alt = esc(str(atmosphere.get("alt") or "Atmosphere still"))
+        w = int(atmosphere.get("width") or 0)
+        h = int(atmosphere.get("height") or 0)
+        wh = f' width="{w}" height="{h}"' if w and h else ""
+        obj_pos = esc(str(atmosphere.get("object_position") or "center center"))
+        entrance_img = (
+            f'      <div class="entrance-atmosphere" aria-hidden="true">\n'
+            f'        <img class="entrance-photo" src="{src}" alt=""{wh} '
+            f'decoding="async" fetchpriority="high" style="object-position: {obj_pos}" />\n'
+            f'        <div class="entrance-scrim"></div>\n'
+            f"      </div>"
+        )
 
-    photo_html = ""
-    if photo:
-        src = esc(with_base(site, str(photo)))
-        alt = esc(person.get("photo_alt") or person.get("full_name") or "Profile photo")
-        photo_html = f"""
-      <div class="hero-visual">
-        <img class="hero-photo" src="{src}" alt="{alt}" width="720" height="935" decoding="async" fetchpriority="high" />
-        {chip_html}
-      </div>"""
-
-    card = esc(site.get("external", {}).get("bitly_hub") or "#")
-    contact = site["contact"]
-    ext = site["external"]
-    contact_href = esc(with_base(site, "/#contact"))
+    thesis = esc(str(person.get("headline") or "").strip())
+    lede = esc(str(person.get("tagline") or "").strip())
+    current_html = _current_index_html(site)
+    contact_href = esc(with_base(site, "/contact/"))
     work_href = esc(with_base(site, "/portfolio/"))
+    map_html = _system_map_html(site)
     selected_html = _selected_systems_html(site)
-    themes_html = _operating_themes_html(site)
-    email = esc(contact.get("email") or "")
+    reading_html = _reading_room_html(site)
+    workshop_html = _workshop_html(site)
     contact_section = f"""
     <section id="contact" class="contact-section">
-      <h2>Contact</h2>
-      <ul class="item-list">
-        <li>
-          <h3>Email</h3>
-          <p><a href="mailto:{email}">{email}</a></p>
-        </li>
-        <li>
-          <h3>Elsewhere</h3>
-          <p class="links">
-            <a class="external" href="{esc(ext["linkedin"])}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <a class="external" href="{esc(ext["medium"])}" target="_blank" rel="noopener noreferrer">Medium</a>
-            <a class="external" href="{esc(ext["github"])}" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a class="external" href="{esc(ext["blog"])}" target="_blank" rel="noopener noreferrer">Blog</a>
-            <a class="external" href="{card}" target="_blank" rel="noopener noreferrer">Digital card</a>
-          </p>
-        </li>
-      </ul>
+      <h2>Connect</h2>
+{contact_items_html(site)}
     </section>
 """
-    return f"""    <section class="hero">
-      <div class="hero-copy">
-        <h1>{esc(person['full_name'])}</h1>
-        <p class="subtitle">{esc(person['headline'])}</p>
-        <p class="lede">{esc(person['tagline'])}</p>
-{outcome_html}
-{proof_html}
+    return f"""    <section class="entrance hero" aria-labelledby="entrance-heading">
+{entrance_img}
+      <div class="entrance-copy hero-copy">
+        <h1 id="entrance-heading">{thesis}</h1>
+        <p class="lede">{lede}</p>
+{current_html}
         <div class="cta-row">
-          <a class="btn btn-primary" href="{work_href}">View selected work</a>
-          <a class="btn" href="{contact_href}">Contact</a>
+          <a class="btn btn-primary" href="{work_href}">View systems</a>
+          <a class="btn" href="{contact_href}">Connect</a>
         </div>
-      </div>{photo_html}
+{proof_html}
+      </div>
     </section>
-{selected_html}
-{themes_html}
-{contact_section}
+{map_html}{selected_html}{reading_html}{workshop_html}{contact_section}
 """
 
 
@@ -1397,9 +1632,24 @@ def build_about(site: dict, export: dict, cj: dict | None = None) -> str:
         )
 
     body = "\n".join(parts)
-    lede_html = f'<p class="page-lede">{esc(lede.strip())}</p>'
+    person = site["person"]
+    photo = person.get("photo") or ""
+    portrait_html = ""
+    if photo:
+        src = esc(with_base(site, str(photo)))
+        alt = esc(person.get("photo_alt") or person.get("full_name") or "Profile photo")
+        location = esc(str(person.get("location") or "").strip())
+        loc_html = f'<p class="meta">{location}</p>' if location else ""
+        portrait_html = (
+            '    <figure class="profile-portrait">\n'
+            f'      <img src="{src}" alt="{alt}" width="720" height="935" '
+            f'decoding="async" loading="lazy" />\n'
+            f"{loc_html}\n"
+            "    </figure>\n"
+        )
+    lede_html = portrait_html + f'<p class="page-lede">{esc(lede.strip())}</p>'
     return longform_page(
-        title="About",
+        title="Profile",
         lede_html=lede_html,
         toc=toc,
         body=body,
@@ -1724,7 +1974,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         f'<a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>'
     )
     return longform_page(
-        title="Work",
+        title="Systems",
         lede_html=lede_html,
         toc=toc,
         body=body,
@@ -1933,7 +2183,7 @@ def build_credentials(site: dict, export: dict) -> str:
         f'<a href="{short}" target="_blank" rel="noopener noreferrer">Short link</a></p>'
     )
     return longform_page(
-        title="Credentials &amp; Verifications",
+        title="Professional record",
         lede_html=lede_html,
         toc=toc,
         body=body,
@@ -1991,7 +2241,7 @@ def build_perspectives(site: dict) -> str:
         "This is a start-here index, not a topic hub.</p>"
     )
     return longform_page(
-        title="Perspectives",
+        title="Notes",
         lede_html=lede,
         toc=toc,
         body="\n".join(parts),
@@ -1999,23 +2249,35 @@ def build_perspectives(site: dict) -> str:
     )
 
 
-def build_contact_redirect(site: dict) -> str:
-    """Standalone redirect for /contact/ → Home#contact (bookmark / WP parity)."""
-    target = with_base(site, "/#contact")
-    brand = esc((site.get("person") or {}).get("brand", "yzouyang"))
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Contact — {brand}</title>
-  <meta http-equiv="refresh" content="0;url={esc(target)}" />
-  <link rel="canonical" href="{esc(target)}" />
-</head>
-<body>
-  <p>Contact details are on the <a href="{esc(target)}">home page</a>.</p>
-</body>
-</html>
+def contact_items_html(site: dict, *, heading: str = "h3") -> str:
+    if heading not in {"h2", "h3"}:
+        raise ValueError("contact item heading must be h2 or h3")
+    card = esc(site.get("external", {}).get("bitly_hub") or "#")
+    contact = site["contact"]
+    ext = site["external"]
+    email = esc(contact.get("email") or "")
+    return f"""      <ul class="item-list">
+        <li>
+          <{heading}>Email</{heading}>
+          <p><a href="mailto:{email}">{email}</a></p>
+        </li>
+        <li>
+          <{heading}>Elsewhere</{heading}>
+          <p class="links">
+            <a class="external" href="{esc(ext["linkedin"])}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a class="external" href="{esc(ext["medium"])}" target="_blank" rel="noopener noreferrer">Medium</a>
+            <a class="external" href="{esc(ext["github"])}" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a class="external" href="{esc(ext["blog"])}" target="_blank" rel="noopener noreferrer">Blog</a>
+            <a class="external" href="{card}" target="_blank" rel="noopener noreferrer">Digital card</a>
+          </p>
+        </li>
+      </ul>"""
+
+
+def build_contact(site: dict) -> str:
+    return f"""    <h1>Connect</h1>
+    <p class="page-lede">Public email and profiles. No visitor-facing phone.</p>
+{contact_items_html(site, heading="h2")}
 """
 
 
@@ -2059,12 +2321,12 @@ def main() -> None:
 
     pages = [
         ("index.html", "/", "Home", "Home", build_home(site, export), False),
-        ("about/index.html", "/about/", "About", "About", build_about(site, export, cj), False),
+        ("about/index.html", "/about/", "Profile", "Profile", build_about(site, export, cj), False),
         (
             "portfolio/index.html",
             "/portfolio/",
-            "Work",
-            "Work",
+            "Systems",
+            "Systems",
             build_portfolio(site, export),
             True,
         ),
@@ -2079,9 +2341,17 @@ def main() -> None:
         (
             "perspectives/index.html",
             "/perspectives/",
-            "Perspectives",
-            "Perspectives",
+            "Notes",
+            "Notes",
             build_perspectives(site),
+            False,
+        ),
+        (
+            "contact/index.html",
+            "/contact/",
+            "Connect",
+            "Connect",
+            build_contact(site),
             False,
         ),
     ]
@@ -2089,10 +2359,9 @@ def main() -> None:
         write(DIST / rel, layout(site, title, active, body, pagefind=pf, path=path))
 
     if cj:
-        # Not in primary nav (same tier as Contact) — reachable via the
-        # link card on /about/ and by direct/shared URL. See "Open
-        # decisions" in docs/career-journey-native-plan.md if that should
-        # change.
+        # Not in primary nav — reachable via the About page and by
+        # direct/shared URL. See "Open decisions" in
+        # docs/career-journey-native-plan.md if that should change.
         cj_title = str(cj.get("title") or "Career Journey")
         write(
             DIST / "career-journey" / "index.html",
@@ -2109,7 +2378,6 @@ def main() -> None:
         if cj_js.is_file():
             shutil.copyfile(cj_js, DIST / "career-journey.js")
 
-    write(DIST / "contact" / "index.html", build_contact_redirect(site))
     work_target = with_base(site, "/portfolio/")
     write(
         DIST / "work" / "index.html",
@@ -2150,12 +2418,11 @@ def main() -> None:
 {base}/work/ {base}/portfolio/ 301
 {base}/perspectives {base}/perspectives/ 301
 {base}/credentials {base}/credentials/ 301
-{base}/contact {base}/ 302
-{base}/contact/ {base}/ 302
+{base}/contact {base}/contact/ 301
 """
     write(DIST / "_redirects", redirects)
 
-    print(f"built {len(pages)} pages + contact/work redirects -> {DIST} (base_path={base or '/'})")
+    print(f"built {len(pages)} pages + work redirect -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:
         run_pagefind()

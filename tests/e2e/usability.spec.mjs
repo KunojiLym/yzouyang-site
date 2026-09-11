@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/perspectives/", "/career-journey/"];
+const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/perspectives/", "/contact/", "/career-journey/"];
 
 async function noHorizontalOverflow(page) {
   const overflow = await page.evaluate(() => {
@@ -77,10 +77,10 @@ test.describe("a11y light + contrast", () => {
         glowLayers: getComputedStyle(document.body).backgroundImage.split("radial-gradient").length - 1,
       };
     });
-    expect(tokens.elevated.toLowerCase()).toBe("#1a2420");
-    expect(tokens.mid.toLowerCase()).toBe("#15201c");
-    expect(tokens.accent.toLowerCase()).toBe("#d4a35c");
-    expect(tokens.glow).toMatch(/55\s+90\s+78/);
+    expect(tokens.elevated.toLowerCase()).toBe("#2a2118");
+    expect(tokens.mid.toLowerCase()).toBe("#1c1612");
+    expect(tokens.accent.toLowerCase()).toBe("#c49a5a");
+    expect(tokens.glow).toMatch(/212\s+163\s+92/);
     expect(tokens.glowLayers).toBe(1);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   });
@@ -94,9 +94,9 @@ test.describe("a11y light + contrast", () => {
 });
 
 test.describe("home", () => {
-  test("hero h1 uses Fraunces display token", async ({ page }) => {
+  test("entrance h1 uses Crimson Pro display token", async ({ page }) => {
     await page.goto("/");
-    const heroTitle = page.locator(".hero h1");
+    const heroTitle = page.locator(".entrance h1");
     await expect(heroTitle).toBeVisible();
     const type = await heroTitle.evaluate((el) => {
       const cs = getComputedStyle(el);
@@ -117,46 +117,28 @@ test.describe("home", () => {
       probe.remove();
       return out;
     });
-    expect(type.fontFamily.toLowerCase()).toContain("fraunces");
-    expect(type.fontFamily.toLowerCase()).not.toContain("sora");
-    expect(type.expectedFamily.toLowerCase()).toContain("fraunces");
+    expect(type.fontFamily.toLowerCase()).toContain("crimson pro");
+    expect(type.fontFamily.toLowerCase()).not.toContain("source sans");
+    expect(type.expectedFamily.toLowerCase()).toContain("crimson pro");
     expect(type.fontFamily).toBe(type.expectedFamily);
     expect(type.fontSize).toBe(type.expectedSize);
-    expect(type.fontDisplay.toLowerCase()).toContain("fraunces");
+    expect(type.fontDisplay.toLowerCase()).toContain("crimson pro");
     expect(type.displayHero).toMatch(/clamp\(/);
     expect(Number.parseInt(type.fontWeight, 10)).toBeGreaterThanOrEqual(600);
   });
 
-  test("outcome strip is three columns at desktop, proof pills match", async ({ page }) => {
+  test("entrance atmosphere, current index, and proof strip", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/");
-    const items = page.locator(".outcome-strip li");
-    await expect(items).toHaveCount(3);
-    const boxes = await items.evaluateAll((els) =>
-      els.map((el) => {
-        const r = el.getBoundingClientRect();
-        return { y: r.y, x: r.x };
-      })
-    );
-    expect(Math.abs(boxes[0].y - boxes[2].y)).toBeLessThan(2);
-    expect(boxes[2].x).toBeGreaterThan(boxes[1].x);
-    const pillPaint = await page.locator(".proof-strip li").evaluateAll((els) =>
-      els.map((el) => {
-        const cs = getComputedStyle(el);
-        return { bg: cs.backgroundColor, border: cs.borderTopColor };
-      })
-    );
-    expect(pillPaint.length).toBeGreaterThan(1);
-    for (const pill of pillPaint) {
-      expect(pill.bg).toBe(pillPaint[0].bg);
-      expect(pill.border).toBe(pillPaint[0].border);
-    }
+    await expect(page.locator(".entrance-atmosphere .entrance-photo")).toBeVisible();
+    await expect(page.locator(".current-index li")).toHaveCount(3);
+    await expect(page.locator(".proof-strip")).toBeVisible();
+    await expect(page.locator(".proof-strip li").first()).toContainText("Singapore");
+    await expect(page.locator(".outcome-strip")).toHaveCount(0);
   });
 
-  test("proof strip, CTAs, portrait chip, contact section", async ({ page }, testInfo) => {
+  test("proof strip, CTAs, library sections, contact bookmark", async ({ page }, testInfo) => {
     await page.goto("/");
-    await expect(page.locator(".outcome-strip")).toBeVisible();
-    await expect(page.locator(".outcome-strip .metric").first()).toBeVisible();
     await expect(page.locator(".proof-strip")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("professional credentials");
     await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
@@ -167,37 +149,38 @@ test.describe("home", () => {
     await expect(page.getByRole("link", { name: "Digital card" })).toBeVisible();
     const ctaRow = page.locator(".cta-row");
     await expect(ctaRow.locator(".btn-primary")).toHaveCount(1);
-    await expect(ctaRow.locator(".btn-primary")).toHaveText("View selected work");
+    await expect(ctaRow.locator(".btn-primary")).toHaveText("View systems");
     await expect(ctaRow.locator("a.btn")).toHaveCount(2);
-    await expect(page.locator(".hero .btn-primary")).toHaveCount(1);
+    await expect(page.locator(".entrance .btn-primary")).toHaveCount(1);
     await expect(page.locator(".header-actions > .header-contact.btn-primary")).toHaveCount(0);
-    await expect(page.locator(".portrait-chip")).toBeVisible();
+    await expect(page.locator(".portrait-chip")).toHaveCount(0);
+    await expect(page.locator(".system-map-section")).toBeVisible();
+    await expect(page.locator(".reading-room")).toBeVisible();
+    await expect(page.locator(".workshop")).toBeVisible();
     await expect(page.locator("#contact")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("Static migration");
     const selected = page.locator(".selected-systems");
     await expect(selected).toBeVisible();
-    await expect(selected.locator(".item-list > li")).toHaveCount(3);
-    await expect(selected.locator(".case-beats").first()).toBeVisible();
-    await expect(selected.locator(".case-tools").first()).toBeVisible();
-    await expect(selected.getByRole("link", { name: /Prudential/ })).toHaveAttribute(
+    await expect(selected.locator(".system-records > li")).toHaveCount(3);
+    await expect(selected.locator(".record-id").first()).toHaveText("SYS-01");
+    await expect(selected.locator(".case-beats")).toHaveCount(0);
+    await expect(selected.getByRole("link", { name: /Prudential|Cost intelligence/ })).toHaveAttribute(
       "href",
       /\/portfolio\//
     );
 
     if (testInfo.project.name === "mobile") {
-      const h1Box = await page.locator("h1").first().boundingBox();
-      const photoBox = await page.locator(".hero-photo").boundingBox();
-      expect(h1Box && photoBox).toBeTruthy();
-      expect(h1Box.y).toBeLessThan(photoBox.y);
+      await expect(page.locator(".entrance h1")).toBeVisible();
+      await expect(page.locator(".entrance-atmosphere")).toBeVisible();
     }
   });
 
-  test("nav Contact jumps to #contact", async ({ page }) => {
+  test("nav Connect opens /contact/", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/about/");
-    await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Contact" }).click();
-    await expect(page).toHaveURL(/#contact$/);
-    await expect(page.locator("#contact")).toBeInViewport();
+    await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Connect" }).click();
+    await expect(page).toHaveURL(/\/contact\/$/);
+    await expect(page.locator("h1")).toHaveText(/Connect/i);
   });
 });
 
@@ -212,20 +195,20 @@ test.describe("nav", () => {
       await expect(menu.locator('a[href$="/credentials/"]')).toBeVisible();
       await expect(menu.locator('a[href$="/perspectives/"]')).toBeVisible();
       await expect(menu.locator('a[href$="/about/"][aria-current="page"]')).toBeVisible();
-      await expect(menu.getByRole("link", { name: "Contact" })).toBeVisible();
+      await expect(menu.getByRole("link", { name: "Connect" })).toBeVisible();
       await expect(menu.getByRole("link", { name: /Blog/ })).toBeVisible();
       await expect(menu.getByRole("link", { name: /Medium/ })).toBeVisible();
       await expect(menu.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
       await expect(menu.getByRole("link", { name: /GitHub/ })).toBeVisible();
     } else {
       const nav = page.locator("nav.site-nav-desktop");
-      await expect(nav.getByRole("link", { name: "About" })).toHaveAttribute(
+      await expect(nav.getByRole("link", { name: "Profile" })).toHaveAttribute(
         "aria-current",
         "page"
       );
-      await expect(nav.getByRole("link", { name: "Work" })).toBeVisible();
-      await expect(nav.getByRole("link", { name: "Perspectives" })).toBeVisible();
-      await expect(nav.getByRole("link", { name: "Contact" })).toBeVisible();
+      await expect(nav.getByRole("link", { name: "Systems" })).toBeVisible();
+      await expect(nav.getByRole("link", { name: "Notes" })).toBeVisible();
+      await expect(nav.getByRole("link", { name: "Connect" })).toBeVisible();
       await expect(nav.getByRole("link", { name: "Portfolio" })).toHaveCount(0);
       const elsewhere = nav.locator("details.nav-elsewhere");
       await expect(elsewhere).toBeVisible();
@@ -247,17 +230,22 @@ test.describe("footer", () => {
     const footer = page.locator("footer.site-footer");
     await expect(footer).toContainText(/©|©|&copy;|2026|202\d/);
     await expect(footer.locator('a[href^="mailto:"]')).toBeVisible();
-    await expect(footer).not.toContainText("Phase 1");
+    await expect(footer).toHaveClass(/library-card/);
     await expect(footer).not.toContainText("Static migration");
   });
 });
 
-test.describe("contact redirect", () => {
-  test("/contact/ targets home #contact", async ({ page }) => {
+test.describe("contact page", () => {
+  test("/contact/ is a real page", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/contact/");
-    await page.waitForURL(/#contact/, { timeout: 10_000 });
-    await expect(page.locator("#contact")).toBeVisible();
+    await expect(page).toHaveURL(/\/contact\/$/);
+    await expect(page.locator("h1")).toHaveText(/Connect/i);
+    await expect(page.locator("nav.site-nav-desktop").getByRole("link", { name: "Connect" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    await expect(page.locator('main a[href^="mailto:"]')).toBeVisible();
   });
 });
 
@@ -269,7 +257,7 @@ test.describe("search", () => {
     await expect(input).toBeVisible({ timeout: 20_000 });
     const searchLabel = page.locator("label.page-search-label");
     await expect(searchLabel).toBeVisible();
-    await expect(searchLabel).toHaveText("Search this page");
+    await expect(searchLabel).toHaveText("Search the catalogue");
     await expect(input).toHaveAttribute("id", "pagefind-search-input");
     await expect(input).toHaveAttribute("name", "q");
     await input.fill("databricks");
@@ -386,22 +374,20 @@ async function assertSkipLink(page) {
 async function assertCtaRhythm(page) {
   const ctaRow = page.locator(".cta-row");
   await expect(ctaRow.locator(".btn-primary")).toHaveCount(1);
-  await expect(ctaRow.locator(".btn-primary")).toHaveText("View selected work");
+  await expect(ctaRow.locator(".btn-primary")).toHaveText("View systems");
   await expect(ctaRow.locator("a.btn")).toHaveCount(2);
-  await expect(page.locator(".hero .btn-primary")).toHaveCount(1);
+  await expect(page.locator(".entrance .btn-primary")).toHaveCount(1);
   await expect(page.locator(".header-actions > .header-contact")).toHaveCount(0);
   await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
 }
 
-async function assertCopyBeforePhoto(page) {
-  const h1Box = await page.locator("h1").first().boundingBox();
-  const photoBox = await page.locator(".hero-photo").boundingBox();
-  expect(h1Box && photoBox).toBeTruthy();
-  expect(h1Box.y).toBeLessThan(photoBox.y);
+async function assertEntranceVisible(page) {
+  await expect(page.locator(".entrance h1")).toBeVisible();
+  await expect(page.locator(".entrance-atmosphere")).toBeVisible();
 }
 
 async function assertSelectedSingleColumn(page) {
-  const xs = await page.locator(".selected-systems .item-list > li").evaluateAll((els) =>
+  const xs = await page.locator(".selected-systems .system-records > li").evaluateAll((els) =>
     els.map((el) => el.getBoundingClientRect().x)
   );
   expect(xs.length).toBe(3);
@@ -596,7 +582,7 @@ test.describe("site critic acceptance", () => {
     await assertSkipLink(page);
     await assertCtaRhythm(page);
     await assertElsewhereDesktop(page);
-    await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(3);
+    await expect(page.locator(".selected-systems .system-records > li")).toHaveCount(3);
     await assertSelectedHeadingSpacing(page);
     await noHorizontalOverflow(page);
     await assertTocSearch(page);
@@ -609,7 +595,7 @@ test.describe("site critic acceptance", () => {
     await expect(page.locator("nav.site-nav-desktop")).toBeVisible();
     await assertCtaRhythm(page);
     await assertElsewhereDesktop(page);
-    await expect(page.locator(".selected-systems .item-list > li")).toHaveCount(3);
+    await expect(page.locator(".selected-systems .system-records > li")).toHaveCount(3);
     await noHorizontalOverflow(page);
     await page.goto("/portfolio/");
     await expect(page.locator(".case-outcome").first()).toBeVisible();
@@ -619,11 +605,11 @@ test.describe("site critic acceptance", () => {
     await noHorizontalOverflow(page);
   });
 
-  test("800 hero stacks copy before photo; selected single-column", async ({ page }) => {
+  test("800 entrance stacks thesis over atmosphere; selected single-column", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "explicit 800");
     await page.setViewportSize({ width: 800, height: 900 });
     await page.goto("/");
-    await assertCopyBeforePhoto(page);
+    await assertEntranceVisible(page);
     await assertCtaRhythm(page);
     await assertSelectedSingleColumn(page);
     await noHorizontalOverflow(page);
@@ -644,7 +630,7 @@ test.describe("site critic acceptance", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
     await assertSkipLink(page);
-    await assertCopyBeforePhoto(page);
+    await assertEntranceVisible(page);
     await assertCtaRhythm(page);
     await assertSelectedSingleColumn(page);
     await assertThemeToggleBesideMenu(page);

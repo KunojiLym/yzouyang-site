@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const ROUTES = ["/", "/portfolio/", "/credentials/", "/about/", "/perspectives/"];
+const ROUTES = ["/", "/portfolio/", "/credentials/", "/about/", "/perspectives/", "/contact/"];
 const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];
 
 async function setTheme(page, theme) {
@@ -28,12 +28,12 @@ test.describe("dual theme", () => {
             };
           });
           expect(state.dataTheme).toBe(theme);
-          expect(state.accent).toBe("#d4a35c");
+          expect(state.accent).toBe("#c49a5a");
           if (theme === "light") {
-            expect(state.bg).toBe("#f4f0e8");
-            expect(state.link).toBe("#856012");
+            expect(state.bg).toBe("#e8dfd0");
+            expect(state.link).toBe("#6b4f10");
           } else {
-            expect(state.bg).toBe("#0c1412");
+            expect(state.bg).toBe("#0a0b0a");
           }
         });
       }

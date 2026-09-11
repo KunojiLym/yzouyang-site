@@ -17,10 +17,11 @@ DATA = ROOT / "data"
 FORBIDDEN = ("prudential.com", "u.nus.edu", "gatech.edu")
 ROUTES = (
     ("index.html", "Home"),
-    ("about/index.html", "About"),
-    ("portfolio/index.html", "Work"),
-    ("perspectives/index.html", "Perspectives"),
+    ("about/index.html", "Profile"),
+    ("portfolio/index.html", "Systems"),
+    ("perspectives/index.html", "Notes"),
     ("credentials/index.html", "Credentials"),
+    ("contact/index.html", "Connect"),
 )
 
 
@@ -123,69 +124,76 @@ def main() -> None:
             fail(f"missing route {label}: {rel}")
 
     home = (DIST / "index.html").read_text(encoding="utf-8")
-    if 'class="outcome-strip"' not in home:
-        fail("home missing outcome-strip")
+    if 'class="entrance hero"' not in home:
+        fail("home missing entrance hero")
+    if 'class="entrance-photo"' not in home:
+        fail("home missing entrance atmosphere photograph")
+    if 'class="current-index"' not in home:
+        fail("home missing current-index")
+    if 'class="system-map-section"' not in home:
+        fail("home missing system-map section")
+    if 'class="reading-room"' not in home:
+        fail("home missing reading-room section")
+    if 'class="workshop"' not in home:
+        fail("home missing workshop section")
+    if 'class="outcome-strip"' in home:
+        fail("home must not show outcome-strip in hero (outcomes live on SYS records)")
     if "professional credentials" in home:
         fail("home still shows cert-count vanity chip")
     if 'class="proof-strip"' not in home:
         fail("home missing proof-strip")
-    if "Digital card" not in home or bitly not in home:
-        fail("home missing Digital card CTA / bitly_hub")
     cta_row = re.search(r'<div class="cta-row">(.*?)</div>', home, re.S)
     if not cta_row:
         fail("home missing cta-row")
     cta_html = cta_row.group(1)
     if cta_html.count("btn-primary") != 1:
-        fail("home cta-row must have exactly one btn-primary (View selected work)")
-    if 'class="btn btn-primary"' not in cta_html or "View selected work" not in cta_html:
-        fail("home cta-row missing primary View selected work CTA")
+        fail("home cta-row must have exactly one btn-primary (View systems)")
+    if 'class="btn btn-primary"' not in cta_html or "View systems" not in cta_html:
+        fail("home cta-row missing primary View systems CTA")
     if cta_html.count('class="btn"') != 1:
-        fail("home cta-row must keep Contact as the only secondary .btn")
-    if ">Contact</a>" not in cta_html:
-        fail("home cta-row missing secondary Contact .btn")
-    if "Specialist" in home.split("<h1>", 1)[-1].split("</section>", 1)[0]:
-        fail("hero must not use vague Specialist positioning")
-    if "CTO" in home or "CDAO" in home.split("hero-copy", 1)[-1].split("</section>", 1)[0]:
-        fail("hero must not claim CTO/CDAO")
-    if 'class="portrait-chip"' not in home:
-        fail("home missing portrait-chip")
+        fail("home cta-row must keep Connect as the only secondary .btn")
+    if ">Connect</a>" not in cta_html:
+        fail("home cta-row missing secondary Connect .btn")
+    if 'href="/contact/"' not in cta_html:
+        fail("home cta-row Connect must go to /contact/")
+    entrance = home.split('class="entrance hero"', 1)[1].split('class="system-map-section"', 1)[0]
+    if "Specialist" in entrance:
+        fail("entrance must not use vague Specialist positioning")
+    if "CTO" in entrance or "CDAO" in entrance:
+        fail("entrance must not claim CTO/CDAO")
+    if "Building intelligible systems" not in home:
+        fail("home entrance must use thesis headline")
+    if 'class="portrait-chip"' in home:
+        fail("home must not use hero portrait-chip (portrait lives on Profile)")
     if 'id="contact"' not in home:
         fail("home missing #contact section")
     if 'class="selected-systems"' not in home:
         fail("home missing selected-systems strip")
-    if home.find('class="selected-systems"') > home.find('id="contact"'):
-        fail("selected-systems must appear before #contact")
-    if home.find('class="cta-row"') > home.find('class="selected-systems"'):
-        fail("selected-systems must appear after CTAs")
-    selected = home.split('class="selected-systems"', 1)[1]
-    if 'class="operating-themes"' in selected:
-        selected = selected.split('class="operating-themes"', 1)[0]
-    else:
-        selected = selected.split('id="contact"', 1)[0]
-    if selected.count("<li>") < 2 or selected.count("<li>") > 3:
-        fail("selected-systems must have 2–3 editorial rows")
-    if "Prudential" not in selected or "SPH Media" not in selected:
-        fail("selected-systems must include Prudential / SPH-class enterprise cases")
+    if home.find('class="reading-room"') > home.find('id="contact"'):
+        fail("reading-room must appear before #contact")
+    if home.find('class="system-map-section"') < home.find('class="cta-row"'):
+        fail("system map must appear after entrance CTAs")
+    selected = home.split('class="selected-systems"', 1)[1].split('class="reading-room"', 1)[0]
+    if selected.count("system-record") < 2 or selected.count("system-record") > 5:
+        fail("selected-systems must have 2–5 system records")
+    if "SYS-01" not in selected or "SYS-02" not in selected:
+        fail("selected-systems must include SYS-01 and SYS-02 records")
     if "SkillUP" in selected:
         fail("selected-systems must not equate a capstone with enterprise delivery")
-    if "Tourism Board" not in selected and "STB" not in selected:
-        fail("selected-systems must include a third enterprise case (applied AI / STB)")
-    if 'class="case-beats"' not in selected:
-        fail("selected-systems rows must follow problem → role → decision → outcome → evidence")
-    if "Tools:" not in selected:
-        fail("selected-systems rows must keep tools last")
+    if "SYS-03" not in selected:
+        fail("selected-systems must include SYS-03 (applied AI / STB)")
+    if 'class="record-impact"' not in selected:
+        fail("SYS-01 record must carry quantified impact lines")
+    if 'class="case-beats"' in selected:
+        fail("home selected-systems must not dump full case-beats")
     if "/portfolio/" not in selected:
         fail("selected-systems must link through to /portfolio/")
     if "folio-toolbar" in home:
         fail("home must not ship an inert folio-toolbar")
-    if "View all" in selected:
-        fail("selected-systems must not ship an unwired View all control")
-    if 'class="operating-themes"' not in home:
-        fail("home missing operating-themes")
-    if home.count("<h3>") < 4 or "Cloud economics" not in home:
-        fail("home must list four operating themes")
-    if "class=\"theme-note\"" not in home and "theme-note" not in home:
-        fail("home missing public-architecture / mentoring contribution note")
+    if 'class="operating-themes"' in home:
+        fail("home must not ship operating-themes (replaced by system map)")
+    if "Digital card" not in home.split('id="contact"', 1)[-1]:
+        fail("home #contact must keep Digital card CTA / bitly_hub")
     if "tel:" in home or "+65" in home:
         fail("home must not expose a visitor-facing phone number")
     if "PUBLIC contacts only" in home:
@@ -199,14 +207,16 @@ def main() -> None:
         fail("Elsewhere panel must still contain Blog")
     if ">GitHub</a>" not in desktop_nav.split("nav-elsewhere-panel", 1)[-1]:
         fail("Elsewhere panel must contain GitHub")
-    if ">Work</a>" not in desktop_nav:
-        fail("desktop nav missing Work")
-    if ">Perspectives</a>" not in desktop_nav:
-        fail("desktop nav missing Perspectives")
-    if ">Contact</a>" not in desktop_nav:
-        fail("desktop nav missing Contact")
-    if ">Portfolio</a>" in desktop_nav.split("nav-elsewhere", 1)[0]:
-        fail("desktop nav still labels Work as Portfolio")
+    if ">Systems</a>" not in desktop_nav:
+        fail("desktop nav missing Systems")
+    if ">Notes</a>" not in desktop_nav:
+        fail("desktop nav missing Notes")
+    if ">Connect</a>" not in desktop_nav:
+        fail("desktop nav missing Connect")
+    if ">Work</a>" in desktop_nav.split("nav-elsewhere", 1)[0]:
+        fail("desktop nav must not label Systems as Work")
+    if 'library-card' not in home:
+        fail("home footer must use library-card pattern")
     if "Static migration" in home or "Phase 1 pages" in home:
         fail("home footer still has migration chrome")
     if "&copy;" not in home and "©" not in home:
@@ -246,40 +256,48 @@ def main() -> None:
         fail("home missing skip-link to #main")
     if 'id="main"' not in home:
         fail("home missing main#main skip target")
-    if 'href="/contact/"' in home and 'nav' in home:
-        # /contact/ remains a redirect, not a primary nav href
-        if 'aria-label="Primary"' in home and 'href="/contact/"' in home.split('aria-label="Primary"')[1].split("</nav>")[0]:
-            fail("primary nav still links to /contact/ instead of /#contact")
+    nav_chunk = home.split('aria-label="Primary"', 1)
+    if len(nav_chunk) < 2:
+        fail("home missing primary nav")
+    primary_nav = nav_chunk[1].split("</nav>", 1)[0]
+    if 'href="/contact/"' not in primary_nav:
+        fail("primary nav must link Connect to /contact/")
+    if 'href="/#contact"' in primary_nav:
+        fail("primary nav still links Connect to /#contact")
 
     css = (DIST / "styles.css").read_text(encoding="utf-8")
-    if "main.page .hero h1" not in css:
-        fail("styles.css missing main.page .hero h1 (must beat main.page h1 for Fraunces)")
-    if "main.page .selected-systems h2" not in css:
-        fail("styles.css missing main.page .selected-systems h2 (must beat main.page h2)")
+    if "main.page .entrance h1" not in css and "main.page .hero h1" not in css:
+        fail("styles.css missing entrance/hero h1 display typography")
+    if "Crimson Pro" not in css:
+        fail("styles.css must load Crimson Pro display face")
+    if "Source Sans 3" not in css:
+        fail("styles.css must load Source Sans 3 body face")
+    if ".selected-systems h2" not in css:
+        fail("styles.css missing .selected-systems h2 section title")
     if not re.search(
-        r"main\.page \.selected-systems h2\s*\{[^}]*margin:\s*0 0 var\(--space-5\)",
+        r"\.selected-systems h2[\s\S]*?\{[^}]*margin:\s*0 0 var\(--space-5\)",
         css,
         re.S,
     ):
         fail("selected-systems h2 must set margin: 0 0 var(--space-5)")
     if not re.search(
-        r"main\.page \.hero h1\s*\{[^}]*font-family:\s*var\(--font-display\)",
+        r"main\.page \.(entrance|hero) h1\s*\{[^}]*font-family:\s*var\(--font-display\)",
         css,
         re.S,
     ):
-        fail("hero h1 must set font-family: var(--font-display)")
+        fail("entrance h1 must set font-family: var(--font-display)")
     if not re.search(
-        r"main\.page \.hero h1\s*\{[^}]*font-size:\s*var\(--text-display-hero\)",
+        r"main\.page \.(entrance|hero) h1\s*\{[^}]*font-size:\s*var\(--text-display-hero\)",
         css,
         re.S,
     ):
-        fail("hero h1 must set font-size: var(--text-display-hero)")
+        fail("entrance h1 must set font-size: var(--text-display-hero)")
     if not re.search(
-        r"main\.page \.hero h1\s*\{[^}]*font-weight:\s*600",
+        r"main\.page \.(entrance|hero) h1\s*\{[^}]*font-weight:\s*600",
         css,
         re.S,
     ):
-        fail("hero h1 must set font-weight: 600")
+        fail("entrance h1 must set font-weight: 600")
     if re.search(
         r"\.header-actions\s*>\s*\.theme-toggle\s*\{[^}]*display:\s*none",
         css,
@@ -288,8 +306,8 @@ def main() -> None:
         fail("theme toggle must stay visible beside Menu at --bp-md (do not display:none)")
     if "scroll-behavior: auto" not in css:
         fail("styles.css missing scroll-behavior: auto for prefers-reduced-motion")
-    if "repeat(3, minmax(0, 1fr))" not in css:
-        fail("styles.css missing outcome-strip 3-column grid at --bp-lg")
+    if "repeat(3, minmax(0, 1fr))" in css and "outcome-strip" in css:
+        fail("styles.css must not keep outcome-strip 3-column grid in hero")
     if "background-color: var(--bg-deep)" not in css:
         fail("styles.css missing solid background-color: var(--bg-deep)")
     if "position: sticky" not in css:
@@ -300,10 +318,10 @@ def main() -> None:
         fail("styles.css missing --text-default")
     if css.count("var(--glow)") != 1:
         fail("styles.css must use a single var(--glow) layer")
-    if "rgb(55 90 78 / 22%)" not in css:
-        fail("styles.css dark glow token must stay the desaturated boardroom value")
-    if "rgb(55 90 78 / 10%)" not in css:
-        fail("styles.css light glow must be a soft sage wash (10%)")
+    if "rgb(212 163 92 / 12%)" not in css:
+        fail("styles.css dark glow token must use amber pool (12%)")
+    if "rgb(212 163 92 / 10%)" not in css:
+        fail("styles.css light glow must use soft amber wash (10%)")
     if "--accent-link" not in css:
         fail("styles.css missing --accent-link for light body links")
     if re.search(r"\.cj-js\s+\.cj-slide[^{]*\{[^}]*scale\s*\(", css):
@@ -332,12 +350,12 @@ def main() -> None:
     text_muted = _token_hex(css, "--text-muted")
     text_faint = _token_hex(css, "--text-faint")
     accent = _token_hex(css, "--accent")
-    if bg_elevated.lower() != "#1a2420":
-        fail(f"--bg-elevated must be charcoal #1a2420, got {bg_elevated}")
-    if bg_mid.lower() != "#15201c":
-        fail(f"--bg-mid must be charcoal #15201c, got {bg_mid}")
-    if accent.lower() != "#d4a35c":
-        fail(f"--accent gold must stay #d4a35c, got {accent}")
+    if bg_elevated.lower() != "#2a2118":
+        fail(f"--bg-elevated must be walnut #2a2118, got {bg_elevated}")
+    if bg_mid.lower() != "#1c1612":
+        fail(f"--bg-mid must be walnut #1c1612, got {bg_mid}")
+    if accent.lower() != "#c49a5a":
+        fail(f"--accent brass must stay #c49a5a, got {accent}")
     pairs = (
         ("--text-default on --bg-deep", text_default, bg_deep, 4.5),
         ("--text-default on --bg-elevated", text_default, bg_elevated, 4.5),
@@ -362,22 +380,22 @@ def main() -> None:
     light_muted = _token_hex(light, "--text-muted")
     light_link = _token_hex(light, "--accent-link")
     light_hover = _token_hex(light, "--accent-hover")
-    if light_bg.lower() != "#f4f0e8":
-        fail(f"light --bg-deep must be #F4F0E8, got {light_bg}")
-    if light_mid.lower() != "#ebe6dc":
-        fail(f"light --bg-mid must be #EBE6DC, got {light_mid}")
-    if light_elev.lower() != "#fffbf5":
-        fail(f"light --bg-elevated must be #FFFBF5, got {light_elev}")
+    if light_bg.lower() != "#e8dfd0":
+        fail(f"light --bg-deep must be #e8dfd0, got {light_bg}")
+    if light_mid.lower() != "#ddd2c0":
+        fail(f"light --bg-mid must be #ddd2c0, got {light_mid}")
+    if light_elev.lower() != "#f5efe4":
+        fail(f"light --bg-elevated must be #f5efe4, got {light_elev}")
     if light_strong.lower() != "#171414":
         fail(f"light --text-strong must be #171414, got {light_strong}")
     if light_text.lower() != "#2a2724":
         fail(f"light --text-default must be #2A2724, got {light_text}")
-    if light_muted.lower() != "#5c6b63":
-        fail(f"light --text-muted must be #5C6B63, got {light_muted}")
-    if light_link.lower() != "#856012":
-        fail(f"light --accent-link must be #856012, got {light_link}")
-    if light_hover.lower() != "#7a5a12":
-        fail(f"light --accent-hover must be #7A5A12, got {light_hover}")
+    if light_muted.lower() != "#5c5548":
+        fail(f"light --text-muted must be #5c5548, got {light_muted}")
+    if light_link.lower() != "#6b4f10":
+        fail(f"light --accent-link must be #6b4f10, got {light_link}")
+    if light_hover.lower() != "#5c450e":
+        fail(f"light --accent-hover must be #5c450e, got {light_hover}")
     if "#ffffff" in light.lower() or "#fff;" in light.lower():
         fail("light theme must not use pure #FFFFFF")
     light_pairs = (
@@ -404,8 +422,8 @@ def main() -> None:
         fail("work page must not ship an inert folio-toolbar")
     if "folio-toolbar" in credentials:
         fail("credentials must not ship an inert folio-toolbar")
-    if ">Work<" not in portfolio and "Work —" not in portfolio:
-        fail("work page must title as Work")
+    if ">Systems<" not in portfolio and "Systems —" not in portfolio:
+        fail("systems page must title as Systems")
     if "Senior Manager, Cloud Economics and Intelligence" not in portfolio:
         fail("Prudential title must match master CV (Senior Manager, Cloud Economics…)")
     if "Senior Data Engineer, Solutioning" in portfolio:
@@ -583,12 +601,21 @@ def main() -> None:
 
     contact_page = DIST / "contact" / "index.html"
     if not contact_page.is_file():
-        fail("contact/index.html redirect missing")
+        fail("contact/index.html missing")
     contact_html = contact_page.read_text(encoding="utf-8")
-    if "#contact" not in contact_html:
-        fail("contact redirect must target #contact")
-    if "http-equiv" not in contact_html.lower() and "refresh" not in contact_html.lower():
-        fail("contact redirect missing meta refresh")
+    if "http-equiv" in contact_html.lower() and "refresh" in contact_html.lower():
+        fail("contact page must not meta-refresh to Home")
+    if "<h1>Connect</h1>" not in contact_html:
+        fail("connect page missing h1")
+    if 'aria-current="page"' not in contact_html.split('aria-label="Primary"', 1)[-1].split("</nav>", 1)[0]:
+        fail("connect page must mark Connect as the current nav item")
+    if 'href="mailto:' not in contact_html:
+        fail("contact page missing mailto")
+    redirects = (DIST / "_redirects").read_text(encoding="utf-8")
+    if re.search(r"/contact/?\s+/\s+302", redirects):
+        fail("_redirects still sends /contact to Home")
+    if not re.search(r"/contact\s+\S*/contact/\s+301", redirects):
+        fail("_redirects must 301 /contact to /contact/")
 
     pf = DIST / "pagefind" / "pagefind-ui.js"
     if not pf.is_file():
@@ -599,8 +626,15 @@ def main() -> None:
         asset = DIST.joinpath(*photo.strip("/").split("/"))
         if not asset.is_file():
             fail(f"profile asset missing in dist: {photo}")
-        if "profile.jpg" not in home and "profile" not in home:
-            fail("home does not reference profile photo")
+        about_html = (DIST / "about" / "index.html").read_text(encoding="utf-8")
+        if "profile-portrait" not in about_html and "profile" not in about_html.lower():
+            fail("profile page does not reference portrait photo")
+    for slot in ("entrance", "reading", "workshop"):
+        src = str((site.get("atmosphere") or {}).get(slot, {}).get("src") or "")
+        if src:
+            asset = DIST.joinpath(*src.strip("/").split("/"))
+            if not asset.is_file():
+                fail(f"atmosphere asset missing in dist: {src}")
 
     blob = "\n".join((DIST / rel).read_text(encoding="utf-8") for rel, _ in ROUTES).lower()
     for needle in FORBIDDEN:

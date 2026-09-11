@@ -6,10 +6,10 @@ WordPress (Responsive theme on Bluehost shared) → static paths. Blog/post perm
 |---|---|---|
 | `/` | `/` | Home |
 | `/about/` | `/about/` | |
-| `/portfolio/` | `/portfolio/` | Nav label **Work**. Also `bit.ly/3GGyiXF`. `/work/` → `/portfolio/` |
-| `/perspectives/` | `/perspectives/` | Start-here writing index |
+| `/portfolio/` | `/portfolio/` | Nav label **Systems**. Also `bit.ly/3GGyiXF`. `/work/` → `/portfolio/` |
+| `/perspectives/` | `/perspectives/` | Nav label **Notes** — start-here writing index |
 | `/credentials/` | `/credentials/` | Also `bit.ly/4m4fqki` |
-| `/contact/` | `/#contact` (Home) | Redirect HTML + `_redirects` 302 to `/` |
+| `/contact/` | `/contact/` | Nav label **Connect**. Own page (email + profiles). Home still has `#contact` for old bookmarks. `_redirects` 301 `/contact` → `/contact/` |
 | `/blog/` | *(keep WP)* | External until C2b |
 | `/category/**` | *(keep WP)* | |
 | Post permalinks | *(keep WP)* | e.g. `/a-chinese-open-weights-…/` |

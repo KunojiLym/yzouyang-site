@@ -6,7 +6,7 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/about/`, `/portfolio/` (Work), `/perspectives/`, `/credentials/`. Contact lives on Home as `#contact` and in primary nav; `/contact/` redirects there.
+Routes: `/`, `/about/` (Profile), `/portfolio/` (Systems), `/perspectives/` (Notes), `/credentials/`, `/contact/` (Connect). Home still includes `#contact` for old bookmarks.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 

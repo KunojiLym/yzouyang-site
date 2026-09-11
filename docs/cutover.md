@@ -9,7 +9,7 @@
 - [ ] UAT on GitHub Pages (`uat` branch deploy) signed off: https://kunojilym.github.io/yzouyang-site/
 - [ ] Promoted to `main` Pages deploy matches UAT
 - [ ] Preview URL serves `/`, `/about/`, `/portfolio/`, `/credentials/` from PUBLIC export
-- [ ] Home `#contact` reachable from sticky header Contact; `/contact/` redirects to Home contact
+- [ ] Connect nav goes to `/contact/`; Home still keeps `#contact` for old bookmarks
 - [ ] Pagefind works on portfolio or credentials
 - [ ] Blog / Medium / LinkedIn still reachable from nav **Elsewhere** (external)
 - [ ] About Selected writing links out (no full post import until C2b)
