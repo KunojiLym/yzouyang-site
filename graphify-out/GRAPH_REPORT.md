@@ -1,16 +1,16 @@
 # Graph Report - yzouyang-site  (2026-09-12)
 
 ## Corpus Check
-- 45 files · ~602,627 words
+- 52 files · ~645,933 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 485 nodes · 811 edges · 55 communities (32 shown, 23 thin omitted)
+- 491 nodes · 816 edges · 56 communities (33 shown, 23 thin omitted)
 - Extraction: 83% EXTRACTED · 16% INFERRED · 0% AMBIGUOUS · INFERRED: 131 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e8f339ce`
+- Built from commit: `22e380ad`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -68,6 +68,7 @@
 - docs/preview-uat.md
 - chrome.js
 - theme.spec.mjs
+- manifest.json
 
 ## God Nodes (most connected - your core abstractions)
 1. `Career Journey 2025 Deck Slides` - 80 edges
@@ -111,7 +112,7 @@
 - **Phase 1 Cutover Gates** — docs_preview_uat_preview_workflow, docs_cutover_operator_checklist, docs_redirects_wp_static_map, docs_cutover_dns_static_host [INFERRED 0.85]
 - **CSS Token Enforcement** — src_styles_readme_tokens_css, src_styles_readme_stylelint_enforcement, src_styles_readme_check_token_drift, docs_design_system_ci_gates [INFERRED 0.85]
 
-## Communities (55 total, 23 thin omitted)
+## Communities (56 total, 23 thin omitted)
 
 ### Community 0 - "Career Journey 2025 Deck Slides"
 Cohesion: 0.07
@@ -233,8 +234,12 @@ Nodes (11): figma_embed_html(), Match an export enterprise row to overlay copy k
 Cohesion: 0.15
 Nodes (3): assertTocSearch(), noHorizontalOverflow(), ROUTES
 
+### Community 55 - "manifest.json"
+Cohesion: 0.33
+Nodes (5): commit_sha, lfs_objects, packs, refs, version
+
 ## Knowledge Gaps
-- **128 isolated node(s):** `stylelint-config-standard`, `stylelint-declaration-strict-value`, `scale-unlimited/declaration-strict-value`, `custom-property-pattern`, `selector-class-pattern` (+123 more)
+- **133 isolated node(s):** `version`, `commit_sha`, `refs`, `packs`, `lfs_objects` (+128 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -243,8 +248,8 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Are the 20 inferred relationships involving `Cloud Platform Certifications` (e.g. with `Logo/Branding for Coursera` and `Diagram showing AWS Cloud Practitioner certification level and branding`) actually correct?**
   _`Cloud Platform Certifications` has 20 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `stylelint-config-standard`, `stylelint-declaration-strict-value`, `scale-unlimited/declaration-strict-value` to the rest of the system?**
-  _128 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `version`, `commit_sha`, `refs` to the rest of the system?**
+  _133 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Career Journey 2025 Deck Slides` be split into smaller, more focused modules?**
   _Cohesion score 0.07086834733893557 - nodes in this community are weakly interconnected._
 - **Should `build.py` be split into smaller, more focused modules?**

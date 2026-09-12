@@ -1110,7 +1110,8 @@ def _current_index_html(site: dict) -> str:
         else:
             label_html = label
         items.append(
-            f"          <li><span class=\"index-status\">{status}</span> {label_html}</li>"
+            f"          <li><span class=\"index-status\">{status}</span>"
+            f"<span class=\"index-entry\">{label_html}</span></li>"
         )
     if not items:
         return ""
@@ -1159,6 +1160,7 @@ def _system_map_html(site: dict) -> str:
         '          <line x1="280" y1="40" x2="280" y2="120" />',
     ]
     svg = (
+        '      <div class="system-map-panel">\n'
         '      <div class="system-map" aria-labelledby="system-map-heading">\n'
         '        <svg class="system-map-svg" viewBox="0 0 440 160" role="img" '
         'aria-label="Principal domains and their connections">\n'
@@ -1169,6 +1171,7 @@ def _system_map_html(site: dict) -> str:
         '        <ol class="system-map-fallback visually-hidden">\n'
         + "\n".join(list_items)
         + "\n        </ol>\n"
+        "      </div>\n"
         "      </div>"
     )
     return (
@@ -1410,7 +1413,16 @@ def build_home(site: dict, export: dict) -> str:
             f'        <img class="entrance-photo" src="{src}" alt=""{wh} '
             f'decoding="async" fetchpriority="high" style="object-position: {obj_pos}" />\n'
             f'        <div class="entrance-scrim"></div>\n'
+            f'        <div class="entrance-vignette"></div>\n'
             f"      </div>"
+        )
+
+    catalog_html = ""
+    if location:
+        catalog_html = (
+            f'        <p class="entrance-catalog">'
+            f'<span class="entrance-catalog-dot" aria-hidden="true"></span>'
+            f"RECORD · {esc(location.upper())}</p>\n"
         )
 
     thesis = esc(str(person.get("headline") or "").strip())
@@ -1431,7 +1443,7 @@ def build_home(site: dict, export: dict) -> str:
     return f"""    <section class="entrance hero" aria-labelledby="entrance-heading">
 {entrance_img}
       <div class="entrance-copy hero-copy">
-        <h1 id="entrance-heading">{thesis}</h1>
+{catalog_html}        <h1 id="entrance-heading">{thesis}</h1>
         <p class="lede">{lede}</p>
 {current_html}
         <div class="cta-row">

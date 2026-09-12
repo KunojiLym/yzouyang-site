@@ -178,7 +178,7 @@
       "credit": "Atmosphere still",
       "width": 682,
       "height": 1024,
-      "object_position": "center center"
+      "object_position": "center top"
     },
     "reading": {
       "src": "/assets/atmosphere/reading.jpg",

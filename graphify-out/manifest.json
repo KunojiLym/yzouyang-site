@@ -5,9 +5,9 @@
     "semantic_hash": "bda7ed2a21756ebce41e14a5ddbeff6d"
   },
   ".stylelintrc.json": {
-    "mtime": 1786361859.4659696,
-    "ast_hash": "b6c5e1d5d7391fffa1685ba4ad254b22",
-    "semantic_hash": "b6c5e1d5d7391fffa1685ba4ad254b22"
+    "mtime": 1789179501.4251394,
+    "ast_hash": "6482672f0908c2b8871fa12e178e2624",
+    "semantic_hash": ""
   },
   "collect/src/worker.js": {
     "mtime": 1786361859.5722253,
@@ -30,8 +30,8 @@
     "semantic_hash": "7cd0e7c2282a66a78ac0c57fe060fc28"
   },
   "scripts/build.py": {
-    "mtime": 1789144966.2709014,
-    "ast_hash": "07e34f85dbc11a3791f9e67a1c05a914",
+    "mtime": 1789179173.772759,
+    "ast_hash": "9651fd33753344f30255a47d5e52961e",
     "semantic_hash": ""
   },
   "scripts/check_token_drift.py": {
@@ -45,8 +45,8 @@
     "semantic_hash": "19367a3424ed91e43646027bd156bdf0"
   },
   "scripts/lint.py": {
-    "mtime": 1788949457.9783087,
-    "ast_hash": "4e96a669ac8cad9943b62feca72674f2",
+    "mtime": 1789145875.0146475,
+    "ast_hash": "dfc0df941ae99a06c3dc0ecf47f49c21",
     "semantic_hash": ""
   },
   "scripts/preview.py": {
@@ -867,6 +867,21 @@
   "assets/atmosphere/workshop.jpg": {
     "mtime": 1789144711.570586,
     "ast_hash": "7a881d6fbd0b04b852bd932590b9233e",
+    "semantic_hash": ""
+  },
+  ".figma-make-import/code/manifest.json": {
+    "mtime": 1789178827.767787,
+    "ast_hash": "b831cd116826ce834b34cfd285bab1b2",
+    "semantic_hash": ""
+  },
+  ".figma-make-import/extracted/thumbnail.png": {
+    "mtime": 1789177688.0,
+    "ast_hash": "59ccc234c6971841e720bb4482c924ff",
+    "semantic_hash": ""
+  },
+  ".figma-make-import/thumbnail.png": {
+    "mtime": 1789178799.8870833,
+    "ast_hash": "59ccc234c6971841e720bb4482c924ff",
     "semantic_hash": ""
   }
 }

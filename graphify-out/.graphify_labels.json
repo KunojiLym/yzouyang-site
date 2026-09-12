@@ -53,5 +53,6 @@
   "51": "docs/preview-uat.md",
   "52": "career-journey-animation.spec.mjs",
   "53": "chrome.js",
-  "54": "theme.spec.mjs"
+  "54": "theme.spec.mjs",
+  "55": "manifest.json"
 }
