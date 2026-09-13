@@ -337,8 +337,8 @@ test.describe("toc + credentials", () => {
   test("systems Figma is compact links not an empty static frame", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/systems/");
-    await libraryIndexPanel(page, "klook-travel-planner-capstone").click();
-    await expect(page.locator('.library-panel[data-panel-id="klook-travel-planner-capstone"].is-active')).toBeVisible();
+    await libraryIndexPanel(page, "featured-product-ux-projects").click();
+    await expect(page.locator('.library-panel[data-panel-id="featured-product-ux-projects"].is-active')).toBeVisible();
     await expect(page.locator("iframe")).toHaveCount(0);
     await expect(page.locator(".embed-frame-static")).toHaveCount(0);
     await expect(
@@ -416,8 +416,10 @@ async function assertSelectedSingleColumn(page) {
 }
 
 async function assertSelectedHeadingSpacing(page) {
-  await page.goto("/systems/#SYS-01");
-  const heading = page.locator(".library-panel-title").first();
+  await page.goto("/systems/#SYS-01", { waitUntil: "load" });
+  const activePanel = page.locator('.library-panel[data-record="SYS-01"].is-active');
+  await expect(activePanel).toBeVisible();
+  const heading = activePanel.locator(".library-panel-title").first();
   await expect(heading).toBeVisible();
   const spacing = await heading.evaluate((el) => {
     const cs = getComputedStyle(el);
@@ -546,8 +548,9 @@ test.describe("site critic acceptance", () => {
       )
     ).toBeVisible();
     await noHorizontalOverflow(page);
-    await page.goto("/systems/");
-    await expect(page.locator(".case-outcome").first()).toBeVisible();
+    await page.goto("/systems/", { waitUntil: "load" });
+    await libraryIndexPanel(page, "featured-tutorial-projects").click();
+    await expect(page.locator(".library-panel.is-active .case-outcome").first()).toBeVisible();
     await expect(
       page.locator('[data-panel-group-id="enterprise-data-ai-solutioning-selected-work-summaries"]')
     ).toBeVisible();
