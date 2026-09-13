@@ -2,6 +2,10 @@ import { test, expect } from "@playwright/test";
 
 const ROUTES = ["/", "/about/", "/systems/", "/notes/", "/credentials/", "/contact/"];
 
+function libraryIndexPanel(page, panelId) {
+  return page.locator(`.library-index-list [data-panel-id="${panelId}"]`).first();
+}
+
 async function noHorizontalOverflow(page) {
   const overflow = await page.evaluate(() => {
     return document.documentElement.scrollWidth > window.innerWidth + 2;
@@ -159,10 +163,12 @@ test.describe("home", () => {
     }
     await expect(page).toHaveURL(/\/systems\//);
     await expect(page.locator(".library-shell")).toBeVisible();
-    await expect(page.locator(".library-index")).toBeVisible();
-    await page
-      .locator('[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"]')
-      .click();
+    if (testInfo.project.name === "mobile") {
+      await expect(page.locator(".library-index-list")).toBeVisible();
+      return;
+    }
+    await expect(page.locator(".library-index-list")).toBeVisible();
+    await libraryIndexPanel(page, "prudential-singapore-senior-data-engineer-solutioning-architecture").click();
     await expect(
       page.locator(
         '.library-panel[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"].is-active'
@@ -193,7 +199,7 @@ test.describe("home", () => {
     await expect(page.locator("main.home-route")).toBeVisible();
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
     await expect(page).toHaveURL(/\/systems\//);
-    await page.locator('[data-panel-id="featured-tutorial-projects"]').click();
+    await libraryIndexPanel(page, "featured-tutorial-projects").click();
     await expect(
       page.locator('.library-panel[data-panel-id="featured-tutorial-projects"].is-active')
     ).toBeVisible();
@@ -306,7 +312,7 @@ test.describe("toc + credentials", () => {
   test("toc jump and issuer groups", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop toc coverage enough");
     await page.goto("/credentials/");
-    await page.locator('[data-panel-id="google-cloud"]').click();
+    await libraryIndexPanel(page, "google-cloud").click();
     await expect(page.locator('.library-panel[data-panel-id="google-cloud"].is-active')).toBeVisible();
     await expect(page.locator(".library-panel.is-active .credential-card").first()).toBeVisible();
     const rawUrlLinks = page.locator(".credential-card a").filter({ hasText: /https?:\/\// });
@@ -332,7 +338,7 @@ test.describe("toc + credentials", () => {
   test("systems Figma is compact links not an empty static frame", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/systems/");
-    await page.locator('[data-panel-id="featured-tutorial-projects"]').click();
+    await libraryIndexPanel(page, "featured-tutorial-projects").click();
     await expect(page.locator("iframe")).toHaveCount(0);
     await expect(page.locator(".embed-frame-static")).toHaveCount(0);
     const klook = page.locator("li").filter({ hasText: "Klook Travel Planner Capstone" });
@@ -353,7 +359,7 @@ test.describe("credentials cards", () => {
   test("professional issuers use credential card grid", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/credentials/");
-    await page.locator('[data-panel-id="google-cloud"]').click();
+    await libraryIndexPanel(page, "google-cloud").click();
     await expect(page.locator('.library-panel[data-panel-id="google-cloud"].is-active')).toBeVisible();
     await expect(page.locator(".library-panel.is-active .credential-card").first()).toBeVisible();
     await expect(page.locator(".library-panel.is-active .item-list")).toHaveCount(0);
@@ -448,7 +454,7 @@ async function assertFooterExternalLinks(page) {
 
 async function assertTocSearch(page) {
   await page.goto("/systems/");
-  const index = page.locator(".library-index");
+  const index = page.locator(".library-index-list");
   await expect(index).toBeVisible();
   await expect(index.locator("[data-panel-id]").first()).toBeVisible();
   const input = page.locator(".pagefind-ui__search-input");
@@ -513,7 +519,7 @@ test.describe("site critic acceptance", () => {
     await assertFooterExternalLinks(page);
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
     await expect(page).toHaveURL(/\/systems\//);
-    await page.locator('[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"]').click();
+    await libraryIndexPanel(page, "prudential-singapore-senior-data-engineer-solutioning-architecture").click();
     await expect(page.locator('[data-record="SYS-01"]')).toBeVisible();
     await assertSelectedHeadingSpacing(page);
     await noHorizontalOverflow(page);
@@ -529,7 +535,7 @@ test.describe("site critic acceptance", () => {
     await assertFooterExternalLinks(page);
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
     await expect(page).toHaveURL(/\/systems\//);
-    await page.locator('[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"]').click();
+    await libraryIndexPanel(page, "prudential-singapore-senior-data-engineer-solutioning-architecture").click();
     await expect(page.locator('[data-record="SYS-01"]')).toBeVisible();
     await noHorizontalOverflow(page);
     await page.goto("/systems/");

@@ -60,14 +60,14 @@ test.describe("dual theme", () => {
 
     test("prefers-color-scheme light applies when store is empty", async ({ page }) => {
       await page.addInitScript(() => localStorage.removeItem("yz-theme"));
-      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await page.goto("/", { waitUntil: "load" });
       await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     });
   });
 
   test("toggle is labeled, pressed, and persists", async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem("yz-theme", "dark"));
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "load" });
     const toggle = page.locator(".theme-toggle:not(.reading-size-toggle)").first();
     await expect(toggle).toBeVisible();
     await expect(toggle).toHaveAttribute("aria-pressed", "true");
@@ -76,7 +76,7 @@ test.describe("dual theme", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await expect(toggle).toHaveAttribute("aria-pressed", "false");
     expect(await page.evaluate(() => localStorage.getItem("yz-theme"))).toBe("light");
-    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "load" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
 
@@ -91,7 +91,7 @@ test.describe("dual theme", () => {
     await expect(toggle).toHaveAccessibleName(/text size: large/i);
     await expect(toggle.locator(".reading-size-step.is-active")).toHaveAttribute("data-step", "large");
     expect(await page.evaluate(() => localStorage.getItem("yz-reading-size"))).toBe("large");
-    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "load" });
     await expect(page.locator("html")).toHaveAttribute("data-reading-size", "large");
   });
 

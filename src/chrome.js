@@ -6,6 +6,9 @@
     } catch (_) {
       /* ignore */
     }
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+      return "light";
+    }
     return "dark";
   }
 
