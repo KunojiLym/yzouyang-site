@@ -7,7 +7,7 @@ import AxeBuilder from "@axe-core/playwright";
 // landmarks, or ARIA wiring without a human noticing.
 const ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
 
-// Pagefind's third-party markup on Portfolio/Credentials has known upstream
+// Pagefind's third-party markup on Systems/Notes/Credentials has known upstream
 // a11y quirks outside this repo's control; scoped out rather than ignored
 // so a real regression elsewhere on those pages still fails the build.
 const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];

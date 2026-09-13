@@ -30,7 +30,9 @@ uv run python scripts/test_site_build.py
 npm install
 npx playwright install chromium
 npm run serve:dist -- 8765              # optional local static server for dist/
-npm run test:e2e
+npm run test:e2e                        # usability + theme
+npm run test:a11y                       # axe-core WCAG2A/AA
+# npm run test:visual                   # non-blocking until snapshots exist
 ```
 
 The `serve:dist` server logs timestamped startup, listening, signal, close-start,
