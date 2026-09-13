@@ -5,11 +5,12 @@ WordPress (Responsive theme on Bluehost shared) → static paths. Blog/post perm
 | Old WP path | New static | Notes |
 |---|---|---|
 | `/` | `/` | Home |
-| `/about/` | `/about/` | |
-| `/portfolio/` | `/portfolio/` | Nav label **Systems**. Also `bit.ly/3GGyiXF`. `/work/` → `/portfolio/` |
-| `/perspectives/` | `/perspectives/` | Nav label **Notes** — start-here writing index |
+| `/about/` | `/` | Redirect stub |
+| `/portfolio/` | `/systems/` | Also `bit.ly/3GGyiXF`. `/work/` → `/systems/` |
+| `/perspectives/` | `/notes/` | Writing lives on `/notes/` after C2b |
 | `/credentials/` | `/credentials/` | Also `bit.ly/4m4fqki` |
-| `/contact/` | `/contact/` | Nav label **Connect**. Own page (email + profiles). Home still has `#contact` for old bookmarks. `_redirects` 301 `/contact` → `/contact/` |
+| `/contact/` | `/` | Redirect stub; email lives in the library-card footer |
+| `/career-journey/` | `/` | Redirect stub |
 | `/blog/` | *(keep WP)* | External until C2b |
 | `/category/**` | *(keep WP)* | |
 | Post permalinks | *(keep WP)* | e.g. `/a-chinese-open-weights-…/` |

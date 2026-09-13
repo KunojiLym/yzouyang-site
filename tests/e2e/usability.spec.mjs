@@ -181,11 +181,6 @@ test.describe("home", () => {
     await expect(page.locator('.library-panel.is-active .map-record-read')).toContainText(
       "Read note"
     );
-
-    if (testInfo.project.name === "mobile") {
-      await expect(page.locator(".entrance h1")).toBeVisible();
-      await expect(page.locator(".entrance-atmosphere")).toBeVisible();
-    }
   });
 
   test("home scroll and header search", async ({ page }) => {
@@ -411,8 +406,10 @@ async function assertEntranceVisible(page) {
 }
 
 async function assertSelectedSingleColumn(page) {
-  await page.goto("/systems/#SYS-01");
+  await page.goto("/systems/#SYS-01", { waitUntil: "load" });
   await expect(page.locator('.library-panel[data-record="SYS-01"].is-active')).toBeVisible();
+  const columns = await page.locator(".library-split").evaluate((el) => getComputedStyle(el).gridTemplateColumns);
+  expect(columns.split(" ").length).toBe(1);
 }
 
 async function assertSelectedHeadingSpacing(page) {

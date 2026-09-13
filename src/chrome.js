@@ -183,7 +183,12 @@
           el.getBoundingClientRect().top -
           scroller.getBoundingClientRect().top +
           scroller.scrollTop;
-        scroller.scrollTo({ top: Math.max(0, top - 12), behavior: "smooth" });
+        const reduceMotion =
+          window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        scroller.scrollTo({
+          top: Math.max(0, top - 12),
+          behavior: reduceMotion ? "auto" : "smooth",
+        });
       };
       requestAnimationFrame(() => {
         requestAnimationFrame(scroll);
@@ -270,6 +275,10 @@
         showPanel(resolved);
         return;
       }
+      if (isMobileLayout()) {
+        showOverview();
+        return;
+      }
       const first = firstIndexId();
       if (first) activate(first);
       else showOverview();
@@ -283,6 +292,10 @@
           showPanel(resolved);
           return;
         }
+      }
+      if (isMobileLayout()) {
+        showOverview();
+        return;
       }
       const first = firstIndexId();
       if (first) activate(first);
@@ -308,21 +321,24 @@
     if (backBtn) {
       backBtn.addEventListener("click", (event) => {
         event.preventDefault();
-        if (split) split.classList.remove("is-detail-open");
-        syncBackButton();
+        showOverview();
       });
     }
 
     shell.addEventListener("click", (event) => {
       if (event.target.closest("[data-library-back]")) {
         event.preventDefault();
-        if (split) split.classList.remove("is-detail-open");
-        syncBackButton();
+        showOverview();
       }
     });
 
     window.addEventListener("hashchange", applyHash);
-    window.addEventListener("resize", syncBackButton);
+    window.addEventListener("resize", () => {
+      syncBackButton();
+      if (isMobileLayout() && !window.location.hash) {
+        showOverview();
+      }
+    });
     applyHash();
   }
 
@@ -373,10 +389,28 @@
     window.addEventListener("scroll", pick, { passive: true });
   }
 
+  function siteBasePrefix() {
+    const marker = document.querySelector('script[src*="chrome.js"]');
+    const src = marker?.getAttribute("src") || "";
+    const markerIndex = src.lastIndexOf("/chrome.js");
+    if (markerIndex >= 0) return src.slice(0, markerIndex);
+    const path = window.location.pathname;
+    const known = ["/systems/", "/notes/", "/credentials/", "/about/", "/contact/", "/portfolio/", "/work/", "/perspectives/"];
+    for (const route of known) {
+      const idx = path.indexOf(route);
+      if (idx > 0) return path.slice(0, idx);
+    }
+    return "";
+  }
+
   function recordKindFromHref(href) {
     if (!href) return { label: "Rec", variant: "default" };
     try {
-      const path = new URL(href, window.location.origin).pathname.replace(/\/$/, "") || "/";
+      let path = new URL(href, window.location.origin).pathname.replace(/\/$/, "") || "/";
+      const base = siteBasePrefix();
+      if (base && (path === base || path.startsWith(base + "/"))) {
+        path = path.slice(base.length) || "/";
+      }
       if (path === "/" || path === "/index.html") return { label: "Home", variant: "home" };
       if (path.startsWith("/systems") || path.startsWith("/portfolio") || path.startsWith("/work")) {
         return { label: "SYS", variant: "systems" };

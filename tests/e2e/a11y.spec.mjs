@@ -18,16 +18,9 @@ test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
       await page.goto(route, { waitUntil: "networkidle" });
 
       const builder = new AxeBuilder({ page })
+        .options({ iframes: false })
         .withTags(["wcag2a", "wcag2aa"])
-        .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
-        // Belt-and-suspenders attempt to keep axe out of the Figma embed's
-        // iframe. In practice @axe-core/playwright still walks into
-        // same-origin-accessible iframes via Playwright's own frame
-        // enumeration regardless of this option or .exclude("iframe") —
-        // verified by running this suite locally and seeing violations with
-        // target[0] === "iframe" even with both of those in place. The real
-        // filter is below, against the actual result nodes.
-        .options({ iframes: false });
+        .exclude(KNOWN_THIRD_PARTY_EXCLUDES);
 
       const results = await builder.analyze();
 

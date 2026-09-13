@@ -14,7 +14,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 **Palette:** Dual theme, same brand. **Dark** (default) is warm ink/walnut; **light** is tobacco-tinged parchment (`#e8dfd0` range — not cream `#f4f0e8`). **One** dull brass accent (`#c49a5a`), used sparingly (≤10% of surface). Railway green lives in **hairlines** (`--line-*`), not large fills. Avoid generic blue-purple AI palettes.
 
-**Atmosphere:** Three **atmosphere stills** in `assets/atmosphere/` (Entrance LCP, Reading Room figure, Workshop figure). Figcaptions say “Atmosphere still” — never real-place names. **One** ambient glow layer maximum (`--glow` amber pool); solid `--bg-deep` under gradients. No particles, neon, glassmorphism, terminal motifs, gradient text, or steampunk tropes.
+**Atmosphere:** Home Entrance uses a **token-atmosphere** block (no photo still required). Optional stills may live in `assets/atmosphere/` but are not wired into the current Home. **One** ambient glow layer maximum (`--glow` amber pool); solid `--bg-deep` under gradients. No particles, neon, glassmorphism, terminal motifs, gradient text, or steampunk tropes.
 
 ### Semantic tokens (`:root` / `[data-theme]`)
 
@@ -50,7 +50,7 @@ Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underl
 | `--text-strong` | Emphasized text | `#171414` |
 | `--text-default` / `--ink` | Primary text | `#2a2724` |
 | `--text-muted` / `--muted` | Secondary text | `#5c5548` |
-| `--text-faint` | Chrome/meta only | `#6e6658` |
+| `--text-faint` | Chrome/meta only (AA on `--bg-deep`) | `#5c5548` |
 | `--accent` | Rules / CTA border | `#c49a5a` |
 | `--accent-link` | Body links | `#6b4f10` |
 | `--glow` | Soft amber wash | `rgb(212 163 92 / 10%)` |
@@ -86,30 +86,26 @@ Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
 
 Home reads as a personal systems library:
 
-1. **Entrance** — full-bleed atmosphere still; thesis `h1`; practitioner lede; `current_index` (studying / building / writing); CTAs **View systems** + **Connect**; location/platforms proof strip (no outcome strip in hero)
-2. **System map** — six domains as compact SVG; hover/focus highlights related SYS/NOTE/LAB via `data-domain`
-3. **Selected systems** — `SYS-01`… records (context, domains, methods, impact on matching rows); full case beats on `/portfolio/`
-4. **Reading room** — featured note + catalogue rows; shelf atmosphere figure
-5. **Workshop** — curated `LAB-0n` rows; cropped desk figure (no chalkboard tropes)
-6. **Connect** — Home `#contact` bookmark; primary nav **Connect** → `/contact/`
+1. **Entrance** — token atmosphere; thesis `h1`; practitioner lede; `current_index`; location/platforms proof strip
+2. **Catalogue entries** — `home-entry-grid` to Systems / Notes / Credentials
+3. **Competencies** — editorial list, not a system map or workshop
 
-Inner pages (routes unchanged; labels archival):
+Inner pages:
 
 | Route | Page title | Notes |
 |---|---|---|
-| `/portfolio/` | Systems | Pagefind label: “Search the catalogue” |
-| `/perspectives/` | Notes | Start-here index until C2b |
-| `/about/` | Profile | Portrait lives here |
-| `/credentials/` | Professional record | VERIFY panel |
-| `/contact/` | Connect | Email + Elsewhere |
-| `/career-journey/` | *(inherit tokens only)* | Do not restage deck |
+| `/systems/` | Systems | Library shell; Pagefind “Search catalogue” |
+| `/notes/` | Notes | Library shell after C2b |
+| `/credentials/` | Professional record | Library shell + VERIFY |
+| `/about/`, `/contact/` | *(redirect)* | Home |
+| `/career-journey/` | *(redirect)* | Home |
 
 **Credibility order:** thesis → documented systems → writing → experiments → professional record.
 
 ### Long-form scanning
 
 - Left-aligned copy, strong section rhythm; editorial rows over identical cards
-- Case studies on `/portfolio/`: problem → role → decision → outcome → evidence at ~⅓ typical density
+- Case studies on `/systems/`: problem → role → decision → outcome → evidence at ~⅓ typical density
 - Writing: publication rows with catalogue metadata, not blog card grid
 - Search / TOC chrome must feel deliberate (`In this record` on long pages)
 
@@ -119,18 +115,14 @@ Inner pages (routes unchanged; labels archival):
 
 | Class / pattern | Use |
 |---|---|
-| `.entrance` / `.entrance-atmosphere` / `.entrance-scrim` | Home LCP still + left scrim for AA thesis |
-| `.current-index` | studying / building / writing status lines |
-| `.system-map-section` / `.system-map-svg` | Six-domain map; no JS train |
-| `.selected-systems` / `.system-record` / `.record-id` | Home SYS rows; impact lines from `outcomes` where matched |
-| `.reading-room` / `.catalogue-line` | Featured note + index; shelf figure |
-| `.workshop` / `.workshop-record` | LAB rows; desk figure (cropped) |
+| `.entrance` / `.entrance-atmosphere` | Token atmosphere behind thesis |
+| `.current-index` | Systems / notes highlight lines |
+| `.home-entry-grid` | Catalogue doors to Systems / Notes / Credentials |
 | `.proof-strip` | Singapore + ≤4 platforms |
-| `.btn` / `.btn-primary` | **One** primary CTA on Home (**View systems**); Connect secondary |
-| `.library-card` / `.site-footer` | Footer: location · focus · mailto · social |
-| `.site-nav` / `.nav-elsewhere` | **Systems · Notes · Profile · Credentials · Connect**; Blog/Medium/LinkedIn/GitHub under Elsewhere |
-| `.page-toc` / `.section-fold` | Long-form sidebar + collapsible folds (unchanged mechanics) |
-| `#search` + Pagefind | Catalogue search on Systems + Professional record |
+| `.library-card` / `.site-footer` / `.library-page-footer` | Footer: location · focus · mailto · social |
+| `.site-nav` | **Systems · Notes · Credentials** |
+| `.library-shell` | Split-pane catalogue on Systems / Notes / Credentials |
+| `#search` + Pagefind | Catalogue search in the sticky header |
 
 **Motion:** Map-node and record hover/focus only. **No** per-section `rise` on Home. Career Journey slides stay opacity-only under reduced motion.
 
@@ -158,7 +150,7 @@ Pre-commit: husky + lint-staged on staged `src/styles/*.css`.
 
 - Warm ink/walnut/brass palette; catalogue language (`SYS-`, `NOTE-`, `LAB-`)
 - One bold Entrance moment; quieter archive sections below
-- Keep primary nav short: **Systems · Notes · Profile · Credentials · Connect**
+- Keep primary nav short: **Systems · Notes · Credentials**
 - Brass/gold ≤10%; railway green in hairlines only
 - Derive proof from `site.json` / export only
 

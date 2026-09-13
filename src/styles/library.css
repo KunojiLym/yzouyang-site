@@ -1,4 +1,4 @@
-﻿/* Personal Systems Library ΓÇö unified split-pane shell (all primary tabs) */
+﻿/* Personal Systems Library — unified split-pane shell (all primary tabs) */
 
 main.page.library-route {
   max-width: none;
@@ -455,7 +455,7 @@ main.page .library-panel-title,
   }
 }
 
-/* Mobile: masterΓÇôdetail */
+/* Mobile: master-detail */
 @media (width <= 48rem) {
   .library-shell {
     padding: var(--space-3) var(--space-4) var(--space-2);

@@ -115,10 +115,10 @@ test.describe("axe contrast both themes", () => {
         await setTheme(page, theme);
         await page.goto(route, { waitUntil: "networkidle" });
         const results = await new AxeBuilder({ page })
+          .options({ iframes: false })
           .withTags(["wcag2a", "wcag2aa"])
           .disableRules(["color-contrast-enhanced"])
           .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
-          .options({ iframes: false })
           .analyze();
         const contrast = results.violations
           .map((v) => ({

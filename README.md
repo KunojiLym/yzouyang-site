@@ -6,11 +6,11 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/about/` (Profile), `/portfolio/` (Systems), `/perspectives/` (Notes), `/credentials/`, `/contact/` (Connect). Home still includes `#contact` for old bookmarks.
+Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. `/about/` and `/contact/` redirect home; `/portfolio/` and `/perspectives/` redirect to `/systems/` and `/notes/`. Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
-**Writing** stays on Blog / Medium / LinkedIn until **C2b**. `/perspectives/` is a start-here index; About still shows curated external titles. Nav groups Blog/Medium/LinkedIn/GitHub under **Elsewhere**.
+**Writing** is on `/notes/` after C2b. Header nav is **Systems · Notes · Credentials**. Blog / Medium / LinkedIn / GitHub live in the library-card footer.
 
 Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 
@@ -31,17 +31,12 @@ npm install
 npx playwright install chromium
 npm run serve:dist -- 8765              # optional local static server for dist/
 npm run test:e2e
-npm run test:motion                     # career journey slide motion, records video
 ```
 
 The `serve:dist` server logs timestamped startup, listening, signal, close-start,
 close-complete, timeout, and bind-error events. Playwright e2e starts and stops
 the same Node server through global setup/teardown so lifecycle events are
 visible during normal test runs.
-
-`npm run test:e2e` includes the Career Journey motion check. That spec records
-a Playwright video artifact and fails if the deck no longer advances
-horizontally with active-slide animation.
 
 CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty). Contract tests + Playwright usability e2e run on every PR.
 

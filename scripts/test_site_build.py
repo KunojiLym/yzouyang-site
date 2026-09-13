@@ -516,6 +516,7 @@ def main() -> None:
     light_strong = _token_hex(light, "--text-strong")
     light_text = _token_hex(light, "--text-default")
     light_muted = _token_hex(light, "--text-muted")
+    light_faint = _token_hex(light, "--text-faint")
     light_link = _token_hex(light, "--accent-link")
     light_hover = _token_hex(light, "--accent-hover")
     if light_bg.lower() != "#e8dfd0":
@@ -540,6 +541,8 @@ def main() -> None:
         ("light --text-default on --bg-deep", light_text, light_bg, 4.5),
         ("light --text-muted on --bg-deep", light_muted, light_bg, 4.5),
         ("light --text-muted on --bg-mid", light_muted, light_mid, 4.5),
+        ("light --text-faint on --bg-deep", light_faint, light_bg, 4.5),
+        ("light --text-faint on --bg-mid", light_faint, light_mid, 4.5),
         ("light --accent-link on --bg-deep", light_link, light_bg, 4.5),
         ("light --accent-link on --bg-mid", light_link, light_mid, 4.5),
         ("light --text-default on --bg-elevated", light_text, light_elev, 4.5),
