@@ -8,7 +8,7 @@ import re
 import sys
 from pathlib import Path
 
-from build import figma_embed_html, resolve_enterprise_overlay
+from build import _beat_value_html, figma_embed_html, resolve_enterprise_overlay, with_base
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -17,17 +17,30 @@ DATA = ROOT / "data"
 FORBIDDEN = ("prudential.com", "u.nus.edu", "gatech.edu")
 ROUTES = (
     ("index.html", "Home"),
-    ("about/index.html", "Profile"),
-    ("portfolio/index.html", "Systems"),
-    ("perspectives/index.html", "Notes"),
+    ("about/index.html", "About redirect"),
+    ("systems/index.html", "Systems"),
+    ("systems/catalogue/index.html", "Systems catalogue"),
+    ("notes/index.html", "Notes"),
     ("credentials/index.html", "Credentials"),
-    ("contact/index.html", "Connect"),
+    ("contact/index.html", "Contact redirect"),
+    ("portfolio/index.html", "Portfolio redirect"),
+    ("perspectives/index.html", "Perspectives redirect"),
 )
 
 
 def fail(msg: str) -> None:
     print(f"test_site_build error: {msg}", file=sys.stderr)
     raise SystemExit(1)
+
+
+CLASS_IN_ATTR = re.compile(r'class="([^"]*)"')
+
+
+def has_html_class(html: str, name: str) -> bool:
+    for match in CLASS_IN_ATTR.finditer(html):
+        if name in match.group(1).split():
+            return True
+    return False
 
 
 def _rel_lum(hex_color: str) -> float:
@@ -63,6 +76,31 @@ def _light_block(css: str) -> str:
     return match.group(1)
 
 
+def assert_evidence_href_https_only() -> None:
+    js = _beat_value_html(
+        {"evidence": "Role write-up", "evidence_href": "javascript:alert(1)"},
+        "evidence",
+    )
+    if "<a" in js.lower() or "javascript:" in js:
+        fail("evidence_href javascript: must not render an anchor")
+    http = _beat_value_html(
+        {"evidence": "Role write-up", "evidence_href": "http://example.com"},
+        "evidence",
+    )
+    if "<a" in http.lower():
+        fail("evidence_href http:// must not render an anchor")
+    https = _beat_value_html(
+        {
+            "evidence": "Role write-up",
+            "evidence_href": "https://www.linkedin.com/in/yzouyang",
+            "evidence_label": "LinkedIn",
+        },
+        "evidence",
+    )
+    if 'href="https://www.linkedin.com/in/yzouyang"' not in https:
+        fail("https evidence_href must render an escaped HTTPS anchor")
+
+
 def assert_no_empty_static_frames(html: str, label: str) -> None:
     for match in re.finditer(
         r"<a\b[^>]*embed-frame-static[^>]*>(.*?)</a>",
@@ -79,6 +117,7 @@ def assert_no_empty_static_frames(html: str, label: str) -> None:
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
+    assert_evidence_href_https_only()
 
     site = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
     bitly = str((site.get("external") or {}).get("bitly_hub") or "")
@@ -124,97 +163,115 @@ def main() -> None:
             fail(f"missing route {label}: {rel}")
 
     home = (DIST / "index.html").read_text(encoding="utf-8")
-    if 'class="entrance hero"' not in home:
+    if not has_html_class(home, "entrance") or not has_html_class(home, "hero"):
         fail("home missing entrance hero")
-    if 'class="entrance-photo"' not in home:
-        fail("home missing entrance atmosphere photograph")
+    if "entrance-atmosphere--tokens" not in home:
+        fail("home missing token-based entrance atmosphere (no reference photography)")
     if 'class="current-index"' not in home:
         fail("home missing current-index")
-    if 'class="system-map-section"' not in home:
-        fail("home missing system-map section")
-    if 'class="reading-room"' not in home:
-        fail("home missing reading-room section")
-    if 'class="workshop"' not in home:
-        fail("home missing workshop section")
+    if 'class="index-status"' in home or ">studying<" in home:
+        fail("home current-index must use topic labels, not -ing status verbs")
+    if 'class="index-topic"' not in home:
+        fail("home current-index missing index-topic labels")
+    if "/systems/#SYS-" not in home or "/notes/#NOTE-" not in home:
+        fail("home current-index must deep-link to catalogue records, not section indexes")
+    if 'data-library-deck' in home or has_html_class(home, "library-slide"):
+        fail("home must not ship the library slide deck")
+    if not has_html_class(home, "header-search"):
+        fail("home search must live in the header for instant access")
+    if 'id="catalogue-search"' in home:
+        fail("home must not bury catalogue search at page bottom")
+    if not has_html_class(home, "home-entry-grid"):
+        fail("home missing library entry grid")
+    if has_html_class(home, "home-featured-systems"):
+        fail("home must not ship scroll plates (use entry grid + tab shells)")
+    if has_html_class(home, "home-featured-notes"):
+        fail("home must not ship featured notes plate")
+    if has_html_class(home, "home-contact-plate"):
+        fail("home must not ship contact plate (contact lives in footer)")
+    if has_html_class(home, "home-credentials-teaser"):
+        fail("home must not ship credentials teaser plate")
+    if not has_html_class(home, "home-route"):
+        fail("home must use viewport-locked home-route shell")
+    if not has_html_class(home, "home-shell"):
+        fail("home must wrap hero and footer in home-shell for aligned measure")
+    if 'class="system-map-stage"' in home:
+        fail("home must not embed the full system map (lives on /systems/)")
+    if 'id="workshop"' in home or has_html_class(home, "workshop"):
+        fail("home must not ship a separate workshop/experiments slide")
+    if "Homelab" in home:
+        fail("home must not reference homelab until a public repo or essay exists")
     if 'class="outcome-strip"' in home:
         fail("home must not show outcome-strip in hero (outcomes live on SYS records)")
     if "professional credentials" in home:
         fail("home still shows cert-count vanity chip")
     if 'class="proof-strip"' not in home:
         fail("home missing proof-strip")
-    cta_row = re.search(r'<div class="cta-row">(.*?)</div>', home, re.S)
-    if not cta_row:
-        fail("home missing cta-row")
-    cta_html = cta_row.group(1)
-    if cta_html.count("btn-primary") != 1:
-        fail("home cta-row must have exactly one btn-primary (View systems)")
-    if 'class="btn btn-primary"' not in cta_html or "View systems" not in cta_html:
-        fail("home cta-row missing primary View systems CTA")
-    if cta_html.count('class="btn"') != 1:
-        fail("home cta-row must keep Connect as the only secondary .btn")
-    if ">Connect</a>" not in cta_html:
-        fail("home cta-row missing secondary Connect .btn")
-    if 'href="/contact/"' not in cta_html:
-        fail("home cta-row Connect must go to /contact/")
-    entrance = home.split('class="entrance hero"', 1)[1].split('class="system-map-section"', 1)[0]
-    if "Specialist" in entrance:
+    if 'class="cta-row"' in home:
+        fail("home must not ship cta-row (Systems is in the entry grid; contact is in footer)")
+    hero_before_grid = home.split("home-entry-grid", 1)[0]
+    if "View systems" in hero_before_grid:
+        fail("home hero must not duplicate Systems button before the entry grid")
+    if 'href="/contact/"' in hero_before_grid:
+        fail("home hero must not ship Connect button (contact is in footer)")
+    if "Specialist" in hero_before_grid:
         fail("entrance must not use vague Specialist positioning")
-    if "CTO" in entrance or "CDAO" in entrance:
+    if "CTO" in hero_before_grid or "CDAO" in hero_before_grid:
         fail("entrance must not claim CTO/CDAO")
     if "Building intelligible systems" not in home:
         fail("home entrance must use thesis headline")
     if 'class="portrait-chip"' in home:
-        fail("home must not use hero portrait-chip (portrait lives on Profile)")
-    if 'id="contact"' not in home:
-        fail("home missing #contact section")
-    if 'class="selected-systems"' not in home:
-        fail("home missing selected-systems strip")
-    if home.find('class="reading-room"') > home.find('id="contact"'):
-        fail("reading-room must appear before #contact")
-    if home.find('class="system-map-section"') < home.find('class="cta-row"'):
-        fail("system map must appear after entrance CTAs")
-    selected = home.split('class="selected-systems"', 1)[1].split('class="reading-room"', 1)[0]
-    if selected.count("system-record") < 2 or selected.count("system-record") > 5:
-        fail("selected-systems must have 2–5 system records")
-    if "SYS-01" not in selected or "SYS-02" not in selected:
-        fail("selected-systems must include SYS-01 and SYS-02 records")
-    if "SkillUP" in selected:
-        fail("selected-systems must not equate a capstone with enterprise delivery")
-    if "SYS-03" not in selected:
-        fail("selected-systems must include SYS-03 (applied AI / STB)")
-    if 'class="record-impact"' not in selected:
-        fail("SYS-01 record must carry quantified impact lines")
-    if 'class="case-beats"' in selected:
-        fail("home selected-systems must not dump full case-beats")
-    if "/portfolio/" not in selected:
-        fail("selected-systems must link through to /portfolio/")
+        fail("home must not use hero portrait-chip")
+    if 'href="/career-journey/"' in home:
+        fail("home must not link to removed Career Journey route")
+    if 'href="/credentials/"' not in home:
+        fail("home entry grid must link to credentials")
+    if 'href="/about/"' in home.split("home-entry-grid", 1)[-1]:
+        fail("home entry grid must not link to removed Profile route")
+    if 'class="home-philosophy"' not in home and 'class="philosophy home-philosophy"' not in home:
+        fail("home must surface philosophy blockquote")
+    if 'class="home-competencies"' not in home:
+        fail("home must surface core competencies section")
+    if 'class="home-competency-list"' not in home:
+        fail("home competencies must use editorial list markup")
+    if "Data Engineering Leadership" not in home:
+        fail("home competencies must include export competency titles")
+    if 'href="/notes/"' not in home:
+        fail("home entry grid must link to notes")
     if "folio-toolbar" in home:
         fail("home must not ship an inert folio-toolbar")
     if 'class="operating-themes"' in home:
-        fail("home must not ship operating-themes (replaced by system map)")
-    if "Digital card" not in home.split('id="contact"', 1)[-1]:
-        fail("home #contact must keep Digital card CTA / bitly_hub")
+        fail("home must not ship operating-themes block")
     if "tel:" in home or "+65" in home:
         fail("home must not expose a visitor-facing phone number")
     if "PUBLIC contacts only" in home:
         fail("home must not show the visitor-facing contacts governance note")
-    if 'class="nav-elsewhere"' not in home:
-        fail("desktop nav missing Elsewhere disclosure")
+    if 'class="nav-elsewhere"' in home:
+        fail("header must not ship Elsewhere disclosure (external links live in footer)")
+    header_actions = home.split('class="header-actions"', 1)[1].split("</header>", 1)[0]
+    if ">Blog</a>" in header_actions:
+        fail("Blog must not appear in header (footer only)")
     desktop_nav = home.split('class="site-nav site-nav-desktop"', 1)[1].split("</nav>", 1)[0]
-    if "nav-elsewhere" not in desktop_nav:
-        fail("Elsewhere control must live in desktop primary nav")
-    if ">Blog</a>" not in desktop_nav.split("nav-elsewhere-panel", 1)[-1]:
-        fail("Elsewhere panel must still contain Blog")
-    if ">GitHub</a>" not in desktop_nav.split("nav-elsewhere-panel", 1)[-1]:
-        fail("Elsewhere panel must contain GitHub")
+    if "nav-elsewhere" in desktop_nav:
+        fail("Elsewhere control must not sit inside primary nav")
     if ">Systems</a>" not in desktop_nav:
         fail("desktop nav missing Systems")
     if ">Notes</a>" not in desktop_nav:
         fail("desktop nav missing Notes")
-    if ">Connect</a>" not in desktop_nav:
-        fail("desktop nav missing Connect")
-    if ">Work</a>" in desktop_nav.split("nav-elsewhere", 1)[0]:
+    if ">Experiments</a>" in desktop_nav:
+        fail("desktop nav must not link to removed workshop slide")
+    if ">Connect</a>" in desktop_nav:
+        fail("desktop nav must not duplicate connect")
+    if ">Profile</a>" in desktop_nav:
+        fail("desktop nav must not ship Profile (content absorbed into home and credentials)")
+    if ">Credentials</a>" not in desktop_nav:
+        fail("desktop nav missing Credentials")
+    if ">Work</a>" in desktop_nav:
         fail("desktop nav must not label Systems as Work")
+    if 'href="/systems/"' not in desktop_nav:
+        fail("desktop nav Systems must link to /systems/")
+    if 'href="/notes/"' not in desktop_nav:
+        fail("desktop nav Notes must link to /notes/")
     if 'library-card' not in home:
         fail("home footer must use library-card pattern")
     if "Static migration" in home or "Phase 1 pages" in home:
@@ -224,6 +281,10 @@ def main() -> None:
     email = (site.get("contact") or {}).get("email") or ""
     if f"mailto:{email}" not in home:
         fail("home missing mailto")
+    footer_chunk = home.split('class="library-page-footer', 1)[-1].split("</footer>", 1)[0]
+    for label in ("Digital card", "Blog", "Medium", "LinkedIn", "GitHub"):
+        if f">{label}</a>" not in footer_chunk:
+            fail(f"home footer missing {label} link")
     if 'class="nav-menu"' not in home:
         fail("home missing mobile nav-menu")
     if 'class="site-header-wrap"' not in home:
@@ -240,6 +301,8 @@ def main() -> None:
         fail("FOUC-safe theme boot script must appear before stylesheet")
     if "application/ld+json" not in home or '"@type":"Person"' not in home:
         fail("home missing Person JSON-LD")
+    if '"@type":"WebSite"' not in home:
+        fail("home missing WebSite JSON-LD")
     if 'rel="canonical"' not in home:
         fail("home missing canonical URL")
     if "og:description" not in home:
@@ -251,7 +314,7 @@ def main() -> None:
     if home_desc.group(1) == headline:
         fail("home meta description must not be the raw role headline")
     if 'class="header-contact' in home:
-        fail("header Contact control must not duplicate Contact now that it is in primary nav")
+        fail("header Contact control must not duplicate Contact")
     if 'class="skip-link"' not in home or 'href="#main"' not in home:
         fail("home missing skip-link to #main")
     if 'id="main"' not in home:
@@ -260,10 +323,67 @@ def main() -> None:
     if len(nav_chunk) < 2:
         fail("home missing primary nav")
     primary_nav = nav_chunk[1].split("</nav>", 1)[0]
-    if 'href="/contact/"' not in primary_nav:
-        fail("primary nav must link Connect to /contact/")
-    if 'href="/#contact"' in primary_nav:
-        fail("primary nav still links Connect to /#contact")
+    if 'href="/about/"' in primary_nav:
+        fail("primary nav must not link to removed Profile route")
+    if 'href="/systems/"' not in primary_nav:
+        fail("primary nav must link Systems to /systems/")
+
+    portfolio_redirect = (DIST / "portfolio" / "index.html").read_text(encoding="utf-8")
+    if "/systems/" not in portfolio_redirect:
+        fail("/portfolio/ redirect must point to /systems/")
+    catalogue_redirect = (DIST / "systems" / "catalogue" / "index.html").read_text(encoding="utf-8")
+    if "/systems/" not in catalogue_redirect:
+        fail("/systems/catalogue/ redirect must point to /systems/")
+    perspectives_redirect = (DIST / "perspectives" / "index.html").read_text(encoding="utf-8")
+    if "/notes/" not in perspectives_redirect:
+        fail("/perspectives/ redirect must point to /notes/")
+
+    systems = (DIST / "systems" / "index.html").read_text(encoding="utf-8")
+    if not has_html_class(systems, "library-shell"):
+        fail("systems page must use unified library-shell")
+    if not has_html_class(systems, "library-split"):
+        fail("systems page must use library-split pane layout")
+    if not has_html_class(systems, "library-index"):
+        fail("systems page must include full catalogue index")
+    if not has_html_class(systems, "library-panel"):
+        fail("systems page must render catalogue panels")
+    if 'class="page-with-toc"' in systems:
+        fail("systems must not use legacy scroll longform layout")
+    if "Enterprise Data" not in systems:
+        fail("systems index must include enterprise catalogue section")
+    if 'class="library-index-group"' not in systems:
+        fail("systems index must use non-clickable group headers for nested sections")
+    if 'class="proof-case"' not in systems:
+        fail("systems catalogue must include proof-case rows")
+    proof_case_bodies = re.findall(
+        r'<article class="proof-case">([\s\S]*?)</article>', systems
+    )
+    if any("<h3" in body for body in proof_case_bodies):
+        fail("systems proof-case rows must not repeat titles in panel body")
+    if 'data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"' not in systems:
+        fail("systems index must link Prudential case panel")
+    if 'data-record="SYS-01"' not in systems:
+        fail("systems must embed SYS-01 record panel")
+    if "NOTE-2026-005" not in systems:
+        fail("systems must include NOTE-2026-005 record panel")
+    if 'class="record-impact"' not in systems:
+        fail("SYS-01 record must carry quantified impact lines")
+    if 'related-paths-label' not in systems:
+        fail("systems record panels must include related paths")
+    if not has_html_class(systems, "library-strip"):
+        fail("systems page must include cross-link strip")
+
+    notes = (DIST / "notes" / "index.html").read_text(encoding="utf-8")
+    credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
+    for label, html in (("Notes", notes), ("Credentials", credentials)):
+        if not has_html_class(html, "library-shell"):
+            fail(f"{label} must use unified library-shell")
+        if 'class="page-with-toc"' in html:
+            fail(f"{label} must not use legacy scroll longform layout")
+        if not has_html_class(html, "header-search"):
+            fail(f"{label} must include header search like other primary tabs")
+
+    portfolio = systems
 
     css = (DIST / "styles.css").read_text(encoding="utf-8")
     if "main.page .entrance h1" not in css and "main.page .hero h1" not in css:
@@ -272,14 +392,12 @@ def main() -> None:
         fail("styles.css must load Crimson Pro display face")
     if "Source Sans 3" not in css:
         fail("styles.css must load Source Sans 3 body face")
-    if ".selected-systems h2" not in css:
-        fail("styles.css missing .selected-systems h2 section title")
     if not re.search(
-        r"\.selected-systems h2[\s\S]*?\{[^}]*margin:\s*0 0 var\(--space-5\)",
+        r"main\.page h2\s*\{[^}]*font-family:\s*var\(--font-display\)",
         css,
         re.S,
     ):
-        fail("selected-systems h2 must set margin: 0 0 var(--space-5)")
+        fail("main.page h2 must use font-display for unified home/inner typography")
     if not re.search(
         r"main\.page \.(entrance|hero) h1\s*\{[^}]*font-family:\s*var\(--font-display\)",
         css,
@@ -324,24 +442,10 @@ def main() -> None:
         fail("styles.css light glow must use soft amber wash (10%)")
     if "--accent-link" not in css:
         fail("styles.css missing --accent-link for light body links")
-    if re.search(r"\.cj-js\s+\.cj-slide[^{]*\{[^}]*scale\s*\(", css):
-        fail("career journey .cj-slide must not use scale transforms")
+    if "--text-scale" not in css:
+        fail("styles.css missing --text-scale for responsive reading sizes")
     if "transform: scale(" in css:
         fail("assembled CSS must not include scale() transforms")
-    if not re.search(
-        r"@media \(prefers-reduced-motion: reduce\).*?\.cj-js \.cj-slide,"
-        r".*?opacity:\s*1 !important.*?transform:\s*none !important",
-        css,
-        re.S,
-    ):
-        fail("prefers-reduced-motion must force .cj-slide opacity 1 / transform none")
-    if not re.search(
-        r"@media \(prefers-reduced-motion: reduce\).*?\[data-step\].*?"
-        r"opacity:\s*1 !important.*?transform:\s*none !important",
-        css,
-        re.S,
-    ):
-        fail("prefers-reduced-motion must reveal all [data-step] (not animation:none alone)")
 
     bg_deep = _token_hex(css, "--bg-deep")
     bg_mid = _token_hex(css, "--bg-mid")
@@ -401,6 +505,7 @@ def main() -> None:
     light_pairs = (
         ("light --text-default on --bg-deep", light_text, light_bg, 4.5),
         ("light --text-muted on --bg-deep", light_muted, light_bg, 4.5),
+        ("light --text-muted on --bg-mid", light_muted, light_mid, 4.5),
         ("light --accent-link on --bg-deep", light_link, light_bg, 4.5),
         ("light --accent-link on --bg-mid", light_link, light_mid, 4.5),
         ("light --text-default on --bg-elevated", light_text, light_elev, 4.5),
@@ -410,8 +515,6 @@ def main() -> None:
         if ratio < minimum:
             fail(f"a11y contrast {label} is {ratio:.2f}:1 (need ≥ {minimum}:1)")
 
-    portfolio = (DIST / "portfolio" / "index.html").read_text(encoding="utf-8")
-    credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
     if 'class="case-outcome"' not in portfolio:
         fail("portfolio missing case-outcome class on project rows")
     if 'class="case-tools' not in portfolio:
@@ -432,10 +535,20 @@ def main() -> None:
         fail("work page missing SkillUP heading id")
     if 'id="stb-data-engineer-applied-ml"' not in portfolio:
         fail("work page missing STB applied-ML enterprise case")
-    if "section-fold--enterprise" not in portfolio or "proof-deck" not in portfolio:
-        fail("work page missing enterprise delivery fold")
-    if "section-fold--public" not in portfolio:
-        fail("work page missing public-architecture fold")
+    if 'class="library-index-group"' not in portfolio:
+        fail("systems index must use non-clickable group headers for nested sections")
+    if "proof-deck" not in portfolio:
+        fail("enterprise case panels must use proof-deck styling")
+    if not re.search(
+        r"\.section-fold--public \.case-beats dt\s*\{[^}]*color:\s*var\(--text-muted\)",
+        css,
+    ):
+        fail("public fold dt must use --text-muted (AA on light --bg-mid)")
+    if re.search(
+        r"\.section-fold--public \.case-beats dt\s*\{[^}]*color:\s*var\(--text-faint\)",
+        css,
+    ):
+        fail("public fold dt must not use --text-faint on --bg-mid")
     if "Enterprise delivery" not in portfolio:
         fail("work page missing enterprise delivery kicker")
     if "Public architectures" not in portfolio:
@@ -459,7 +572,10 @@ def main() -> None:
     if "Technical Documentation" in portfolio:
         fail("tutorial tools must be curated to at most 5 labels")
     for match in re.finditer(r'class="case-tools[^"]*"[^>]*>([^<]+)', portfolio):
-        labels = [part.strip() for part in match.group(1).removeprefix("Tools:").split(",") if part.strip()]
+        raw = match.group(1)
+        if raw.startswith("Tools:"):
+            raw = raw[len("Tools:") :]
+        labels = [part.strip() for part in raw.split(",") if part.strip()]
         if len(labels) > 5:
             fail(f"case-tools exceeds 5 labels: {labels}")
     if "first-party LinkedIn analytics" not in portfolio:
@@ -472,23 +588,22 @@ def main() -> None:
         fail("portfolio missing Prudential heading id for home selected-systems links")
     if 'id="sph-media-lead-data-engineer"' not in portfolio:
         fail("portfolio missing SPH heading id for home selected-systems links")
-    if "/portfolio/#stb-data-engineer-applied-ml" not in home:
-        fail("home selected-systems must deep-link the STB case")
-    for name, html in (("portfolio", portfolio), ("credentials", credentials)):
+    for name, html in (("home", home), ("portfolio", portfolio), ("credentials", credentials)):
         if 'id="search"' not in html:
             fail(f"{name} missing #search")
-        if 'class="page-toc' not in html:
-            fail(f"{name} missing page-toc")
-        if 'class="page-with-toc"' not in html:
-            fail(f"{name} missing page-with-toc layout")
-        if "page-toc-sidebar" not in html:
-            fail(f"{name} missing sticky sidebar TOC class")
         if 'class="page-search-label"' not in html:
             fail(f"{name} missing visible search label")
         if 'for="pagefind-search-input"' not in html:
             fail(f"{name} search label missing for=pagefind-search-input")
         if 'setAttribute("name", "q")' not in html:
             fail(f"{name} Pagefind input missing name attribute wiring")
+    for name, html in (("portfolio", portfolio), ("credentials", credentials)):
+        if not has_html_class(html, "library-shell"):
+            fail(f"{name} missing library-shell")
+        if not has_html_class(html, "library-index"):
+            fail(f"{name} missing library index")
+        if 'class="page-with-toc"' in html:
+            fail(f"{name} must not use legacy page-with-toc scroll layout")
 
     styles_dir = ROOT / "src" / "styles"
     for part in (
@@ -496,6 +611,7 @@ def main() -> None:
         "base.css",
         "chrome.css",
         "home.css",
+        "library.css",
         "components.css",
         "longform.css",
         "search.css",
@@ -506,59 +622,60 @@ def main() -> None:
     if "--- longform.css ---" not in css:
         fail("dist/styles.css was not assembled from src/styles modules")
 
-    if 'class="issuer-group"' not in credentials:
-        fail("credentials missing issuer-group headings")
-    if 'class="verify-panel"' not in credentials:
-        fail("credentials missing VERIFY panel under the lede")
+    if 'class="library-index-sub"' not in credentials:
+        fail("credentials index missing issuer subcategory list")
+    if 'class="library-index-group"' not in credentials:
+        fail("credentials professional section must be a non-clickable group header")
+    if 'class="credentials-featured-grid"' not in credentials:
+        fail("credentials featured panel must use credential cards grid")
+    if 'class="credential-card"' not in credentials:
+        fail("credentials featured panel missing credential cards")
+    if 'class="library-index-notes"' in credentials:
+        fail("credentials sidebar footer must not include notes list")
+    if 'data-panel-id="verify-credentials"' in credentials:
+        fail("credentials must not include separate Verify index panel")
     if "Credly" not in credentials or "Databricks" not in credentials:
-        fail("VERIFY panel must include issuer hubs from public records")
-    if "<h4>" not in credentials:
-        fail("credentials issuer groups must list cert titles as h4")
+        fail("credentials must include issuer verify links in cert entries")
+    if "status-badge--ongoing" not in credentials or "MTech" not in credentials:
+        fail("MTech must be flagged as in progress when end date is in the future")
     if re.search(r">https?://[^<]+<", credentials):
         fail("credentials must not print raw verify URLs as link text")
 
     about = (DIST / "about" / "index.html").read_text(encoding="utf-8")
-    if 'class="page-with-toc"' not in about:
-        fail("about missing page-with-toc layout")
-    if "page-toc-sidebar" not in about:
-        fail("about missing sticky sidebar TOC")
-    if 'class="section-fold"' not in about:
-        fail("about missing collapsible section-fold (must match portfolio/credentials)")
-    for name, html in (("about", about), ("portfolio", portfolio), ("credentials", credentials)):
-        if re.search(
-            r'<summary class="section-fold-summary"[^>]*>\s*<h[1-6]\b',
-            html,
-        ):
-            fail(f"{name} section-fold summary must not wrap a heading")
-        if not re.search(r'<summary class="section-fold-summary" id="[^"]+"', html):
-            fail(f"{name} section-fold summary missing id for TOC anchors")
-        if not re.search(
-            r'<summary class="section-fold-summary"[^>]*role="heading"[^>]*aria-level="2"',
-            html,
-        ):
-            fail(f"{name} section-fold summary must be the heading (role=heading)")
-        if re.search(
-            r'<h2 class="visually-hidden">',
-            html,
-        ):
-            fail(f"{name} must not duplicate fold titles with a visually-hidden h2")
-    if 'class="embed-fallback"' not in about and 'class="figma-open"' not in about:
-        fail("about missing Figma open/fallback link")
-    if "cj-link-card" in about:
-        fail("about Career Journey must use editorial item-list rows, not cj-link-card")
-    if 'id="selected-writing"' not in about:
-        fail("about missing Selected writing section")
-    if "medium.com/@kunojilym" not in about:
-        fail("about missing Medium writing highlight links")
+    home_target = with_base(site, "/")
+    if home_target not in about:
+        fail("about redirect must target home")
+    if has_html_class(about, "library-shell"):
+        fail("about must redirect to home, not ship library shell")
+    if not has_html_class(credentials, "library-shell"):
+        fail("credentials missing library-shell layout")
+    if not has_html_class(credentials, "library-index"):
+        fail("credentials missing library index")
+    if 'data-panel-id="core-competencies"' in credentials:
+        fail("credentials must not host core competencies (they live on home)")
+    if 'data-panel-id="career-journey"' in credentials:
+        fail("credentials must not host career journey panel")
+    if 'class="library-index-footer"' in credentials:
+        fail("credentials must not ship sidebar footer (removed with Career Journey)")
+    if 'href="/career-journey/"' in credentials:
+        fail("credentials must not link to removed Career Journey route")
+    if credentials.count('class="credential-card"') < 8:
+        fail("credentials catalogue must use credential cards throughout")
+    if 'class="embed-fallback"' in credentials or 'class="figma-open"' in credentials:
+        fail("credentials must not embed Figma deck chrome")
 
-    if portfolio.count("github.com/") < 5:
-        fail("portfolio missing expected public GitHub project links")
+    if "bit.ly/3GGyiXF" in portfolio:
+        fail("systems must not link to legacy portfolio Bitly short")
     if "<iframe" in portfolio:
         fail("portfolio must not load a live Figma iframe (white canvas on dark page)")
     if "Klook Travel Planner" in portfolio and "Figma deck" not in portfolio:
         fail("Klook row must keep the compact Figma deck .links row")
     assert_no_empty_static_frames(portfolio, "portfolio")
-    assert_no_empty_static_frames(about, "about")
+    assert_no_empty_static_frames(credentials, "credentials")
+    if "bit.ly/4m4fqki" in credentials or "bit.ly/3GGyiXF" in credentials:
+        fail("credentials must not link to legacy Bitly shorts — full catalogue lives on-site")
+    if 'data-panel-id="featured-credentials"' in credentials:
+        fail("credentials must not use a featured subset — full export catalogue only")
     empty_preview = figma_embed_html(
         "Klook Travel Planner Capstone",
         "https://embed.figma.com/deck/example",
@@ -578,44 +695,57 @@ def main() -> None:
         fail("figma_embed_html with poster must emit a real <img> inside embed-frame-static")
     if "aspect-ratio" in poster_preview:
         fail("poster markup must not hardcode a fill-only aspect-ratio box")
-    if 'class="page-toc-sub"' not in portfolio:
-        fail("portfolio TOC missing nested subcategory list")
-    if 'class="section-fold"' not in portfolio or 'class="section-fold"' not in credentials:
-        fail("portfolio/credentials missing collapsible section-fold")
-    if 'class="page-toc-sub"' not in credentials:
-        fail("credentials TOC missing issuer subcategory list")
+    if 'class="library-index-sub"' not in portfolio:
+        fail("systems catalogue index missing nested subcategory list")
 
-    perspectives = DIST / "perspectives" / "index.html"
-    if not perspectives.is_file():
-        fail("perspectives/index.html missing")
-    perspectives_html = perspectives.read_text(encoding="utf-8")
-    if "Start here" not in perspectives_html:
-        fail("perspectives missing start-here section")
-    if "medium.com/@kunojilym" not in perspectives_html:
-        fail("perspectives missing Medium writing links")
+    if not has_html_class(notes, "library-shell"):
+        fail("notes page must use library-shell")
+    if 'data-panel-id="featured-essay"' in notes or 'id="start-here"' in notes:
+        fail("notes must not use editorial bucket panels (Featured/Start here/More writing)")
+    if 'data-panel-id="elsewhere"' in notes:
+        fail("notes must not duplicate footer external links in the index")
+    if 'data-panel-id="NOTE-' not in notes:
+        fail("notes index must list individual NOTE-* catalogue entries")
+    if 'class="library-index-group"' not in notes:
+        fail("notes index must group essays by category")
+    if "note-taxonomy" not in notes or "note-category" not in notes:
+        fail("notes panels must show category taxonomy")
+    if "medium.com/@kunojilym" not in notes:
+        fail("notes page missing Medium writing links")
+    if "notes-entry" not in notes:
+        fail("notes page must render per-note entry panels")
+    note_entry_bodies = re.findall(
+        r'<article class="notes-entry">([\s\S]*?)</article>', notes
+    )
+    if any("<h2" in body for body in note_entry_bodies):
+        fail("notes library panels must not duplicate titles inside entry body")
+    if "grouped by category" not in notes:
+        fail("notes page missing category/timeline lede")
+
+    if not (DIST / "perspectives" / "index.html").is_file():
+        fail("perspectives/index.html redirect missing")
     if DIST.joinpath("chrome.js").is_file() is False:
         fail("dist/chrome.js missing")
-    work_page = DIST / "work" / "index.html"
-    if not work_page.is_file():
+    if not (DIST / "work" / "index.html").is_file():
         fail("work/index.html redirect missing")
 
     contact_page = DIST / "contact" / "index.html"
     if not contact_page.is_file():
-        fail("contact/index.html missing")
+        fail("contact/index.html redirect missing")
     contact_html = contact_page.read_text(encoding="utf-8")
-    if "http-equiv" in contact_html.lower() and "refresh" in contact_html.lower():
-        fail("contact page must not meta-refresh to Home")
-    if "<h1>Connect</h1>" not in contact_html:
-        fail("connect page missing h1")
-    if 'aria-current="page"' not in contact_html.split('aria-label="Primary"', 1)[-1].split("</nav>", 1)[0]:
-        fail("connect page must mark Connect as the current nav item")
-    if 'href="mailto:' not in contact_html:
-        fail("contact page missing mailto")
+    if home_target not in contact_html:
+        fail("contact redirect must target home")
+    if "<h1>Connect</h1>" in contact_html:
+        fail("contact must redirect to home, not ship a Connect page")
     redirects = (DIST / "_redirects").read_text(encoding="utf-8")
-    if re.search(r"/contact/?\s+/\s+302", redirects):
-        fail("_redirects still sends /contact to Home")
-    if not re.search(r"/contact\s+\S*/contact/\s+301", redirects):
-        fail("_redirects must 301 /contact to /contact/")
+    if not re.search(r"/about\s+\S*/\s+301", redirects):
+        fail("_redirects must 301 /about to home")
+    if not re.search(r"/about/\s+\S*/\s+301", redirects):
+        fail("_redirects must 301 /about/ to home")
+    if not re.search(r"/contact\s+\S*/\s+301", redirects):
+        fail("_redirects must 301 /contact to home")
+    if not re.search(r"/contact/\s+\S*/\s+301", redirects):
+        fail("_redirects must 301 /contact/ to home")
 
     pf = DIST / "pagefind" / "pagefind-ui.js"
     if not pf.is_file():
@@ -626,45 +756,17 @@ def main() -> None:
         asset = DIST.joinpath(*photo.strip("/").split("/"))
         if not asset.is_file():
             fail(f"profile asset missing in dist: {photo}")
-        about_html = (DIST / "about" / "index.html").read_text(encoding="utf-8")
-        if "profile-portrait" not in about_html and "profile" not in about_html.lower():
-            fail("profile page does not reference portrait photo")
-    for slot in ("entrance", "reading", "workshop"):
-        src = str((site.get("atmosphere") or {}).get(slot, {}).get("src") or "")
-        if src:
-            asset = DIST.joinpath(*src.strip("/").split("/"))
-            if not asset.is_file():
-                fail(f"atmosphere asset missing in dist: {src}")
 
     blob = "\n".join((DIST / rel).read_text(encoding="utf-8") for rel, _ in ROUTES).lower()
     for needle in FORBIDDEN:
         if needle in blob:
             fail(f"built HTML contains forbidden domain: {needle}")
 
-    cj_data_path = DATA / "career-journey.yaml"
-    cj_page_path = DIST / "career-journey" / "index.html"
-    if cj_data_path.is_file():
-        if not cj_page_path.is_file():
-            fail("career-journey.yaml present but dist/career-journey/index.html missing")
-        cj_html = cj_page_path.read_text(encoding="utf-8")
-        if 'class="cj-page"' not in cj_html:
-            fail("career-journey page missing cj-page wrapper")
-        slide_count = cj_html.count('class="cj-slide ')
-        if slide_count < 1:
-            fail("career-journey page has no rendered slides")
-        # Every <img> on this page must have a non-empty alt — the concrete,
-        # enforced version of the accessibility argument for going native
-        # instead of embedding the Figma deck (an iframe's internal alt
-        # text isn't something this repo can inspect or fix).
-        for match in re.finditer(r"<img\b[^>]*>", cj_html):
-            tag = match.group(0)
-            alt_match = re.search(r'alt="([^"]*)"', tag)
-            if not alt_match or not alt_match.group(1).strip():
-                fail(f"career-journey page has an <img> with missing/empty alt: {tag}")
-        if 'src="/career-journey.js"' not in cj_html and 'src="./career-journey.js"' not in cj_html and "career-journey.js" not in cj_html:
-            fail("career-journey page missing scroll-reveal script tag")
-        if cj_html.lower().count("<h1") != 1:
-            fail("career-journey page must have a single h1 (page chrome; slide titles are h2+)")
+    cj_page = DIST / "career-journey" / "index.html"
+    if cj_page.is_file():
+        cj_html = cj_page.read_text(encoding="utf-8")
+        if 'http-equiv="refresh"' not in cj_html or home_target not in cj_html:
+            fail("career-journey must redirect to home")
 
     print("test_site_build ok")
 
