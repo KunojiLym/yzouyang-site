@@ -118,6 +118,7 @@ html.library-deck-root .site-header-wrap::after {
   max-width: var(--max);
   margin: 0 auto;
   padding: var(--space-3) var(--space-6);
+  overflow: visible;
 }
 
 /* Long-form routes share one shell measure with main.page so brand / Contact
@@ -197,7 +198,7 @@ html[data-reading-size="xlarge"] .header-actions {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--space-1);
   height: 100%;
   font-family: var(--font-display);
   font-weight: 600;
@@ -218,6 +219,7 @@ html[data-reading-size="xlarge"] .header-actions {
   box-sizing: border-box;
 }
 
+/* stylelint-disable scale-unlimited/declaration-strict-value -- toggle glyph sizes, not body text ramp */
 .reading-size-step[data-step="default"] {
   font-size: 0.5625rem;
 }
@@ -229,6 +231,7 @@ html[data-reading-size="xlarge"] .header-actions {
 .reading-size-step[data-step="xlarge"] {
   font-size: 1.25rem;
 }
+/* stylelint-enable scale-unlimited/declaration-strict-value */
 
 .reading-size-step.is-active {
   border-color: var(--text-default);
@@ -304,14 +307,6 @@ html[data-reading-size="xlarge"] .header-actions {
   justify-content: flex-end;
   gap: var(--space-3);
   margin-right: 0;
-}
-
-.header-actions {
-  overflow: visible;
-}
-
-.site-header {
-  overflow: visible;
 }
 
 .nav-menu {

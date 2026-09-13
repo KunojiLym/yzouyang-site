@@ -134,7 +134,7 @@ body:has(main.home-route) .site-header {
   line-height: 1.4;
 }
 
-@media (max-width: 48rem) {
+@media (width <= 48rem) {
   .home-entry-grid {
     grid-template-columns: 1fr;
   }
@@ -225,7 +225,7 @@ body:has(main.home-route) .site-header {
   text-transform: uppercase;
 }
 
-@media (max-width: 48rem) {
+@media (width <= 48rem) {
   .systems-split {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);

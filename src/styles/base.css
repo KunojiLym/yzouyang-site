@@ -4,7 +4,6 @@
 }
 
 html {
-  font-size: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-offset) + 0.5rem);
   background-color: var(--bg-deep);
