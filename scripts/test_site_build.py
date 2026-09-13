@@ -4,11 +4,18 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
-from build import _beat_value_html, figma_embed_html, resolve_enterprise_overlay, with_base
+from build import (
+    _beat_value_html,
+    figma_embed_html,
+    normalize_base,
+    resolve_enterprise_overlay,
+    with_base,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -41,6 +48,31 @@ def has_html_class(html: str, name: str) -> bool:
         if name in match.group(1).split():
             return True
     return False
+
+
+def infer_base_path_from_dist() -> str:
+    index = DIST / "index.html"
+    if not index.is_file():
+        return ""
+    home = index.read_text(encoding="utf-8")
+    match = re.search(r'href="([^"]*)/styles\.css"', home)
+    if not match:
+        return ""
+    return normalize_base(match.group(1))
+
+
+def resolve_site_base(site: dict) -> dict:
+    merged = dict(site)
+    if os.environ.get("SITE_BASE_PATH") is not None:
+        merged["base_path"] = os.environ["SITE_BASE_PATH"]
+    else:
+        merged["base_path"] = infer_base_path_from_dist()
+    merged["base_path"] = normalize_base(merged.get("base_path", ""))
+    return merged
+
+
+def href_attr(site: dict, path: str) -> str:
+    return f'href="{with_base(site, path)}"'
 
 
 def _rel_lum(hex_color: str) -> float:
@@ -119,7 +151,7 @@ def main() -> None:
         fail("dist/ missing — run python scripts/build.py first")
     assert_evidence_href_https_only()
 
-    site = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
+    site = resolve_site_base(json.loads((DATA / "site.json").read_text(encoding="utf-8")))
     bitly = str((site.get("external") or {}).get("bitly_hub") or "")
     if not bitly:
         fail("site.external.bitly_hub required for Digital card CTA")
@@ -173,7 +205,7 @@ def main() -> None:
         fail("home current-index must use topic labels, not -ing status verbs")
     if 'class="index-topic"' not in home:
         fail("home current-index missing index-topic labels")
-    if "/systems/#SYS-" not in home or "/notes/#NOTE-" not in home:
+    if f"{with_base(site, '/systems/')}#SYS-" not in home or f"{with_base(site, '/notes/')}#NOTE-" not in home:
         fail("home current-index must deep-link to catalogue records, not section indexes")
     if 'data-library-deck' in home or has_html_class(home, "library-slide"):
         fail("home must not ship the library slide deck")
@@ -212,7 +244,7 @@ def main() -> None:
     hero_before_grid = home.split("home-entry-grid", 1)[0]
     if "View systems" in hero_before_grid:
         fail("home hero must not duplicate Systems button before the entry grid")
-    if 'href="/contact/"' in hero_before_grid:
+    if href_attr(site, "/contact/") in hero_before_grid:
         fail("home hero must not ship Connect button (contact is in footer)")
     if "Specialist" in hero_before_grid:
         fail("entrance must not use vague Specialist positioning")
@@ -222,11 +254,11 @@ def main() -> None:
         fail("home entrance must use thesis headline")
     if 'class="portrait-chip"' in home:
         fail("home must not use hero portrait-chip")
-    if 'href="/career-journey/"' in home:
+    if href_attr(site, "/career-journey/") in home:
         fail("home must not link to removed Career Journey route")
-    if 'href="/credentials/"' not in home:
+    if href_attr(site, "/credentials/") not in home:
         fail("home entry grid must link to credentials")
-    if 'href="/about/"' in home.split("home-entry-grid", 1)[-1]:
+    if href_attr(site, "/about/") in home.split("home-entry-grid", 1)[-1]:
         fail("home entry grid must not link to removed Profile route")
     if 'class="home-philosophy"' not in home and 'class="philosophy home-philosophy"' not in home:
         fail("home must surface philosophy blockquote")
@@ -236,7 +268,7 @@ def main() -> None:
         fail("home competencies must use editorial list markup")
     if "Data Engineering Leadership" not in home:
         fail("home competencies must include export competency titles")
-    if 'href="/notes/"' not in home:
+    if href_attr(site, "/notes/") not in home:
         fail("home entry grid must link to notes")
     if "folio-toolbar" in home:
         fail("home must not ship an inert folio-toolbar")
@@ -268,9 +300,9 @@ def main() -> None:
         fail("desktop nav missing Credentials")
     if ">Work</a>" in desktop_nav:
         fail("desktop nav must not label Systems as Work")
-    if 'href="/systems/"' not in desktop_nav:
+    if href_attr(site, "/systems/") not in desktop_nav:
         fail("desktop nav Systems must link to /systems/")
-    if 'href="/notes/"' not in desktop_nav:
+    if href_attr(site, "/notes/") not in desktop_nav:
         fail("desktop nav Notes must link to /notes/")
     if 'library-card' not in home:
         fail("home footer must use library-card pattern")
@@ -323,19 +355,21 @@ def main() -> None:
     if len(nav_chunk) < 2:
         fail("home missing primary nav")
     primary_nav = nav_chunk[1].split("</nav>", 1)[0]
-    if 'href="/about/"' in primary_nav:
+    if href_attr(site, "/about/") in primary_nav:
         fail("primary nav must not link to removed Profile route")
-    if 'href="/systems/"' not in primary_nav:
+    if href_attr(site, "/systems/") not in primary_nav:
         fail("primary nav must link Systems to /systems/")
 
+    systems_href = with_base(site, "/systems/")
+    notes_href = with_base(site, "/notes/")
     portfolio_redirect = (DIST / "portfolio" / "index.html").read_text(encoding="utf-8")
-    if "/systems/" not in portfolio_redirect:
+    if systems_href not in portfolio_redirect:
         fail("/portfolio/ redirect must point to /systems/")
     catalogue_redirect = (DIST / "systems" / "catalogue" / "index.html").read_text(encoding="utf-8")
-    if "/systems/" not in catalogue_redirect:
+    if systems_href not in catalogue_redirect:
         fail("/systems/catalogue/ redirect must point to /systems/")
     perspectives_redirect = (DIST / "perspectives" / "index.html").read_text(encoding="utf-8")
-    if "/notes/" not in perspectives_redirect:
+    if notes_href not in perspectives_redirect:
         fail("/perspectives/ redirect must point to /notes/")
 
     systems = (DIST / "systems" / "index.html").read_text(encoding="utf-8")
@@ -657,7 +691,7 @@ def main() -> None:
         fail("credentials must not host career journey panel")
     if 'class="library-index-footer"' in credentials:
         fail("credentials must not ship sidebar footer (removed with Career Journey)")
-    if 'href="/career-journey/"' in credentials:
+    if href_attr(site, "/career-journey/") in credentials:
         fail("credentials must not link to removed Career Journey route")
     if credentials.count('class="credential-card"') < 8:
         fail("credentials catalogue must use credential cards throughout")
@@ -738,14 +772,11 @@ def main() -> None:
     if "<h1>Connect</h1>" in contact_html:
         fail("contact must redirect to home, not ship a Connect page")
     redirects = (DIST / "_redirects").read_text(encoding="utf-8")
-    if not re.search(r"/about\s+\S*/\s+301", redirects):
-        fail("_redirects must 301 /about to home")
-    if not re.search(r"/about/\s+\S*/\s+301", redirects):
-        fail("_redirects must 301 /about/ to home")
-    if not re.search(r"/contact\s+\S*/\s+301", redirects):
-        fail("_redirects must 301 /contact to home")
-    if not re.search(r"/contact/\s+\S*/\s+301", redirects):
-        fail("_redirects must 301 /contact/ to home")
+    home_path = with_base(site, "/")
+    for source in ("/about", "/about/", "/contact", "/contact/"):
+        line = f"{with_base(site, source)} {home_path} 301"
+        if line not in redirects:
+            fail(f"_redirects must 301 {source} to home")
 
     pf = DIST / "pagefind" / "pagefind-ui.js"
     if not pf.is_file():
