@@ -10,8 +10,18 @@ main.page:has(.page-with-toc) {
   max-width: var(--max-longform);
 }
 
+main.page.library-route {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  animation: none;
+}
+
 main.page h1 {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--text-display-1);
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -20,7 +30,7 @@ main.page h1 {
 }
 
 main.page h2 {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--text-display-2);
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -78,6 +88,7 @@ main.page h3.issuer-group {
   border-bottom: 1px solid var(--line-soft);
 }
 
+main.page .item-list h2,
 .item-list h2,
 .item-list h3,
 .item-list h4 {
@@ -86,6 +97,31 @@ main.page h3.issuer-group {
   font-weight: 600;
   margin: 0 0 var(--space-tight);
   color: var(--text-strong);
+}
+
+.record-id,
+.catalogue-line {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+  margin: 0 0 var(--space-2);
+}
+
+.record-domains {
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  color: rgb(61 122 94);
+  margin: 0 0 var(--space-2);
+}
+
+.record-impact {
+  font-size: var(--text-sm);
+  color: var(--text-default);
+  margin: var(--space-2) 0 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line-soft);
 }
 
 .item-list .case-outcome {
@@ -141,7 +177,7 @@ main.page h3.issuer-group {
 
 .embed-fallback:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .embed-fallback strong {
@@ -241,4 +277,21 @@ a.embed-frame-static:hover {
   line-height: 1.5;
   color: var(--text-default);
   font-weight: 500;
+}
+
+.profile-portrait {
+  max-width: 12rem;
+  margin: 0 0 var(--space-6);
+}
+
+.profile-portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1rem 2rem rgb(0 0 0 / 22%);
+}
+
+.profile-portrait .meta {
+  margin: var(--space-2) 0 0;
 }

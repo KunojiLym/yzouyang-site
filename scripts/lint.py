@@ -8,21 +8,19 @@ import re
 import sys
 from pathlib import Path
 
-import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
-
 # Reuse build.py's constants rather than duplicating the layout/kind lists —
 # scripts/ is on sys.path[0] when this file is run directly, so this is a
 # plain sibling import, not a package import.
-from build import (
-    CJ_LAYOUTS,
-    CJ_SLIDE_KINDS,
-    CJ_SLIDES_DIR,
-    compose_home_selected_row,
-)
+from build import compose_home_selected_row
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
-REQUIRED_PAGES = ("/about/", "/portfolio/", "/credentials/", "/perspectives/")
+SCROLL_NAV = {
+    "Systems": "/systems/",
+    "Notes": "/notes/",
+    "Credentials": "/credentials/",
+}
+REQUIRED_PAGES = ("/systems/", "/notes/", "/credentials/")
 NON_PUBLIC_VISIBILITY = {
     "PRIVATE_ONLY",
     "NEVER_EXPORT",
@@ -76,9 +74,26 @@ def main() -> None:
         if not meta.get("person_id"):
             fail("export._meta.person_id required")
 
-    for key in ("projects", "certifications"):
+    for key in ("projects", "certifications", "writing"):
         if key not in export or not isinstance(export[key], list):
             fail(f"export missing list: {key}")
+
+    writing = export.get("writing") or []
+    if len(writing) < 7:
+        fail(f"export.writing must include at least 7 PUBLIC essays (found {len(writing)})")
+    for row in writing:
+        if not isinstance(row, dict):
+            fail("export.writing entries must be objects")
+        if not str(row.get("id") or "").startswith("NOTE-"):
+            fail("export.writing entries need pinned NOTE-* id")
+        if not row.get("title"):
+            fail("export.writing entries need title")
+        synd = row.get("syndication")
+        if not isinstance(synd, dict) or not (synd.get("medium") or synd.get("linkedin")):
+            fail(f"export.writing {row.get('id')} needs syndication.medium or syndication.linkedin")
+
+    if site.get("writing_highlights") is not None:
+        fail("site.writing_highlights must be removed — writing SoT is export.writing")
 
     for row in export.get("projects", []) + export.get("certifications", []):
         if isinstance(row, dict):
@@ -97,17 +112,20 @@ def main() -> None:
             fail(f"site.json must not contain work/university contact domain: {needle}")
 
     nav = site.get("nav") or []
-    hrefs = {item.get("href") for item in nav}
-    for path in REQUIRED_PAGES:
-        if path not in hrefs:
-            fail(f"nav missing {path}")
+    nav_by_label = {
+        item.get("label"): item for item in nav if isinstance(item, dict)
+    }
+    for label, anchor in SCROLL_NAV.items():
+        item = nav_by_label.get(label)
+        if not item or item.get("href") != anchor:
+            fail(f"nav {label} must scroll to {anchor}")
 
     nav_labels = [item.get("label") for item in nav if not item.get("external")]
-    for label in ("Work", "Perspectives", "About", "Credentials", "Contact"):
+    for label in ("Systems", "Notes", "Credentials"):
         if label not in nav_labels:
             fail(f"nav missing primary item {label}")
-    if "Portfolio" in nav_labels:
-        fail("nav still labels Work as Portfolio")
+    if "Portfolio" in nav_labels or "Work" in nav_labels:
+        fail("nav must label /portfolio/ as Systems, not Work or Portfolio")
     if "Home" in nav_labels:
         fail("Home must be the brand mark, not a primary nav item")
 
@@ -123,23 +141,48 @@ def main() -> None:
     if not str(site.get("public_origin") or "").startswith("http"):
         fail("site.public_origin must be an absolute http(s) origin")
 
-    external_labels = {"Blog", "Medium", "LinkedIn", "GitHub"}
+    external_labels = {"Medium", "LinkedIn", "GitHub"}
     for item in nav:
         if item.get("label") in external_labels and not item.get("external"):
-            fail(f"{item.get('label')} nav entry must be external until C2b")
+            fail(f"{item.get('label')} nav entry must be external")
+        if item.get("label") == "Blog":
+            if not item.get("footer_only"):
+                fail("Blog nav entry must be footer_only (not in header nav)")
+            if item.get("href") != "/notes/":
+                fail("Blog nav entry href must be /notes/")
+            if item.get("external"):
+                fail("Blog nav entry must be on-site (/notes/, external=false)")
     seen_external = {item.get("label") for item in nav if item.get("external")}
     if "GitHub" not in seen_external:
-        fail("nav Elsewhere must include GitHub")
+        fail("nav external links must include GitHub")
 
-    highlights = site.get("writing_highlights")
-    if highlights is not None:
-        if not isinstance(highlights, list) or not highlights:
-            fail("site.writing_highlights must be a non-empty list when set")
-        for row in highlights:
+    current_index = site.get("current_index")
+    highlights = site.get("home_highlights")
+    if highlights is not None and not isinstance(highlights, dict):
+        fail("site.home_highlights must be an object when set")
+    rotation = "weekly"
+    if isinstance(highlights, dict):
+        rotation = str(highlights.get("rotation") or "weekly").strip().lower()
+        if rotation not in {"weekly", "pinned"}:
+            fail("home_highlights.rotation must be weekly or pinned")
+    if rotation == "pinned":
+        if not isinstance(current_index, list) or not current_index:
+            fail("current_index required when home_highlights.rotation is pinned")
+        allowed_topics = {"notes", "systems"}
+        for row in current_index:
             if not isinstance(row, dict):
-                fail("writing_highlights entries must be objects")
-            if not (row.get("title") and row.get("url")):
-                fail("writing_highlights entries need title and url")
+                fail("current_index entries must be objects")
+            topic = str(row.get("topic") or "").strip().lower()
+            if topic not in allowed_topics:
+                fail(
+                    "current_index entries need topic "
+                    "(notes or systems)"
+                )
+            href = str(row.get("href") or "").strip()
+            if not (str(row.get("label") or "").strip() and href):
+                fail("current_index entries need label and href")
+            if topic in {"notes", "systems"} and "#" not in href:
+                fail(f"pinned current_index {topic} href must deep-link to a record (#NOTE-* / #SYS-*)")
 
     outcomes = site.get("outcomes")
     if outcomes is not None:
@@ -207,8 +250,8 @@ def main() -> None:
             if tools and (not isinstance(tools, list) or len(tools) > 5):
                 fail("home_selected tools must be a list of at most 5 labels")
             href = str(composed.get("href") or "")
-            if href and not href.startswith("/portfolio"):
-                fail("home_selected href must link through to /portfolio/")
+            if href and not href.startswith("/systems"):
+                fail("home_selected href must link through to /systems/")
 
     project_copy = site.get("project_copy")
     if project_copy is not None:
@@ -259,92 +302,15 @@ def main() -> None:
             if not collect.startswith(("https://", "http://")):
                 fail("analytics.diy.collect_url must be http(s)")
 
-    cj_path = DATA / "career-journey.yaml"
-    if cj_path.is_file():
-        cj = yaml.safe_load(cj_path.read_text(encoding="utf-8")) or {}
-        slides = cj.get("slides") or []
-        if not isinstance(slides, list) or not slides:
-            fail("career-journey.yaml: slides must be a non-empty list")
-        seen_ids: set[str] = set()
-        for slide in slides:
-            if not isinstance(slide, dict):
-                fail("career-journey.yaml: each slide must be an object")
-            sid = str(slide.get("id") or "").strip()
-            if not sid:
-                fail("career-journey.yaml: every slide needs a non-empty id")
-            if sid in seen_ids:
-                fail(f"career-journey.yaml: duplicate slide id {sid!r}")
-            seen_ids.add(sid)
-
-            kind = slide.get("kind")
-            if kind not in CJ_SLIDE_KINDS:
-                fail(
-                    f"career-journey.yaml: slide {sid!r} has unknown kind "
-                    f"{kind!r} (known: {', '.join(CJ_SLIDE_KINDS)})"
-                )
-
-            if kind == "image" and not str(slide.get("image_alt") or "").strip():
-                fail(f"career-journey.yaml: slide {sid!r} (image) is missing image_alt")
-
-            if kind == "points":
-                points = slide.get("points") or []
-                if not isinstance(points, list) or not points:
-                    fail(f"career-journey.yaml: slide {sid!r} points must be a non-empty list")
-
-            if kind == "timeline":
-                items = slide.get("items") or []
-                if not isinstance(items, list) or not items:
-                    fail(f"career-journey.yaml: slide {sid!r} items must be a non-empty list")
-                for item in items:
-                    if not isinstance(item, dict):
-                        fail(f"career-journey.yaml: slide {sid!r} timeline items must be objects")
-                    if not str(item.get("year") or "").strip():
-                        fail(f"career-journey.yaml: slide {sid!r} timeline item missing year")
-                    if not str(item.get("label") or "").strip():
-                        fail(f"career-journey.yaml: slide {sid!r} timeline item missing label")
-
-            if kind == "composed":
-                layout_name = slide.get("layout")
-                regions = CJ_LAYOUTS.get(str(layout_name))
-                if regions is None:
-                    fail(
-                        f"career-journey.yaml: slide {sid!r} has unknown composed "
-                        f"layout {layout_name!r} (known: {', '.join(CJ_LAYOUTS)})"
-                    )
-                for block in slide.get("blocks") or []:
-                    if not isinstance(block, dict):
-                        fail(f"career-journey.yaml: slide {sid!r} has a non-object block")
-                    region = str(block.get("region") or "")
-                    if regions is not None and region not in regions:
-                        fail(
-                            f"career-journey.yaml: slide {sid!r} block region {region!r} "
-                            f"not valid for layout {layout_name!r} (valid: {', '.join(regions)})"
-                        )
-                    if block.get("type") == "image" and not str(
-                        block.get("image_alt") or ""
-                    ).strip():
-                        fail(
-                            f"career-journey.yaml: slide {sid!r} has an image block "
-                            "missing image_alt"
-                        )
-
-            if kind == "partial":
-                rel = str(slide.get("partial") or "")
-                if not rel or not (CJ_SLIDES_DIR / rel).is_file():
-                    fail(
-                        f"career-journey.yaml: slide {sid!r} partial file not found: "
-                        f"data/career-journey-slides/{rel}"
-                    )
-
     dist = ROOT / "dist"
     if dist.is_dir():
-        needs_search = (dist / "portfolio" / "index.html").is_file() or (
+        needs_search = (dist / "systems" / "index.html").is_file() or (
             dist / "credentials" / "index.html"
         ).is_file()
         pf = dist / "pagefind" / "pagefind-ui.js"
         if needs_search and not pf.is_file():
             fail(
-                "dist has Portfolio/Credentials but missing pagefind/pagefind-ui.js "
+                "dist has Systems/Credentials but missing pagefind/pagefind-ui.js "
                 "(run python scripts/build.py without --skip-pagefind)"
             )
 

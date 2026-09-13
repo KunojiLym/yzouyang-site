@@ -1,31 +1,48 @@
 # Operator cutover checklist
 
-**Gate:** only after Phase 1 **UAT / preview** parity is signed off (see [preview-uat.md](preview-uat.md)). Until then, WordPress on Bluehost shared (`yzouyang.com` / `www` → `162.241.24.224`, `host-header` → `shared.bluehost.com`) stays authoritative on the apex.
+**Gate:** only after Phase 1 **UAT / preview** parity is signed off (see [preview-uat.md](preview-uat.md)). Until then, WordPress on Bluehost stays authoritative on the apex.
 
-## Before DNS
+**Full replacement checklist:** Homelab [docs/runbooks/yzouyang-wordpress-replacement.md](https://github.com/KunojiLym/Homelab/blob/main/docs/runbooks/yzouyang-wordpress-replacement.md).
+
+## Before DNS (C2a)
 
 - [ ] Offline `python scripts/preview.py` looks right
-- [ ] `python scripts/test_site_build.py` and `npm run test:e2e` green
+- [ ] `python scripts/lint.py`, `python scripts/test_site_build.py`, and `npm run test:e2e` green
 - [ ] UAT on GitHub Pages (`uat` branch deploy) signed off: https://kunojilym.github.io/yzouyang-site/
 - [ ] Promoted to `main` Pages deploy matches UAT
-- [ ] Preview URL serves `/`, `/about/`, `/portfolio/`, `/credentials/` from PUBLIC export
-- [ ] Home `#contact` reachable from sticky header Contact; `/contact/` redirects to Home contact
-- [ ] Pagefind works on portfolio or credentials
-- [ ] Blog / Medium / LinkedIn still reachable from nav **Elsewhere** (external)
-- [ ] About Selected writing links out (no full post import until C2b)
-- [ ] Bitly shorts still resolve: portfolio `bit.ly/3GGyiXF`, credentials `bit.ly/4m4fqki`
-- [ ] Digital card (`bit.ly/m/yzouyang`) reachable from home CTA
-- [ ] No work/university emails on Contact
-- [ ] Footer is public (© + contact/social), not migration notes
+- [ ] Preview serves `/`, `/systems/`, `/credentials/`, `/notes/` from PUBLIC export
+- [ ] `/about/`, `/contact/`, `/portfolio/` 301 to `/` or `/systems/` as documented
+- [ ] Pagefind indexes systems, credentials, and notes (titles + bodies)
+- [ ] Footer **Blog** → `/notes/` (on-site); Medium / LinkedIn still external
+- [ ] Legacy Bitly shorts (`bit.ly/3GGyiXF`, `bit.ly/4m4fqki`) repointed to `/systems/` and `/credentials/`
+- [ ] Smoke all 18 WP slug stubs → matching `/notes/#NOTE-*` (see [c2b-writing-inventory.md](c2b-writing-inventory.md))
+- [ ] No work/university emails on public pages
 
 ## Cutover
 
 1. Point DNS / CDN for apex + `www` to the static host (GitHub Pages custom domain or Cloudflare).
-2. Keep WP read-only **or** redirect non-blog routes to static (see [redirects.md](redirects.md)).
-3. Leave WP `/blog`, Medium, and LinkedIn writing hosts as-is until **C2b**.
-4. Smoke apex `/`, `/portfolio/`, `/credentials/`, Bitly destinations.
-5. Do not import writing into Pagefind until C2b inventory is complete.
+2. WP 301 non-blog routes to static where not already stubbed.
+3. Medium and LinkedIn stay live — do not redirect or unpublish.
+4. Smoke apex `/`, `/systems/`, `/credentials/`, `/notes/`, Bitly destinations.
+
+## Decommission WP (C2c)
+
+After redirect smoke passes:
+
+1. Confirm each WP post permalink lands on the correct on-site note.
+2. Cancel Bluehost or keep redirect-only for a TTL.
+3. Do **not** take down Medium or LinkedIn.
 
 ## Rollback
 
 Repoint DNS to Bluehost / restore WP as primary; static preview can remain for iteration.
+
+## Draft preview (C2e)
+
+Local only — never in public CI:
+
+```bash
+python scripts/preview.py --include-drafts ../personal-content
+```
+
+Draft rows use `visibility_policy: PRIVATE_ONLY` in `writing.yaml`.

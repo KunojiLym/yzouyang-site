@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const ROUTES = ["/", "/portfolio/", "/credentials/", "/about/", "/perspectives/"];
+const ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
 const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];
 
 async function setTheme(page, theme) {
@@ -28,12 +28,12 @@ test.describe("dual theme", () => {
             };
           });
           expect(state.dataTheme).toBe(theme);
-          expect(state.accent).toBe("#d4a35c");
+          expect(state.accent).toBe("#c49a5a");
           if (theme === "light") {
-            expect(state.bg).toBe("#f4f0e8");
-            expect(state.link).toBe("#856012");
+            expect(state.bg).toBe("#e8dfd0");
+            expect(state.link).toBe("#6b4f10");
           } else {
-            expect(state.bg).toBe("#0c1412");
+            expect(state.bg).toBe("#0a0b0a");
           }
         });
       }
@@ -55,25 +55,45 @@ test.describe("dual theme", () => {
     expect(["dark", "light"]).toContain(order.dataTheme);
   });
 
-  test("prefers-color-scheme light applies when store is empty", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "light" });
-    await page.addInitScript(() => localStorage.removeItem("yz-theme"));
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  test.describe("system preference", () => {
+    test.use({ colorScheme: "light" });
+
+    test("prefers-color-scheme light applies when store is empty", async ({ page }) => {
+      await page.addInitScript(() => localStorage.removeItem("yz-theme"));
+      await page.goto("/", { waitUntil: "load" });
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    });
   });
 
   test("toggle is labeled, pressed, and persists", async ({ page }) => {
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "load" });
+    await page.evaluate(() => localStorage.setItem("yz-theme", "dark"));
+    await page.reload({ waitUntil: "load" });
     const toggle = page.locator("[data-theme-toggle]").first();
     await expect(toggle).toBeVisible();
-    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
     await expect(toggle).toHaveAccessibleName(/theme: dark/i);
     await toggle.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
     expect(await page.evaluate(() => localStorage.getItem("yz-theme"))).toBe("light");
-    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "load" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  });
+
+  test("reading size toggle cycles and persists", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const toggle = page.locator("[data-reading-size-toggle]").first();
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAccessibleName(/text size: standard/i);
+    await expect(toggle.locator(".reading-size-step.is-active")).toHaveAttribute("data-step", "default");
+    await toggle.click();
+    await expect(page.locator("html")).toHaveAttribute("data-reading-size", "large");
+    await expect(toggle).toHaveAccessibleName(/text size: large/i);
+    await expect(toggle.locator(".reading-size-step.is-active")).toHaveAttribute("data-step", "large");
+    expect(await page.evaluate(() => localStorage.getItem("yz-reading-size"))).toBe("large");
+    await page.reload({ waitUntil: "load" });
+    await expect(page.locator("html")).toHaveAttribute("data-reading-size", "large");
   });
 
   test("prefers-reduced-motion keeps theme change instant", async ({ page }) => {
@@ -95,10 +115,10 @@ test.describe("axe contrast both themes", () => {
         await setTheme(page, theme);
         await page.goto(route, { waitUntil: "networkidle" });
         const results = await new AxeBuilder({ page })
-          .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
           .options({ iframes: false })
           .withTags(["wcag2a", "wcag2aa"])
           .disableRules(["color-contrast-enhanced"])
+          .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
           .analyze();
         const contrast = results.violations
           .map((v) => ({

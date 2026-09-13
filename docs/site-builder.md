@@ -14,7 +14,7 @@ data/site.json  +  data/export_public.json  +  data/career-journey.yaml
      dist/**/index.html
         │
         ▼
- Pagefind index (portfolio + credentials only)
+ Pagefind index (systems + notes + credentials)
         │
         ▼
  preview.py  /  CI  /  GitHub Pages
@@ -48,20 +48,20 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Key | Purpose |
 |---|---|
-| `person` | Name, brand, headline (platform-leader proposition), tagline, location, platforms (≤4 on Home), photo |
-| `outcomes` | Curated Home proof: `{ "metric", "label" }` (2–3; system + intervention; public CV facts only) |
-| `contact` | PUBLIC email only (no visitor-facing phone) |
-| `external` | Blog, Medium, LinkedIn, GitHub, Bitly shorts, digital card hub |
-| `nav` | Work · Perspectives · About · Credentials · Contact, then external Blog/Medium/LinkedIn/GitHub under **Elsewhere** |
+| `person` | Name, brand, headline (thesis), tagline, location, platforms (≤4 on Home) |
+| `outcomes` | Curated proof metrics — used on matching SYS records, not a Home hero strip |
+| `current_index` | Home highlight lines (systems / notes) |
+| `nav` | Systems · Notes · Credentials; Blog/Medium/LinkedIn/GitHub are footer-only or `footer_only` |
 | `page_meta` | Per-page meta descriptions (never reuse the role headline for every route) |
 | `public_origin` | Canonical / OG origin (`https://www.yzouyang.com`) |
-| `operating_themes` | Four Home theme rows |
+| `operating_themes` | *(deprecated on Home — empty)* |
+| `contact` | PUBLIC email only (no visitor-facing phone) |
+| `external` | Blog, Medium, LinkedIn, GitHub, Bitly shorts, digital card hub |
 | `credentials_verify` | VERIFY panel links (issuer records already in export) |
-| `writing_highlights` | Curated About / Perspectives list: `title`, `url`, `venue`, `date`, optional `start_here` |
-| `home_selected` | Home selected-systems (2–3): `{ id, title, tools?, evidence? }`. Beats compose from `enterprise_copy` / `project_copy` by `id`; `href` defaults to `/portfolio/#{id}` |
+| `home_selected` | Optional Home highlight pool: `{ id, record_id?, domains?, title, tools? }` |
 | `enterprise_copy` | Work enterprise overlays keyed by stable `heading_id` (not the export title string). Extra keys not in the export are appended as additional cases. Optional `evidence_href` / `evidence_label` turn Evidence into a verification link. See deep-link note below |
 | `project_copy` | Optional per-project `outcome` / `scope` / `tools` overrides (tools ≤5) |
-| `section_copy` | Optional portfolio section intro overrides keyed by export section id |
+| `section_copy` | Optional systems section intro overrides keyed by export section id |
 | `analytics` | Jetpack / optional GA4 / DIY beacon |
 | `base_path` | Overridden by CLI/env at build time |
 
@@ -73,24 +73,25 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Route | Builder | Sources |
 |---|---|---|
-| `/` | `build_home` | `person` + `outcomes` + proof strip + CTAs (View selected work / Contact) + `home_selected` composed from `enterprise_copy` / `project_copy` + operating themes; `#contact` from `contact`/`external` |
-| `/about/` | `build_about` | export `about` + `writing_highlights`; longform sidebar (no Pagefind) |
-| `/portfolio/` (nav **Work**; `/work/` redirects here) | `build_portfolio` | export `portfolio` + `projects` + `project_copy` / `enterprise_copy` / `section_copy`; enterprise summaries first; Pagefind; `.folio-deck` rows |
-| `/perspectives/` | `build_perspectives` | `writing_highlights` start-here (3) + remainder; no Pagefind |
-| `/credentials/` | `build_credentials` | export `credentials` + certs/edu + VERIFY panel + Pagefind |
-| `/career-journey/` | `build_career_journey` | `data/career-journey.yaml`; only built if that file exists. Not in primary nav — reachable from an About link + direct/shared URL. See [career-journey-native-plan.md](career-journey-native-plan.md) |
-| `/contact/` | `build_contact_redirect` | Meta refresh + link to `/#contact` |
+| `/` | `build_home` | Token entrance + thesis + `current_index` + proof strip + `home-entry-grid` + competencies + library-card footer |
+| `/systems/` | `build_systems` | Library shell from export + overlays; Pagefind “Search catalogue” |
+| `/notes/` | `build_notes` | Library shell from PUBLIC writing; Pagefind |
+| `/credentials/` | `build_credentials` | Library shell + VERIFY + Pagefind |
+| `/about/`, `/contact/` | redirect stubs | 301 → `/` |
+| `/portfolio/`, `/work/` | redirect stubs | 301 → `/systems/` |
+| `/perspectives/` | redirect stub | 301 → `/notes/` |
+| `/career-journey/` | redirect stub | 301 → `/` |
 
 ## IA rules
 
-- Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → selected systems → operating themes → `#contact`
-- **Sticky header** — always reachable; **theme toggle** in `.header-actions`; Contact is a primary nav item to `/#contact`
-- Desktop primary nav is **Work · Perspectives · About · Credentials · Contact**; Blog / Medium / LinkedIn / GitHub sit under **Elsewhere**
-- Portfolio / Credentials / About / Perspectives — **sticky sidebar TOC** (`.page-with-toc`) with nested subcategories; major sections are collapsible (`.section-fold`)
+- Home is a **Personal Systems Library entrance**: token atmosphere → thesis → current index → proof strip → catalogue entry grid → competencies. No system map, Reading room, Workshop, or `#contact` on Home
+- **Sticky header** — always reachable; **theme toggle** in `.header-actions`
+- Desktop primary nav is **Systems · Notes · Credentials**; Blog / Medium / LinkedIn / GitHub sit in the library-card footer
+- Systems / Notes / Credentials use the **library split-pane** (`.library-shell`), not longform TOC
 - No cert-count vanity chip on Home; no visitor-facing phone
-- Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; `/perspectives/` is a start-here index (phase 1 tags + 3 start-here)
-- Blog / Medium / LinkedIn / GitHub remain external (`↗`)
-- Public footer (© + mailto + social) — no migration changelog in chrome
+- Writing bodies live on `/notes/` after C2b
+- Blog / Medium / LinkedIn / GitHub remain external (`↗`) except footer Blog → `/notes/`
+- Public footer is a **library card** (© + location/focus + mailto + social) — no migration changelog in chrome
 
 ## Progressive embeds
 
@@ -109,7 +110,7 @@ Figma (and similar) embeds are an implementation pattern, not brand chrome:
 A checklist for adding a new page, section, or component without reintroducing the raw-value drift Phase 1–3 cleaned up. Read [design-system.md](design-system.md) first for the visual contract (palette, type/spacing/radius scales, IA rules); this section is the mechanical "what do I touch, in what order" companion.
 
 1. **Reach for a token before writing a number.** Every `font-size` needs a `--text-*` (or `--text-display-*` if it's a fluid heading); every `margin`/`padding`/`gap` needs a `--space-*`; every `border-radius` needs a `--radius-*`. The full tables are in design-system.md's "Layer A" section. If nothing fits, that's a signal to reconsider the layout — don't invent a one-off. If a one-off is genuinely unavoidable (e.g. something intentionally relative to a parent font-size), add it with a `/* intentional one-off: why */` comment and register it in `.stylelintrc.json`'s `ignoreValues`, the same way the `chrome.css` arrow markers are handled.
-2. **Reuse an existing breakpoint.** `--bp-sm` (800px, hero-style two-column collapse), `--bp-md` (900px, nav/sidebar collapse), and `--bp-lg` (1024px, outcome-strip 3-column row) are the documented widths — see design-system.md's "Breakpoints" table. A new additional breakpoint is a design decision to write down in design-system.md, not a silent `@media` addition (custom properties can't be read inside `@media`, so breakpoints are documented constants, not `var()`).
+2. **Reuse an existing breakpoint.** `--bp-sm` (800px, entrance stack), `--bp-md` (900px, nav/sidebar collapse), `--bp-lg` (1024px, record grid) — see design-system.md.
 3. **Pick the right CSS module.** `src/styles/README.md` has the file-by-file responsibility table (chrome vs. home vs. components vs. longform vs. search vs. motion). Add rules to the module that already owns that concern rather than starting a new file.
 4. **Colors and fonts come from `tokens.css` only.** Dual-theme color tokens live in `:root, [data-theme="dark"]` and `[data-theme="light"]`. No raw hex codes or `font-family` literals in any other CSS file — `scripts/check_token_drift.py` fails CI on both.
 5. **Update `data/site.json` / builder in `scripts/build.py`**, not a hardcoded HTML string, if the new page/section needs new content fields — see the `site.json` map and Page builders tables above.
