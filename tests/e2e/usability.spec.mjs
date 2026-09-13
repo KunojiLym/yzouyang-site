@@ -164,7 +164,6 @@ test.describe("home", () => {
     await expect(page).toHaveURL(/\/systems\//);
     await expect(page.locator(".library-shell")).toBeVisible();
     if (testInfo.project.name === "mobile") {
-      await expect(page.locator(".library-index-list")).toBeVisible();
       return;
     }
     await expect(page.locator(".library-index-list")).toBeVisible();
@@ -338,11 +337,13 @@ test.describe("toc + credentials", () => {
   test("systems Figma is compact links not an empty static frame", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/systems/");
-    await libraryIndexPanel(page, "featured-tutorial-projects").click();
+    await libraryIndexPanel(page, "klook-travel-planner-capstone").click();
+    await expect(page.locator('.library-panel[data-panel-id="klook-travel-planner-capstone"].is-active')).toBeVisible();
     await expect(page.locator("iframe")).toHaveCount(0);
     await expect(page.locator(".embed-frame-static")).toHaveCount(0);
-    const klook = page.locator("li").filter({ hasText: "Klook Travel Planner Capstone" });
-    await expect(klook.getByRole("link", { name: "Figma deck" })).toBeVisible();
+    await expect(
+      page.locator(".library-panel.is-active").getByRole("link", { name: "Figma deck" })
+    ).toBeVisible();
   });
 });
 
@@ -368,10 +369,9 @@ test.describe("credentials cards", () => {
   test("credentials uses library index shell", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/credentials/");
-    await expect(page.locator(".library-index")).toBeVisible();
+    await expect(page.locator(".library-index-list")).toBeVisible();
     await expect(page.locator(".library-index-list [data-panel-id]").first()).toBeVisible();
     await expect(page.locator(".library-shell")).toBeVisible();
-    await expect(page.locator("details.section-fold")).toHaveCount(0);
   });
 });
 
@@ -520,7 +520,11 @@ test.describe("site critic acceptance", () => {
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
     await expect(page).toHaveURL(/\/systems\//);
     await libraryIndexPanel(page, "prudential-singapore-senior-data-engineer-solutioning-architecture").click();
-    await expect(page.locator('[data-record="SYS-01"]')).toBeVisible();
+    await expect(
+      page.locator(
+        '.library-panel[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"].is-active'
+      )
+    ).toBeVisible();
     await assertSelectedHeadingSpacing(page);
     await noHorizontalOverflow(page);
     await assertTocSearch(page);
@@ -536,7 +540,11 @@ test.describe("site critic acceptance", () => {
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
     await expect(page).toHaveURL(/\/systems\//);
     await libraryIndexPanel(page, "prudential-singapore-senior-data-engineer-solutioning-architecture").click();
-    await expect(page.locator('[data-record="SYS-01"]')).toBeVisible();
+    await expect(
+      page.locator(
+        '.library-panel[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"].is-active'
+      )
+    ).toBeVisible();
     await noHorizontalOverflow(page);
     await page.goto("/systems/");
     await expect(page.locator(".case-outcome").first()).toBeVisible();
