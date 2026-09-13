@@ -77,7 +77,7 @@ Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
 | Reference | Value | Applies to |
 |---|---|---|
 | `--bp-sm` | `800px` | Entrance layout stack (`home.css`) |
-| `--bp-md` | `900px` | Nav collapse + long-form sidebar collapse |
+| `--bp-md` | `900px` | Primary nav collapse; library shell stacks index above panel |
 | `--bp-lg` | `1024px` | Record impact grid (`home.css`) |
 
 ---
@@ -95,19 +95,20 @@ Inner pages:
 | Route | Page title | Notes |
 |---|---|---|
 | `/systems/` | Systems | Library shell; Pagefind “Search catalogue” |
-| `/notes/` | Notes | Library shell after C2b |
+| `/notes/` | Notes | Library shell; PUBLIC writing corpus (C2b) |
 | `/credentials/` | Professional record | Library shell + VERIFY |
-| `/about/`, `/contact/` | *(redirect)* | Home |
-| `/career-journey/` | *(redirect)* | Home |
+| `/about/`, `/contact/`, `/career-journey/` | *(redirect)* | Home |
+| `/portfolio/`, `/work/` | *(redirect)* | `/systems/` |
+| `/perspectives/`, `/blog/` | *(redirect)* | `/notes/` |
 
 **Credibility order:** thesis → documented systems → writing → experiments → professional record.
 
-### Long-form scanning
+### Library scanning
 
-- Left-aligned copy, strong section rhythm; editorial rows over identical cards
+- Split-pane catalogue: index list left (desktop) or full-width index (mobile overview); panel body right
 - Case studies on `/systems/`: problem → role → decision → outcome → evidence at ~⅓ typical density
-- Writing: publication rows with catalogue metadata, not blog card grid
-- Search / TOC chrome must feel deliberate (`In this record` on long pages)
+- Writing: publication rows with catalogue metadata (`NOTE-*`), not blog card grid
+- Header Pagefind + in-panel headings — no sticky long-form TOC on library routes
 
 ---
 
@@ -122,9 +123,11 @@ Inner pages:
 | `.library-card` / `.site-footer` / `.library-page-footer` | Footer: location · focus · mailto · social |
 | `.site-nav` | **Systems · Notes · Credentials** |
 | `.library-shell` | Split-pane catalogue on Systems / Notes / Credentials |
+| `.library-index-list` / `.library-index-trigger` | Catalogue index (buttons; opens panel) |
+| `.library-panel` / `.library-back` | Record body + mobile return to index |
 | `#search` + Pagefind | Catalogue search in the sticky header |
 
-**Motion:** Map-node and record hover/focus only. **No** per-section `rise` on Home. Career Journey slides stay opacity-only under reduced motion.
+**Motion:** Map-node and record hover/focus only. **No** per-section `rise` on Home. Honor `prefers-reduced-motion` on library panel transitions.
 
 External nav links use `.external` (↗ via CSS `::after`).
 
@@ -157,7 +160,7 @@ Pre-commit: husky + lint-staged on staged `src/styles/*.css`.
 **Don’t**
 
 - Boardroom outcome strip in hero; portrait chip on Home
-- Steampunk tropes (gears, rockets, chalkboard props in Workshop crop)
+- Steampunk tropes (gears, rockets, chalkboard props); retired scroll-home “Workshop” crop
 - Fraunces/Sora, cream `#f4f0e8`, or SaaS card kits
 - Tracked ALL-CAPS eyebrows on every heading; decorative numbered `01 02 03`
 - Invent metrics; cert wall on Home; visitor-facing phone

@@ -2,7 +2,7 @@
 
 Phase 1 (done) added a type scale, spacing scale, radius scale, and documented breakpoint constants to [`tokens.css`](../src/styles/tokens.css) — see [design-system.md](design-system.md) for the token tables. This doc is the file-by-file, line-by-line map from what's in the CSS today to what it should become, so Phase 2 is a mechanical migration rather than a design exercise done twice.
 
-Recommended migration order (lowest raw-value surface first, per the upgrade plan): `base.css` → `motion.css` → `search.css` (no changes needed, listed for completeness) → `components.css` → `chrome.css` → `longform.css` → `home.css`.
+Recommended migration order (lowest raw-value surface first, per the upgrade plan): `base.css` → `motion.css` → `search.css` (no changes needed, listed for completeness) → `components.css` → `chrome.css` → `library.css` → `longform.css` → `home.css`.
 
 Drift column shows the difference between the raw value and its assigned token — anything ≤0.15rem (2.4px) is treated as acceptable rounding under the "refactor freely" scope agreed for this project; anything larger is called out explicitly.
 

@@ -6,17 +6,17 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. `/about/` and `/contact/` redirect home; `/portfolio/` and `/perspectives/` redirect to `/systems/` and `/notes/`. Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
+Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. Legacy stubs: `/about/`, `/contact/`, `/career-journey/` → home; `/portfolio/`, `/work/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/` (library JS may append a panel hash). Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
-**Writing** is on `/notes/` after C2b. Header nav is **Systems · Notes · Credentials**. Blog / Medium / LinkedIn / GitHub live in the library-card footer.
+**Writing** is on `/notes/`. Header nav is **Systems · Notes · Credentials**. Blog / Medium / LinkedIn / GitHub live in the library-card footer.
 
 Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 
 ## Develop
 
-Python deps (currently just PyYAML, for `data/career-journey.yaml`) are managed with [uv](https://docs.astral.sh/uv/) — see `pyproject.toml`. Run `uv sync` once (creates `.venv/`) before any of the commands below.
+Python deps (PyYAML for lint-time validation of `data/career-journey.yaml`) are managed with [uv](https://docs.astral.sh/uv/) — see `pyproject.toml`. Run `uv sync` once (creates `.venv/`) before any of the commands below.
 
 ```bash
 uv sync
@@ -30,10 +30,19 @@ uv run python scripts/test_site_build.py
 npm install
 npx playwright install chromium
 npm run serve:dist -- 8765              # optional local static server for dist/
-npm run test:e2e                        # usability + theme
-npm run test:a11y                       # axe-core WCAG2A/AA
+npm run test:e2e                        # usability + theme (Playwright)
+npm run test:a11y                       # axe-core WCAG2A/AA on live routes
 # npm run test:visual                   # non-blocking until snapshots exist
 ```
+
+Playwright specs (see [docs/site-builder.md](docs/site-builder.md#playwright)):
+
+| Spec | Role |
+|---|---|
+| `tests/e2e/usability.spec.mjs` | Smoke, legacy redirects, chrome, home IA guardrails, library shell, Pagefind, layout |
+| `tests/e2e/theme.spec.mjs` | Dark/light FOUC-safe tokens, theme persistence, axe on themed routes |
+| `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/credentials/` |
+| `tests/e2e/visual.spec.mjs` | Screenshot baselines for live routes (CI non-blocking until `__snapshots__` exist) |
 
 The `serve:dist` server logs timestamped startup, listening, signal, close-start,
 close-complete, timeout, and bind-error events. Playwright e2e starts and stops
