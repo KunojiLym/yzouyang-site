@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const ROUTES = ["/", "/portfolio/", "/credentials/", "/about/", "/perspectives/", "/contact/"];
+const ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
 const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];
 
 async function setTheme(page, theme) {
@@ -76,6 +76,21 @@ test.describe("dual theme", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
 
+  test("reading size toggle cycles and persists", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const toggle = page.locator("[data-reading-size-toggle]").first();
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAccessibleName(/text size: standard/i);
+    await expect(toggle.locator(".reading-size-step.is-active")).toHaveAttribute("data-step", "default");
+    await toggle.click();
+    await expect(page.locator("html")).toHaveAttribute("data-reading-size", "large");
+    await expect(toggle).toHaveAccessibleName(/text size: large/i);
+    await expect(toggle.locator(".reading-size-step.is-active")).toHaveAttribute("data-step", "large");
+    expect(await page.evaluate(() => localStorage.getItem("yz-reading-size"))).toBe("large");
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.locator("html")).toHaveAttribute("data-reading-size", "large");
+  });
+
   test("prefers-reduced-motion keeps theme change instant", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await setTheme(page, "dark");
@@ -95,10 +110,10 @@ test.describe("axe contrast both themes", () => {
         await setTheme(page, theme);
         await page.goto(route, { waitUntil: "networkidle" });
         const results = await new AxeBuilder({ page })
-          .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
-          .options({ iframes: false })
           .withTags(["wcag2a", "wcag2aa"])
           .disableRules(["color-contrast-enhanced"])
+          .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
+          .options({ iframes: false })
           .analyze();
         const contrast = results.violations
           .map((v) => ({
