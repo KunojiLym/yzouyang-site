@@ -61,16 +61,31 @@ def main() -> None:
         default="",
         help='URL prefix. Empty for true offline root; use /yzouyang-site to mimic Pages.',
     )
+    parser.add_argument(
+        "--include-drafts",
+        default=None,
+        help="Path to personal-content repo root; merges PRIVATE_ONLY writing rows for local preview only.",
+    )
     parser.add_argument("--no-open", action="store_true")
     parser.add_argument("--skip-pagefind", action="store_true")
     args = parser.parse_args()
 
-    run([sys.executable, "scripts/lint.py"])
+    env = {}
+    if args.include_drafts:
+        pc_root = Path(args.include_drafts).resolve()
+        export_path = pc_root / "people" / "yingzhao" / "data" / "export_public.json"
+        if not export_path.is_file():
+            print(f"warning: {export_path} missing — run export_public.py first", file=sys.stderr)
+        else:
+            env["PREVIEW_INCLUDE_DRAFTS"] = str(pc_root)
+            env["PREVIEW_EXPORT_PATH"] = str(export_path)
+
+    run([sys.executable, "scripts/lint.py"], env=env if env else None)
     # Prefer env override so empty base_path works on Windows shells.
     # build.py can run Pagefind itself, but we always skip it there and run
     # it once here instead — running both would index the same dist/ twice.
     build_cmd = [sys.executable, "scripts/build.py", "--skip-pagefind"]
-    run(build_cmd, env={"SITE_BASE_PATH": args.base_path})
+    run(build_cmd, env={**env, "SITE_BASE_PATH": args.base_path} if args.base_path else env or None)
     if not args.skip_pagefind:
         run_pagefind()
 

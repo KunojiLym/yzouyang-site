@@ -57,6 +57,39 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _merge_preview_drafts(export: dict) -> dict:
+    """Operator-only: include PRIVATE_ONLY writing rows when previewing drafts."""
+    pc_root = os.environ.get("PREVIEW_INCLUDE_DRAFTS")
+    if not pc_root:
+        return export
+    data_dir = Path(pc_root) / "people" / "yingzhao" / "data"
+    yaml_path = data_dir / "writing.yaml"
+    if not yaml_path.is_file():
+        return export
+    doc = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
+    rows = list(export.get("writing") or [])
+    existing = {str(r.get("id")) for r in rows if isinstance(r, dict)}
+    for raw in doc.get("writing") or []:
+        if not isinstance(raw, dict):
+            continue
+        if str(raw.get("visibility_policy") or "").upper() != "PRIVATE_ONLY":
+            continue
+        row = {k: v for k, v in raw.items() if k != "visibility_policy"}
+        row["preview_draft"] = True
+        body_file = raw.get("body_file")
+        if isinstance(body_file, str) and body_file.strip():
+            path = data_dir / body_file.strip()
+            if path.is_file():
+                row["body_md"] = path.read_text(encoding="utf-8")
+        note_id = str(row.get("id") or "")
+        if note_id and note_id not in existing:
+            rows.append(row)
+            existing.add(note_id)
+    merged = dict(export)
+    merged["writing"] = rows
+    return merged
+
+
 def urls_from_bullets(bullets: list | None) -> list[str]:
     out: list[str] = []
     for item in bullets or []:
@@ -122,6 +155,17 @@ THEME_BOOT_SCRIPT = """<script>
     }
   } catch (e) {}
   document.documentElement.setAttribute("data-theme", theme);
+  var readingKey = "yz-reading-size";
+  var reading = "default";
+  try {
+    var storedReading = localStorage.getItem(readingKey);
+    if (storedReading === "large" || storedReading === "xlarge") {
+      reading = storedReading;
+    }
+  } catch (e) {}
+  if (reading !== "default") {
+    document.documentElement.setAttribute("data-reading-size", reading);
+  }
 })();
 </script>"""
 
@@ -130,7 +174,14 @@ def _nav_anchor_html(site: dict, item: dict, active: str) -> str:
     label = esc(item.get("label", ""))
     raw_href = str(item.get("href", "#"))
     external = bool(item.get("external"))
-    href = esc(raw_href if external else with_base(site, raw_href))
+    if external:
+        href = esc(raw_href)
+    elif raw_href.startswith("/#"):
+        href = esc(with_base(site, raw_href))
+    elif raw_href.startswith("#"):
+        href = esc(with_base(site, "/") + raw_href)
+    else:
+        href = esc(with_base(site, raw_href))
     classes = []
     if external:
         classes.append("external")
@@ -139,43 +190,45 @@ def _nav_anchor_html(site: dict, item: dict, active: str) -> str:
         attrs += f' class="{" ".join(classes)}"'
     if external:
         attrs += ' target="_blank" rel="noopener noreferrer"'
-    if not external and item.get("label") == active:
+    elif not raw_href.startswith(("/#", "#")) and item.get("label") == active:
         attrs += ' aria-current="page"'
     return f"<a{attrs}>{label}</a>"
 
 
-def nav_html(site: dict, active: str, *, grouped: bool = False) -> str:
-    """Primary dossier links, then Blog/Medium/LinkedIn/GitHub under Elsewhere.
+def nav_html(site: dict, active: str) -> str:
+    """Primary dossier links. External writing/profiles live in the site footer."""
+    primary, _external = _nav_link_groups(site, active)
+    return "\n      ".join(primary)
 
-    Desktop (grouped=False): disclosure control. Mobile menu (grouped=True):
-    uppercase label, then the same external links — still `.external` ↗.
-    Contact is a primary item pointing at `/contact/`, same as About.
-    """
+
+def _footer_links_html(site: dict, active: str = "") -> str:
+    contact = site["contact"]
+    ext = site.get("external") or {}
+    _primary, external = _nav_link_groups(site, active)
+    email = esc(contact.get("email") or "")
+    parts = [f'<a href="mailto:{email}">{email}</a>']
+    card = str(ext.get("bitly_hub") or "").strip()
+    if card:
+        parts.append(
+            f'<a class="external" href="{esc(card)}" target="_blank" '
+            f'rel="noopener noreferrer">Digital card</a>'
+        )
+    parts.extend(external)
+    return "\n      ".join(parts)
+
+
+def _nav_link_groups(site: dict, active: str) -> tuple[list[str], list[str]]:
     primary: list[str] = []
     external_links: list[str] = []
     for item in site.get("nav") or []:
         if not isinstance(item, dict):
             continue
         markup = _nav_anchor_html(site, item, active)
-        if item.get("external"):
+        if item.get("footer_only") or item.get("external"):
             external_links.append(markup)
         else:
             primary.append(markup)
-    if not external_links:
-        return "\n      ".join(primary)
-    if grouped:
-        parts = primary + ['<p class="nav-group-label">Elsewhere</p>'] + external_links
-        return "\n      ".join(parts)
-    panel = "\n        ".join(external_links)
-    elsewhere = (
-        '<details class="nav-elsewhere">\n'
-        "        <summary>Elsewhere</summary>\n"
-        '        <div class="nav-elsewhere-panel">\n'
-        f"        {panel}\n"
-        "        </div>\n"
-        "      </details>"
-    )
-    return "\n      ".join(primary + [elsewhere])
+    return primary, external_links
 
 
 STYLE_PARTS = (
@@ -183,11 +236,11 @@ STYLE_PARTS = (
     "base.css",
     "chrome.css",
     "home.css",
+    "library.css",
     "components.css",
     "longform.css",
     "search.css",
     "motion.css",
-    "career-journey.css",
 )
 
 
@@ -252,6 +305,38 @@ def person_json_ld(site: dict) -> str:
     return f'  <script type="application/ld+json">{payload}</script>'
 
 
+def website_json_ld(site: dict) -> str:
+    origin = public_origin(site)
+    person = site.get("person") or {}
+    data = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": person.get("brand") or "yzouyang",
+        "url": origin + "/",
+        "description": str((site.get("page_meta") or {}).get("Home") or "").strip(),
+    }
+    payload = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
+    return f'  <script type="application/ld+json">{payload}</script>'
+
+
+def article_json_ld(site: dict, row: dict, note_id: str) -> str:
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": str(row.get("title") or "").strip(),
+        "url": str(row.get("url") or "").strip(),
+        "identifier": note_id,
+        "datePublished": str(row.get("date") or "").strip() or None,
+        "author": {
+            "@type": "Person",
+            "name": (site.get("person") or {}).get("full_name") or "Yingzhao Ouyang",
+        },
+    }
+    data = {k: v for k, v in data.items() if v}
+    payload = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
+    return f'  <script type="application/ld+json">{payload}</script>'
+
+
 def _beat_value_html(row: dict, key: str) -> str:
     val = str(row.get(key) or "").strip()
     if key != "evidence":
@@ -311,24 +396,27 @@ def verify_panel_html(site: dict) -> str:
     )
 
 
-def writing_items_html(rows: list[dict]) -> list[str]:
+def writing_items_html(rows: list[dict], *, featured: dict | None = None) -> list[str]:
     out: list[str] = []
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
+    for row, note_id in _unique_note_catalog_ids(rows):
         title = (row.get("title") or "").strip()
         url = (row.get("url") or "").strip()
         if not title or not url:
             continue
         venue = esc(row.get("venue") or "Article")
         date_s = esc(row.get("date") or "")
-        note_id = _note_catalog_id(row, len(out))
+        teaser = str(row.get("teaser") or "").strip()
         meta = " · ".join(x for x in (note_id, venue, date_s) if x)
+        dek_html = ""
+        if featured is row or row.get("start_here"):
+            if teaser:
+                dek_html = f'        <p class="note-dek">{esc(teaser)}</p>\n'
         out.append(
             f"      <li>\n"
             f'        <p class="catalogue-line meta">{meta}</p>\n'
             f'        <h3><a class="external" href="{esc(url)}" target="_blank" '
             f'rel="noopener noreferrer">{esc(title)}</a></h3>\n'
+            f"{dek_html}"
             f"      </li>"
         )
     return out
@@ -380,7 +468,7 @@ def longform_page(
     search: bool = True,
     extra_lede: str = "",
 ) -> str:
-    """Long-page shell: sticky sidebar TOC + main column (design-system longform)."""
+    """Legacy long-page shell (redirect stubs only)."""
     search_html = (
         '        <div class="page-search">\n'
         '          <label class="page-search-label" for="pagefind-search-input">'
@@ -398,6 +486,168 @@ def longform_page(
       </div>
     </div>
 """
+
+
+def library_index_html(
+    entries: list[dict], *, label: str = "In this record", footer_html: str = ""
+) -> str:
+    """Left-column index for the library shell (button list, not in-page anchors)."""
+
+    def render_list(nodes: list[dict], *, nested: bool = False) -> str:
+        cls = "library-index-sub" if nested else "library-index-list"
+        lines = [f'          <ul class="{cls}" role="list">']
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            panel_id = str(node.get("id") or "").strip()
+            text = str(node.get("label") or panel_id).strip()
+            if not panel_id:
+                continue
+            kids = node.get("children") or []
+            child_html = "\n" + render_list(kids, nested=True) if kids else ""
+            if kids:
+                lines.append(
+                    f'            <li class="library-index-group" data-panel-group-id="{esc(panel_id)}">\n'
+                    f'              <span class="library-index-text library-index-group-label">{esc(text)}</span>'
+                    f"{child_html}\n"
+                    "            </li>"
+                )
+            else:
+                lines.append(
+                    f'            <li data-panel-id="{esc(panel_id)}" tabindex="0" role="button">\n'
+                    f'              <span class="library-index-text">{esc(text)}</span>\n'
+                    "            </li>"
+                )
+        lines.append("          </ul>")
+        return "\n".join(lines)
+
+    if not entries:
+        return (
+            '        <nav class="library-index" aria-label="In this record">\n'
+            f'          <p class="library-index-label">{esc(label)}</p>\n'
+            "        </nav>"
+        )
+    footer_block = (
+        f"\n          <footer class=\"library-index-footer\">\n{footer_html}\n          </footer>"
+        if footer_html.strip()
+        else ""
+    )
+    return (
+        '        <nav class="library-index" aria-label="In this record">\n'
+        f'          <p class="library-index-label">{esc(label)}</p>\n'
+        f"{render_list(entries)}{footer_block}\n"
+        "        </nav>"
+    )
+
+
+def library_panel_html(
+    panel_id: str,
+    heading: str,
+    body: str,
+    *,
+    level: str = "h2",
+    hidden: bool = True,
+    extra_attrs: str = "",
+) -> str:
+    tag = level if level in ("h2", "h3", "h4") else "h2"
+    hidden_attr = " hidden" if hidden else ""
+    return (
+        f'        <article class="library-panel" data-panel-id="{esc(panel_id)}"{hidden_attr}'
+        f"{extra_attrs}>\n"
+        f'          <header class="library-panel-header">\n'
+        f'            <{tag} class="library-panel-title">{heading}</{tag}>\n'
+        f"          </header>\n"
+        f'          <div class="library-panel-body">\n'
+        f"{body}\n"
+        f"          </div>\n"
+        f"        </article>"
+    )
+
+
+def library_section_panel(
+    section_id: str,
+    heading: str,
+    inner_html: str,
+    *,
+    level: str = "h2",
+    variant: str = "",
+    kicker: str = "",
+) -> str:
+    body = (
+        section_fold_open(section_id, esc(heading), level=level, variant=variant, kicker=kicker)
+        + inner_html
+        + section_fold_close()
+    )
+    return library_panel_html(section_id, heading, body, level=level)
+
+
+def _library_strip_html(site: dict, *, active: str) -> str:
+    routes = (
+        ("Systems", "/systems/", "systems"),
+        ("Notes", "/notes/", "notes"),
+        ("Credentials", "/credentials/", "credentials"),
+    )
+    links: list[str] = []
+    for label, path, key in routes:
+        if key == active:
+            continue
+        href = esc(with_base(site, path))
+        links.append(f'<a href="{href}">{label}</a>')
+    if not links:
+        return ""
+    return (
+        '      <footer class="library-strip">\n'
+        '        <p class="library-strip-copy meta">'
+        '<span class="library-strip-label">Related paths</span> '
+        + " · ".join(links)
+        + "</p>\n"
+        "      </footer>"
+    )
+
+
+def library_shell(
+    *,
+    site: dict,
+    title: str,
+    overview_html: str,
+    toc: list[dict],
+    panels: list[str],
+    strip_html: str = "",
+    record_panels_html: str = "",
+    index_footer_html: str = "",
+) -> str:
+    index = library_index_html(toc, footer_html=index_footer_html)
+    panels_block = "\n".join(panels)
+    overview_block = (
+        f'          <div class="library-overview">\n{overview_html}\n          </div>\n'
+        if overview_html.strip()
+        else ""
+    )
+    record_block = record_panels_html or ""
+    strip_block = strip_html or ""
+    page_footer = footer_html(site, compact=True)
+    return (
+        f'    <div class="library-shell" id="library-shell">\n'
+        f'      <h1 class="visually-hidden">{title}</h1>\n'
+        f'      <div class="library-frame">\n'
+        f'        <div class="library-split" id="library-split">\n'
+        f"{index}\n"
+        f'          <div class="library-pane" aria-live="polite">\n'
+        f'            <div class="library-pane-toolbar">\n'
+        f'              <button type="button" class="library-back" hidden>Back to index</button>\n'
+        f"            </div>\n"
+        f"{overview_block}"
+        f'            <div class="library-panels">\n'
+        f"{panels_block}\n"
+        f"{record_block}\n"
+        f"            </div>\n"
+        f"          </div>\n"
+        f"        </div>\n"
+        f"{strip_block}\n"
+        f"      </div>\n"
+        f"{page_footer}\n"
+        f"    </div>\n"
+    )
 
 
 def section_fold_open(
@@ -477,271 +727,6 @@ def figma_embed_html(
       </div>"""
 
 
-# Tier 2 "composed" slide layouts for /career-journey/ — named grid-template
-# recipes, not arbitrary x/y positioning (see docs/career-journey-native-plan.md
-# §4 for why). Each maps a layout name to the region names its CSS grid
-# (src/styles/career-journey.css) defines. scripts/lint.py imports this
-# constant directly rather than duplicating it.
-CJ_LAYOUTS: dict[str, tuple[str, ...]] = {
-    "split-60-40": ("main", "side-top", "side-bottom"),
-    "overlay-caption": ("bg", "caption"),
-    "three-up": ("left", "center", "right"),
-    "full-bleed-text-overlay": ("bg", "text"),
-}
-
-CJ_SLIDE_KINDS = (
-    "title",
-    "image",
-    "text",
-    "points",
-    "timeline",
-    "quote",
-    "stat",
-    "composed",
-    "partial",
-)
-
-CJ_SLIDES_DIR = DATA / "career-journey-slides"
-
-
-def load_career_journey() -> dict | None:
-    """Load data/career-journey.yaml if present; None means no native page yet."""
-    path = DATA / "career-journey.yaml"
-    if not path.is_file():
-        return None
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
-
-
-def _cj_block_html(site: dict, block: dict) -> str:
-    region = esc(str(block.get("region") or ""))
-    btype = block.get("type")
-    style = f' style="grid-area: {region}"'
-    if btype == "image":
-        image = esc(with_base(site, str(block.get("image") or "")))
-        alt = esc(str(block.get("image_alt") or ""))
-        return f'      <div class="cj-block cj-block-image"{style}><img src="{image}" alt="{alt}" loading="lazy" /></div>'
-    if btype == "text":
-        body = esc(str(block.get("body") or "").strip())
-        return f'      <div class="cj-block cj-block-text"{style}><p>{body}</p></div>'
-    if btype == "heading":
-        # Page chrome already has the single h1; slide titles start at h2.
-        level = max(2, min(6, int(block.get("level") or 2)))
-        text = esc(str(block.get("body") or "").strip())
-        sub = esc(str(block.get("sub") or "").strip())
-        sub_html = f"<p>{sub}</p>" if sub else ""
-        return f'      <div class="cj-block cj-block-heading"{style}><h{level}>{text}</h{level}>{sub_html}</div>'
-    return f'      <div class="cj-block"{style}></div>'
-
-
-def _cj_slide_html(site: dict, slide: dict, default_transition: str) -> str:
-    kind = slide.get("kind")
-    sid = esc(str(slide.get("id") or ""))
-    chapter = slide.get("chapter")
-    transition = esc(str(slide.get("transition") or default_transition or "fade-up"))
-    inner = ""
-    step_count = 0
-
-    if kind == "title":
-        title = esc(str(slide.get("title") or ""))
-        body = esc(str(slide.get("body") or "").strip())
-        body_html = f"<p>{body}</p>" if body else ""
-        inner = f'      <h2>{title}</h2>\n      {body_html}'
-
-    elif kind == "image":
-        image = esc(with_base(site, str(slide.get("image") or "")))
-        alt = esc(str(slide.get("image_alt") or ""))
-        caption = esc(str(slide.get("caption") or "").strip())
-        caption_html = f'<figcaption>{caption}</figcaption>' if caption else ""
-        inner = (
-            f'      <figure class="cj-figure">\n'
-            f'        <img src="{image}" alt="{alt}" loading="lazy" />\n'
-            f"        {caption_html}\n"
-            f"      </figure>"
-        )
-
-    elif kind == "text":
-        title = str(slide.get("title") or "").strip()
-        title_html = f"<h2>{esc(title)}</h2>" if title else ""
-        body = esc(str(slide.get("body") or "").strip())
-        inner = f"      {title_html}\n      <p>{body}</p>"
-
-    elif kind == "points":
-        title = str(slide.get("title") or "").strip()
-        title_html = f"<h2>{esc(title)}</h2>" if title else ""
-        intro = str(slide.get("intro") or "").strip()
-        intro_html = f"<p>{esc(intro)}</p>" if intro else ""
-        items: list[str] = []
-        for point in slide.get("points") or []:
-            step_count += 1
-            step_attr = f' data-step="{step_count}"'
-            if isinstance(point, dict):
-                label = esc(str(point.get("label") or "").strip())
-                body = esc(str(point.get("body") or "").strip())
-                if label and body:
-                    items.append(f"<li{step_attr}><strong>{label}</strong><span>{body}</span></li>")
-                elif label:
-                    items.append(f"<li{step_attr}><strong>{label}</strong></li>")
-                elif body:
-                    items.append(f"<li{step_attr}><span>{body}</span></li>")
-            else:
-                text = esc(str(point).strip())
-                if text:
-                    items.append(f"<li{step_attr}><span>{text}</span></li>")
-        points_html = "\n        ".join(items)
-        inner = (
-            f"      {title_html}\n"
-            f"      {intro_html}\n"
-            f'      <ul class="cj-points">\n        {points_html}\n      </ul>'
-        )
-
-    elif kind == "timeline":
-        title = str(slide.get("title") or "").strip()
-        title_html = f"<h2>{esc(title)}</h2>" if title else ""
-        rows: list[str] = []
-        for item in slide.get("items") or []:
-            if not isinstance(item, dict):
-                continue
-            year = esc(str(item.get("year") or "").strip())
-            label = esc(str(item.get("label") or "").strip())
-            body = esc(str(item.get("body") or "").strip())
-            body_html = f"<span>{body}</span>" if body else ""
-            step_count += 1
-            rows.append(
-                f'<li data-step="{step_count}"><time>{year}</time><strong>{label}</strong>{body_html}</li>'
-            )
-        timeline_html = "\n        ".join(rows)
-        inner = (
-            f"      {title_html}\n"
-            f'      <ol class="cj-timeline">\n        {timeline_html}\n      </ol>'
-        )
-
-    elif kind == "quote":
-        body = esc(str(slide.get("body") or "").strip())
-        attribution = str(slide.get("attribution") or "").strip()
-        cite_html = f"<cite>{esc(attribution)}</cite>" if attribution else ""
-        inner = f'      <blockquote class="cj-quote">\n        <p>{body}</p>\n        {cite_html}\n      </blockquote>'
-
-    elif kind == "stat":
-        value = esc(str(slide.get("stat_value") or ""))
-        label = esc(str(slide.get("stat_label") or ""))
-        inner = (
-            f'      <p class="cj-stat-value">{value}</p>\n'
-            f'      <p class="cj-stat-label">{label}</p>'
-        )
-
-    elif kind == "composed":
-        layout_name = str(slide.get("layout") or "")
-        regions = CJ_LAYOUTS.get(layout_name)
-        if regions is None:
-            raise ValueError(
-                f"career-journey slide {sid!r}: unknown composed layout {layout_name!r} "
-                f"(known: {', '.join(CJ_LAYOUTS)})"
-            )
-        blocks = slide.get("blocks") or []
-        for b in blocks:
-            region = str(b.get("region") or "")
-            if region not in regions:
-                raise ValueError(
-                    f"career-journey slide {sid!r}: region {region!r} not valid for "
-                    f"layout {layout_name!r} (valid: {', '.join(regions)})"
-                )
-        block_html = "\n".join(
-            _cj_block_html(site, b) for b in blocks if isinstance(b, dict)
-        )
-        inner = f'      <div class="cj-composed cj-layout--{esc(layout_name)}">\n{block_html}\n      </div>'
-
-    elif kind == "partial":
-        rel = str(slide.get("partial") or "")
-        path = CJ_SLIDES_DIR / rel
-        if not rel or not path.is_file():
-            raise FileNotFoundError(
-                f"career-journey slide {sid!r}: partial file not found: {path}"
-            )
-        # Trusted, hand-authored markup (Tier 3 escape hatch) — inlined
-        # verbatim, not esc()'d.
-        inner = path.read_text(encoding="utf-8").strip()
-
-    else:
-        raise ValueError(f"career-journey slide {sid!r}: unknown kind {kind!r}")
-
-    steps_attr = f' data-steps="{step_count}"' if step_count else ""
-    chapter_attr = f' data-chapter="{esc(str(chapter))}"' if chapter else ""
-    return (
-        f'    <section id="{sid}" class="cj-slide cj-slide--{esc(str(kind))}" '
-        f'data-transition="{transition}"{steps_attr}{chapter_attr}>\n'
-        f"{inner}\n"
-        f"    </section>"
-    )
-
-
-def build_career_journey(site: dict, cj: dict) -> str:
-    title = esc(str(cj.get("title") or "Career Journey"))
-    subtitle = esc(str(cj.get("subtitle") or "").strip())
-    lede = esc(str(cj.get("lede") or "").strip())
-    source_link = str(cj.get("source_link") or "").strip()
-    source_label = str(cj.get("source_label") or "View original Figma deck")
-    default_transition = str(cj.get("default_transition") or "fade-up")
-    slides = [s for s in (cj.get("slides") or []) if isinstance(s, dict)]
-
-    source_html = ""
-    if source_link:
-        source_html = (
-            f'      <p class="links"><a class="figma-open" href="{esc(source_link)}" '
-            f'target="_blank" rel="noopener noreferrer">{esc(source_label)}</a></p>'
-        )
-
-    # In-page chapter progress nav — built from each slide's optional
-    # `chapter`, in first-seen order; ungrouped (chapter: null) slides don't
-    # get an entry.
-    chapters: list[tuple[str, str]] = []  # (anchor slide id, chapter label)
-    seen_chapters: set[str] = set()
-    for s in slides:
-        chapter = s.get("chapter")
-        if chapter and str(chapter) not in seen_chapters:
-            seen_chapters.add(str(chapter))
-            chapters.append((str(s.get("id") or ""), str(chapter)))
-    chapters_html = ""
-    if chapters:
-        items = "\n".join(
-            f'        <li><a href="#{esc(sid)}">{esc(label)}</a></li>'
-            for sid, label in chapters
-        )
-        chapters_html = (
-            '      <nav class="cj-chapters" aria-label="Career journey chapters">\n'
-            f"      <ul>\n{items}\n      </ul>\n"
-            "      </nav>\n"
-        )
-
-    slides_html = "\n".join(_cj_slide_html(site, s, default_transition) for s in slides)
-    total = len(slides)
-
-    return f"""    <div class="cj-page">
-      <header class="cj-header">
-        <h1>{title}</h1>
-        {f'<p class="subtitle">{subtitle}</p>' if subtitle else ""}
-        {f'<p class="page-lede">{lede}</p>' if lede else ""}
-{source_html}
-      </header>
-{chapters_html}      <div class="cj-stage">
-        <div class="cj-deck-controls" aria-label="Career journey slide controls">
-          <button class="cj-slide-btn" type="button" data-cj-reset aria-label="Restart from beginning">⟳</button>
-          <button class="cj-slide-btn" type="button" data-cj-prev aria-label="Previous slide">←</button>
-          <p class="cj-slide-count">
-            <input class="cj-goto-input" type="number" data-cj-goto aria-label="Go to slide" min="1" max="{total}" value="1" />
-            <span> / {total}</span>
-          </p>
-          <span class="cj-live-announce" aria-live="polite" data-cj-current></span>
-          <button class="cj-slide-btn" type="button" data-cj-next aria-label="Next slide">→</button>
-        </div>
-        <div class="cj-slides" tabindex="0" aria-label="Career journey slides">
-{slides_html}
-        </div>
-      </div>
-    </div>
-    <script src="{esc(with_base(site, "/career-journey.js"))}" defer></script>
-"""
-
-
 def analytics_head(site: dict) -> str:
     """Optional GA4 + Jetpack Stats (continuity with live WP)."""
     analytics = site.get("analytics") or {}
@@ -807,28 +792,32 @@ def analytics_body(site: dict, active: str) -> str:
     return "\n".join(chunks)
 
 
-def footer_html(site: dict) -> str:
+def _footer_meta_html(site: dict) -> str:
     person = site["person"]
-    contact = site["contact"]
-    ext = site["external"]
-    year = date.today().year
     location = str(person.get("location") or "").strip()
     focus = ""
-    for row in site.get("current_index") or []:
+    export = site.get("_export") or {}
+    for row in _compose_current_index_rows(site, export):
         if not isinstance(row, dict):
             continue
-        if str(row.get("status") or "").strip() == "building":
+        if _current_index_topic(row) == "systems":
             focus = str(row.get("label") or "").strip()
             break
     meta_bits = [x for x in (location, focus) if x]
     meta_line = " · ".join(meta_bits)
-    meta_html = f'    <p class="library-card-meta">{esc(meta_line)}</p>\n' if meta_line else ""
-    return f"""  <footer class="site-footer library-card">
+    return f'    <p class="library-card-meta">{esc(meta_line)}</p>\n' if meta_line else ""
+
+
+def footer_html(site: dict, *, compact: bool = False, active: str = "") -> str:
+    person = site["person"]
+    year = date.today().year
+    meta_html = _footer_meta_html(site)
+    footer_links = _footer_links_html(site, active)
+    footer_class = "library-page-footer library-card" if compact else "site-footer library-card"
+    return f"""  <footer class="{footer_class}">
 {meta_html}    <p>&copy; {year} {esc(person.get("full_name") or "yzouyang")}</p>
     <p class="footer-links">
-      <a href="mailto:{esc(contact.get("email") or "")}">{esc(contact.get("email") or "")}</a>
-      <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a class="external" href="{esc(ext.get("github") or "")}" target="_blank" rel="noopener noreferrer">GitHub</a>
+      {footer_links}
     </p>
   </footer>"""
 
@@ -841,6 +830,11 @@ def layout(
     *,
     pagefind: bool = False,
     path: str = "/",
+    deck_mode: bool = False,
+    header_search: bool = False,
+    library_route: bool = False,
+    home_route: bool = False,
+    extra_head: str = "",
 ) -> str:
     person = site["person"]
     brand = esc(person.get("brand", "yzouyang"))
@@ -857,8 +851,20 @@ def layout(
     pf_js = esc(with_base(site, "/pagefind/pagefind-ui.js"))
     home = esc(with_base(site, "/"))
     desktop_nav = nav_html(site, active)
-    mobile_nav = nav_html(site, active, grouped=True)
-    pf_css_tag = f'\n  <link rel="stylesheet" href="{pf_css}" />' if pagefind else ""
+    mobile_nav = nav_html(site, active)
+    header_search_html = _header_search_html() if header_search else ""
+    use_pagefind_ui = pagefind or header_search
+    page_class = (
+        "page library-route"
+        if library_route
+        else (
+            "page home-route"
+            if home_route
+            else ("page library-deck-page" if deck_mode else "page")
+        )
+    )
+    body_class = ' class="library-deck-body"' if deck_mode else ""
+    pf_css_tag = f'\n  <link rel="stylesheet" href="{pf_css}" />' if use_pagefind_ui else ""
     pf_script = (
         f"""
   <script src="{pf_js}" type="text/javascript"></script>
@@ -875,7 +881,7 @@ def layout(
       }}
     }});
   </script>"""
-        if pagefind
+        if use_pagefind_ui
         else ""
     )
     return f"""<!DOCTYPE html>
@@ -895,12 +901,13 @@ def layout(
 {THEME_BOOT_SCRIPT}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{css}" />{pf_css_tag}
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />{pf_css_tag}
+  <link rel="stylesheet" href="{css}" />
 {person_json_ld(site)}
+{extra_head}
 {head_analytics}
 </head>
-<body>
+<body{body_class}>
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="site-header-wrap">
   <header class="site-header">
@@ -909,6 +916,14 @@ def layout(
       <nav class="site-nav site-nav-desktop" aria-label="Primary">
         {desktop_nav}
       </nav>
+{header_search_html}
+      <button type="button" class="theme-toggle reading-size-toggle" data-reading-size-toggle aria-pressed="false" aria-label="Text size: standard. Click to make text larger.">
+        <span class="reading-size-steps" aria-hidden="true">
+          <span class="reading-size-step is-active" data-step="default">A</span>
+          <span class="reading-size-step" data-step="large">A</span>
+          <span class="reading-size-step" data-step="xlarge">A</span>
+        </span>
+      </button>
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Theme: dark">
         <span class="theme-toggle-label">Dark</span>
       </button>
@@ -921,10 +936,10 @@ def layout(
     </div>
   </header>
   </div>
-  <main id="main" class="page" aria-label="{esc(title)}"{pf_attr}>
+  <main id="main" class="{page_class}" aria-label="{esc(title)}"{pf_attr}>
 {body}
   </main>
-{footer_html(site)}{pf_script}
+{footer_html(site) if not (library_route or home_route) else ""}{pf_script}
   <script src="{chrome_js}" defer></script>
 {body_analytics}
 </body>
@@ -1011,7 +1026,7 @@ def compose_home_selected_row(site: dict, row: dict) -> dict:
             composed[key] = row[key]
     href = str(row.get("href") or "").strip()
     if not href and case_id:
-        href = f"/portfolio/#{case_id}"
+        href = f"/systems/#{case_id}"
     if href:
         composed["href"] = href
     return composed
@@ -1076,7 +1091,9 @@ def _atmosphere_figure_html(
 
 
 def _note_catalog_id(row: dict, index: int = 0) -> str:
-    custom = str(row.get("record_id") or "").strip()
+    custom = str(row.get("id") or row.get("record_id") or "").strip()
+    if custom.startswith("NOTE-"):
+        return custom
     if custom:
         return custom
     date_s = str(row.get("date") or "").strip()
@@ -1087,47 +1104,844 @@ def _note_catalog_id(row: dict, index: int = 0) -> str:
     return f"NOTE-2026-{index + 1:03d}"
 
 
-def _current_index_html(site: dict) -> str:
-    rows = [r for r in (site.get("current_index") or []) if isinstance(r, dict)][:3]
+def _writing_rows(export: dict) -> list[dict]:
+    """Normalize export `writing` records for site builders."""
+    rows: list[dict] = []
+    for raw in export.get("writing") or []:
+        if not isinstance(raw, dict):
+            continue
+        syndication = raw.get("syndication") if isinstance(raw.get("syndication"), dict) else {}
+        medium = str(syndication.get("medium") or "").strip() or None
+        linkedin = str(syndication.get("linkedin") or "").strip() or None
+        discuss_url = linkedin or medium or ""
+        venue = "LinkedIn" if linkedin and not medium else ("Medium" if medium else "Article")
+        rows.append(
+            {
+                "id": raw.get("id"),
+                "record_id": raw.get("id"),
+                "title": raw.get("title"),
+                "teaser": str(raw.get("teaser") or raw.get("summary") or "").strip(),
+                "date": raw.get("date"),
+                "category": raw.get("category"),
+                "series": raw.get("series"),
+                "start_here": bool(raw.get("start_here")),
+                "body_md": raw.get("body_md"),
+                "syndication": syndication,
+                "aliases": raw.get("aliases") or [],
+                "url": discuss_url,
+                "venue": venue,
+                "canonical": raw.get("canonical"),
+            }
+        )
+    return rows
+
+
+def _writing_discussion_link(row: dict) -> tuple[str, str]:
+    synd = row.get("syndication") if isinstance(row.get("syndication"), dict) else {}
+    linkedin = str(synd.get("linkedin") or "").strip()
+    medium = str(synd.get("medium") or "").strip()
+    if linkedin:
+        return linkedin, "Discuss on LinkedIn"
+    if medium:
+        return medium, "Discuss on Medium"
+    url = str(row.get("url") or "").strip()
+    venue = str(row.get("venue") or "Article")
+    return url, f"Read on {venue}"
+
+
+def _writing_also_links(row: dict) -> list[tuple[str, str]]:
+    synd = row.get("syndication") if isinstance(row.get("syndication"), dict) else {}
+    linkedin = str(synd.get("linkedin") or "").strip()
+    medium = str(synd.get("medium") or "").strip()
+    discuss_url, _ = _writing_discussion_link(row)
+    links: list[tuple[str, str]] = []
+    if medium and medium != discuss_url:
+        links.append((medium, "Also on Medium"))
+    if linkedin and linkedin != discuss_url:
+        links.append((linkedin, "Also on LinkedIn"))
+    return links
+
+
+def _note_href(site: dict, note_id: str) -> str:
+    return with_base(site, f"/notes/#{note_id}")
+
+
+def _note_asset_href(site: dict, note_id: str, rel_path: str) -> str:
+    cleaned = rel_path.strip().replace("\\", "/")
+    if cleaned.startswith("assets/"):
+        cleaned = cleaned[len("assets/") :]
+    return with_base(site, f"/assets/notes/{note_id}/{cleaned}")
+
+
+def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
+    safe = esc(text)
+    safe = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", safe)
+    safe = re.sub(r"\*(.+?)\*", r"<em>\1</em>", safe)
+    safe = re.sub(r"`([^`]+)`", r"<code>\1</code>", safe)
+
+    def link_repl(match: re.Match[str]) -> str:
+        label, href = match.group(1), match.group(2).strip()
+        if href.startswith("assets/"):
+            path = _note_asset_href(site, note_id, href)
+            return f'<a href="{esc(path)}">{label}</a>'
+        if href.startswith(("http://", "https://")):
+            return (
+                f'<a class="external" href="{esc(href)}" target="_blank" '
+                f'rel="noopener noreferrer">{label}</a>'
+            )
+        return f'<a href="{esc(with_base(site, href))}">{label}</a>'
+
+    safe = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_repl, safe)
+
+    def img_repl(match: re.Match[str]) -> str:
+        alt, src = match.group(1), match.group(2).strip()
+        if src.startswith("assets/"):
+            path = _note_asset_href(site, note_id, src)
+        elif src.startswith(("http://", "https://")):
+            path = esc(src)
+        else:
+            path = esc(with_base(site, src))
+        return f'<img src="{path}" alt="{esc(alt)}" loading="lazy" />'
+
+    return re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", img_repl, safe)
+
+
+def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
+    if not str(md or "").strip():
+        return ""
+    out: list[str] = []
+    in_code = False
+    in_list = False
+    para: list[str] = []
+
+    def flush_para() -> None:
+        nonlocal in_list, para
+        if para:
+            joined = " ".join(para).strip()
+            if joined:
+                out.append(f"<p>{_inline_markdown(joined, note_id=note_id, site=site)}</p>")
+            para = []
+        if in_list:
+            out.append("</ul>")
+            in_list = False
+
+    for raw_line in md.splitlines():
+        line = raw_line.rstrip()
+        if line.strip().startswith("```"):
+            flush_para()
+            if in_code:
+                out.append("</code></pre>")
+                in_code = False
+            else:
+                out.append("<pre><code>")
+                in_code = True
+            continue
+        if in_code:
+            out.append(esc(raw_line) + "\n")
+            continue
+        heading = re.match(r"^(#{1,4})\s+(.*)$", line)
+        if heading:
+            flush_para()
+            raw_level = len(heading.group(1))
+            level = 3 if raw_level <= 2 else min(raw_level, 4)
+            out.append(
+                f"<h{level}>{_inline_markdown(heading.group(2), note_id=note_id, site=site)}</h{level}>"
+            )
+            continue
+        if line.strip().startswith("- "):
+            flush_para()
+            if not in_list:
+                out.append("<ul>")
+                in_list = True
+            out.append(
+                f"<li>{_inline_markdown(line.strip()[2:], note_id=note_id, site=site)}</li>"
+            )
+            continue
+        if not line.strip():
+            flush_para()
+            continue
+        para.append(line.strip())
+    flush_para()
+    if in_code:
+        out.append("</code></pre>")
+    return "\n".join(out)
+
+
+def _writing_links_html(site: dict, row: dict) -> str:
+    links: list[str] = []
+    discuss_url, discuss_label = _writing_discussion_link(row)
+    if discuss_url.startswith("http"):
+        links.append(
+            f'<a class="external map-record-read" href="{esc(discuss_url)}" target="_blank" '
+            f'rel="noopener noreferrer">{esc(discuss_label)}</a>'
+        )
+    for href, label in _writing_also_links(row):
+        links.append(
+            f'<a class="external" href="{esc(href)}" target="_blank" '
+            f'rel="noopener noreferrer">{esc(label)}</a>'
+        )
+    if not links:
+        return ""
+    return f'        <p class="links">{" · ".join(links)}</p>\n'
+
+
+def _unique_note_catalog_ids(rows: list[dict]) -> list[tuple[dict, str]]:
+    """Assign stable NOTE-* ids; bump suffix when two essays would collide."""
+    used: set[str] = set()
+    out: list[tuple[dict, str]] = []
+    for idx, row in enumerate(rows):
+        if not isinstance(row, dict):
+            continue
+        base = _note_catalog_id(row, idx)
+        note_id = base
+        bump = 2
+        while note_id in used:
+            note_id = f"{base}-{bump}"
+            bump += 1
+        used.add(note_id)
+        out.append((row, note_id))
+    return out
+
+
+RECORD_KIND_ROUTE = {
+    "sys": "/systems/",
+    "lab": "/systems/",
+    "note": "/notes/",
+}
+
+HASH_ROUTE_ALIASES = {
+    "system-map": "/systems/",
+    "selected-systems": "/systems/",
+    "workshop": "/systems/",
+    "reading-room": "/notes/",
+    "profile": "/",
+    "contact": "/",
+    "credentials": "/credentials/",
+}
+
+
+def _route_for_slide(slide_id: str) -> str:
+    return HASH_ROUTE_ALIASES.get(slide_id, f"/#{slide_id}")
+
+
+def _slide_id_for_record(record_id: str, kind: str | None = None) -> str:
+    if kind == "note":
+        return "reading-room"
+    return "system-map"
+
+
+def _home_slide_for_path(path: str) -> str | None:
+    raw = path.split("#")[0].strip()
+    if not raw.startswith("/"):
+        return None
+    normalized = raw.rstrip("/").lower() or "/"
+    routes = {
+        "/systems": "system-map",
+        "/portfolio": "system-map",
+        "/work": "system-map",
+        "/about": None,
+        "/credentials": "credentials",
+        "/notes": "reading-room",
+        "/perspectives": "reading-room",
+        "/contact": None,
+    }
+    return routes.get(normalized)
+
+
+def _internal_route_link(
+    site: dict,
+    slide_id: str,
+    label: str,
+    *,
+    record_id: str | None = None,
+    link_class: str = "route-link",
+) -> str:
+    route = _route_for_slide(slide_id)
+    href = with_base(site, route)
+    if record_id and slide_id == "system-map":
+        href = with_base(site, f"/systems/#{record_id}")
+    classes = link_class.strip()
+    return f'<a class="{esc(classes)}" href="{esc(href)}">{esc(label)}</a>'
+
+
+def _home_slide_link(site: dict, slide_id: str, label: str, **kwargs) -> str:
+    """Backward-compatible alias for map panel footer links."""
+    return _internal_route_link(site, slide_id, label, **kwargs)
+
+
+CURRENT_INDEX_TOPICS = {
+    "notes": "Notes",
+    "systems": "Systems",
+}
+CURRENT_INDEX_STATUS_LEGACY = {
+    "studying": "notes",
+    "building": "systems",
+    "writing": "notes",
+}
+
+
+def _current_index_topic(row: dict) -> str:
+    topic = str(row.get("topic") or "").strip().lower()
+    if topic in CURRENT_INDEX_TOPICS:
+        return topic
+    status = str(row.get("status") or "").strip().lower()
+    return CURRENT_INDEX_STATUS_LEGACY.get(status, "")
+
+
+def _current_index_topic_label(topic: str) -> str:
+    return CURRENT_INDEX_TOPICS.get(topic, "")
+
+
+def _short_title(title: str, *, max_len: int = 72) -> str:
+    text = str(title or "").strip()
+    if len(text) <= max_len:
+        return text
+    cut = text[: max_len - 1].rsplit(" ", 1)[0]
+    return (cut or text[: max_len - 1]).rstrip() + "…"
+
+
+def _weekly_rotation_index(count: int, salt: str) -> int:
+    if count <= 1:
+        return 0
+    year, week, _ = date.today().isocalendar()
+    bucket = year * 100 + week
+    offset = sum(ord(ch) for ch in salt)
+    return (bucket + offset) % count
+
+
+def _home_highlights_rotation(site: dict) -> str:
+    config = site.get("home_highlights")
+    if not isinstance(config, dict):
+        return "weekly"
+    mode = str(config.get("rotation") or "weekly").strip().lower()
+    return mode if mode in {"weekly", "pinned"} else "weekly"
+
+
+def _compose_current_index_rows(site: dict, export: dict) -> list[dict]:
+    """Build home highlight lines — weekly rotation from catalog pools by default."""
+    if _home_highlights_rotation(site) == "pinned":
+        return [r for r in (site.get("current_index") or []) if isinstance(r, dict)][:2]
+
+    systems_pool: list[dict] = []
+    for raw in site.get("home_selected") or []:
+        if not isinstance(raw, dict):
+            continue
+        composed = compose_home_selected_row(site, raw)
+        record_id = str(composed.get("record_id") or raw.get("record_id") or "").strip()
+        title = str(composed.get("title") or "").strip()
+        if record_id and title:
+            systems_pool.append(
+                {
+                    "topic": "systems",
+                    "label": title,
+                    "href": f"/systems/#{record_id}",
+                }
+            )
+
+    writing = _writing_rows(export)
+    assigned = _unique_note_catalog_ids(writing)
+    notes_pool: list[dict] = []
+    for row, note_id in assigned:
+        title = str(row.get("title") or "").strip()
+        teaser = str(row.get("teaser") or "").strip()
+        note_label = teaser or _short_title(title)
+        if note_id and note_label:
+            notes_pool.append(
+                {
+                    "topic": "notes",
+                    "label": note_label,
+                    "href": f"/notes/#{note_id}",
+                }
+            )
+
+    rows: list[dict] = []
+    if systems_pool:
+        rows.append(systems_pool[_weekly_rotation_index(len(systems_pool), "systems")])
+    if notes_pool:
+        rows.append(notes_pool[_weekly_rotation_index(len(notes_pool), "notes")])
+    return rows[:2]
+
+
+def _current_index_link_html(site: dict, href: str, label: str) -> str:
+    if href.startswith("http"):
+        link = esc(href)
+        return (
+            f'<a class="external" href="{link}" target="_blank" '
+            f'rel="noopener noreferrer">{label}</a>'
+        )
+    if href.startswith("/"):
+        link = esc(with_base(site, href))
+        return f'<a class="route-link" href="{link}">{label}</a>'
+    return label
+
+
+def _current_index_html(site: dict, export: dict) -> str:
+    rows = _compose_current_index_rows(site, export)
     if not rows:
         return ""
     items: list[str] = []
     for row in rows:
-        status = esc(str(row.get("status") or "").strip())
+        topic = _current_index_topic(row)
+        topic_label = _current_index_topic_label(topic)
         label = esc(str(row.get("label") or "").strip())
         href = str(row.get("href") or "").strip()
-        if not status or not label:
+        if not topic_label or not label or not href:
             continue
-        if href.startswith("/"):
-            link = esc(with_base(site, href))
-            label_html = f'<a href="{link}">{label}</a>'
-        elif href.startswith("http"):
-            link = esc(href)
-            label_html = (
-                f'<a class="external" href="{link}" target="_blank" '
-                f'rel="noopener noreferrer">{label}</a>'
-            )
-        else:
-            label_html = label
+        label_html = _current_index_link_html(site, href, label)
         items.append(
-            f"          <li><span class=\"index-status\">{status}</span>"
+            f"          <li><span class=\"index-topic\">{esc(topic_label)}</span>"
             f"<span class=\"index-entry\">{label_html}</span></li>"
         )
     if not items:
         return ""
     return (
-        '        <ul class="current-index" aria-label="Current work">\n'
+        '        <ul class="current-index" aria-label="Selected highlights">\n'
         + "\n".join(items)
         + "\n        </ul>"
     )
 
 
-def _system_map_html(site: dict) -> str:
+def _map_label_tspans(x: int, y: int, label: str) -> str:
+    """Wrap a domain label into up to two SVG lines below a node."""
+    max_chars = 20
+    words = label.split()
+    lines: list[str] = []
+    line: list[str] = []
+    for word in words:
+        candidate = " ".join(line + [word])
+        if len(candidate) > max_chars and line:
+            lines.append(" ".join(line))
+            line = [word]
+        else:
+            line.append(word)
+    if line:
+        lines.append(" ".join(line))
+    if len(lines) == 2 and len(lines[1]) <= 4:
+        merged = f"{lines[0]} {lines[1]}"
+        if len(merged) <= max_chars + 6:
+            lines = [merged]
+    lines = lines[:2]
+    tspans = []
+    for idx, chunk in enumerate(lines):
+        dy = "0" if idx == 0 else "1.05em"
+        tspans.append(f'<tspan x="{x}" dy="{dy}">{esc(chunk)}</tspan>')
+    return (
+        f'<text class="map-node-label" text-anchor="middle" x="{x}" y="{y + 20}">'
+        + "".join(tspans)
+        + "</text>"
+    )
+
+
+def _domain_target_section(domain: dict) -> str:
+    explicit = str(domain.get("target") or "").strip()
+    if explicit:
+        return explicit
+    related = [str(r).strip() for r in (domain.get("related") or []) if str(r).strip()]
+    has_sys = any(r.startswith("SYS-") for r in related)
+    has_lab = any(r.startswith("LAB-") for r in related)
+    has_note = any(r.startswith("NOTE-") for r in related)
+    if has_lab and not has_sys:
+        return "system-map"
+    if has_note and not has_sys and not has_lab:
+        return "reading-room"
+    return "system-map"
+
+
+def _domain_target_label(target: str) -> str:
+    labels = {
+        "system-map": "View full catalogue",
+        "selected-systems": "View full catalogue",
+        "reading-room": "View notes",
+        "profile": "View profile",
+        "credentials": "View credentials",
+        "contact": "Connect",
+    }
+    return labels.get(target, "Open section")
+
+
+def _map_record_lookup(site: dict, export: dict | None = None) -> dict[str, dict]:
+    export = export if export is not None else (site.get("_export") or {})
+    lookup: dict[str, dict] = {}
+    for row in site.get("home_selected") or []:
+        if not isinstance(row, dict):
+            continue
+        rid = str(row.get("record_id") or "").strip()
+        if rid:
+            lookup[rid] = {
+                "kind": "sys",
+                "title": str(row.get("title") or "").strip(),
+                "href": with_base(site, str(row.get("href") or "/systems/")),
+            }
+    for row in site.get("workshop") or []:
+        if not isinstance(row, dict):
+            continue
+        rid = str(row.get("record_id") or "").strip()
+        if not rid:
+            continue
+        href = str(row.get("href") or "").strip()
+        if href.startswith("/"):
+            href = with_base(site, href)
+        lookup[rid] = {
+            "kind": "lab",
+            "title": str(row.get("title") or "").strip(),
+            "href": href,
+            "summary": str(row.get("constraint") or "").strip(),
+            "category": str(row.get("category") or "").strip(),
+        }
+    for idx, row in enumerate(_writing_rows(export)):
+        if not isinstance(row, dict):
+            continue
+        rid = _note_catalog_id(row, idx)
+        venue = str(row.get("venue") or "Article").strip()
+        date_s = str(row.get("date") or "").strip()
+        lookup[rid] = {
+            "kind": "note",
+            "title": str(row.get("title") or "").strip(),
+            "href": _note_href(site, rid),
+            "summary": str(row.get("teaser") or "").strip(),
+            "venue": venue,
+            "date": date_s,
+            "category": _note_category(row),
+            "series": _note_series(row),
+        }
+    return lookup
+
+
+def _map_record_read_link(href: str, kind: str) -> str:
+    if kind == "note":
+        label = "Read note"
+    elif kind == "lab":
+        label = "View project"
+    else:
+        label = "Open record"
+    if href.startswith("http"):
+        return (
+            f'<a class="external map-record-read" href="{esc(href)}" target="_blank" '
+            f'rel="noopener noreferrer">{esc(label)}</a>'
+        )
+    return f'<a class="map-record-read" href="{esc(href)}">{esc(label)}</a>'
+
+
+def _map_record_panel_body(site: dict, record_id: str, meta: dict, *, omit_title: bool = False) -> str:
+    kind = str(meta.get("kind") or "record")
+    title = str(meta.get("title") or record_id).strip()
+    if kind == "sys":
+        row = next(
+            (
+                compose_home_selected_row(site, r)
+                for r in (site.get("home_selected") or [])
+                if isinstance(r, dict)
+                and str(r.get("record_id") or "").strip() == record_id
+            ),
+            None,
+        )
+        if not row:
+            return ""
+        return (
+            '          <div class="system-map-record-body">\n'
+            + _system_record_panel_body(site, row, omit_title=omit_title)
+            + "          </div>"
+        )
+
+    id_html = f'            <p class="record-id">{esc(record_id)}</p>\n'
+    title_html = (
+        ""
+        if omit_title
+        else f'            <h3 class="system-map-record-title">{esc(title)}</h3>\n'
+    )
+    summary = str(meta.get("summary") or "").strip()
+    summary_html = (
+        f'            <p class="record-context">{esc(summary)}</p>\n' if summary else ""
+    )
+    extra_html = ""
+    if kind == "note":
+        venue = str(meta.get("venue") or "").strip()
+        date_s = str(meta.get("date") or "").strip()
+        meta_line = " · ".join(x for x in (venue, date_s) if x)
+        if meta_line:
+            extra_html = f'            <p class="catalogue-line meta">{esc(meta_line)}</p>\n'
+    elif kind == "lab":
+        category = str(meta.get("category") or "").strip()
+        if category:
+            extra_html = f'            <p class="record-domains">{esc(category)}</p>\n'
+    href = str(meta.get("href") or "").strip()
+    link_html = (
+        f'            <p class="links">{_map_record_read_link(href, kind)}</p>\n'
+        if href
+        else ""
+    )
+    return (
+        '          <div class="system-map-record-body">\n'
+        f"{id_html}"
+        f"{title_html}"
+        f"{summary_html}"
+        f"{extra_html}"
+        f"{link_html}"
+        "          </div>"
+    )
+
+
+def _record_domain_key(domains: list[dict], record_id: str) -> str:
+    for domain in domains:
+        related = [str(r).strip() for r in (domain.get("related") or []) if str(r).strip()]
+        if record_id in related:
+            return str(domain.get("id") or "").strip()
+    return ""
+
+
+def _system_record_domain_key(record_id: str) -> str:
+    if record_id == "SYS-01":
+        return "finops"
+    if record_id == "SYS-03":
+        return "ai-architecture"
+    return "data-platforms"
+
+
+def _system_record_panel_body(site: dict, row: dict, *, omit_title: bool = False) -> str:
+    record_id = str(row.get("record_id") or "").strip()
+    title = str(row.get("title") or "").strip()
+    problem = str(row.get("problem") or "").strip()
+    domains = row.get("domains") or []
+    domain_line = " · ".join(str(d).strip() for d in domains if str(d).strip())
+    methods = _curated_tools(row.get("tools"))
+    methods_line = ", ".join(methods) if methods else ""
+    impact = _record_impact_html(site, record_id).strip()
+    if impact:
+        impact = impact.replace("          ", "            ", 1)
+    parts: list[str] = []
+    if record_id:
+        parts.append(f'            <p class="record-id">{esc(record_id)}</p>')
+    if not omit_title:
+        parts.append(f'            <h3 class="system-map-record-title">{esc(title)}</h3>')
+    if problem:
+        parts.append(f'            <p class="record-context">{esc(problem)}</p>')
+    if domain_line:
+        parts.append(f'            <p class="record-domains">{esc(domain_line)}</p>')
+    if methods_line:
+        parts.append(
+            f'            <p class="record-methods meta">Components: {esc(methods_line)}</p>'
+        )
+    if impact:
+        parts.append(impact)
+    return "\n".join(parts) + "\n"
+
+
+def _map_record_panels_html(site: dict, domains: list[dict]) -> str:
+    lookup = _map_record_lookup(site)
+    referenced: list[str] = []
+    seen: set[str] = set()
+    for domain in domains[:6]:
+        for record_id in domain.get("related") or []:
+            rid = str(record_id).strip()
+            if rid and rid not in seen:
+                seen.add(rid)
+                referenced.append(rid)
+    panels: list[str] = []
+    for record_id in referenced:
+        meta = lookup.get(record_id)
+        if not meta or not meta.get("title"):
+            continue
+        body = _map_record_panel_body(site, record_id, meta)
+        if not body:
+            continue
+        domain_key = _record_domain_key(domains, record_id) or _system_record_domain_key(record_id)
+        related_html = _related_paths_html(site, record_id, domain_key, domains)
+        panels.append(
+            f'          <article class="system-map-record-panel" data-record="{esc(record_id)}" '
+            f'data-kind="{esc(str(meta.get("kind") or "record"))}" '
+            f'data-domain="{esc(domain_key)}" hidden>\n'
+            '            <button type="button" class="map-record-back" '
+            'data-record-back>Back to domain</button>\n'
+            f"{body}"
+            f"{related_html}"
+            "          </article>"
+        )
+    if not panels:
+        return ""
+    return (
+        '          <div class="system-map-record-panels">\n'
+        + "\n".join(panels)
+        + "\n          </div>"
+    )
+
+
+def _map_detail_record_item(site: dict, record_id: str, meta: dict) -> str:
+    title = str(meta.get("title") or record_id).strip()
+    kind = str(meta.get("kind") or "record")
+    href = str(meta.get("href") or "").strip()
+    kind_label = {"sys": "System", "lab": "Experiment", "note": "Note"}.get(kind, "Record")
+    if kind in ("sys", "note", "lab"):
+        control = (
+            f'<button type="button" class="map-record-select" '
+            f'data-record-select="{esc(record_id)}">{esc(title)}</button>'
+        )
+    elif href.startswith("http"):
+        control = (
+            f'<a class="external" href="{esc(href)}" target="_blank" '
+            f'rel="noopener noreferrer">{esc(title)}</a>'
+        )
+    else:
+        slide = _slide_id_for_record(record_id, kind)
+        control = _home_slide_link(site, slide, title, record_id=record_id)
+    return (
+        f'            <li data-record="{esc(record_id)}" data-kind="{esc(kind)}">\n'
+        f'              <span class="map-detail-kind meta">{esc(kind_label)}</span>\n'
+        f'              <p class="record-id">{esc(record_id)}</p>\n'
+        f"              <p>{control}</p>\n"
+        f"            </li>"
+    )
+
+
+def _map_domain_index_html(domains: list[dict], *, explorer: bool = False) -> str:
+    items: list[str] = []
+    for domain in domains[:6]:
+        did = str(domain.get("id") or "").strip()
+        label = str(domain.get("label") or did)
+        summary = str(domain.get("summary") or "").strip()
+        related = [str(r).strip() for r in (domain.get("related") or []) if str(r).strip()]
+        rel_attr = " ".join(related)
+        target = _domain_target_section(domain)
+        summary_html = ""
+        if summary and not explorer:
+            summary_html = (
+                f'            <p class="domain-index-summary">{esc(summary)}</p>\n'
+            )
+        items.append(
+            f'          <li data-domain="{esc(did)}" data-related="{esc(rel_attr)}" '
+            f'data-target="{esc(target)}">\n'
+            f'            <span class="domain-index-label">{esc(label)}</span>\n'
+            f"{summary_html}"
+            f"          </li>"
+        )
+    if not items:
+        return ""
+    lede_html = ""
+    if not explorer:
+        lede_html = (
+            '          <p class="system-map-detail-lede">Select a domain to view representative '
+            "systems and notes.</p>\n"
+        )
+    return (
+        '        <div class="system-map-domain-index">\n'
+        f"{lede_html}"
+        '          <ul class="system-map-domain-index-list" role="list">\n'
+        + "\n".join(items)
+        + "\n          </ul>\n"
+        "        </div>"
+    )
+
+
+def _map_detail_panels_only_html(site: dict, domains: list[dict]) -> str:
+    lookup = _map_record_lookup(site)
+    panels: list[str] = []
+    for domain in domains[:6]:
+        did = str(domain.get("id") or "").strip()
+        label = str(domain.get("label") or did)
+        summary = str(domain.get("summary") or "").strip()
+        related = [str(r).strip() for r in (domain.get("related") or []) if str(r).strip()]
+        rel_attr = " ".join(related)
+        target = _domain_target_section(domain)
+        target_label = _domain_target_label(target)
+        items: list[str] = []
+        for record_id in related:
+            meta = lookup.get(record_id)
+            if meta and meta.get("title"):
+                items.append(_map_detail_record_item(site, record_id, meta))
+        if not items:
+            continue
+        summary_html = (
+            f'            <p class="system-map-detail-summary">{esc(summary)}</p>\n'
+            if summary
+            else ""
+        )
+        footer_html = ""
+        if target not in ("system-map", "selected-systems"):
+            footer_html = (
+                f'            <p class="links">{_home_slide_link(site, target, target_label)}</p>\n'
+            )
+        panels.append(
+            f'          <article class="system-map-detail-panel" data-domain="{esc(did)}" '
+            f'data-related="{esc(rel_attr)}" data-target="{esc(target)}" hidden>\n'
+            f'            <h3 class="system-map-detail-title">{esc(label)}</h3>\n'
+            f"{summary_html}"
+            f'            <ul class="map-detail-records">\n'
+            + "\n".join(items)
+            + "\n            </ul>\n"
+            f"{footer_html}"
+            "          </article>"
+        )
+    return "\n".join(panels)
+
+
+def _map_detail_panels_html(site: dict, domains: list[dict]) -> str:
+    panels = _map_detail_panels_only_html(site, domains)
+    if not panels:
+        return ""
+    index_html = _map_domain_index_html(domains[:6])
+    record_panels_html = _map_record_panels_html(site, domains[:6])
+    return (
+        '        <aside class="system-map-detail" aria-live="polite">\n'
+        f"{index_html}\n"
+        '          <div class="system-map-detail-panels">\n'
+        + panels
+        + "\n          </div>\n"
+        f"{record_panels_html}\n"
+        "        </aside>"
+    )
+
+
+def _systems_explorer_html(site: dict) -> str:
+    """Viewport split-pane: domains (left) · record pane (right) · browse strip (bottom)."""
+    domains = [d for d in (site.get("system_map") or []) if isinstance(d, dict)]
+    if len(domains) < 4:
+        return ""
+    domain_nav = _map_domain_index_html(domains[:6], explorer=True)
+    detail_panels = _map_detail_panels_only_html(site, domains[:6])
+    record_panels = _map_record_panels_html(site, domains[:6])
+    catalogue_href = esc(with_base(site, "/systems/catalogue/"))
+    notes_href = esc(with_base(site, "/notes/"))
+    credentials_href = esc(with_base(site, "/credentials/"))
+    return (
+        '    <div class="systems-shell">\n'
+        '      <h1 class="visually-hidden">Systems</h1>\n'
+        '      <div class="systems-split system-map-section" id="system-map">\n'
+        f'        <nav class="systems-domains" aria-label="Domains">\n{domain_nav}\n'
+        "        </nav>\n"
+        '        <div class="systems-pane system-map-detail" aria-live="polite">\n'
+        '          <p class="systems-pane-lede">Select a domain to view representative '
+        "systems and notes.</p>\n"
+        '          <div class="system-map-detail-panels">\n'
+        f"{detail_panels}\n"
+        "          </div>\n"
+        f"{record_panels}\n"
+        "        </div>\n"
+        "      </div>\n"
+        '      <footer class="systems-strip">\n'
+        '        <p class="systems-strip-copy meta">'
+        '<span class="systems-strip-label">Related paths</span> '
+        f'<a href="{catalogue_href}">Browse full catalogue</a> · '
+        f'<a href="{notes_href}">Notes</a> · '
+        f'<a href="{credentials_href}">Credentials</a></p>\n'
+        "      </footer>\n"
+        "    </div>\n"
+    )
+
+
+def _header_search_html() -> str:
+    return (
+        '      <div class="header-search page-search">\n'
+        '        <label class="page-search-label" for="pagefind-search-input">'
+        "Search catalogue</label>\n"
+        '        <div id="search"></div>\n'
+        "      </div>"
+    )
+
+
+def _system_map_html(site: dict, *, on_systems_page: bool = False) -> str:
     domains = [d for d in (site.get("system_map") or []) if isinstance(d, dict)]
     if len(domains) < 4:
         return ""
     nodes_svg: list[str] = []
-    list_items: list[str] = []
     positions = [
         (80, 40),
         (220, 40),
@@ -1137,19 +1951,15 @@ def _system_map_html(site: dict) -> str:
         (360, 120),
     ]
     for idx, domain in enumerate(domains[:6]):
-        did = esc(str(domain.get("id") or f"domain-{idx}"))
-        label = esc(str(domain.get("label") or did))
-        related = domain.get("related") or []
-        rel_attr = " ".join(esc(str(r)) for r in related if str(r).strip())
+        did = str(domain.get("id") or f"domain-{idx}")
+        label = str(domain.get("label") or did)
         x, y = positions[idx] if idx < len(positions) else (220, 80)
         nodes_svg.append(
-            f'          <g class="map-node" data-domain="{did}" tabindex="0" '
-            f'role="button" aria-label="{label}">'
+            f'          <g class="map-node" data-domain="{esc(did)}" tabindex="0" '
+            f'role="button" aria-label="{esc(label)}">'
             f'<circle cx="{x}" cy="{y}" r="6" />'
-            f'<title>{label}</title></g>'
-        )
-        list_items.append(
-            f'          <li data-domain="{did}" data-related="{rel_attr}">{label}</li>'
+            f"{_map_label_tspans(x, y, label)}"
+            f'<title>{esc(label)}</title></g>'
         )
     lines = [
         '          <line x1="80" y1="40" x2="220" y2="40" />',
@@ -1159,25 +1969,32 @@ def _system_map_html(site: dict) -> str:
         '          <line x1="140" y1="40" x2="140" y2="120" />',
         '          <line x1="280" y1="40" x2="280" y2="120" />',
     ]
-    svg = (
-        '      <div class="system-map-panel">\n'
-        '      <div class="system-map" aria-labelledby="system-map-heading">\n'
-        '        <svg class="system-map-svg" viewBox="0 0 440 160" role="img" '
+    detail_html = _map_detail_panels_html(site, domains[:6])
+    map_svg = (
+        '        <svg class="system-map-svg" viewBox="0 0 440 200" role="img" '
         'aria-label="Principal domains and their connections">\n'
         + "\n".join(lines)
         + "\n"
         + "\n".join(nodes_svg)
-        + "\n        </svg>\n"
-        '        <ol class="system-map-fallback visually-hidden">\n'
-        + "\n".join(list_items)
-        + "\n        </ol>\n"
-        "      </div>\n"
-        "      </div>"
+        + "\n        </svg>"
     )
+    stage_parts = [
+        '      <div class="system-map-stage">\n'
+        '        <div class="system-map-panel">\n'
+        + map_svg
+        + "\n        </div>",
+    ]
+    if detail_html:
+        stage_parts.append(detail_html)
+    stage_parts.append("      </div>")
+    stage_inner = "\n".join(stage_parts)
+    section_class = "systems-explorer system-map-section" if on_systems_page else "home-plate home-systems-teaser"
+    heading = "Domain map" if on_systems_page else "Featured systems"
     return (
-        '    <section class="system-map-section" aria-labelledby="system-map-heading">\n'
-        '      <h2 id="system-map-heading">System map</h2>\n'
-        f"{svg}\n"
+        f'    <section id="system-map" class="{section_class}" '
+        f'aria-labelledby="system-map-heading">\n'
+        f'      <h2 id="system-map-heading">{heading}</h2>\n'
+        f"{stage_inner}\n"
         "    </section>\n"
     )
 
@@ -1199,75 +2016,12 @@ def _record_impact_html(site: dict, record_id: str) -> str:
 
 
 def _selected_systems_html(site: dict) -> str:
-    """Home system records — archive cards, not full case beats."""
-    rows = [
-        compose_home_selected_row(site, r)
-        for r in (site.get("home_selected") or [])
-        if isinstance(r, dict)
-    ][:5]
-    if len(rows) < 2:
-        return ""
-    items: list[str] = []
-    for row in rows:
-        record_id = str(row.get("record_id") or "").strip()
-        title = str(row.get("title") or "").strip()
-        if not title:
-            continue
-        href = with_base(site, str(row.get("href") or "/portfolio/"))
-        problem = str(row.get("problem") or "").strip()
-        domains = row.get("domains") or []
-        domain_line = " · ".join(str(d).strip() for d in domains if str(d).strip())
-        methods = _curated_tools(row.get("tools"))
-        methods_line = ", ".join(methods) if methods else ""
-        impact = _record_impact_html(site, record_id)
-        domain_html = (
-            f'          <p class="record-domains">{esc(domain_line)}</p>\n'
-            if domain_line
-            else ""
-        )
-        methods_html = (
-            f'          <p class="record-methods meta">Components: {esc(methods_line)}</p>\n'
-            if methods_line
-            else ""
-        )
-        id_html = (
-            f'          <p class="record-id">{esc(record_id)}</p>\n' if record_id else ""
-        )
-        context_html = (
-            f'          <p class="record-context">{esc(problem)}</p>\n' if problem else ""
-        )
-        domain_key = "data-platforms"
-        if record_id == "SYS-01":
-            domain_key = "finops"
-        elif record_id == "SYS-03":
-            domain_key = "ai-architecture"
-        items.append(
-            "        <li class=\"system-record\" "
-            f'data-record="{esc(record_id)}" data-domain="{domain_key}">\n'
-            f"{id_html}"
-            f'          <h3><a href="{esc(href)}">{esc(title)}</a></h3>\n'
-            f"{context_html}"
-            f"{domain_html}"
-            f"{methods_html}"
-            f"{impact}"
-            "        </li>"
-        )
-    if len(items) < 2:
-        return ""
-    portfolio = esc(with_base(site, "/portfolio/"))
-    return (
-        '    <section class="selected-systems" aria-labelledby="selected-systems-heading">\n'
-        '      <h2 id="selected-systems-heading">Selected systems</h2>\n'
-        '      <ul class="item-list system-records">\n'
-        + "\n".join(items)
-        + "\n      </ul>\n"
-        f'      <p class="links"><a href="{portfolio}">All systems</a></p>\n'
-        "    </section>\n"
-    )
+    """Deprecated: system records now live in system-map side panels."""
+    return ""
 
 
-def _reading_room_html(site: dict) -> str:
-    rows = [r for r in (site.get("writing_highlights") or []) if isinstance(r, dict)]
+def _reading_room_html(site: dict, export: dict) -> str:
+    rows = _writing_rows(export)
     start = [r for r in rows if r.get("start_here")]
     rest = [r for r in rows if not r.get("start_here")]
     if not start:
@@ -1275,35 +2029,30 @@ def _reading_room_html(site: dict) -> str:
     if not start and not rest:
         return ""
     featured = start[0] if start else None
-    figure = _atmosphere_figure_html(site, "reading", figure_class="reading-figure")
     featured_html = ""
     if featured:
         note_id = _note_catalog_id(featured, 0)
         title = esc(str(featured.get("title") or ""))
-        url = esc(str(featured.get("url") or ""))
-        venue = esc(str(featured.get("venue") or "Article"))
+        href = esc(_note_href(site, note_id))
         date_s = esc(str(featured.get("date") or ""))
-        meta = " · ".join(x for x in (note_id, venue, date_s) if x)
+        meta = " · ".join(x for x in (note_id, date_s) if x)
         featured_html = (
             '      <article class="reading-featured" '
             f'data-record="{esc(note_id)}">\n'
             f'        <p class="catalogue-line meta">{meta}</p>\n'
-            f'        <h3><a class="external" href="{url}" target="_blank" '
-            f'rel="noopener noreferrer">{title}</a></h3>\n'
+            f'        <h3><a class="route-link" href="{href}">{title}</a></h3>\n'
             "      </article>\n"
         )
     compact_rows: list[str] = []
     for idx, row in enumerate(rest[:6], start=1):
         note_id = _note_catalog_id(row, idx)
         title = esc(str(row.get("title") or ""))
-        url = esc(str(row.get("url") or ""))
-        venue = esc(str(row.get("venue") or "Article"))
+        href = esc(_note_href(site, note_id))
         date_s = esc(str(row.get("date") or ""))
-        meta = " · ".join(x for x in (note_id, venue, date_s) if x)
+        meta = " · ".join(x for x in (note_id, date_s) if x)
         compact_rows.append(
             f'        <li data-record="{esc(note_id)}">\n'
-            f'          <a class="external" href="{url}" target="_blank" '
-            f'rel="noopener noreferrer">{title}</a>\n'
+            f'          <a class="route-link" href="{href}">{title}</a>\n'
             f'          <span class="catalogue-line meta">{meta}</span>\n'
             f"        </li>"
         )
@@ -1314,70 +2063,224 @@ def _reading_room_html(site: dict) -> str:
             + "\n".join(compact_rows)
             + "\n      </ul>\n"
         )
-    notes_href = esc(with_base(site, "/perspectives/"))
-    layout = (
-        '      <div class="reading-room-grid">\n'
-        f"{featured_html}"
-        f"{compact_html}"
-        + (f"\n{figure}" if figure else "")
-        + "\n      </div>"
-    )
+    layout = f"{featured_html}{compact_html}"
     return (
-        '    <section class="reading-room" aria-labelledby="reading-room-heading">\n'
+        '    <section id="reading-room" class="library-slide reading-room" aria-labelledby="reading-room-heading">\n'
         '      <h2 id="reading-room-heading">Reading room</h2>\n'
         f"{layout}\n"
-        f'      <p class="links"><a href="{notes_href}">All notes</a></p>\n'
-        "    </section>\n"
-    )
-
-
-def _workshop_html(site: dict) -> str:
-    rows = [r for r in (site.get("workshop") or []) if isinstance(r, dict)][:5]
-    if len(rows) < 2:
-        return ""
-    items: list[str] = []
-    for row in rows:
-        record_id = esc(str(row.get("record_id") or "").strip())
-        title = esc(str(row.get("title") or "").strip())
-        constraint = esc(str(row.get("constraint") or "").strip())
-        category = esc(str(row.get("category") or "").strip())
-        href = str(row.get("href") or "").strip()
-        if not title or not href:
-            continue
-        if href.startswith("/"):
-            link = esc(with_base(site, href))
-            ext = ""
-        else:
-            link = esc(href)
-            ext = ' class="external" target="_blank" rel="noopener noreferrer"'
-        cat_html = f'          <p class="record-domains">{category}</p>\n' if category else ""
-        items.append(
-            f'        <li class="workshop-record" data-record="{record_id}">\n'
-            f'          <p class="record-id">{record_id}</p>\n'
-            f'          <h3><a href="{link}"{ext}>{title}</a></h3>\n'
-            f"{cat_html}"
-            f'          <p class="record-lesson">{constraint}</p>\n'
-            "        </li>"
-        )
-    if len(items) < 2:
-        return ""
-    figure = _atmosphere_figure_html(site, "workshop", figure_class="workshop-figure")
-    figure_block = f"\n{figure}\n" if figure else ""
-    return (
-        '    <section class="workshop" aria-labelledby="workshop-heading">\n'
-        '      <h2 id="workshop-heading">Workshop</h2>\n'
-        '      <div class="workshop-grid">\n'
-        '      <ul class="item-list workshop-records">\n'
-        + "\n".join(items)
-        + "\n      </ul>"
-        + figure_block
-        + "      </div>\n"
         "    </section>\n"
     )
 
 
 def _operating_themes_html(site: dict) -> str:
     return ""
+
+
+def _related_paths_html(
+    site: dict, record_id: str, domain_key: str, domains: list[dict]
+) -> str:
+    lookup = _map_record_lookup(site)
+    links: list[str] = []
+    domain = next(
+        (d for d in domains if str(d.get("id") or "").strip() == domain_key),
+        None,
+    )
+    for rid in (domain or {}).get("related") or []:
+        rid_s = str(rid).strip()
+        if not rid_s or rid_s == record_id:
+            continue
+        meta = lookup.get(rid_s)
+        if not meta or not meta.get("title"):
+            continue
+        label = str(meta.get("title") or rid_s)
+        href = esc(with_base(site, f"/systems/#{rid_s}"))
+        links.append(f'<a href="{href}">{esc(label)}</a>')
+    links.append(_internal_route_link(site, "credentials", "Credentials"))
+    links.append(_internal_route_link(site, "reading-room", "Notes"))
+    if not links:
+        return ""
+    return (
+        '            <p class="related-paths meta"><span class="related-paths-label">'
+        f'Related</span> {" · ".join(links)}</p>\n'
+    )
+
+
+def _home_featured_systems_html(site: dict) -> str:
+    rows: list[dict] = []
+    for raw in site.get("home_selected") or []:
+        if isinstance(raw, dict):
+            rows.append(compose_home_selected_row(site, raw))
+    if not rows:
+        return ""
+    cards: list[str] = []
+    for row in rows[:3]:
+        record_id = str(row.get("record_id") or "").strip()
+        title = esc(str(row.get("title") or ""))
+        problem = str(row.get("problem") or "").strip()
+        context = esc(problem[:200] + ("…" if len(problem) > 200 else "")) if problem else ""
+        href = esc(with_base(site, f"/systems/#{record_id}"))
+        id_line = f'          <p class="record-id">{esc(record_id)}</p>\n' if record_id else ""
+        context_line = f'          <p class="record-context">{context}</p>\n' if context else ""
+        cards.append(
+            f'        <article class="home-system-card" data-record="{esc(record_id)}">\n'
+            f"{id_line}"
+            f'          <h3><a href="{href}">{title}</a></h3>\n'
+            f"{context_line}"
+            f"        </article>"
+        )
+    systems_href = esc(with_base(site, "/systems/"))
+    return (
+        '    <section class="home-plate home-featured-systems" aria-labelledby="home-systems-heading">\n'
+        '      <h2 id="home-systems-heading">Featured systems</h2>\n'
+        '      <div class="home-system-cards">\n'
+        + "\n".join(cards)
+        + "\n      </div>\n"
+        f'      <p class="links"><a href="{systems_href}">View all systems</a></p>\n'
+        "    </section>\n"
+    )
+
+
+def _home_featured_notes_html(site: dict, export: dict) -> str:
+    rows = _writing_rows(export)
+    if not rows:
+        return ""
+    assigned = _unique_note_catalog_ids(rows)
+    start = [(r, nid) for r, nid in assigned if r.get("start_here")]
+    rest = [(r, nid) for r, nid in assigned if not r.get("start_here")]
+    if not start:
+        start, rest = assigned[:1], assigned[1:]
+    featured_row, featured_id = start[0] if start else assigned[0]
+    featured_title = esc(str(featured_row.get("title") or ""))
+    featured_href = esc(_note_href(site, featured_id))
+    featured_date = esc(str(featured_row.get("date") or ""))
+    featured_dek = esc(str(featured_row.get("teaser") or "").strip())
+    featured_meta = " · ".join(x for x in (featured_id, featured_date) if x)
+    dek_html = f'        <p class="note-dek">{featured_dek}</p>\n' if featured_dek else ""
+    featured_html = (
+        '      <article class="reading-featured home-note-featured">\n'
+        f'        <p class="catalogue-line meta">{featured_meta}</p>\n'
+        f'        <h3><a class="route-link" href="{featured_href}">{featured_title}</a></h3>\n'
+        f"{dek_html}"
+        "      </article>\n"
+    )
+    compact_rows: list[str] = []
+    for row, note_id in rest[:2]:
+        title = esc(str(row.get("title") or ""))
+        href = esc(_note_href(site, note_id))
+        date_s = esc(str(row.get("date") or ""))
+        meta = " · ".join(x for x in (note_id, date_s) if x)
+        compact_rows.append(
+            f'        <li data-record="{esc(note_id)}">\n'
+            f'          <a class="route-link" href="{href}">{title}</a>\n'
+            f'          <span class="catalogue-line meta">{meta}</span>\n'
+            f"        </li>"
+        )
+    compact_html = ""
+    if compact_rows:
+        compact_html = (
+            '      <ul class="reading-index home-notes-recent">\n'
+            + "\n".join(compact_rows)
+            + "\n      </ul>\n"
+        )
+    notes_href = esc(with_base(site, "/notes/"))
+    return (
+        '    <section class="home-plate home-featured-notes" aria-labelledby="home-notes-heading">\n'
+        '      <h2 id="home-notes-heading">Notes</h2>\n'
+        f"{featured_html}"
+        f"{compact_html}"
+        f'      <p class="links"><a href="{notes_href}">Browse notes index</a></p>\n'
+        "    </section>\n"
+    )
+
+
+def _credentials_teaser_html(site: dict, export: dict) -> str:
+    certs = [c for c in (export.get("certifications") or []) if isinstance(c, dict)]
+    education = [e for e in (export.get("education") or []) if isinstance(e, dict)]
+    if not certs and not education:
+        return ""
+    cert_count = len(certs)
+    edu_count = len(education)
+    summary_bits = []
+    if cert_count:
+        summary_bits.append(f"{cert_count} certification{'s' if cert_count != 1 else ''}")
+    if edu_count:
+        summary_bits.append(f"{edu_count} academic record{'s' if edu_count != 1 else ''}")
+    summary = " · ".join(summary_bits)
+    verify = verify_panel_html(site).replace("      ", "      ", 1)
+    page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
+    order = page.get("order") or {}
+    prof_ids = order.get("professional") or []
+    cert_index = {str(c.get("id")): c for c in certs}
+    featured = [cert_index[i] for i in prof_ids if i in cert_index][:4]
+    if not featured:
+        featured = certs[:4]
+    preview_items: list[str] = []
+    for row in featured:
+        name = str(row.get("name") or "").strip()
+        issuer = str(row.get("issuer") or "").strip()
+        if not name:
+            continue
+        preview_items.append(
+            "            <li>\n"
+            f'              <span class="credentials-preview-name">{esc(name)}</span>\n'
+            f'              <span class="credentials-preview-issuer meta">{esc(issuer)}</span>\n'
+            "            </li>"
+        )
+    preview_html = ""
+    if preview_items:
+        preview_html = (
+            '      <ul class="credentials-preview">\n'
+            + "\n".join(preview_items)
+            + "\n      </ul>\n"
+        )
+    edu_bits: list[str] = []
+    for row in education[:3]:
+        cred = str(row.get("credential") or "").strip()
+        if cred:
+            edu_bits.append(cred)
+    edu_html = ""
+    if edu_bits:
+        edu_html = (
+            f'      <p class="credentials-edu-preview meta">{esc(" · ".join(edu_bits))}</p>\n'
+        )
+    creds_href = esc(with_base(site, "/credentials/"))
+    browse_html = (
+        f'      <p class="links"><a href="{creds_href}">Browse full credentials catalogue</a></p>\n'
+    )
+    return (
+        '    <section class="home-plate home-credentials-teaser" '
+        'aria-labelledby="credentials-heading">\n'
+        '      <h2 id="credentials-heading">Professional record</h2>\n'
+        f'      <p class="record-context">Featured credentials from a catalogue of '
+        f'{esc(summary)}.</p>\n'
+        f"{preview_html}"
+        f"{edu_html}"
+        f"{verify}"
+        f"{browse_html}"
+        "    </section>\n"
+    )
+
+
+def _home_entry_grid_html(site: dict) -> str:
+    routes = (
+        ("Systems", "/systems/", "Case studies and architecture records"),
+        ("Notes", "/notes/", "Publication index with NOTE-* IDs"),
+        ("Credentials", "/credentials/", "Certifications and qualifications"),
+    )
+    cards: list[str] = []
+    for label, path, desc in routes:
+        href = esc(with_base(site, path))
+        cards.append(
+            f'        <a class="home-entry-card" href="{href}">\n'
+            f'          <span class="home-entry-label">{esc(label)}</span>\n'
+            f'          <span class="home-entry-desc">{esc(desc)}</span>\n'
+            f"        </a>"
+        )
+    return (
+        '        <nav class="home-entry-grid" aria-label="Explore the library">\n'
+        + "\n".join(cards)
+        + "\n        </nav>"
+    )
 
 
 def build_home(site: dict, export: dict) -> str:
@@ -1400,10 +2303,8 @@ def build_home(site: dict, export: dict) -> str:
 
     atmosphere = _atmosphere_slot(site, "entrance")
     entrance_src = str(atmosphere.get("src") or "").strip()
-    entrance_img = ""
     if entrance_src:
         src = esc(with_base(site, entrance_src))
-        alt = esc(str(atmosphere.get("alt") or "Atmosphere still"))
         w = int(atmosphere.get("width") or 0)
         h = int(atmosphere.get("height") or 0)
         wh = f' width="{w}" height="{h}"' if w and h else ""
@@ -1416,6 +2317,14 @@ def build_home(site: dict, export: dict) -> str:
             f'        <div class="entrance-vignette"></div>\n'
             f"      </div>"
         )
+    else:
+        entrance_img = (
+            '      <div class="entrance-atmosphere entrance-atmosphere--tokens" '
+            'aria-hidden="true">\n'
+            '        <div class="entrance-scrim"></div>\n'
+            '        <div class="entrance-vignette"></div>\n'
+            "      </div>"
+        )
 
     catalog_html = ""
     if location:
@@ -1427,245 +2336,86 @@ def build_home(site: dict, export: dict) -> str:
 
     thesis = esc(str(person.get("headline") or "").strip())
     lede = esc(str(person.get("tagline") or "").strip())
-    current_html = _current_index_html(site)
-    contact_href = esc(with_base(site, "/contact/"))
-    work_href = esc(with_base(site, "/portfolio/"))
-    map_html = _system_map_html(site)
-    selected_html = _selected_systems_html(site)
-    reading_html = _reading_room_html(site)
-    workshop_html = _workshop_html(site)
-    contact_section = f"""
-    <section id="contact" class="contact-section">
-      <h2>Connect</h2>
-{contact_items_html(site)}
-    </section>
-"""
-    return f"""    <section class="entrance hero" aria-labelledby="entrance-heading">
+    current_html = _current_index_html(site, export)
+    entry_grid = _home_entry_grid_html(site)
+    philosophy_html = _philosophy_block_html(_about_data(site, export), home=True)
+    hero = f"""    <section id="entrance" class="entrance hero home-hero" aria-labelledby="entrance-heading">
 {entrance_img}
       <div class="entrance-copy hero-copy">
 {catalog_html}        <h1 id="entrance-heading">{thesis}</h1>
         <p class="lede">{lede}</p>
 {current_html}
-        <div class="cta-row">
-          <a class="btn btn-primary" href="{work_href}">View systems</a>
-          <a class="btn" href="{contact_href}">Connect</a>
-        </div>
-{proof_html}
+{entry_grid}
+{philosophy_html}{proof_html}
       </div>
     </section>
-{map_html}{selected_html}{reading_html}{workshop_html}{contact_section}
 """
+    return (
+        '    <div class="home-shell">\n'
+        f"{hero}"
+        f"{_home_competencies_html(site, export)}"
+        f"{footer_html(site, compact=True)}"
+        "    </div>"
+    )
 
 
-def build_about(site: dict, export: dict, cj: dict | None = None) -> str:
-    about = export.get("about") if isinstance(export.get("about"), dict) else None
+def _about_data(site: dict, export: dict) -> dict:
+    about = export.get("about") if isinstance(export.get("about"), dict) else {}
     if not about:
-        about = site.get("about") or {}
+        about = site.get("about") if isinstance(site.get("about"), dict) else {}
+    return about
 
-    lede = about.get("lede") or (site.get("about") or {}).get("lede") or ""
-    philosophy = (about.get("philosophy") or "").strip()
-    competencies = about.get("competencies") or []
-    highlights = about.get("career_highlights") or []
-    journey = about.get("career_journey") or {}
 
-    comp_html = []
-    for row in competencies:
-        if not isinstance(row, dict):
-            continue
-        comp_html.append(
-            f"      <li><strong>{esc(row.get('title') or '')}</strong> — "
-            f"{esc((row.get('body') or '').strip())}</li>"
-        )
-    if not comp_html:
-        for b in (site.get("about") or {}).get("bullets") or []:
-            comp_html.append(f"      <li>{esc(b)}</li>")
+def _home_competency_item_html(row: dict) -> str:
+    title = esc(str(row.get("title") or ""))
+    body = esc(str((row.get("body") or "").strip()))
+    title_html = (
+        f'        <span class="home-competency-title">{title}</span>\n'
+        if title
+        else ""
+    )
+    return (
+        f'      <li class="home-competency">\n'
+        f"{title_html}"
+        f'        <p class="home-competency-body">{body}</p>\n'
+        f"      </li>"
+    )
 
-    highlight_html = []
-    for row in highlights:
-        if not isinstance(row, dict):
-            continue
-        link = row.get("link") or ""
-        link_html = ""
-        if link:
-            href = with_base(site, link) if str(link).startswith("/") else link
-            label = esc(row.get("link_label") or "Learn more")
-            link_html = (
-                f'<p class="links"><a href="{esc(href)}"'
-                + (
-                    ' target="_blank" rel="noopener noreferrer"'
-                    if not str(link).startswith("/")
-                    else ""
-                )
-                + f">{label}</a></p>"
+
+def _home_competencies_html(site: dict, export: dict) -> str:
+    about = _about_data(site, export)
+    items: list[str] = []
+    for row in about.get("competencies") or []:
+        if isinstance(row, dict):
+            items.append(_home_competency_item_html(row))
+    if not items:
+        for bullet in (site.get("about") or {}).get("bullets") or []:
+            items.append(
+                '      <li class="home-competency">\n'
+                f'        <p class="home-competency-body">{esc(bullet)}</p>\n'
+                "      </li>"
             )
-        highlight_html.append(
-            f"      <li>\n"
-            f"        <h3>{esc(row.get('title') or '')}</h3>\n"
-            f"        <p>{esc((row.get('body') or '').strip())}</p>\n"
-            f"        {link_html}\n"
-            f"      </li>"
-        )
+    if not items:
+        return ""
+    return (
+        '    <section class="home-competencies" aria-labelledby="home-competencies-heading">\n'
+        '      <h2 id="home-competencies-heading" class="home-competencies-label">Core competencies</h2>\n'
+        '      <ul class="home-competency-list">\n'
+        + "\n".join(items)
+        + "\n      </ul>\n"
+        "    </section>\n"
+    )
 
-    journey_inner = ""
-    if cj:
-        # Native /career-journey/ page exists — link to it instead of
-        # embedding the Figma deck. Keep the original Figma link as a
-        # secondary "view original" credit if export data still has one.
-        cj_href = esc(with_base(site, "/career-journey/"))
-        cj_title = esc(str(cj.get("title") or "Career Journey"))
-        cj_desc = esc(
-            str(cj.get("subtitle") or cj.get("lede") or "").strip()
-        )
-        original_link = journey.get("link") or cj.get("source_link") or ""
-        original_label = journey.get("link_label") or cj.get("source_label") or "View original Figma deck"
-        original_bit = ""
-        if original_link:
-            original_bit = (
-                f' <a class="figma-open" href="{esc(str(original_link))}" target="_blank" '
-                f'rel="noopener noreferrer">{esc(str(original_label))}</a>'
-            )
-        journey_inner = (
-            f'<ul class="item-list highlight-list">\n'
-            f"        <li>\n"
-            f"          <h3>{cj_title}</h3>\n"
-            + (f"          <p>{cj_desc}</p>\n" if cj_desc else "")
-            + f'          <p class="links"><a href="{cj_href}">Read my career journey</a>'
-            f"{original_bit}</p>\n"
-            f"        </li>\n"
-            f"      </ul>"
-        )
-    elif isinstance(journey, dict) and (journey.get("embed") or journey.get("link")):
-        # Fallback: no native page built yet — keep the legacy Figma embed.
-        title = journey.get("title") or "Career Journey"
-        link = journey.get("link") or ""
-        embed = journey.get("embed") or ""
-        link_label = journey.get("link_label") or "Open deck"
-        link_bit = ""
-        if link:
-            link_bit = (
-                f'<p class="links"><a class="figma-open" href="{esc(link)}" target="_blank" '
-                f'rel="noopener noreferrer">{esc(link_label)}</a></p>'
-            )
-        embed_bit = ""
-        if embed:
-            embed_bit = figma_embed_html(
-                str(title), str(embed), str(link) if link else None, link_label=str(link_label), tall=True
-            )
-        journey_inner = f"{link_bit}\n{embed_bit}"
 
-    philosophy_inner = ""
-    if philosophy:
-        philosophy_inner = f"""
-      <blockquote class="philosophy">
-        <p>{esc(philosophy)}</p>
-      </blockquote>
-"""
-
-    creds = esc(with_base(site, "/credentials/"))
-    ext = site.get("external") or {}
-    writing_rows = []
-    for row in site.get("writing_highlights") or []:
-        if not isinstance(row, dict):
-            continue
-        title = (row.get("title") or "").strip()
-        url = (row.get("url") or "").strip()
-        if not title or not url:
-            continue
-        venue = esc(row.get("venue") or "Article")
-        date = esc(row.get("date") or "")
-        meta = " · ".join(x for x in (venue, date) if x)
-        writing_rows.append(
-            f"      <li>\n"
-            f'        <h3><a class="external" href="{esc(url)}" target="_blank" '
-            f'rel="noopener noreferrer">{esc(title)}</a></h3>\n'
-            f'        <p class="meta">{meta}</p>\n'
-            f"      </li>"
-        )
-
-    toc: list[dict] = [
-        {"id": "core-competencies", "label": "Core Competencies", "children": []},
-        {"id": "career-highlights", "label": "Career Highlights", "children": []},
-    ]
-    parts: list[str] = [
-        section_fold_open("core-competencies", "Core Competencies", level="h2"),
-        '      <ul class="competency-list">\n'
-        + (chr(10).join(comp_html) if comp_html else "      <li>No competencies listed.</li>")
-        + "\n      </ul>",
-        section_fold_close(),
-        section_fold_open("career-highlights", "Career Highlights", level="h2"),
-        '      <ul class="item-list highlight-list">\n'
-        + (
-            chr(10).join(highlight_html)
-            if highlight_html
-            else "      <li>No highlights listed.</li>"
-        )
-        + "\n      </ul>",
-        f'      <p class="links"><a href="{creds}">View full credentials list</a></p>',
-        section_fold_close(),
-    ]
-    if writing_rows:
-        toc.append({"id": "selected-writing", "label": "Selected writing", "children": []})
-        parts.extend(
-            [
-                section_fold_open("selected-writing", "Selected writing", level="h2"),
-                '      <p class="page-lede">Thought leadership lives on Blog, Medium, and LinkedIn '
-                "until the writing corpus is unified (C2b). Selected pieces:</p>",
-                '      <ul class="item-list writing-list">\n'
-                + chr(10).join(writing_rows)
-                + "\n      </ul>",
-                '      <p class="links">\n'
-                f'        <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" '
-                'rel="noopener noreferrer">Blog</a>\n'
-                f'        <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" '
-                'rel="noopener noreferrer">Medium</a>\n'
-                f'        <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" '
-                'rel="noopener noreferrer">LinkedIn</a>\n'
-                "      </p>",
-                section_fold_close(),
-            ]
-        )
-    if journey_inner:
-        toc.append({"id": "career-journey", "label": "Career Journey", "children": []})
-        parts.extend(
-            [
-                section_fold_open("career-journey", "Career Journey", level="h2"),
-                journey_inner,
-                section_fold_close(),
-            ]
-        )
-    if philosophy_inner:
-        toc.append({"id": "philosophy", "label": "Philosophy", "children": []})
-        parts.extend(
-            [
-                section_fold_open("philosophy", "Philosophy", level="h2"),
-                philosophy_inner,
-                section_fold_close(),
-            ]
-        )
-
-    body = "\n".join(parts)
-    person = site["person"]
-    photo = person.get("photo") or ""
-    portrait_html = ""
-    if photo:
-        src = esc(with_base(site, str(photo)))
-        alt = esc(person.get("photo_alt") or person.get("full_name") or "Profile photo")
-        location = esc(str(person.get("location") or "").strip())
-        loc_html = f'<p class="meta">{location}</p>' if location else ""
-        portrait_html = (
-            '    <figure class="profile-portrait">\n'
-            f'      <img src="{src}" alt="{alt}" width="720" height="935" '
-            f'decoding="async" loading="lazy" />\n'
-            f"{loc_html}\n"
-            "    </figure>\n"
-        )
-    lede_html = portrait_html + f'<p class="page-lede">{esc(lede.strip())}</p>'
-    return longform_page(
-        title="Profile",
-        lede_html=lede_html,
-        toc=toc,
-        body=body,
-        search=False,
+def _philosophy_block_html(about: dict, *, home: bool = False) -> str:
+    philosophy = str(about.get("philosophy") or "").strip()
+    if not philosophy:
+        return ""
+    cls = "philosophy home-philosophy" if home else "philosophy"
+    return (
+        f'    <blockquote class="{cls}">\n'
+        f"      <p>{esc(philosophy)}</p>\n"
+        "    </blockquote>\n"
     )
 
 
@@ -1755,7 +2505,15 @@ def _case_tools_html(row: dict, indent: str = "      ") -> str:
     )
 
 
-def _enterprise_case_html(display_title: str, item_id: str, overlay: dict, fallback: dict) -> str:
+def _enterprise_case_html(
+    display_title: str,
+    item_id: str,
+    overlay: dict,
+    fallback: dict,
+    *,
+    include_id: bool = True,
+    include_heading: bool = True,
+) -> str:
     beats = case_beats_html(overlay, indent="        ")
     if beats:
         body_inner = beats
@@ -1764,18 +2522,74 @@ def _enterprise_case_html(display_title: str, item_id: str, overlay: dict, fallb
             f"          <li>{esc(b)}</li>" for b in (fallback.get("bullets") or [])
         )
         body_inner = f'        <ul class="competency-list">\n{bullets}\n        </ul>\n'
-    id_attr = f' id="{item_id}"' if item_id else ""
+    id_attr = f' id="{esc(item_id)}"' if item_id and include_id else ""
+    heading_html = (
+        f"          <h3{id_attr}>{esc(display_title)}</h3>\n" if include_heading else ""
+    )
     return (
         "        <article class=\"proof-case\">\n"
-        f"          <h3{id_attr}>{esc(display_title)}</h3>\n"
+        f"{heading_html}"
         f"{body_inner}"
         f"{_case_tools_html(overlay, indent='          ')}"
         "        </article>"
     )
 
 
+def _map_record_panels_library_html(site: dict) -> str:
+    domains = [d for d in (site.get("system_map") or []) if isinstance(d, dict)]
+    lookup = _map_record_lookup(site)
+    referenced: list[str] = []
+    seen: set[str] = set()
+    for domain in domains[:6]:
+        for record_id in domain.get("related") or []:
+            rid = str(record_id).strip()
+            if rid and rid not in seen:
+                seen.add(rid)
+                referenced.append(rid)
+    panels: list[str] = []
+    for record_id in referenced:
+        meta = lookup.get(record_id)
+        if not meta or not meta.get("title"):
+            continue
+        body = _map_record_panel_body(site, record_id, meta, omit_title=True)
+        if not body:
+            continue
+        domain_key = _record_domain_key(domains, record_id) or _system_record_domain_key(record_id)
+        related_html = _related_paths_html(site, record_id, domain_key, domains)
+        title = str(meta.get("title") or record_id).strip()
+        inner = (
+            '            <button type="button" class="library-record-back" '
+            'data-library-back>Back to index</button>\n'
+            f"{body}"
+            f"{related_html}"
+        )
+        panels.append(
+            library_panel_html(
+                record_id,
+                title,
+                inner,
+                level="h3",
+                extra_attrs=(
+                    f' data-record="{esc(record_id)}"'
+                    f' data-kind="{esc(str(meta.get("kind") or "record"))}"'
+                    f' data-domain="{esc(domain_key)}"'
+                ),
+            )
+        )
+    if not panels:
+        return ""
+    return "\n".join(panels)
+
+
+def build_systems(site: dict, export: dict) -> str:
+    return build_portfolio(site, export)
+
+
+def build_systems_catalogue(site: dict, export: dict) -> str:
+    return build_portfolio(site, export)
+
+
 def build_portfolio(site: dict, export: dict) -> str:
-    short = esc(site["external"].get("portfolio_short", ""))
     page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
     lede = (page.get("lede") or "Selected PUBLIC projects.").strip()
     projects = [p for p in (export.get("projects") or []) if isinstance(p, dict)]
@@ -1785,12 +2599,12 @@ def build_portfolio(site: dict, export: dict) -> str:
     for p in projects:
         by_section.setdefault(str(p.get("section") or "other"), []).append(p)
 
-    sections_html: list[str] = []
+    panels: list[str] = []
     toc: list[dict] = []
     seen_parents: set[str] = set()
     parent_nodes: dict[str, dict] = {}
+    parent_kicker_sent: set[str] = set()
     used_ids: set[str] = set()
-    fold_open = False
 
     def unique_id(label: str) -> str:
         base = slugify(label)
@@ -1802,13 +2616,6 @@ def build_portfolio(site: dict, export: dict) -> str:
         used_ids.add(eid)
         return eid
 
-    def close_fold() -> None:
-        nonlocal fold_open
-        if fold_open:
-            sections_html.append(section_fold_close())
-            fold_open = False
-
-    # Elevate enterprise solutioning above tutorial / bootcamp rows.
     enterprise = page.get("enterprise_summaries") or {}
     ent_copy = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
     export_items = [
@@ -1820,17 +2627,6 @@ def build_portfolio(site: dict, export: dict) -> str:
         eid = unique_id(etitle)
         ent_node = {"id": eid, "label": etitle, "children": []}
         toc.append(ent_node)
-        sections_html.append(
-            section_fold_open(
-                eid,
-                esc(etitle),
-                level="h2",
-                variant="enterprise",
-                kicker="Enterprise delivery",
-            )
-        )
-        fold_open = True
-        cases: list[str] = []
 
         def append_enterprise_case(item_title: str, overlay_id: str, overlay: dict, fallback: dict) -> None:
             display_title = str(overlay.get("title") or item_title)
@@ -1846,7 +2642,17 @@ def build_portfolio(site: dict, export: dict) -> str:
                 ent_node["children"].append(
                     {"id": item_id, "label": display_title, "children": []}
                 )
-            cases.append(_enterprise_case_html(display_title, item_id, overlay, fallback))
+            case_html = _enterprise_case_html(
+                display_title, item_id, overlay, fallback, include_heading=False
+            )
+            if item_id:
+                body = (
+                    '      <p class="section-kicker meta">Enterprise delivery</p>\n'
+                    '      <div class="proof-deck">\n'
+                    f"{case_html}\n"
+                    "      </div>"
+                )
+                panels.append(library_panel_html(item_id, display_title, body, level="h3"))
 
         for item in export_items:
             item_title = str(item.get("title") or "")
@@ -1856,11 +2662,6 @@ def build_portfolio(site: dict, export: dict) -> str:
             if not isinstance(overlay, dict) or key in used_overlay_ids:
                 continue
             append_enterprise_case(str(overlay.get("title") or key), key, overlay, {})
-        if cases:
-            sections_html.append(
-                '      <div class="proof-deck">\n' + "\n".join(cases) + "\n      </div>"
-            )
-        close_fold()
 
     for section in page.get("sections") or []:
         if not isinstance(section, dict):
@@ -1876,86 +2677,66 @@ def build_portfolio(site: dict, export: dict) -> str:
         child_node = {"id": hid, "label": title, "children": []}
         public_kicker = "Public architectures — not enterprise delivery"
 
-        if parent:
-            parent_key = str(parent)
-            if parent_key not in seen_parents:
-                close_fold()
-                pid = unique_id(parent_key)
-                parent_node = {"id": pid, "label": parent_key, "children": []}
-                toc.append(parent_node)
-                parent_nodes[parent_key] = parent_node
-                sections_html.append(
-                    section_fold_open(
-                        pid,
-                        esc(parent_key),
-                        level="h2",
-                        variant="public",
-                        kicker=public_kicker,
-                    )
-                )
-                fold_open = True
-                seen_parents.add(parent_key)
-            parent_nodes[parent_key]["children"].append(child_node)
-            sections_html.append(f'      <h3 id="{hid}">{esc(title)}</h3>')
-        else:
-            close_fold()
-            toc.append(child_node)
-            sections_html.append(
-                section_fold_open(
-                    hid,
-                    esc(title),
-                    level="h2",
-                    variant="public",
-                    kicker=public_kicker,
-                )
-            )
-            fold_open = True
-
         intro_override = str((sc or {}).get("intro") or "").strip()
         intro = intro_override or (section.get("intro") or "").strip()
+        child_parts: list[str] = []
         if intro:
-            sections_html.append(f'      <p class="page-lede">{esc(intro)}</p>')
-        sections_html.append(
+            child_parts.append(f'      <p class="page-lede">{esc(intro)}</p>')
+        child_parts.append(
             '      <ul class="item-list folio-deck">\n'
             + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
         footer_link = section.get("footer_link") or ""
         if footer_link:
-            sections_html.append(
+            child_parts.append(
                 f'      <p class="links"><a class="external" href="{esc(footer_link)}" target="_blank" '
                 f'rel="noopener noreferrer">{esc(section.get("footer_label") or footer_link)}</a></p>'
             )
         outro = (section.get("outro") or "").strip()
         if outro:
-            sections_html.append(f"      <p><em>{esc(outro)}</em></p>")
-        if not parent:
-            close_fold()
+            child_parts.append(f"      <p><em>{esc(outro)}</em></p>")
+        child_inner = "\n".join(child_parts)
+        panels.append(library_panel_html(hid, title, child_inner, level="h3"))
+
+        if parent:
+            parent_key = str(parent)
+            if parent_key not in seen_parents:
+                pid = unique_id(parent_key)
+                parent_node = {"id": pid, "label": parent_key, "children": []}
+                toc.append(parent_node)
+                parent_nodes[parent_key] = parent_node
+                seen_parents.add(parent_key)
+            if parent_key not in parent_kicker_sent:
+                kicker_block = f'      <p class="section-kicker meta">{esc(public_kicker)}</p>\n'
+                panels[-1] = panels[-1].replace(
+                    '<div class="library-panel-body">\n',
+                    f'<div class="library-panel-body">\n{kicker_block}',
+                    1,
+                )
+                parent_kicker_sent.add(parent_key)
+            parent_nodes[parent_key]["children"].append(child_node)
+        else:
+            toc.append(child_node)
 
     for sid, rows in by_section.items():
         if not rows:
             continue
-        close_fold()
         title = sid.replace("_", " ").title()
         hid = unique_id(title)
         toc.append({"id": hid, "label": title, "children": []})
-        sections_html.append(section_fold_open(hid, esc(title), level="h2"))
-        fold_open = True
-        sections_html.append(
+        inner = (
             '      <ul class="item-list folio-deck">\n'
             + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
-        close_fold()
+        panels.append(library_section_panel(hid, title, inner))
 
     verify = page.get("verify") or {}
     if isinstance(verify, dict) and verify.get("items"):
-        close_fold()
         vtitle = str(verify.get("title") or "Verify")
         vid = unique_id(vtitle)
         toc.append({"id": vid, "label": vtitle, "children": []})
-        sections_html.append(section_fold_open(vid, esc(vtitle), level="h2"))
-        fold_open = True
         vitems = []
         for item in verify.get("items") or []:
             if not isinstance(item, dict):
@@ -1971,107 +2752,170 @@ def build_portfolio(site: dict, export: dict) -> str:
             vitems.append(
                 f"      <li><a{cls}{attrs}>{esc(item.get('label') or href)}</a></li>"
             )
-        sections_html.append(
-            '      <ul class="competency-list">\n' + "\n".join(vitems) + "\n      </ul>"
-        )
+        inner = '      <ul class="competency-list">\n' + "\n".join(vitems) + "\n      </ul>"
         note = (verify.get("note") or "").strip()
         if note:
-            sections_html.append(f"      <p><em>{esc(note)}</em></p>")
-        close_fold()
+            inner += f"\n      <p><em>{esc(note)}</em></p>"
+        panels.append(library_section_panel(vid, vtitle, inner))
 
-    close_fold()
-    body = "\n".join(sections_html) if sections_html else "    <p>No PUBLIC projects in export.</p>"
-    lede_html = (
-        f'<p class="page-lede">{esc(lede)} Short link: '
-        f'<a href="{short}" target="_blank" rel="noopener noreferrer">{short}</a></p>'
-    )
-    return longform_page(
+    if not panels:
+        panels.append(
+            library_panel_html(
+                "empty",
+                "Systems",
+                "      <p>No PUBLIC projects in export.</p>",
+                hidden=False,
+            )
+        )
+        toc.append({"id": "empty", "label": "Systems", "children": []})
+
+    if panels and lede.strip():
+        first = panels[0]
+        lede_block = f'      <p class="page-lede">{esc(lede)}</p>\n'
+        panels[0] = first.replace(
+            '<div class="library-panel-body">\n',
+            f'<div class="library-panel-body">\n{lede_block}',
+            1,
+        )
+
+    return library_shell(
+        site=site,
         title="Systems",
-        lede_html=lede_html,
+        overview_html="",
         toc=toc,
-        body=body,
+        panels=panels,
+        strip_html=_library_strip_html(site, active="systems"),
+        record_panels_html=_map_record_panels_library_html(site),
     )
 
 
-def _cert_item_html(row: dict, *, heading: str = "h3") -> str:
-    name = esc(row.get("name") or "")
-    issuer = esc(row.get("issuer") or "")
-    issued = esc(row.get("issued") or "")
-    expires = esc(row.get("expires") or "")
+def _parse_year_month(value: str) -> tuple[int, int] | None:
+    raw = str(value or "").strip()
+    if len(raw) >= 7 and raw[4] == "-":
+        try:
+            return int(raw[:4]), int(raw[5:7])
+        except ValueError:
+            return None
+    if len(raw) >= 4 and raw[:4].isdigit():
+        return int(raw[:4]), 12
+    return None
+
+
+def _education_is_ongoing(row: dict, *, today: date | None = None) -> bool:
+    status = str(row.get("status") or "").strip().lower()
+    if status in {"ongoing", "in_progress", "in progress", "studying"}:
+        return True
+    end = str(row.get("end") or "").strip()
+    if not end or end.lower() in {"present", "ongoing", "in progress"}:
+        return True
+    parsed = _parse_year_month(end)
+    if not parsed:
+        return False
+    now = today or date.today()
+    end_year, end_month = parsed
+    return (end_year, end_month) >= (now.year, now.month)
+
+
+def _credentials_card_grid(cards: list[str]) -> str:
+    if not cards:
+        return ""
+    return (
+        '      <div class="credentials-featured-grid">\n'
+        + "\n".join(cards)
+        + "\n      </div>"
+    )
+
+
+def _cert_card_html(row: dict) -> str:
+    name = esc(str(row.get("name") or ""))
+    issuer = esc(str(row.get("issuer") or ""))
+    issued = esc(str(row.get("issued") or ""))
+    expires = esc(str(row.get("expires") or ""))
     primary, bitly = primary_and_short(urls_from_bullets(row.get("bullets")))
     verify_href = primary or bitly
-    links = []
-    if verify_href:
-        links.append(
-            f'<a href="{esc(verify_href)}" target="_blank" rel="noopener noreferrer">Verify</a>'
-        )
-    link_html = f'<p class="links">{" · ".join(links)}</p>' if links else ""
-    validity = f"issued {issued}" if issued else ""
+    meta_bits: list[str] = []
+    if issuer:
+        meta_bits.append(issuer)
+    if issued:
+        meta_bits.append(f"issued {issued}")
     if expires:
-        validity += f" · expires {expires}" if validity else f"expires {expires}"
-    tag = "h4" if heading == "h4" else "h3"
+        meta_bits.append(f"expires {expires}")
+    verify_html = ""
+    if verify_href:
+        verify_html = (
+            f'        <p class="links credential-card-links">'
+            f'<a href="{esc(verify_href)}" target="_blank" rel="noopener noreferrer">Verify</a>'
+            f"</p>\n"
+        )
     return (
-        f"      <li>\n"
-        f"        <{tag}>{name}</{tag}>\n"
-        f'        <p class="meta">{issuer}'
-        + (f" · {validity}" if validity else "")
-        + "</p>\n"
-        f"        {link_html}\n"
-        f"      </li>"
+        f'      <article class="credential-card">\n'
+        f'        <h3 class="credential-card-title">{name}</h3>\n'
+        f'        <p class="meta credential-card-meta">{" · ".join(meta_bits)}</p>\n'
+        f"{verify_html}"
+        f"      </article>"
     )
 
 
-def _edu_item_html(row: dict) -> str:
+def _edu_card_html(row: dict) -> str:
     cred = esc(row.get("credential") or "")
     inst = esc(row.get("institution") or "")
     start = esc(row.get("start") or "")
     end = esc(row.get("end") or "")
-    period = " – ".join(x for x in (start, end or "present") if x)
+    ongoing = _education_is_ongoing(row)
+    if ongoing:
+        period = " – ".join(x for x in (start, "present") if x)
+        status_html = (
+            ' <span class="status-badge status-badge--ongoing">In progress</span>'
+        )
+    else:
+        period = " – ".join(x for x in (start, end or "present") if x)
+        status_html = ""
+    meta_bits: list[str] = []
+    if inst:
+        meta_bits.append(inst + status_html)
+    if period:
+        meta_bits.append(period)
     links = urls_from_bullets(row.get("bullets"))
     link_html = ""
     if links:
         link_html = (
-            '<p class="links">'
+            f'        <p class="links credential-card-links">'
             + " · ".join(
                 f'<a href="{esc(u)}" target="_blank" rel="noopener noreferrer">{esc(_link_label(u))}</a>'
                 for u in links
             )
-            + "</p>"
+            + "</p>\n"
         )
     return (
-        f"      <li>\n"
-        f"        <h3>{cred}</h3>\n"
-        f'        <p class="meta">{inst}'
-        + (f" · {period}" if period else "")
-        + "</p>\n"
-        f"        {link_html}\n"
-        f"      </li>"
+        f'      <article class="credential-card">\n'
+        f'        <h3 class="credential-card-title">{cred}</h3>\n'
+        f'        <p class="meta credential-card-meta">{" · ".join(meta_bits)}</p>\n'
+        f"{link_html}"
+        f"      </article>"
     )
 
 
 def _certs_by_issuer_html(
     rows: list[dict], unique_id
-) -> tuple[list[str], list[dict]]:
+) -> tuple[list[str], list[dict], list[tuple[str, str, str]]]:
     grouped: OrderedDict[str, list[dict]] = OrderedDict()
     for row in rows:
         issuer = str(row.get("issuer") or "Other").strip() or "Other"
         grouped.setdefault(issuer, []).append(row)
     out: list[str] = []
     children: list[dict] = []
+    issuer_panels: list[tuple[str, str, str]] = []
     for issuer, group in grouped.items():
         iid = unique_id(issuer)
         children.append({"id": iid, "label": issuer, "children": []})
-        out.append(f'      <h3 class="issuer-group" id="{iid}">{esc(issuer)}</h3>')
-        out.append(
-            '      <ul class="item-list">\n'
-            + "\n".join(_cert_item_html(r, heading="h4") for r in group)
-            + "\n      </ul>"
-        )
-    return out, children
+        list_html = _credentials_card_grid([_cert_card_html(r) for r in group])
+        issuer_panels.append((iid, issuer, list_html))
+        out.append(f'      <h3 class="issuer-group">{esc(issuer)}</h3>')
+        out.append(list_html)
+    return out, children, issuer_panels
 
 
 def build_credentials(site: dict, export: dict) -> str:
-    short = esc(site["external"].get("credentials_short", ""))
     page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
     lede = (page.get("lede") or "PUBLIC certifications and qualifications.").strip()
     order = page.get("order") or {}
@@ -2095,9 +2939,16 @@ def build_credentials(site: dict, export: dict) -> str:
         out.extend(r for r in rows if str(r.get(id_key)) not in seen)
         return out
 
-    blocks: list[str] = []
+    panels: list[str] = []
     toc: list[dict] = []
     used_ids: set[str] = set()
+
+    overview_html = (
+        f'      <p class="page-lede">{esc(lede)}</p>\n'
+        f'      <p class="record-context">{len(certs)} certifications and '
+        f"{len(education)} qualifications in the searchable catalogue — "
+        "each entry includes an issuer verify link where available.</p>\n"
+    )
 
     def unique_id(label: str) -> str:
         base = slugify(label)
@@ -2125,13 +2976,13 @@ def build_credentials(site: dict, export: dict) -> str:
                 continue
             hid = unique_id(title)
             toc.append({"id": hid, "label": title, "children": []})
-            blocks.append(section_fold_open(hid, esc(title), level="h2"))
-            blocks.append(
-                '      <ul class="item-list">\n'
-                + "\n".join(_edu_item_html(r) for r in rows)
-                + "\n      </ul>"
+            panels.append(
+                library_section_panel(
+                    hid,
+                    title,
+                    _credentials_card_grid([_edu_card_html(r) for r in rows]),
+                )
             )
-            blocks.append(section_fold_close())
         else:
             rows = ordered(certs_by_cat.pop(sid, []), order.get(sid))
             if not rows:
@@ -2139,158 +2990,268 @@ def build_credentials(site: dict, export: dict) -> str:
             hid = unique_id(title)
             node = {"id": hid, "label": title, "children": []}
             toc.append(node)
-            blocks.append(section_fold_open(hid, esc(title), level="h2"))
             if sid == "professional":
-                html_parts, children = _certs_by_issuer_html(rows, unique_id)
+                _html_parts, children, issuer_panels = _certs_by_issuer_html(rows, unique_id)
                 node["children"] = children
-                blocks.extend(html_parts)
+                for iid, issuer, inner in issuer_panels:
+                    panels.append(library_panel_html(iid, issuer, inner, level="h3"))
             else:
-                blocks.append(
-                    '      <ul class="item-list">\n'
-                    + "\n".join(_cert_item_html(r) for r in rows)
-                    + "\n      </ul>"
+                panels.append(
+                    library_section_panel(
+                        hid,
+                        title,
+                        _credentials_card_grid([_cert_card_html(r) for r in rows]),
+                    )
                 )
-            blocks.append(section_fold_close())
 
     for sid, rows in list(certs_by_cat.items()):
         if rows:
             title = sid.replace("_", " ").title()
             hid = unique_id(title)
             toc.append({"id": hid, "label": title, "children": []})
-            blocks.append(section_fold_open(hid, esc(title), level="h2"))
-            blocks.append(
-                '      <ul class="item-list">\n'
-                + "\n".join(_cert_item_html(r) for r in rows)
-                + "\n      </ul>"
+            panels.append(
+                library_section_panel(
+                    hid,
+                    title,
+                    _credentials_card_grid([_cert_card_html(r) for r in rows]),
+                )
             )
-            blocks.append(section_fold_close())
     for sid, rows in list(edu_by_cat.items()):
         if rows:
             title = sid.replace("_", " ").title()
             hid = unique_id(title)
             toc.append({"id": hid, "label": title, "children": []})
-            blocks.append(section_fold_open(hid, esc(title), level="h2"))
-            blocks.append(
-                '      <ul class="item-list">\n'
-                + "\n".join(_edu_item_html(r) for r in rows)
-                + "\n      </ul>"
+            panels.append(
+                library_section_panel(
+                    hid,
+                    title,
+                    _credentials_card_grid([_edu_card_html(r) for r in rows]),
+                )
             )
-            blocks.append(section_fold_close())
 
-    notes = page.get("notes") or []
-    if notes:
-        hid = unique_id("Notes")
-        toc.append({"id": hid, "label": "Notes", "children": []})
-        blocks.append(section_fold_open(hid, "Notes", level="h2"))
-        blocks.append(
-            '      <ul class="competency-list">\n'
-            + "\n".join(f"      <li>{esc(n)}</li>" for n in notes)
-            + "\n      </ul>"
+    if not panels:
+        panels.append(
+            library_panel_html(
+                "empty",
+                "Professional record",
+                "      <p>No PUBLIC credentials in export.</p>",
+                hidden=False,
+            )
         )
-        blocks.append(section_fold_close())
+        toc.append({"id": "empty", "label": "Credentials", "children": []})
 
-    body = "\n".join(blocks) if blocks else "    <p>No PUBLIC credentials in export.</p>"
-    lede_html = (
-        f'<p class="page-lede">{esc(lede)} '
-        f'<a href="{short}" target="_blank" rel="noopener noreferrer">Short link</a></p>'
-    )
-    return longform_page(
+    return library_shell(
+        site=site,
         title="Professional record",
-        lede_html=lede_html,
+        overview_html=overview_html,
         toc=toc,
-        body=body,
-        extra_lede=verify_panel_html(site),
+        panels=panels,
+        strip_html=_library_strip_html(site, active="credentials"),
+        index_footer_html="",
     )
 
 
-def build_perspectives(site: dict) -> str:
-    """Thin writing index: 3 start-here pieces, then the rest. Bodies stay off-site."""
-    rows = [r for r in (site.get("writing_highlights") or []) if isinstance(r, dict)]
-    start = [r for r in rows if r.get("start_here")]
-    rest = [r for r in rows if not r.get("start_here")]
-    if not start:
-        start, rest = rows[:3], rows[3:]
-    start_items = writing_items_html(start)
-    rest_items = writing_items_html(rest)
-    ext = site.get("external") or {}
-    toc = [{"id": "start-here", "label": "Start here", "children": []}]
-    parts = [
-        section_fold_open("start-here", "Start here", level="h2"),
-        '      <p class="page-lede">Three places to begin. Full essays stay on Medium, Blog, and LinkedIn until the writing corpus is unified.</p>',
-        '      <ul class="item-list writing-list start-here">\n'
-        + (chr(10).join(start_items) if start_items else "      <li>No start-here pieces curated.</li>")
-        + "\n      </ul>",
-        section_fold_close(),
-    ]
-    if rest_items:
-        toc.append({"id": "more-writing", "label": "More writing", "children": []})
-        parts.extend(
-            [
-                section_fold_open("more-writing", "More writing", level="h2"),
-                '      <ul class="item-list writing-list">\n'
-                + chr(10).join(rest_items)
-                + "\n      </ul>",
-                section_fold_close(),
-            ]
+def _note_category(row: dict) -> str:
+    return str(row.get("category") or "Essays").strip() or "Essays"
+
+
+def _note_series(row: dict) -> str:
+    return str(row.get("series") or "").strip()
+
+
+def _note_date_sort_key(row: dict) -> tuple[str, str]:
+    return (str(row.get("date") or ""), str(row.get("title") or ""))
+
+
+def _notes_category_order(site: dict, categories: set[str]) -> list[str]:
+    preferred = [str(c).strip() for c in (site.get("notes_category_order") or []) if str(c).strip()]
+    ordered = [c for c in preferred if c in categories]
+    ordered.extend(sorted(categories - set(ordered)))
+    return ordered
+
+
+def _note_index_label(row: dict, note_id: str) -> str:
+    date_s = str(row.get("date") or "").strip()
+    title = str(row.get("title") or "").strip()
+    if len(title) > 48:
+        title = title[:45].rstrip() + "…"
+    if date_s and title:
+        return f"{date_s} · {title}"
+    return title or note_id
+
+
+def _writing_note_panel_body(
+    site: dict, row: dict, note_id: str, *, lede_html: str = ""
+) -> str:
+    date_s = esc(str(row.get("date") or ""))
+    category = esc(_note_category(row))
+    series = esc(_note_series(row))
+    teaser = str(row.get("teaser") or "").strip()
+    meta = " · ".join(x for x in (note_id, date_s) if x)
+    taxonomy_bits = [f"<span class=\"note-category\">{category}</span>"]
+    if series:
+        taxonomy_bits.append(f'<span class="note-series">{series}</span>')
+    taxonomy_html = (
+        f'      <p class="note-taxonomy meta">{" · ".join(taxonomy_bits)}</p>\n'
+    )
+    dek = f'      <p class="note-dek">{esc(teaser)}</p>\n' if teaser else ""
+    draft_banner = ""
+    if row.get("preview_draft"):
+        draft_banner = '      <p class="note-kicker meta">Draft preview — not in PUBLIC export</p>\n'
+    body_md = str(row.get("body_md") or "").strip()
+    body_html = ""
+    if body_md:
+        rendered = _markdown_to_html(body_md, note_id=note_id, site=site)
+        if rendered:
+            body_html = f'      <div class="note-body prose">{rendered}</div>\n'
+    links_html = _writing_links_html(site, row)
+    return (
+        f"{lede_html}"
+        f'      <article class="notes-entry">\n'
+        f'        <p class="catalogue-line meta">{meta}</p>\n'
+        f"{taxonomy_html}"
+        f"{draft_banner}"
+        f"{dek}"
+        f"{body_html}"
+        f"{links_html}"
+        f"      </article>"
+    )
+
+
+def _append_note_panel(
+    site: dict,
+    *,
+    row: dict,
+    note_id: str,
+    panels: list[str],
+    lede_html: str,
+) -> None:
+    heading = str(row.get("title") or note_id).strip()
+    panels.append(
+        library_panel_html(
+            note_id,
+            esc(heading),
+            _writing_note_panel_body(site, row, note_id, lede_html=lede_html),
+            level="h2",
         )
-    toc.append({"id": "elsewhere", "label": "Elsewhere", "children": []})
-    parts.extend(
-        [
-            section_fold_open("elsewhere", "Elsewhere", level="h2"),
-            '      <p class="links">\n'
-            f'        <a class="external" href="{esc(ext.get("blog") or "")}" target="_blank" '
-            'rel="noopener noreferrer">Blog</a>\n'
-            f'        <a class="external" href="{esc(ext.get("medium") or "")}" target="_blank" '
-            'rel="noopener noreferrer">Medium</a>\n'
-            f'        <a class="external" href="{esc(ext.get("linkedin") or "")}" target="_blank" '
-            'rel="noopener noreferrer">LinkedIn</a>\n'
-            "      </p>",
-            section_fold_close(),
-        ]
     )
-    lede = (
-        '<p class="page-lede">Selected writing, tagged cheaply by venue. '
-        "This is a start-here index, not a topic hub.</p>"
+
+
+def build_perspectives(site: dict, export: dict) -> str:
+    """Publication index — NOTE-* entries grouped by category, ordered by date."""
+    rows = _writing_rows(export)
+    assigned = _unique_note_catalog_ids(rows)
+    lede_html = (
+        "      <p class=\"page-lede\">Publication index with stable NOTE-* catalogue IDs — "
+        "grouped by category, ordered by date within each topic. "
+        "Essay bodies are on-site; Medium and LinkedIn remain live syndication copies.</p>\n"
     )
-    return longform_page(
+
+    by_category: dict[str, list[tuple[dict, str]]] = {}
+    for row, note_id in assigned:
+        by_category.setdefault(_note_category(row), []).append((row, note_id))
+
+    toc: list[dict] = []
+    panels: list[str] = []
+    first_panel = True
+
+    for category in _notes_category_order(site, set(by_category)):
+        items = by_category.get(category) or []
+        if not items:
+            continue
+        cat_id = slugify(category)
+        cat_node: dict = {"id": cat_id, "label": category, "children": []}
+        index_entries: list[tuple[str, str, str | None, list[tuple[dict, str]]]] = []
+
+        by_series: OrderedDict[str, list[tuple[dict, str]]] = OrderedDict()
+        standalone: list[tuple[dict, str]] = []
+        for row, note_id in items:
+            series = _note_series(row)
+            if series:
+                by_series.setdefault(series, []).append((row, note_id))
+            else:
+                standalone.append((row, note_id))
+
+        for series, series_items in by_series.items():
+            ordered = sorted(series_items, key=lambda pair: _note_date_sort_key(pair[0]))
+            latest = max(_note_date_sort_key(row)[0] for row, _ in ordered)
+            if len(ordered) > 1:
+                index_entries.append((latest, "series", series, ordered))
+            else:
+                index_entries.append((latest, "note", None, ordered))
+
+        for row, note_id in standalone:
+            index_entries.append(
+                (_note_date_sort_key(row)[0], "note", None, [(row, note_id)])
+            )
+
+        index_entries.sort(key=lambda entry: entry[0], reverse=True)
+
+        for _, kind, series, group_items in index_entries:
+            if kind == "series" and series:
+                series_node = {
+                    "id": slugify(f"{category}-{series}"),
+                    "label": series,
+                    "children": [],
+                }
+                for row, note_id in group_items:
+                    panel_lede = lede_html if first_panel else ""
+                    first_panel = False
+                    _append_note_panel(
+                        site,
+                        row=row,
+                        note_id=note_id,
+                        panels=panels,
+                        lede_html=panel_lede,
+                    )
+                    series_node["children"].append(
+                        {
+                            "id": note_id,
+                            "label": _note_index_label(row, note_id),
+                            "children": [],
+                        }
+                    )
+                cat_node["children"].append(series_node)
+            else:
+                row, note_id = group_items[0]
+                panel_lede = lede_html if first_panel else ""
+                first_panel = False
+                _append_note_panel(
+                    site,
+                    row=row,
+                    note_id=note_id,
+                    panels=panels,
+                    lede_html=panel_lede,
+                )
+                cat_node["children"].append(
+                    {
+                        "id": note_id,
+                        "label": _note_index_label(row, note_id),
+                        "children": [],
+                    }
+                )
+
+        toc.append(cat_node)
+
+    if not panels:
+        toc.append({"id": "empty", "label": "Notes", "children": []})
+        panels.append(
+            library_panel_html(
+                "empty",
+                "Notes",
+                "      <p>No PUBLIC writing in export.</p>",
+                hidden=False,
+            )
+        )
+
+    return library_shell(
+        site=site,
         title="Notes",
-        lede_html=lede,
+        overview_html="",
         toc=toc,
-        body="\n".join(parts),
-        search=False,
+        panels=panels,
+        strip_html=_library_strip_html(site, active="notes"),
     )
-
-
-def contact_items_html(site: dict, *, heading: str = "h3") -> str:
-    if heading not in {"h2", "h3"}:
-        raise ValueError("contact item heading must be h2 or h3")
-    card = esc(site.get("external", {}).get("bitly_hub") or "#")
-    contact = site["contact"]
-    ext = site["external"]
-    email = esc(contact.get("email") or "")
-    return f"""      <ul class="item-list">
-        <li>
-          <{heading}>Email</{heading}>
-          <p><a href="mailto:{email}">{email}</a></p>
-        </li>
-        <li>
-          <{heading}>Elsewhere</{heading}>
-          <p class="links">
-            <a class="external" href="{esc(ext["linkedin"])}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <a class="external" href="{esc(ext["medium"])}" target="_blank" rel="noopener noreferrer">Medium</a>
-            <a class="external" href="{esc(ext["github"])}" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a class="external" href="{esc(ext["blog"])}" target="_blank" rel="noopener noreferrer">Blog</a>
-            <a class="external" href="{card}" target="_blank" rel="noopener noreferrer">Digital card</a>
-          </p>
-        </li>
-      </ul>"""
-
-
-def build_contact(site: dict) -> str:
-    return f"""    <h1>Connect</h1>
-    <p class="page-lede">Public email and profiles. No visitor-facing phone.</p>
-{contact_items_html(site, heading="h2")}
-"""
 
 
 def main() -> None:
@@ -2317,8 +3278,8 @@ def main() -> None:
         site["base_path"] = os.environ["SITE_BASE_PATH"]
     site["base_path"] = normalize_base(site.get("base_path", ""))
 
-    export = load_json(DATA / "export_public.json")
-    cj = load_career_journey()
+    export = _merge_preview_drafts(load_json(DATA / "export_public.json"))
+    site["_export"] = export
     if DIST.exists():
         # On Windows, a running preview server may lock the dist directory itself.
         for child in DIST.iterdir():
@@ -2331,16 +3292,40 @@ def main() -> None:
                     pass
     DIST.mkdir(parents=True, exist_ok=True)
 
+    writing_rows = _writing_rows(export)
+    note_assigned = _unique_note_catalog_ids(writing_rows)
+    start_notes = [(r, nid) for r, nid in note_assigned if r.get("start_here")]
+    if not start_notes:
+        start_notes = note_assigned[:1]
+    featured_note_row, featured_note_id = start_notes[0]
+
     pages = [
-        ("index.html", "/", "Home", "Home", build_home(site, export), False),
-        ("about/index.html", "/about/", "Profile", "Profile", build_about(site, export, cj), False),
         (
-            "portfolio/index.html",
-            "/portfolio/",
-            "Systems",
-            "Systems",
-            build_portfolio(site, export),
+            "index.html",
+            "/",
+            "Home",
+            "Home",
+            build_home(site, export),
             True,
+            website_json_ld(site),
+        ),
+        (
+            "systems/index.html",
+            "/systems/",
+            "Systems",
+            "Systems",
+            build_systems(site, export),
+            True,
+            "",
+        ),
+        (
+            "notes/index.html",
+            "/notes/",
+            "Notes",
+            "Notes",
+            build_perspectives(site, export),
+            True,
+            article_json_ld(site, featured_note_row, featured_note_id),
         ),
         (
             "credentials/index.html",
@@ -2349,48 +3334,94 @@ def main() -> None:
             "Credentials",
             build_credentials(site, export),
             True,
-        ),
-        (
-            "perspectives/index.html",
-            "/perspectives/",
-            "Notes",
-            "Notes",
-            build_perspectives(site),
-            False,
-        ),
-        (
-            "contact/index.html",
-            "/contact/",
-            "Connect",
-            "Connect",
-            build_contact(site),
-            False,
+            "",
         ),
     ]
-    for rel, path, title, active, body, pf in pages:
-        write(DIST / rel, layout(site, title, active, body, pagefind=pf, path=path))
-
-    if cj:
-        # Not in primary nav — reachable via the About page and by
-        # direct/shared URL. See "Open decisions" in
-        # docs/career-journey-native-plan.md if that should change.
-        cj_title = str(cj.get("title") or "Career Journey")
+    library_rels = frozenset(
+        {
+            "systems/index.html",
+            "notes/index.html",
+            "credentials/index.html",
+        }
+    )
+    for rel, path, title, active, body, pf, extra_head in pages:
+        is_home = rel == "index.html"
+        is_library = rel in library_rels
         write(
-            DIST / "career-journey" / "index.html",
+            DIST / rel,
             layout(
                 site,
-                cj_title,
-                cj_title,
-                build_career_journey(site, cj),
-                pagefind=False,
-                path="/career-journey/",
+                title,
+                active,
+                body,
+                pagefind=pf,
+                path=path,
+                deck_mode=False,
+                header_search=is_home or is_library,
+                library_route=is_library,
+                home_route=is_home,
+                extra_head=extra_head,
             ),
         )
-        cj_js = SRC / "career-journey.js"
-        if cj_js.is_file():
-            shutil.copyfile(cj_js, DIST / "career-journey.js")
 
-    work_target = with_base(site, "/portfolio/")
+    systems_target = with_base(site, "/systems/")
+    catalogue_target = systems_target
+    notes_target = with_base(site, "/notes/")
+    home_target = with_base(site, "/")
+    for rel_path, target, label in (
+        ("portfolio/index.html", catalogue_target, "Systems"),
+        ("perspectives/index.html", notes_target, "Notes"),
+        ("systems/catalogue/index.html", catalogue_target, "Systems"),
+        ("about/index.html", home_target, "Home"),
+        ("contact/index.html", home_target, "Home"),
+        ("career-journey/index.html", home_target, "Home"),
+        ("blog/index.html", notes_target, "Notes"),
+    ):
+        write(
+            DIST / rel_path,
+            f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="refresh" content="0;url={esc(target)}" />
+  <link rel="canonical" href="{esc(target)}" />
+  <title>{esc(label)}</title>
+</head>
+<body>
+  <p>Moved to <a href="{esc(target)}">{esc(target)}</a>.</p>
+</body>
+</html>
+""",
+        )
+
+    for row in _writing_rows(export):
+        synd = row.get("syndication") if isinstance(row.get("syndication"), dict) else {}
+        wp = str(synd.get("wordpress") or "").strip()
+        if not wp:
+            continue
+        slug = wp.rstrip("/").split("/")[-1]
+        if not slug:
+            continue
+        note_id = _note_catalog_id(row, 0)
+        target = f"{notes_target}#{note_id}"
+        write(
+            DIST / slug / "index.html",
+            f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="refresh" content="0;url={esc(target)}" />
+  <link rel="canonical" href="{esc(target)}" />
+  <title>{esc(str(row.get("title") or slug))}</title>
+</head>
+<body>
+  <p>Moved to <a href="{esc(target)}">{esc(target)}</a>.</p>
+</body>
+</html>
+""",
+        )
+
+    work_target = catalogue_target
     write(
         DIST / "work" / "index.html",
         f"""<!DOCTYPE html>
@@ -2398,11 +3429,11 @@ def main() -> None:
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="refresh" content="0;url={esc(work_target)}" />
-  <link rel="canonical" href="{esc(canonical_url(site, "/portfolio/"))}" />
+  <link rel="canonical" href="{esc(canonical_url(site, "/systems/"))}" />
   <title>Work</title>
 </head>
 <body>
-  <p>Selected work lives at <a href="{esc(work_target)}">/portfolio/</a>.</p>
+  <p>Selected work lives at <a href="{esc(work_target)}">/systems/</a>.</p>
 </body>
 </html>
 """,
@@ -2418,19 +3449,34 @@ def main() -> None:
     diy = (site.get("analytics") or {}).get("diy") or {}
     if diy.get("enabled") and (SRC / "track.js").is_file():
         shutil.copyfile(SRC / "track.js", DIST / "track.js")
+    notes_assets = ROOT / "assets" / "notes"
+    if notes_assets.is_dir():
+        shutil.copytree(notes_assets, DIST / "assets" / "notes", dirs_exist_ok=True)
     (DIST / "data").mkdir(exist_ok=True)
     shutil.copyfile(DATA / "export_public.json", DIST / "data" / "export_public.json")
-    site_out = dict(site)
+    site_out = {k: v for k, v in site.items() if k != "_export"}
     write(DIST / "data" / "site.json", json.dumps(site_out, indent=2) + "\n")
 
     base = site["base_path"]
-    redirects = f"""{base}/about {base}/about/ 301
-{base}/portfolio {base}/portfolio/ 301
-{base}/work {base}/portfolio/ 301
-{base}/work/ {base}/portfolio/ 301
-{base}/perspectives {base}/perspectives/ 301
+    redirects = f"""{base}/about {base}/ 301
+{base}/about/ {base}/ 301
+{base}/systems {base}/systems/ 301
+{base}/systems/catalogue {base}/systems/ 301
+{base}/systems/catalogue/ {base}/systems/ 301
+{base}/notes {base}/notes/ 301
+{base}/portfolio {base}/systems/ 301
+{base}/portfolio/ {base}/systems/ 301
+{base}/work {base}/systems/ 301
+{base}/work/ {base}/systems/ 301
+{base}/perspectives {base}/notes/ 301
+{base}/perspectives/ {base}/notes/ 301
 {base}/credentials {base}/credentials/ 301
-{base}/contact {base}/contact/ 301
+{base}/contact {base}/ 301
+{base}/contact/ {base}/ 301
+{base}/career-journey {base}/ 301
+{base}/career-journey/ {base}/ 301
+{base}/blog {base}/notes/ 301
+{base}/blog/ {base}/notes/ 301
 """
     write(DIST / "_redirects", redirects)
 

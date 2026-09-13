@@ -1,28 +1,42 @@
-# C2b — writing inventory (deferred)
+# C2b — writing inventory (2026-09)
 
-Phase 1 does **not** scrape or import writing. This doc is the checklist for a later personal-content + site change.
+**Status:** 18 PUBLIC essays in `personal-content` `writing.yaml`; bodies vendored via export; site reads `export.writing` only.
 
-## Goal
+## Corpus (deduped)
 
-One governed catalog (likely `personal-content` `writing.yaml`) covering every PUBLIC piece, with dedupe across republications; site `/writing` (or `/blog`) lists from export.
+| NOTE id | Title | Medium | WP slug |
+|---|---|---|---|
+| NOTE-2026-005 | AI Disruption Part 1 | yes | `the-ai-disruption-part-1-…` |
+| NOTE-2026-006-2 | AI Disruption Part 2 | yes | `the-ai-disruption-part-2-…` |
+| NOTE-2026-006 | AI Disruption Part 3 | yes | `the-ai-disruption-part-3-…` |
+| NOTE-2026-002 | Chips, Cells and Code | yes | `chips-cells-and-code-…` |
+| NOTE-2026-007 | Graphify × Databricks | yes | `teaching-graphify-to-understand-databricks-notebooks` |
+| NOTE-2026-007-2 | Hugging Face open-weights | yes | `a-chinese-open-weights-model-…` |
+| NOTE-2025-010 … NOTE-2025-021 | BYOLA Parts 1–12 | yes | `build-your-own-linkedin-analytics-part-*` |
 
-## Sources
+LinkedIn article URLs: operator paste into `syndication.linkedin` when available (no scrape in CI).
 
-| Source | What to inventory | Channel tag |
-|---|---|---|
-| WordPress Blog | Posts on yzouyang.com | `wordpress` |
-| Medium | `@kunojilym` posts / lists | `medium` |
-| LinkedIn articles | Standalone article URLs | `linkedin_article` |
-| LinkedIn newsletter | Each edition | `linkedin_newsletter` |
+## Site behaviour
 
-Seed hubs: [WP blog](https://www.yzouyang.com/blog/), [Medium](https://medium.com/@kunojilym), [LinkedIn](https://www.linkedin.com/in/yzouyang/).
+- Notes panels render on-site markdown + **Discuss on Medium** (or LinkedIn when set).
+- Footer **Blog** → `/notes/` (`footer_only` — not in header nav).
+- WP permalinks → `/notes/#NOTE-*` via `dist/<slug>/` stubs + Cloudflare `_redirects` for `/blog/`.
+- `site.json` **must not** contain `writing_highlights`.
 
-## Steps
+## Operator tools
 
-1. **Inventory** — YAML stub: title, URL, published date, channel, series/tags, PUBLIC visibility.
-2. **Dedupe** — same essay on Medium + WP + LinkedIn → one canonical URL + `aliases` / syndication links.
-3. **SoT** — land in `personal-content`; export PUBLIC rows only.
-4. **Site** — `/writing` lists from export; Pagefind indexes titles/summaries; bodies may stay off-site until import is worth it.
-5. **C3/C4** — feed Career KB `writing` / `content_impact` and newsletter freshness alerts.
+| Task | Command / location |
+|---|---|
+| Import / refresh bodies from WP | `python scripts/import_writing_bodies.py yingzhao` (Mac; not public CI) |
+| Export + check | `python scripts/export_public.py yingzhao --check` |
+| Vendor to site | copy `export_public.json` → `yzouyang-site/data/` |
+| Draft preview | `python scripts/preview.py --include-drafts ../personal-content` |
+| Weekly new URL scan | Dagster job `writing_weekly_ingest` (`agentic-services/writing_pipeline/`) |
 
-Prefer LinkedIn data export / manual CSV / curated YAML over fragile scraping. Phase 1 must not depend on LinkedIn at build time.
+## Still operator-owned (C2a / C2c)
+
+- DNS apex cutover, Bitly repoint, `online-presence.yaml` Bitly removal
+- Smoke WP slug redirects, then decommission Bluehost WP
+- Medium / LinkedIn stay live — do not 301 or unpublish
+
+See Homelab [yzouyang-wordpress-replacement runbook](https://github.com/KunojiLym/Homelab/blob/main/docs/runbooks/yzouyang-wordpress-replacement.md).
