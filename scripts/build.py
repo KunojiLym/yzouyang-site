@@ -514,8 +514,10 @@ def library_index_html(
                 )
             else:
                 lines.append(
-                    f'            <li data-panel-id="{esc(panel_id)}" tabindex="0" role="button">\n'
-                    f'              <span class="library-index-text">{esc(text)}</span>\n'
+                    f'            <li>\n'
+                    f'              <button type="button" class="library-index-trigger" data-panel-id="{esc(panel_id)}">\n'
+                    f'                <span class="library-index-text">{esc(text)}</span>\n'
+                    f"              </button>\n"
                     "            </li>"
                 )
         lines.append("          </ul>")
@@ -2568,7 +2570,7 @@ def _map_record_panels_library_html(site: dict) -> str:
                 record_id,
                 title,
                 inner,
-                level="h3",
+                level="h2",
                 extra_attrs=(
                     f' data-record="{esc(record_id)}"'
                     f' data-kind="{esc(str(meta.get("kind") or "record"))}"'
@@ -2652,7 +2654,7 @@ def build_portfolio(site: dict, export: dict) -> str:
                     f"{case_html}\n"
                     "      </div>"
                 )
-                panels.append(library_panel_html(item_id, display_title, body, level="h3"))
+                panels.append(library_panel_html(item_id, display_title, body, level="h2"))
 
         for item in export_items:
             item_title = str(item.get("title") or "")
@@ -2697,7 +2699,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         if outro:
             child_parts.append(f"      <p><em>{esc(outro)}</em></p>")
         child_inner = "\n".join(child_parts)
-        panels.append(library_panel_html(hid, title, child_inner, level="h3"))
+        panels.append(library_panel_html(hid, title, child_inner, level="h2"))
 
         if parent:
             parent_key = str(parent)
@@ -2994,7 +2996,7 @@ def build_credentials(site: dict, export: dict) -> str:
                 _html_parts, children, issuer_panels = _certs_by_issuer_html(rows, unique_id)
                 node["children"] = children
                 for iid, issuer, inner in issuer_panels:
-                    panels.append(library_panel_html(iid, issuer, inner, level="h3"))
+                    panels.append(library_panel_html(iid, issuer, inner, level="h2"))
             else:
                 panels.append(
                     library_section_panel(

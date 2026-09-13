@@ -134,7 +134,7 @@
     const scroller = shell.querySelector(".library-panels");
     const panels = [...shell.querySelectorAll(".library-panel[data-panel-id]")];
     const indexItems = [
-      ...shell.querySelectorAll(".library-index [data-panel-id][tabindex]"),
+      ...shell.querySelectorAll(".library-index .library-index-trigger[data-panel-id]"),
     ];
     const panelById = new Map(
       panels.map((panel) => [panel.getAttribute("data-panel-id"), panel])
@@ -157,7 +157,8 @@
     function setIndexHighlight(indexId) {
       indexItems.forEach((item) => {
         const match = item.getAttribute("data-panel-id") === indexId;
-        item.classList.toggle("is-active", Boolean(match));
+        const row = item.closest("li");
+        if (row) row.classList.toggle("is-active", Boolean(match));
         if (match) item.setAttribute("aria-current", "location");
         else item.removeAttribute("aria-current");
       });
@@ -203,7 +204,7 @@
         group = shell.querySelector(`[data-panel-group-id="${requestedId}"]`);
       }
       if (group) {
-        const first = group.querySelector("[data-panel-id][tabindex]");
+        const first = group.querySelector(".library-index-trigger[data-panel-id]");
         const firstId = first?.getAttribute("data-panel-id");
         if (firstId) return resolveTarget(firstId);
       }
