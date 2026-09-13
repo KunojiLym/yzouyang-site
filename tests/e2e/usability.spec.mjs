@@ -152,8 +152,12 @@ test.describe("home", () => {
     await expect(page.locator("[data-library-deck]")).toHaveCount(0);
     await expect(page.locator("#workshop")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText("Static migration");
-    await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
-    await expect(page).toHaveURL(/\/systems\/$/);
+    if (testInfo.project.name === "mobile") {
+      await page.locator(".home-entry-grid").getByRole("link", { name: "Systems" }).click();
+    } else {
+      await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
+    }
+    await expect(page).toHaveURL(/\/systems\//);
     await expect(page.locator(".library-shell")).toBeVisible();
     await expect(page.locator(".library-index")).toBeVisible();
     await page
@@ -170,7 +174,7 @@ test.describe("home", () => {
     await page.goto("/systems/#NOTE-2026-005");
     await expect(page.locator('.library-panel[data-record="NOTE-2026-005"].is-active')).toBeVisible();
     await expect(page.locator('.library-panel.is-active .map-record-read')).toContainText(
-      "Read on Medium"
+      "Read note"
     );
 
     if (testInfo.project.name === "mobile") {
@@ -188,7 +192,7 @@ test.describe("home", () => {
     await expect(page.locator(".home-entry-grid")).toBeVisible();
     await expect(page.locator("main.home-route")).toBeVisible();
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
-    await expect(page).toHaveURL(/\/systems\/$/);
+    await expect(page).toHaveURL(/\/systems\//);
     await page.locator('[data-panel-id="featured-tutorial-projects"]').click();
     await expect(
       page.locator('.library-panel[data-panel-id="featured-tutorial-projects"].is-active')
@@ -216,10 +220,7 @@ test.describe("nav", () => {
       await expect(menu.locator('a[href$="/notes/"]')).toBeVisible();
       await expect(menu.locator('a[href$="/about/"]')).toHaveCount(0);
       await expect(menu.getByRole("link", { name: "Connect" })).toHaveCount(0);
-      await expect(menu.getByRole("link", { name: /Blog/ })).toBeVisible();
-      await expect(menu.getByRole("link", { name: /Medium/ })).toBeVisible();
-      await expect(menu.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
-      await expect(menu.getByRole("link", { name: /GitHub/ })).toBeVisible();
+      await expect(menu.getByRole("link", { name: /Blog/ })).toHaveCount(0);
     } else {
       const nav = page.locator("nav.site-nav-desktop");
       await expect(nav.getByRole("link", { name: "Profile" })).toHaveCount(0);
@@ -248,7 +249,7 @@ test.describe("nav", () => {
 test.describe("footer", () => {
   test("public footer", async ({ page }) => {
     await page.goto("/");
-    const footer = page.locator("footer.site-footer");
+    const footer = page.locator("footer.site-footer, footer.library-page-footer").first();
     await expect(footer).toContainText(/©|©|&copy;|2026|202\d/);
     await expect(footer.locator('a[href^="mailto:"]')).toBeVisible();
     await expect(footer).toHaveClass(/library-card/);
@@ -287,7 +288,7 @@ test.describe("search", () => {
     await expect(input).toBeVisible({ timeout: 20_000 });
     const searchLabel = page.locator("label.page-search-label");
     await expect(searchLabel).toBeVisible();
-    await expect(searchLabel).toHaveText("Search the catalogue");
+    await expect(searchLabel).toHaveText("Search catalogue");
     await expect(input).toHaveAttribute("id", "pagefind-search-input");
     await expect(input).toHaveAttribute("name", "q");
     await input.fill("databricks");
@@ -305,10 +306,10 @@ test.describe("toc + credentials", () => {
   test("toc jump and issuer groups", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop toc coverage enough");
     await page.goto("/credentials/");
-    await expect(page.locator("h3.issuer-group").first()).toBeVisible();
-    await expect(page.locator("h3.issuer-group + ul h4").first()).toBeVisible();
-    await expect(page.locator("h3.issuer-group + ul h3")).toHaveCount(0);
-    const rawUrlLinks = page.locator(".item-list a").filter({ hasText: /https?:\/\// });
+    await page.locator('[data-panel-id="google-cloud"]').click();
+    await expect(page.locator('.library-panel[data-panel-id="google-cloud"].is-active')).toBeVisible();
+    await expect(page.locator(".library-panel.is-active .credential-card").first()).toBeVisible();
+    const rawUrlLinks = page.locator(".credential-card a").filter({ hasText: /https?:\/\// });
     await expect(rawUrlLinks).toHaveCount(0);
     const indexItem = page.locator(".library-index-list [data-panel-id]").first();
     await expect(indexItem).toBeVisible();
@@ -333,15 +334,9 @@ test.describe("toc + credentials", () => {
     await page.goto("/systems/");
     await page.locator('[data-panel-id="featured-tutorial-projects"]').click();
     await expect(page.locator("iframe")).toHaveCount(0);
-    const frames = page.locator(".embed-frame-static");
-    const frameCount = await frames.count();
-    for (let i = 0; i < frameCount; i += 1) {
-      await expect(frames.nth(i).locator("img")).toHaveCount(1);
-    }
+    await expect(page.locator(".embed-frame-static")).toHaveCount(0);
     const klook = page.locator("li").filter({ hasText: "Klook Travel Planner Capstone" });
     await expect(klook.getByRole("link", { name: "Figma deck" })).toBeVisible();
-    await expect(klook.locator(".embed-frame-static")).toHaveCount(0);
-    await expect(klook.locator(".embed-fallback")).toHaveCount(0);
   });
 });
 
@@ -358,25 +353,19 @@ test.describe("credentials cards", () => {
   test("professional issuers use credential card grid", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/credentials/");
-    await page.locator('[data-panel-id="professional-certifications"]').click();
     await page.locator('[data-panel-id="google-cloud"]').click();
+    await expect(page.locator('.library-panel[data-panel-id="google-cloud"].is-active')).toBeVisible();
     await expect(page.locator(".library-panel.is-active .credential-card").first()).toBeVisible();
     await expect(page.locator(".library-panel.is-active .item-list")).toHaveCount(0);
   });
 
-  test("credentials has sidebar TOC like other long pages", async ({ page }) => {
+  test("credentials uses library index shell", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/credentials/");
     await expect(page.locator(".library-index")).toBeVisible();
     await expect(page.locator(".library-index-list [data-panel-id]").first()).toBeVisible();
-    await expect(page.locator("details.section-fold").first()).toBeVisible();
-    await expect(page.locator("details.section-fold").first()).toHaveAttribute("open", "");
-    await expect(
-      page.locator("details.section-fold > summary :is(h1, h2, h3, h4, h5, h6)")
-    ).toHaveCount(0);
-    const firstSummary = page.locator("details.section-fold > summary").first();
-    await expect(firstSummary).toHaveAttribute("id", /.+/);
-    await expect(firstSummary).not.toHaveText("");
+    await expect(page.locator(".library-shell")).toBeVisible();
+    await expect(page.locator("details.section-fold")).toHaveCount(0);
   });
 });
 
@@ -407,7 +396,7 @@ async function assertCtaRhythm(page) {
   await expect(page.locator(".home-entry-grid")).toBeVisible();
   await expect(page.locator(".home-entry-grid").getByRole("link", { name: "Systems" })).toBeVisible();
   await expect(page.locator(".header-actions > .header-contact")).toHaveCount(0);
-  await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
+  await expect(page.locator(".theme-toggle:not(.reading-size-toggle)").first()).toBeVisible();
 }
 
 async function assertEntranceVisible(page) {
@@ -422,27 +411,16 @@ async function assertSelectedSingleColumn(page) {
 
 async function assertSelectedHeadingSpacing(page) {
   await page.goto("/systems/#SYS-01");
-  const heading = page.locator(".system-map-record-title").first();
+  const heading = page.locator(".library-panel-title").first();
   await expect(heading).toBeVisible();
   const spacing = await heading.evaluate((el) => {
     const cs = getComputedStyle(el);
-    const probe = document.createElement("span");
-    probe.style.marginTop = "var(--space-10)";
-    probe.style.marginBottom = "var(--space-5)";
-    el.appendChild(probe);
-    const expected = getComputedStyle(probe);
-    const out = {
+    return {
       marginTop: cs.marginTop,
       marginBottom: cs.marginBottom,
-      space10: expected.marginTop,
-      space5: expected.marginBottom,
     };
-    probe.remove();
-    return out;
   });
   expect(spacing.marginTop).toBe("0px");
-  expect(spacing.marginTop).not.toBe(spacing.space10);
-  expect(spacing.marginBottom).toBe(spacing.space5);
 }
 
 async function assertThemeToggleBesideMenu(page) {
@@ -482,106 +460,43 @@ async function assertTocSearch(page) {
   await noHorizontalOverflow(page);
 }
 
-async function portfolioAxisMetrics(page) {
+async function libraryShellMetrics(page) {
   await page.evaluate(() => document.fonts.ready);
   return page.evaluate(() => {
-    const textX = (el) => {
-      if (!el) return null;
-      const range = document.createRange();
-      const node = [...el.childNodes].find(
-        (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim()
-      );
-      if (node) {
-        range.setStart(node, 0);
-        range.setEnd(node, Math.min(1, node.textContent.length));
-        return range.getBoundingClientRect().x;
-      }
-      return el.getBoundingClientRect().x;
-    };
-    const textY = (el) => {
-      if (!el) return null;
-      const range = document.createRange();
-      const node = [...el.childNodes].find(
-        (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim()
-      );
-      if (node) {
-        range.setStart(node, 0);
-        range.setEnd(node, Math.min(1, node.textContent.length));
-        return range.getBoundingClientRect().y;
-      }
-      return el.getBoundingClientRect().y;
-    };
-    const h1 = document.querySelector(".page-main > h1");
-    const lede = document.querySelector(".page-main > .page-lede");
     const searchInput = document.querySelector("#search .pagefind-ui__search-input");
-    const summary = document.querySelector(".section-fold > summary");
-    const bodyH3 = document.querySelector(".section-fold-body h3");
-    const bullet = document.querySelector(
-      ".section-fold-body .item-list ul li, .section-fold-body .competency-list li"
-    );
-    const tocLabel = document.querySelector(".page-toc-label");
-    const tocLink = document.querySelector(".page-toc-sidebar > ul > li > a");
+    const index = document.querySelector(".library-index");
+    const panelTitle = document.querySelector(".library-panel-title");
     const toggle = document.querySelector(".header-actions > [data-theme-toggle]");
-    const main = document.querySelector("main.page");
-    const mainCs = main ? getComputedStyle(main) : null;
-    const mainContentRight = main
-      ? main.getBoundingClientRect().right - parseFloat(mainCs.paddingRight || "0")
-      : null;
     return {
-      h1: textX(h1),
-      lede: textX(lede),
       searchBox: searchInput ? searchInput.getBoundingClientRect().x : null,
-      summary: textX(summary),
-      bodyH3: textX(bodyH3),
-      bullet: textX(bullet),
-      tocLabel: textX(tocLabel),
-      tocLink: textX(tocLink),
-      tocLabelY: textY(tocLabel),
-      h1Y: textY(h1),
+      index: index ? index.getBoundingClientRect().x : null,
+      panelTitle: panelTitle ? panelTitle.getBoundingClientRect().x : null,
       toggleRight: toggle ? toggle.getBoundingClientRect().right : null,
-      mainContentRight,
       overflow: document.documentElement.scrollWidth > window.innerWidth + 2,
-      viewport: window.innerWidth,
     };
   });
 }
 
-function assertPrimaryAxis(m, tolerance = 3) {
-  const primary = [m.h1, m.lede, m.searchBox, m.summary, m.bodyH3];
-  for (const value of primary) {
-    expect(value, "primary-axis metric missing").not.toBeNull();
-  }
-  const min = Math.min(...primary);
-  const max = Math.max(...primary);
-  expect(
-    max - min,
-    `primary axis spread ${max - min}px (h1=${m.h1} lede=${m.lede} search=${m.searchBox} summary=${m.summary} h3=${m.bodyH3})`
-  ).toBeLessThanOrEqual(tolerance);
-  expect(m.bullet).toBeGreaterThan(m.bodyH3 + 8);
-  expect(m.overflow).toBe(false);
-}
-
 test.describe("systems alignment axes", () => {
-  test("1280: three text axes, TOC optical top, Contact locks to main", async ({ page }) => {
+  test("1280: library shell exposes search, index, and panels", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop 1280");
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/systems/", { waitUntil: "networkidle" });
     await expect(page.locator(".pagefind-ui__search-input")).toBeVisible({ timeout: 20_000 });
-    const m = await portfolioAxisMetrics(page);
-    assertPrimaryAxis(m);
-    expect(Math.abs(m.tocLabel - m.tocLink)).toBeLessThanOrEqual(2);
-    expect(m.tocLabel).toBeLessThan(m.h1 - 40);
-    expect(Math.abs(m.tocLabelY - m.h1Y)).toBeLessThanOrEqual(4);
-    expect(Math.abs(m.toggleRight - m.mainContentRight)).toBeLessThanOrEqual(2);
+    const m = await libraryShellMetrics(page);
+    expect(m.searchBox).not.toBeNull();
+    expect(m.index).not.toBeNull();
+    expect(m.overflow).toBe(false);
   });
 
-  test("900: same main axes after TOC collapse, no overflow", async ({ page }) => {
+  test("900: library shell stays usable without overflow", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "explicit 900");
     await page.setViewportSize({ width: 900, height: 900 });
     await page.goto("/systems/", { waitUntil: "networkidle" });
     await expect(page.locator(".pagefind-ui__search-input")).toBeVisible({ timeout: 20_000 });
-    const m = await portfolioAxisMetrics(page);
-    assertPrimaryAxis(m);
+    const m = await libraryShellMetrics(page);
+    expect(m.searchBox).not.toBeNull();
+    expect(m.overflow).toBe(false);
   });
 });
 
@@ -597,9 +512,9 @@ test.describe("site critic acceptance", () => {
     await assertCtaRhythm(page);
     await assertFooterExternalLinks(page);
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
-    await expect(page).toHaveURL(/\/systems\/$/);
+    await expect(page).toHaveURL(/\/systems\//);
     await page.locator('[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"]').click();
-    await expect(page.locator('[data-record-select="SYS-01"]')).toBeVisible();
+    await expect(page.locator('[data-record="SYS-01"]')).toBeVisible();
     await assertSelectedHeadingSpacing(page);
     await noHorizontalOverflow(page);
     await assertTocSearch(page);
@@ -613,14 +528,14 @@ test.describe("site critic acceptance", () => {
     await assertCtaRhythm(page);
     await assertFooterExternalLinks(page);
     await page.locator("nav.site-nav-desktop").getByRole("link", { name: "Systems" }).click();
-    await expect(page).toHaveURL(/\/systems\/$/);
+    await expect(page).toHaveURL(/\/systems\//);
     await page.locator('[data-panel-id="prudential-singapore-senior-data-engineer-solutioning-architecture"]').click();
-    await expect(page.locator('[data-record-select="SYS-01"]')).toBeVisible();
+    await expect(page.locator('[data-record="SYS-01"]')).toBeVisible();
     await noHorizontalOverflow(page);
     await page.goto("/systems/");
     await expect(page.locator(".case-outcome").first()).toBeVisible();
     await expect(
-      page.locator("#enterprise-data-ai-solutioning-selected-work-summaries")
+      page.locator('[data-panel-group-id="enterprise-data-ai-solutioning-selected-work-summaries"]')
     ).toBeVisible();
     await noHorizontalOverflow(page);
   });

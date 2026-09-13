@@ -55,22 +55,26 @@ test.describe("dual theme", () => {
     expect(["dark", "light"]).toContain(order.dataTheme);
   });
 
-  test("prefers-color-scheme light applies when store is empty", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "light" });
-    await page.addInitScript(() => localStorage.removeItem("yz-theme"));
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  test.describe("system preference", () => {
+    test.use({ colorScheme: "light" });
+
+    test("prefers-color-scheme light applies when store is empty", async ({ page }) => {
+      await page.addInitScript(() => localStorage.removeItem("yz-theme"));
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    });
   });
 
   test("toggle is labeled, pressed, and persists", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("yz-theme", "dark"));
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    const toggle = page.locator("[data-theme-toggle]").first();
+    const toggle = page.locator(".theme-toggle:not(.reading-size-toggle)").first();
     await expect(toggle).toBeVisible();
-    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
     await expect(toggle).toHaveAccessibleName(/theme: dark/i);
     await toggle.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
     expect(await page.evaluate(() => localStorage.getItem("yz-theme"))).toBe("light");
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
