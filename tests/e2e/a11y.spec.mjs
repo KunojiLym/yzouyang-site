@@ -7,9 +7,10 @@ import AxeBuilder from "@axe-core/playwright";
 // landmarks, or ARIA wiring without a human noticing.
 const ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
 
-// Pagefind's third-party markup on Systems/Notes/Credentials has known upstream
-// a11y quirks outside this repo's control; scoped out rather than ignored
-// so a real regression elsewhere on those pages still fails the build.
+// Pagefind's third-party markup in the sticky header (#search) has known upstream
+// a11y quirks outside this repo's control. Home and library routes all mount the
+// header search UI; exclude #search on every route in this suite so regressions
+// elsewhere on the page still fail the build.
 const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];
 
 test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {

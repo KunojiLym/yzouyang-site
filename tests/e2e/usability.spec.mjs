@@ -2,13 +2,25 @@ import { test, expect } from "@playwright/test";
 
 const LIVE_ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
 const REDIRECTS = [
-  ["/about/", /\/$/],
-  ["/contact/", /\/$/],
-  ["/career-journey/", /\/$/],
-  ["/portfolio/", /\/systems\/(?:$|#)/],
-  ["/perspectives/", /\/notes\/(?:$|#)/],
-  ["/blog/", /\/notes\/(?:$|#)/],
+  { from: "/about/", path: "/" },
+  { from: "/contact/", path: "/" },
+  { from: "/career-journey/", path: "/" },
+  { from: "/portfolio/", path: "/systems/", allowHash: true },
+  { from: "/perspectives/", path: "/notes/", allowHash: true },
+  { from: "/blog/", path: "/notes/", allowHash: true },
 ];
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function expectedRedirectUrl(baseURL, { path, allowHash = false }) {
+  const href = new URL(path, baseURL).href;
+  if (allowHash) {
+    return new RegExp(`^${escapeRegExp(href)}(?:#.+)?$`);
+  }
+  return href;
+}
 
 function libraryIndexPanel(page, panelId) {
   return page.locator(`.library-index-list [data-panel-id="${panelId}"]`).first();
@@ -59,10 +71,10 @@ test.describe("smoke", () => {
 });
 
 test.describe("legacy redirects", () => {
-  for (const [route, dest] of REDIRECTS) {
-    test(`${route} redirects`, async ({ page }) => {
-      await page.goto(route);
-      await expect(page).toHaveURL(dest);
+  for (const spec of REDIRECTS) {
+    test(`${spec.from} redirects`, async ({ page, baseURL }) => {
+      await page.goto(spec.from);
+      await expect(page).toHaveURL(expectedRedirectUrl(baseURL, spec));
       await expect(page.locator("h1").first()).toBeVisible();
     });
   }

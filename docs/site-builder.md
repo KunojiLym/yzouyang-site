@@ -136,7 +136,7 @@ CI rebuilds with empty `SITE_BASE_PATH` before e2e so assets and Pagefind resolv
 | `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/credentials/` (Pagefind `#search` excluded as third-party chrome) |
 | `tests/e2e/visual.spec.mjs` | Full-page screenshots for `/`, `/systems/`, `/notes/`, `/credentials/` — **non-blocking** in CI until `__snapshots__/` is committed |
 
-Redirect assertions allow optional panel hashes on `/systems/` and `/notes/` destinations because library JS may call `applyHash()` after navigation.
+Redirect assertions use Playwright `baseURL`: home stubs must match the full origin + `/`; `/systems/` and `/notes/` destinations allow optional panel hashes because library JS may call `applyHash()` after navigation.
 
 ## Agent / contributor rules
 
