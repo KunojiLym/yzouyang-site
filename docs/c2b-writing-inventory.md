@@ -29,7 +29,7 @@ LinkedIn article URLs: operator paste into `syndication.linkedin` when available
 |---|---|
 | Import / refresh bodies from WP | `python scripts/import_writing_bodies.py yingzhao` (Mac; not public CI) |
 | Export + check | `python scripts/export_public.py yingzhao --check` |
-| Vendor to site | copy `export_public.json` → `yzouyang-site/data/` |
+| Vendor to site | copy `export_public.json` → `yzouyang-site/data/`; after localization, `rsync` `writing/assets/` → `yzouyang-site/assets/notes/` |
 | Draft preview | `python scripts/preview.py --include-drafts ../personal-content` |
 | Weekly new URL scan | Dagster job `writing_weekly_ingest` (`agentic-services/writing_pipeline/`) |
 

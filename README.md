@@ -6,7 +6,7 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. Legacy stubs: `/about/`, `/contact/`, `/career-journey/` → home; `/portfolio/`, `/work/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/` (library JS may append a panel hash). Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
+Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. Legacy stubs: `/about/`, `/contact/`, `/career-journey/` → home; `/portfolio/`, `/work/`, `/systems/catalogue/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/` (library JS may append a panel hash). Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 

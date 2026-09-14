@@ -1169,9 +1169,14 @@ def _note_href(site: dict, note_id: str) -> str:
 
 
 def _note_asset_href(site: dict, note_id: str, rel_path: str) -> str:
-    cleaned = rel_path.strip().replace("\\", "/")
-    if cleaned.startswith("assets/"):
-        cleaned = cleaned[len("assets/") :]
+    cleaned = rel_path.strip().replace("\\", "/").lstrip("/")
+    for prefix in ("assets/writing/", "assets/notes/", "writing/assets/", "assets/"):
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix) :]
+            break
+    note_prefix = f"{note_id}/"
+    if cleaned.startswith(note_prefix):
+        return with_base(site, f"/assets/notes/{cleaned}")
     return with_base(site, f"/assets/notes/{note_id}/{cleaned}")
 
 

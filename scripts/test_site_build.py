@@ -11,6 +11,7 @@ from pathlib import Path
 
 from build import (
     _beat_value_html,
+    _note_asset_href,
     figma_embed_html,
     normalize_base,
     resolve_enterprise_overlay,
@@ -146,10 +147,26 @@ def assert_no_empty_static_frames(html: str, label: str) -> None:
             )
 
 
+def assert_note_asset_href() -> None:
+    site = {"base_path": ""}
+    note_id = "NOTE-2025-014"
+    cases = {
+        "assets/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "assets/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "assets/writing/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "assets/notes/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+    }
+    for src, expected in cases.items():
+        got = _note_asset_href(site, note_id, src)
+        if got != expected:
+            fail(f"_note_asset_href({src!r}) == {got!r}, expected {expected!r}")
+
+
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
     assert_evidence_href_https_only()
+    assert_note_asset_href()
 
     site = resolve_site_base(json.loads((DATA / "site.json").read_text(encoding="utf-8")))
     bitly = str((site.get("external") or {}).get("bitly_hub") or "")

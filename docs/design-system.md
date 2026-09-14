@@ -98,7 +98,7 @@ Inner pages:
 | `/notes/` | Notes | Library shell; PUBLIC writing corpus (C2b) |
 | `/credentials/` | Professional record | Library shell + VERIFY |
 | `/about/`, `/contact/`, `/career-journey/` | *(redirect)* | Home |
-| `/portfolio/`, `/work/` | *(redirect)* | `/systems/` |
+| `/portfolio/`, `/work/`, `/systems/catalogue/` | *(redirect)* | `/systems/` |
 | `/perspectives/`, `/blog/` | *(redirect)* | `/notes/` |
 
 **Credibility order:** thesis → documented systems → writing → experiments → professional record.

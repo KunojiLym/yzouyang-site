@@ -131,7 +131,7 @@ CI rebuilds with empty `SITE_BASE_PATH` before e2e so assets and Pagefind resolv
 
 | Spec | Coverage |
 |---|---|
-| `tests/e2e/usability.spec.mjs` | 29 cases × desktop/mobile (58 runs; 12 project-gated skips → **46 passed / 12 skipped**). Smoke, legacy redirect stubs, chrome, home IA guardrails, library shell, Pagefind, layout |
+| `tests/e2e/usability.spec.mjs` | 28 cases × desktop/mobile (56 runs; 12 project-gated skips → **44 passed / 12 skipped**). Smoke, legacy redirect stubs, chrome, home IA guardrails, library shell, Pagefind, layout |
 | `tests/e2e/theme.spec.mjs` | Dark/light token paint without FOUC; `localStorage` theme persistence across reload; axe on themed routes |
 | `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/credentials/` (Pagefind `#search` excluded as third-party chrome) |
 | `tests/e2e/visual.spec.mjs` | Full-page screenshots for `/`, `/systems/`, `/notes/`, `/credentials/` — **non-blocking** in CI until `__snapshots__/` is committed |
