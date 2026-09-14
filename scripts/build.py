@@ -11,6 +11,7 @@ import subprocess
 import sys
 from collections import OrderedDict
 from datetime import date
+from html import unescape as html_unescape
 from pathlib import Path
 
 import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
@@ -1195,27 +1196,29 @@ def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
 
     def img_repl(match: re.Match[str]) -> str:
         alt, src = match.group(1), match.group(2).strip()
-        if _is_note_asset_ref(src):
-            path = _note_asset_href(site, note_id, src)
-        elif src.startswith(("http://", "https://")):
-            path = esc(src)
+        raw_src = html_unescape(src)
+        if _is_note_asset_ref(raw_src):
+            path = esc(_note_asset_href(site, note_id, raw_src))
+        elif raw_src.startswith(("http://", "https://")):
+            path = src
         else:
-            path = esc(with_base(site, src))
-        return f'<img src="{path}" alt="{esc(alt)}" loading="lazy" />'
+            path = esc(with_base(site, raw_src))
+        return f'<img src="{path}" alt="{alt}" loading="lazy" />'
 
     safe = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", img_repl, safe)
 
     def link_repl(match: re.Match[str]) -> str:
         label, href = match.group(1), match.group(2).strip()
-        if _is_note_asset_ref(href):
-            path = _note_asset_href(site, note_id, href)
-            return f'<a href="{esc(path)}">{label}</a>'
-        if href.startswith(("http://", "https://")):
+        raw_href = html_unescape(href)
+        if _is_note_asset_ref(raw_href):
+            path = esc(_note_asset_href(site, note_id, raw_href))
+            return f'<a href="{path}">{label}</a>'
+        if raw_href.startswith(("http://", "https://")):
             return (
-                f'<a class="external" href="{esc(href)}" target="_blank" '
+                f'<a class="external" href="{href}" target="_blank" '
                 f'rel="noopener noreferrer">{label}</a>'
             )
-        return f'<a href="{esc(with_base(site, href))}">{label}</a>'
+        return f'<a href="{esc(with_base(site, raw_href))}">{label}</a>'
 
     return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_repl, safe)
 

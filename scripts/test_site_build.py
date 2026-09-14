@@ -169,6 +169,15 @@ def assert_note_asset_href() -> None:
     html = _inline_markdown("![chart](writing/assets/01.jpg)", note_id=note_id, site=site)
     if 'src="/assets/notes/NOTE-2025-014/01.jpg"' not in html:
         fail(f"inline image writing/assets/01.jpg mapped incorrectly: {html}")
+    html = _inline_markdown(
+        "![chart](https://i0.wp.com/www.yzouyang.com/wp-content/uploads/x.png?fit=700%2C510&ssl=1)",
+        note_id=note_id,
+        site=site,
+    )
+    if "&amp;amp;" in html:
+        fail(f"image src was double-escaped: {html}")
+    if 'src="https://i0.wp.com/www.yzouyang.com/wp-content/uploads/x.png?fit=700%2C510&amp;ssl=1"' not in html:
+        fail(f"image query string lost a single &amp; escape: {html}")
 
 
 def main() -> None:
