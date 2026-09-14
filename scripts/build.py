@@ -11,6 +11,7 @@ import subprocess
 import sys
 from collections import OrderedDict
 from datetime import date
+from html import unescape as html_unescape
 from pathlib import Path
 
 import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
@@ -1168,10 +1169,22 @@ def _note_href(site: dict, note_id: str) -> str:
     return with_base(site, f"/notes/#{note_id}")
 
 
+def _is_note_asset_ref(href: str) -> bool:
+    cleaned = href.strip().replace("\\", "/")
+    if cleaned.startswith("/"):
+        cleaned = cleaned[1:]
+    return cleaned.startswith(("assets/", "writing/assets/"))
+
+
 def _note_asset_href(site: dict, note_id: str, rel_path: str) -> str:
-    cleaned = rel_path.strip().replace("\\", "/")
-    if cleaned.startswith("assets/"):
-        cleaned = cleaned[len("assets/") :]
+    cleaned = rel_path.strip().replace("\\", "/").lstrip("/")
+    for prefix in ("assets/writing/", "assets/notes/", "writing/assets/", "assets/"):
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix) :]
+            break
+    note_prefix = f"{note_id}/"
+    if cleaned.startswith(note_prefix):
+        return with_base(site, f"/assets/notes/{cleaned}")
     return with_base(site, f"/assets/notes/{note_id}/{cleaned}")
 
 
@@ -1181,31 +1194,33 @@ def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
     safe = re.sub(r"\*(.+?)\*", r"<em>\1</em>", safe)
     safe = re.sub(r"`([^`]+)`", r"<code>\1</code>", safe)
 
-    def link_repl(match: re.Match[str]) -> str:
-        label, href = match.group(1), match.group(2).strip()
-        if href.startswith("assets/"):
-            path = _note_asset_href(site, note_id, href)
-            return f'<a href="{esc(path)}">{label}</a>'
-        if href.startswith(("http://", "https://")):
-            return (
-                f'<a class="external" href="{esc(href)}" target="_blank" '
-                f'rel="noopener noreferrer">{label}</a>'
-            )
-        return f'<a href="{esc(with_base(site, href))}">{label}</a>'
-
-    safe = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_repl, safe)
-
     def img_repl(match: re.Match[str]) -> str:
         alt, src = match.group(1), match.group(2).strip()
-        if src.startswith("assets/"):
-            path = _note_asset_href(site, note_id, src)
-        elif src.startswith(("http://", "https://")):
-            path = esc(src)
+        raw_src = html_unescape(src)
+        if _is_note_asset_ref(raw_src):
+            path = esc(_note_asset_href(site, note_id, raw_src))
+        elif raw_src.startswith(("http://", "https://")):
+            path = src
         else:
-            path = esc(with_base(site, src))
-        return f'<img src="{path}" alt="{esc(alt)}" loading="lazy" />'
+            path = esc(with_base(site, raw_src))
+        return f'<img src="{path}" alt="{alt}" loading="lazy" />'
 
-    return re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", img_repl, safe)
+    safe = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", img_repl, safe)
+
+    def link_repl(match: re.Match[str]) -> str:
+        label, href = match.group(1), match.group(2).strip()
+        raw_href = html_unescape(href)
+        if _is_note_asset_ref(raw_href):
+            path = esc(_note_asset_href(site, note_id, raw_href))
+            return f'<a href="{path}">{label}</a>'
+        if raw_href.startswith(("http://", "https://")):
+            return (
+                f'<a class="external" href="{href}" target="_blank" '
+                f'rel="noopener noreferrer">{label}</a>'
+            )
+        return f'<a href="{esc(with_base(site, raw_href))}">{label}</a>'
+
+    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_repl, safe)
 
 
 def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:

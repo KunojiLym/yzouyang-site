@@ -11,7 +11,7 @@
 - [ ] UAT on GitHub Pages (`uat` branch deploy) signed off: https://kunojilym.github.io/yzouyang-site/
 - [ ] Promoted to `main` Pages deploy matches UAT
 - [ ] Preview serves `/`, `/systems/`, `/credentials/`, `/notes/` from PUBLIC export
-- [ ] `/about/`, `/contact/`, `/portfolio/` 301 to `/` or `/systems/` as documented
+- [ ] Legacy stubs redirect as documented: `/about/`, `/contact/`, `/career-journey/` → `/`; `/portfolio/`, `/work/`, `/systems/catalogue/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/`
 - [ ] Pagefind indexes systems, credentials, and notes (titles + bodies)
 - [ ] Footer **Blog** → `/notes/` (on-site); Medium / LinkedIn still external
 - [ ] Legacy Bitly shorts (`bit.ly/3GGyiXF`, `bit.ly/4m4fqki`) repointed to `/systems/` and `/credentials/`

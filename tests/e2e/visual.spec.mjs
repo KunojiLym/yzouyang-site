@@ -15,7 +15,7 @@ import { test, expect } from "@playwright/test";
 // this spec will fail every run (no baseline to compare against) — keep it
 // out of the required CI gate (see .github/workflows/ci.yml comment) until
 // baselines exist, then move it into the required path.
-const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/"];
+const ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
 
 function slugFor(route) {
   const trimmed = route.replace(/^\/|\/$/g, "");
@@ -26,9 +26,8 @@ test.describe("visual regression", () => {
   for (const route of ROUTES) {
     test(`${route} matches baseline`, async ({ page }) => {
       await page.goto(route, { waitUntil: "networkidle" });
-      // Freeze CSS animations/transitions (e.g. the `rise` entrance) to
-      // their end state so a timing difference doesn't register as a
-      // false-positive visual diff.
+      // Freeze CSS animations/transitions so a timing difference doesn't
+      // register as a false-positive visual diff.
       await expect(page).toHaveScreenshot(`${slugFor(route)}.png`, {
         fullPage: true,
         animations: "disabled",

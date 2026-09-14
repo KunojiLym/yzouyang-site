@@ -11,6 +11,8 @@ from pathlib import Path
 
 from build import (
     _beat_value_html,
+    _inline_markdown,
+    _note_asset_href,
     figma_embed_html,
     normalize_base,
     resolve_enterprise_overlay,
@@ -146,10 +148,43 @@ def assert_no_empty_static_frames(html: str, label: str) -> None:
             )
 
 
+def assert_note_asset_href() -> None:
+    site = {"base_path": ""}
+    note_id = "NOTE-2025-014"
+    cases = {
+        "assets/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "assets/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "assets/writing/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "assets/notes/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "/assets/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "writing/assets/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+    }
+    for src, expected in cases.items():
+        got = _note_asset_href(site, note_id, src)
+        if got != expected:
+            fail(f"_note_asset_href({src!r}) == {got!r}, expected {expected!r}")
+    html = _inline_markdown("![chart](/assets/01.jpg)", note_id=note_id, site=site)
+    if 'src="/assets/notes/NOTE-2025-014/01.jpg"' not in html:
+        fail(f"inline image /assets/01.jpg mapped incorrectly: {html}")
+    html = _inline_markdown("![chart](writing/assets/01.jpg)", note_id=note_id, site=site)
+    if 'src="/assets/notes/NOTE-2025-014/01.jpg"' not in html:
+        fail(f"inline image writing/assets/01.jpg mapped incorrectly: {html}")
+    html = _inline_markdown(
+        "![chart](https://i0.wp.com/www.yzouyang.com/wp-content/uploads/x.png?fit=700%2C510&ssl=1)",
+        note_id=note_id,
+        site=site,
+    )
+    if "&amp;amp;" in html:
+        fail(f"image src was double-escaped: {html}")
+    if 'src="https://i0.wp.com/www.yzouyang.com/wp-content/uploads/x.png?fit=700%2C510&amp;ssl=1"' not in html:
+        fail(f"image query string lost a single &amp; escape: {html}")
+
+
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
     assert_evidence_href_https_only()
+    assert_note_asset_href()
 
     site = resolve_site_base(json.loads((DATA / "site.json").read_text(encoding="utf-8")))
     bitly = str((site.get("external") or {}).get("bitly_hub") or "")
