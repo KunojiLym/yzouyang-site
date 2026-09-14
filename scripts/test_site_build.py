@@ -11,6 +11,7 @@ from pathlib import Path
 
 from build import (
     _beat_value_html,
+    _inline_markdown,
     _note_asset_href,
     figma_embed_html,
     normalize_base,
@@ -155,11 +156,19 @@ def assert_note_asset_href() -> None:
         "assets/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
         "assets/writing/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
         "assets/notes/NOTE-2025-014/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "/assets/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
+        "writing/assets/01.jpg": "/assets/notes/NOTE-2025-014/01.jpg",
     }
     for src, expected in cases.items():
         got = _note_asset_href(site, note_id, src)
         if got != expected:
             fail(f"_note_asset_href({src!r}) == {got!r}, expected {expected!r}")
+    html = _inline_markdown("![chart](/assets/01.jpg)", note_id=note_id, site=site)
+    if 'src="/assets/notes/NOTE-2025-014/01.jpg"' not in html:
+        fail(f"inline image /assets/01.jpg mapped incorrectly: {html}")
+    html = _inline_markdown("![chart](writing/assets/01.jpg)", note_id=note_id, site=site)
+    if 'src="/assets/notes/NOTE-2025-014/01.jpg"' not in html:
+        fail(f"inline image writing/assets/01.jpg mapped incorrectly: {html}")
 
 
 def main() -> None:

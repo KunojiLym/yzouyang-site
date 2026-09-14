@@ -1,6 +1,6 @@
 # C2b — writing inventory (2026-09)
 
-**Status:** Shipped on site. 18 PUBLIC essays in `personal-content` `writing.yaml`; bodies vendored via export; panels render on `/notes/`.
+**Status:** Shipped on site (not a deferred writing corpus). 18 PUBLIC essays in `personal-content` `writing.yaml`; bodies vendored via export; panels render on `/notes/`.
 
 ## Corpus (deduped)
 

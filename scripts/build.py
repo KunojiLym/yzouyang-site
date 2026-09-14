@@ -1168,6 +1168,13 @@ def _note_href(site: dict, note_id: str) -> str:
     return with_base(site, f"/notes/#{note_id}")
 
 
+def _is_note_asset_ref(href: str) -> bool:
+    cleaned = href.strip().replace("\\", "/")
+    if cleaned.startswith("/"):
+        cleaned = cleaned[1:]
+    return cleaned.startswith(("assets/", "writing/assets/"))
+
+
 def _note_asset_href(site: dict, note_id: str, rel_path: str) -> str:
     cleaned = rel_path.strip().replace("\\", "/").lstrip("/")
     for prefix in ("assets/writing/", "assets/notes/", "writing/assets/", "assets/"):
@@ -1186,9 +1193,21 @@ def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
     safe = re.sub(r"\*(.+?)\*", r"<em>\1</em>", safe)
     safe = re.sub(r"`([^`]+)`", r"<code>\1</code>", safe)
 
+    def img_repl(match: re.Match[str]) -> str:
+        alt, src = match.group(1), match.group(2).strip()
+        if _is_note_asset_ref(src):
+            path = _note_asset_href(site, note_id, src)
+        elif src.startswith(("http://", "https://")):
+            path = esc(src)
+        else:
+            path = esc(with_base(site, src))
+        return f'<img src="{path}" alt="{esc(alt)}" loading="lazy" />'
+
+    safe = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", img_repl, safe)
+
     def link_repl(match: re.Match[str]) -> str:
         label, href = match.group(1), match.group(2).strip()
-        if href.startswith("assets/"):
+        if _is_note_asset_ref(href):
             path = _note_asset_href(site, note_id, href)
             return f'<a href="{esc(path)}">{label}</a>'
         if href.startswith(("http://", "https://")):
@@ -1198,19 +1217,7 @@ def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
             )
         return f'<a href="{esc(with_base(site, href))}">{label}</a>'
 
-    safe = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_repl, safe)
-
-    def img_repl(match: re.Match[str]) -> str:
-        alt, src = match.group(1), match.group(2).strip()
-        if src.startswith("assets/"):
-            path = _note_asset_href(site, note_id, src)
-        elif src.startswith(("http://", "https://")):
-            path = esc(src)
-        else:
-            path = esc(with_base(site, src))
-        return f'<img src="{path}" alt="{esc(alt)}" loading="lazy" />'
-
-    return re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", img_repl, safe)
+    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_repl, safe)
 
 
 def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
