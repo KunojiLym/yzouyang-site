@@ -77,8 +77,8 @@ Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
 | Reference | Value | Applies to |
 |---|---|---|
 | `--bp-sm` | `800px` | Entrance layout stack (`home.css`) |
-| `--bp-md` | `900px` | Primary nav collapse; library shell stacks index above panel |
-| `--bp-lg` | `1024px` | Record impact grid (`home.css`) |
+| `--bp-md` | `900px` | Primary nav collapse (`chrome.css`) |
+| `--bp-lg` | `1024px` (`64rem`) | Record impact grid (`home.css`); library shell stacks index above panel (`library.css`) |
 
 ---
 

@@ -5,7 +5,7 @@ How the static site is produced and extended. Visual rules live in [design-syste
 ## Pipeline
 
 ```text
-data/site.json  +  data/export_public.json  +  data/career-journey.yaml (lint-only; page deferred)
+data/site.json  +  data/export_public.json  (+  data/career-journey.yaml retained for a deferred page)
         │
         ▼
  scripts/build.py  (f-string HTML, copy assets/CSS)
@@ -22,7 +22,7 @@ data/site.json  +  data/export_public.json  +  data/career-journey.yaml (lint-on
 
 - **Config / chrome / curated writing / outcomes:** [`data/site.json`](../data/site.json)
 - **PUBLIC narrative + projects + certs:** vendored from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` → [`data/export_public.json`](../data/export_public.json)
-- **Career Journey (deferred):** [`data/career-journey.yaml`](../data/career-journey.yaml) is validated at lint time; `/career-journey/` currently **redirects to Home**. Native page plan: [career-journey-native-plan.md](career-journey-native-plan.md)
+- **Career Journey (deferred):** [`data/career-journey.yaml`](../data/career-journey.yaml) is retained source for a future native page but is **not** read by `lint.py` or `build.py` today; `/career-journey/` **redirects to Home**. Plan: [career-journey-native-plan.md](career-journey-native-plan.md)
 - **Styles:** [`src/styles/`](../src/styles/) modules → assembled by build into `dist/styles.css` (see [`src/styles/README.md`](../src/styles/README.md))
 - **No Jinja** — page HTML is built in [`scripts/build.py`](../scripts/build.py)
 - **Python deps** (currently just PyYAML) managed with [uv](https://docs.astral.sh/uv/) — `pyproject.toml` is this repo's uv project file; run `uv sync` once before any script below
@@ -31,7 +31,7 @@ data/site.json  +  data/export_public.json  +  data/career-journey.yaml (lint-on
 
 | Script | Role |
 |---|---|
-| `uv run python scripts/lint.py` | Input validation (`site.json` / export / `career-journey.yaml`); Pagefind presence if `dist/` exists |
+| `uv run python scripts/lint.py` | Input validation (`site.json` / export); Pagefind presence if `dist/` exists |
 | `uv run python scripts/build.py` | Write pages + assets; runs Pagefind unless `--skip-pagefind` |
 | `uv run python scripts/preview.py` | Lint → build → local `http.server` |
 | `uv run python scripts/test_site_build.py` | Contract checks on `dist/` |
@@ -152,5 +152,5 @@ Redirect assertions use Playwright `baseURL`: home stubs must match the full ori
 - [redirects.md](redirects.md) — WP → static map
 - [cutover.md](cutover.md) — DNS operator gate
 - [diy-tracking.md](diy-tracking.md) — first-party beacon
-- [c2b-writing-inventory.md](c2b-writing-inventory.md) — deferred writing corpus
+- [c2b-writing-inventory.md](c2b-writing-inventory.md) — PUBLIC writing corpus and WP slug redirect map
 - [design-system.md](design-system.md) — visual / proof contract

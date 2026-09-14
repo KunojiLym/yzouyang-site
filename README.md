@@ -16,7 +16,7 @@ Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via 
 
 ## Develop
 
-Python deps (PyYAML for lint-time validation of `data/career-journey.yaml`) are managed with [uv](https://docs.astral.sh/uv/) — see `pyproject.toml`. Run `uv sync` once (creates `.venv/`) before any of the commands below.
+Python deps (PyYAML for optional draft preview merge via `PREVIEW_INCLUDE_DRAFTS` in `scripts/build.py`) are managed with [uv](https://docs.astral.sh/uv/) — see `pyproject.toml`. Run `uv sync` once (creates `.venv/`) before any of the commands below.
 
 ```bash
 uv sync
@@ -85,4 +85,4 @@ Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hos
 - [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map
 - [docs/cutover.md](docs/cutover.md) — DNS operator gate
-- [docs/c2b-writing-inventory.md](docs/c2b-writing-inventory.md) — deferred writing corpus
+- [docs/c2b-writing-inventory.md](docs/c2b-writing-inventory.md) — PUBLIC writing corpus and WP slug redirect map

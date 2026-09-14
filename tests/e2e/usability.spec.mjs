@@ -6,6 +6,7 @@ const REDIRECTS = [
   { from: "/contact/", path: "/" },
   { from: "/career-journey/", path: "/" },
   { from: "/portfolio/", path: "/systems/", allowHash: true },
+  { from: "/work/", path: "/systems/", allowHash: true },
   { from: "/perspectives/", path: "/notes/", allowHash: true },
   { from: "/blog/", path: "/notes/", allowHash: true },
 ];
@@ -53,6 +54,7 @@ async function assertFooterLinks(page) {
   const footer = page.locator("footer.site-footer, footer.library-page-footer").first();
   await expect(footer).toHaveClass(/library-card/);
   await expect(footer.locator('a[href^="mailto:"]')).toBeVisible();
+  await expect(footer.getByRole("link", { name: /Digital card/ })).toHaveClass(/external/);
   await expect(footer.getByRole("link", { name: /Blog/ })).toBeVisible();
   await expect(footer.getByRole("link", { name: /Medium/ })).toHaveClass(/external/);
   await expect(footer.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
@@ -120,6 +122,7 @@ test.describe("chrome", () => {
     await assertFooterLinks(page);
     const footer = page.locator("footer.site-footer, footer.library-page-footer").first();
     await expect(footer).toContainText(/©|&copy;|202\d/);
+    await expect(footer).not.toContainText("Static migration");
     await expect(page.locator(".nav-elsewhere")).toHaveCount(0);
   });
 
