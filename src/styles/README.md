@@ -6,9 +6,9 @@ Source of truth for the site's CSS. [`scripts/build.py`](../../scripts/build.py)
 |---|---|
 | `tokens.css` | Semantic design tokens (`:root` / `[data-theme]`): dual-theme color, type scale, spacing scale, radius scale, documented breakpoints |
 | `base.css` | Document defaults, links, focus, scroll padding |
-| `chrome.css` | Sticky header, brand, primary nav, theme toggle, library-card footer |
+| `chrome.css` | Sticky header, brand, primary nav, theme toggle, Pagefind header slot (`#search`), library-card footer |
 | `home.css` | Home entrance (token atmosphere), thesis, `current-index`, proof strip, `home-entry-grid`, competencies |
-| `library.css` | Personal Systems Library split-pane shell (`.library-shell`, index list, panels, mobile back, Pagefind header slot) on `/systems/`, `/notes/`, `/credentials/` |
+| `library.css` | Personal Systems Library split-pane shell (`.library-shell`, index list, panels, mobile back) on `/systems/`, `/notes/`, `/credentials/` |
 | `components.css` | Shared page patterns: headings, lists, credential cards, embed fallbacks, proof blocks |
 | `longform.css` | Legacy long-form dossier layout (`.page-with-toc`, sticky sidebar TOC) — retained for any remaining TOC-style panels, not the primary library chrome |
 | `search.css` | Pagefind dark theme |

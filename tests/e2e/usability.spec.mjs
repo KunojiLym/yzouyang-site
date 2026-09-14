@@ -7,6 +7,7 @@ const REDIRECTS = [
   { from: "/career-journey/", path: "/" },
   { from: "/portfolio/", path: "/systems/", allowHash: true },
   { from: "/work/", path: "/systems/", allowHash: true },
+  { from: "/systems/catalogue/", path: "/systems/", allowHash: true },
   { from: "/perspectives/", path: "/notes/", allowHash: true },
   { from: "/blog/", path: "/notes/", allowHash: true },
 ];

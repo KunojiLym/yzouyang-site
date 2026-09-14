@@ -6,7 +6,7 @@ WordPress (Responsive theme on Bluehost shared) → static paths. Individual pos
 |---|---|---|
 | `/` | `/` | Home |
 | `/about/` | `/` | Redirect stub |
-| `/portfolio/`, `/work/` | `/systems/` | Also `bit.ly/3GGyiXF` |
+| `/portfolio/`, `/work/`, `/systems/catalogue/` | `/systems/` | Also `bit.ly/3GGyiXF` |
 | `/perspectives/`, `/blog/` | `/notes/` | Writing corpus on `/notes/`; library JS may append `#NOTE-*` |
 | `/credentials/` | `/credentials/` | Also `bit.ly/4m4fqki` |
 | `/contact/` | `/` | Redirect stub; email lives in the library-card footer |

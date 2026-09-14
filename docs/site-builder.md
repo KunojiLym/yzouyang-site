@@ -80,7 +80,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 | `/notes/` | `build_notes` | Library shell from PUBLIC writing; Pagefind |
 | `/credentials/` | `build_credentials` | Library shell + VERIFY + Pagefind |
 | `/about/`, `/contact/` | redirect stubs | 301 → `/` |
-| `/portfolio/`, `/work/` | redirect stubs | 301 → `/systems/` |
+| `/portfolio/`, `/work/`, `/systems/catalogue/` | redirect stubs | 301 → `/systems/` |
 | `/perspectives/`, `/blog/` | redirect stubs | 301 → `/notes/` (client may append first-panel hash) |
 | `/career-journey/` | redirect stub | 301 → `/` |
 
@@ -131,7 +131,7 @@ CI rebuilds with empty `SITE_BASE_PATH` before e2e so assets and Pagefind resolv
 
 | Spec | Coverage |
 |---|---|
-| `tests/e2e/usability.spec.mjs` | Smoke on live routes; legacy redirect stubs; chrome (nav, skip-link, footer, reduced motion); home IA guardrails; library shell (systems hash, notes panel, credentials, Figma link, mobile index → panel → Back); header Pagefind; layout breakpoints |
+| `tests/e2e/usability.spec.mjs` | 29 cases × desktop/mobile (58 runs; 12 project-gated skips → **46 passed / 12 skipped**). Smoke, legacy redirect stubs, chrome, home IA guardrails, library shell, Pagefind, layout |
 | `tests/e2e/theme.spec.mjs` | Dark/light token paint without FOUC; `localStorage` theme persistence across reload; axe on themed routes |
 | `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/credentials/` (Pagefind `#search` excluded as third-party chrome) |
 | `tests/e2e/visual.spec.mjs` | Full-page screenshots for `/`, `/systems/`, `/notes/`, `/credentials/` — **non-blocking** in CI until `__snapshots__/` is committed |
