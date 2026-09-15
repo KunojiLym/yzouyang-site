@@ -391,6 +391,17 @@ main.page .library-panel-title,
   letter-spacing: 0.02em;
 }
 
+.note-kicker {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent-warm, var(--accent));
+  background: color-mix(in srgb, var(--accent-warm, var(--accent)) 12%, transparent);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .library-strip {
   flex-shrink: 0;
   border-top: 1px solid var(--line-soft);

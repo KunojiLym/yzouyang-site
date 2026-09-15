@@ -7,7 +7,7 @@
 ## Before DNS (C2a)
 
 - [ ] Offline `python scripts/preview.py` looks right
-- [ ] `python scripts/lint.py`, `python scripts/test_site_build.py`, and `npm run test:e2e` green
+- [ ] `python scripts/lint.py`, `python scripts/test_site_build.py`, `python scripts/verify_migration.py`, and `npm run test:e2e` green
 - [ ] UAT on GitHub Pages (`uat` branch deploy) signed off: https://kunojilym.github.io/yzouyang-site/
 - [ ] Promoted to `main` Pages deploy matches UAT
 - [ ] Preview serves `/`, `/systems/`, `/credentials/`, `/notes/` from PUBLIC export
@@ -45,4 +45,16 @@ Local only — never in public CI:
 python scripts/preview.py --include-drafts ../personal-content
 ```
 
-Draft rows use `visibility_policy: PRIVATE_ONLY` in `writing.yaml`.
+Draft rows use `visibility_policy: PRIVATE_ONLY` in `writing.yaml`. The builder adds a **Draft preview** kicker on those panels, sets `<meta name="robots" content="noindex">`, and marks `<html data-draft-preview="1">`.
+
+Optional UAT on GitHub Pages: push to the `uat` branch (CI sets `SITE_UAT_BUILD=1` so the deploy is noindex). Review at https://kunojilym.github.io/yzouyang-site/ before promoting `main`.
+
+## Automated migration checks
+
+After `python scripts/build.py`:
+
+```bash
+python scripts/verify_migration.py
+```
+
+Confirms 18 PUBLIC essays, no `wp-content` hotlinks in export bodies, vendored `assets/notes/`, WP slug stubs → `/notes/#NOTE-*`, and footer Blog → `/notes/`.
