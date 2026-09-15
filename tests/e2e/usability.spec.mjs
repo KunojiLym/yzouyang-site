@@ -44,11 +44,9 @@ async function assertSkipLink(page) {
   await expect(skip).toBeVisible();
 }
 
-async function assertHomeEntryGrid(page) {
-  await expect(page.locator(".home-entry-grid")).toBeVisible();
-  await expect(page.locator(".home-entry-grid").getByRole("link", { name: "Systems" })).toBeVisible();
-  await expect(page.locator(".home-entry-grid").getByRole("link", { name: "Notes" })).toBeVisible();
-  await expect(page.locator(".home-entry-grid").getByRole("link", { name: "Credentials" })).toBeVisible();
+async function assertHomeEntrance(page) {
+  await expect(page.locator(".current-index li")).toHaveCount(2);
+  await expect(page.locator(".home-competency-list .home-competency").first()).toBeVisible();
 }
 
 async function assertFooterLinks(page) {
@@ -166,14 +164,14 @@ test.describe("home", () => {
     expect(Number.parseInt(type.fontWeight, 10)).toBeGreaterThanOrEqual(600);
   });
 
-  test("current index, proof strip, entry grid, competencies", async ({ page }) => {
+  test("current index, proof strip, and competencies", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".current-index li")).toHaveCount(2);
     await expect(page.locator(".proof-strip")).toBeVisible();
     await expect(page.locator(".proof-strip li").first()).toContainText("Singapore");
-    await assertHomeEntryGrid(page);
-    await expect(page.locator(".home-competency-list .home-competency").first()).toBeVisible();
+    await assertHomeEntrance(page);
     await expect(page.getByText("Data Engineering Leadership")).toBeVisible();
+    await expect(page.locator(".home-entry-grid")).toHaveCount(0);
     await expect(page.locator("main.home-route")).toBeVisible();
     await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
   });
@@ -303,7 +301,7 @@ test.describe("layout", () => {
     await page.setViewportSize({ width: 800, height: 900 });
     await page.goto("/");
     await expect(page.locator(".entrance h1")).toBeVisible();
-    await assertHomeEntryGrid(page);
+    await expect(page.locator(".home-entry-grid")).toHaveCount(0);
     await page.goto("/systems/#SYS-01", { waitUntil: "load" });
     await expect(page.locator('.library-panel[data-record="SYS-01"].is-active')).toBeVisible();
     const columns = await page
