@@ -402,6 +402,16 @@ main.page .library-panel-title,
   text-transform: uppercase;
 }
 
+.note-body.prose {
+  min-width: 0;
+}
+
+.note-body.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 .library-strip {
   flex-shrink: 0;
   border-top: 1px solid var(--line-soft);
