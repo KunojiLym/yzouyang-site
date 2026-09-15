@@ -13,6 +13,7 @@ from collections import OrderedDict
 from datetime import date
 from html import unescape as html_unescape
 from pathlib import Path
+from urllib.parse import unquote
 
 import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
 
@@ -1162,6 +1163,7 @@ def _writing_rows(export: dict) -> list[dict]:
                 "series": raw.get("series"),
                 "start_here": bool(raw.get("start_here")),
                 "body_md": raw.get("body_md"),
+                "images": raw.get("images") or [],
                 "syndication": syndication,
                 "aliases": raw.get("aliases") or [],
                 "url": discuss_url,
@@ -1221,6 +1223,58 @@ def _note_asset_href(site: dict, note_id: str, rel_path: str) -> str:
     return with_base(site, f"/assets/notes/{note_id}/{cleaned}")
 
 
+_TOC_LINK_RE = re.compile(r"^\s*-\s*\[([^\]]+)\]\(#([^)]+)\)\s*$")
+_TOC_HEADING_RE = re.compile(r"^Table\s+[Oo]f\s+[Cc]ontents\s*$")
+
+
+def _normalize_heading_label(text: str) -> str:
+    plain = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
+    plain = re.sub(r"\*(.+?)\*", r"\1", plain)
+    plain = re.sub(r"`([^`]+)`", r"\1", plain)
+    plain = html_unescape(plain)
+    plain = plain.replace("\u00a0", " ")
+    plain = re.sub(r"\s+", " ", plain).strip().lower()
+    return plain
+
+
+def _decode_fragment(raw: str) -> str:
+    cleaned = html_unescape(str(raw or "").strip().lstrip("#"))
+    return unquote(cleaned)
+
+
+def _extract_toc_anchor_map(md: str) -> dict[str, str]:
+    """Map normalized heading labels to Medium-style fragment ids from embedded TOC."""
+    mapping: dict[str, str] = {}
+    in_toc = False
+    for raw_line in md.splitlines():
+        line = raw_line.rstrip()
+        stripped = line.strip()
+        if _TOC_HEADING_RE.match(stripped):
+            in_toc = True
+            continue
+        if not in_toc:
+            continue
+        if stripped.startswith("##"):
+            break
+        match = _TOC_LINK_RE.match(line)
+        if match:
+            label = _normalize_heading_label(match.group(1))
+            anchor = _decode_fragment(match.group(2))
+            if label and anchor:
+                mapping[label] = anchor
+            continue
+        if stripped and mapping and not stripped.startswith("-"):
+            break
+    return mapping
+
+
+def _heading_anchor_id(text: str, toc_map: dict[str, str]) -> str:
+    label = _normalize_heading_label(text)
+    if label in toc_map:
+        return toc_map[label]
+    return slugify(label)
+
+
 def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
     safe = esc(text)
     safe = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", safe)
@@ -1259,6 +1313,7 @@ def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
 def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
     if not str(md or "").strip():
         return ""
+    toc_map = _extract_toc_anchor_map(md)
     out: list[str] = []
     in_code = False
     in_list = False
@@ -1294,8 +1349,11 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
             flush_para()
             raw_level = len(heading.group(1))
             level = 3 if raw_level <= 2 else min(raw_level, 4)
+            heading_text = heading.group(2)
+            anchor_id = esc(_heading_anchor_id(heading_text, toc_map))
             out.append(
-                f"<h{level}>{_inline_markdown(heading.group(2), note_id=note_id, site=site)}</h{level}>"
+                f'<h{level} id="{anchor_id}">'
+                f"{_inline_markdown(heading_text, note_id=note_id, site=site)}</h{level}>"
             )
             continue
         if line.strip().startswith("- "):
@@ -3118,6 +3176,29 @@ def _note_index_entry(row: dict, note_id: str, *, series: str = "") -> dict:
     }
 
 
+def _note_cover_image(row: dict) -> dict | None:
+    for img in row.get("images") or []:
+        if isinstance(img, dict) and str(img.get("role") or "").lower() == "cover":
+            return img
+    return None
+
+
+def _note_cover_html(site: dict, row: dict, note_id: str) -> str:
+    cover = _note_cover_image(row)
+    if not cover:
+        return ""
+    rel = str(cover.get("path") or "").strip()
+    if not rel:
+        return ""
+    alt = esc(str(cover.get("alt") or "").strip())
+    href = esc(_note_asset_href(site, note_id, rel))
+    return (
+        f'      <figure class="note-cover">\n'
+        f'        <img src="{href}" alt="{alt}" loading="eager" />\n'
+        f"      </figure>\n"
+    )
+
+
 def _writing_note_panel_body(
     site: dict, row: dict, note_id: str,
 ) -> str:
@@ -3133,6 +3214,7 @@ def _writing_note_panel_body(
         f'      <p class="note-taxonomy meta">{" · ".join(taxonomy_bits)}</p>\n'
     )
     dek = f'      <p class="note-dek">{esc(teaser)}</p>\n' if teaser else ""
+    cover_html = _note_cover_html(site, row, note_id)
     draft_banner = ""
     if row.get("preview_draft"):
         draft_banner = '      <p class="note-kicker meta">Draft preview — not in PUBLIC export</p>\n'
@@ -3149,6 +3231,7 @@ def _writing_note_panel_body(
         f"{taxonomy_html}"
         f"{draft_banner}"
         f"{dek}"
+        f"{cover_html}"
         f"{body_html}"
         f"{links_html}"
         f"      </article>"

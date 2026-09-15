@@ -169,14 +169,18 @@
       backBtn.hidden = !activeIndexId || !isMobileLayout() || !split?.classList.contains("is-detail-open");
     }
 
+    function findAnchorInPanel(panel, requestedId) {
+      if (!panel || !requestedId) return null;
+      try {
+        return panel.querySelector(`#${CSS.escape(requestedId)}`);
+      } catch (_) {
+        return panel.querySelector(`[id="${requestedId}"]`);
+      }
+    }
+
     function scrollToAnchor(panel, anchorId) {
       if (!anchorId || !scroller || !panel) return;
-      let el = null;
-      try {
-        el = panel.querySelector(`#${CSS.escape(anchorId)}`);
-      } catch (_) {
-        el = panel.querySelector(`[id="${anchorId}"]`);
-      }
+      const el = findAnchorInPanel(panel, anchorId);
       if (!el) return;
       const scroll = () => {
         const top =
@@ -213,18 +217,22 @@
         const firstId = first?.getAttribute("data-panel-id");
         if (firstId) return resolveTarget(firstId);
       }
-      for (const panel of panels) {
-        let anchor = null;
-        try {
-          anchor = panel.querySelector(`#${CSS.escape(requestedId)}`);
-        } catch (_) {
-          anchor = panel.querySelector(`[id="${requestedId}"]`);
+      if (activeIndexId) {
+        const activePanel = panelById.get(activeIndexId);
+        if (activePanel && findAnchorInPanel(activePanel, requestedId)) {
+          return {
+            panelId: activeIndexId,
+            anchorId: requestedId,
+            indexId: activeIndexId,
+          };
         }
-        if (anchor) {
+      }
+      for (const panel of panels) {
+        if (findAnchorInPanel(panel, requestedId)) {
           return {
             panelId: panel.getAttribute("data-panel-id"),
             anchorId: requestedId,
-            indexId: requestedId,
+            indexId: panel.getAttribute("data-panel-id"),
           };
         }
       }
@@ -292,6 +300,9 @@
           showPanel(resolved);
           return;
         }
+        if (activeIndexId && panelById.has(activeIndexId)) {
+          return;
+        }
       }
       if (isMobileLayout()) {
         showOverview();
@@ -329,7 +340,18 @@
       if (event.target.closest("[data-library-back]")) {
         event.preventDefault();
         showOverview();
+        return;
       }
+      const link = event.target.closest(".note-body a[href^='#']");
+      if (!link) return;
+      const href = link.getAttribute("href") || "";
+      if (href.length < 2) return;
+      const anchorId = decodeURIComponent(href.slice(1));
+      if (!anchorId || panelById.has(anchorId)) return;
+      const panel = link.closest(".library-panel");
+      if (!panel || panel.hidden) return;
+      event.preventDefault();
+      scrollToAnchor(panel, anchorId);
     });
 
     window.addEventListener("hashchange", applyHash);

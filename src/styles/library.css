@@ -406,6 +406,18 @@ main.page .library-panel-title,
   min-width: 0;
 }
 
+.note-cover {
+  margin: 0 0 var(--space-4);
+}
+
+.note-cover img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
 .note-body.prose img {
   display: block;
   max-width: 100%;

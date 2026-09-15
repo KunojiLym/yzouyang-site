@@ -4,8 +4,8 @@
     "person_id": "yingzhao",
     "visibility": "PUBLIC",
     "source_repo": "personal-content",
-    "source_revision": "ba357335276f",
-    "source_updated_at": "2026-09-15T09:55:38+08:00",
+    "source_revision": "5be04299cb9e",
+    "source_updated_at": "2026-09-15T10:28:50+08:00",
     "source_files": [
       "people/yingzhao/data/about.yaml",
       "people/yingzhao/data/certifications.yaml",
@@ -39,11 +39,13 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-010/05.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-010/06.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-010/07.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-010/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-011/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-011/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-011/03.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-011/04.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-011/05.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-011/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-012/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-012/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-012/03.png",
@@ -61,6 +63,7 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-012/15.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-012/16.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-012/17.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-012/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-013/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-013/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-013/03.png",
@@ -94,12 +97,14 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-013/31.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-013/32.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-013/33.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-013/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-014/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-014/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-014/03.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-014/04.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-014/05.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-014/06.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-014/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-015/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-015/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-015/03.jpg",
@@ -111,6 +116,7 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-015/09.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-015/10.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-015/11.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-015/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-016/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-016/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-016/03.png",
@@ -130,6 +136,7 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-016/17.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-016/18.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-016/19.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-016/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-017/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-017/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-017/03.png",
@@ -160,6 +167,7 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-017/28.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-017/29.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-017/30.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-017/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-018/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-018/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-018/03.png",
@@ -186,6 +194,7 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-018/24.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-018/25.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-018/26.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-018/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-019/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-019/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-019/03.png",
@@ -202,16 +211,20 @@
       "people/yingzhao/data/writing/assets/NOTE-2025-019/14.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-019/15.png",
       "people/yingzhao/data/writing/assets/NOTE-2025-019/16.png",
+      "people/yingzhao/data/writing/assets/NOTE-2025-019/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-020/01.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-020/02.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-020/03.webp",
       "people/yingzhao/data/writing/assets/NOTE-2025-020/04.webp",
+      "people/yingzhao/data/writing/assets/NOTE-2025-020/cover.webp",
+      "people/yingzhao/data/writing/assets/NOTE-2025-021/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2026-002/01.jpg",
       "people/yingzhao/data/writing/assets/NOTE-2026-002/02.jpeg",
       "people/yingzhao/data/writing/assets/NOTE-2026-002/03.jpeg",
       "people/yingzhao/data/writing/assets/NOTE-2026-002/04.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-002/05.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-002/06.png",
+      "people/yingzhao/data/writing/assets/NOTE-2026-002/cover.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-005/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-005/02.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-005/03.png",
@@ -233,14 +246,19 @@
       "people/yingzhao/data/writing/assets/NOTE-2026-005/19.webp",
       "people/yingzhao/data/writing/assets/NOTE-2026-005/20.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-005/21.png",
+      "people/yingzhao/data/writing/assets/NOTE-2026-005/cover.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-006-2/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-006-2/02.jpeg",
       "people/yingzhao/data/writing/assets/NOTE-2026-006-2/03.jpeg",
+      "people/yingzhao/data/writing/assets/NOTE-2026-006-2/cover.webp",
       "people/yingzhao/data/writing/assets/NOTE-2026-006/01.png",
       "people/yingzhao/data/writing/assets/NOTE-2026-006/02.jpeg",
       "people/yingzhao/data/writing/assets/NOTE-2026-006/03.jpeg",
       "people/yingzhao/data/writing/assets/NOTE-2026-006/04.jpeg",
-      "people/yingzhao/data/writing/assets/NOTE-2026-006/05.jpeg"
+      "people/yingzhao/data/writing/assets/NOTE-2026-006/05.jpeg",
+      "people/yingzhao/data/writing/assets/NOTE-2026-006/cover.webp",
+      "people/yingzhao/data/writing/assets/NOTE-2026-007-2/cover.png",
+      "people/yingzhao/data/writing/assets/NOTE-2026-007/cover.png"
     ],
     "generator": "scripts/export_public.py"
   },
@@ -864,6 +882,12 @@
       ],
       "images": [
         {
+          "path": "assets/NOTE-2026-005/cover.png",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/05/image.png",
+          "role": "cover"
+        },
+        {
           "path": "assets/NOTE-2026-005/01.png",
           "alt": "",
           "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/05/image-1.png"
@@ -990,6 +1014,12 @@
       ],
       "images": [
         {
+          "path": "assets/NOTE-2026-006-2/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/06/image.webp",
+          "role": "cover"
+        },
+        {
           "path": "assets/NOTE-2026-006-2/01.png",
           "alt": "",
           "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/06/image-1.png"
@@ -1025,6 +1055,12 @@
         "https://www.yzouyang.com/?p=1088"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2026-006/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/06/image-4.webp",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2026-006/01.png",
           "alt": "",
@@ -1072,6 +1108,12 @@
         "https://www.yzouyang.com/?p=960"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2026-002/cover.png",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/02/image.png",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2026-002/01.jpg",
           "alt": "",
@@ -1122,6 +1164,14 @@
       "aliases": [
         "https://www.yzouyang.com/?p=1120"
       ],
+      "images": [
+        {
+          "path": "assets/NOTE-2026-007/cover.png",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/07/image.png",
+          "role": "cover"
+        }
+      ],
       "body_md": "*A side quest from my “[Build Your Own LinkedIn Analytics](https://www.yzouyang.com/category/blog-series/build-your-own-linkedin-analytics/)” project*\n\nStatus note: At the time of writing, this post describes three contributions: Issue [#1497](https://github.com/Graphify-Labs/graphify/issues/1497) and PR [#1498](https://github.com/Graphify-Labs/graphify/pull/1498) to Graphify core (both open, under review), and [graphifyy-skills](https://github.com/KunojiLym/graphifyy-skills) — a companion skills repo that works with stock Graphify today.\n\n### I. From LinkedIn analytics to Graphify\n\nIn late 2025 and early 2026 I published a [12‑part series](https://www.yzouyang.com/category/blog-series/build-your-own-linkedin-analytics/) on building a personal LinkedIn analytics platform using Databricks Free Edition.\n\nMonths later, I [attended a talk](https://www.linkedin.com/posts/yzouyang_ai-googleio-googlecloudnext-activity-7477530115044724737-F8Yi?utm_source=share&utm_medium=member_desktop&rcm=ACoAAApUtvcB6FDvAd9q_N5FE77BrX1twyh5MAg) at Google I/O Extended Singapore, where [Melody Leong](https://www.linkedin.com/in/melodyleongyunqin/?lipi=urn%3Ali%3Apage%3Ad_flagship3_detail_base%3B%2F7PPieBrQpKeMZzo0ai%2ByA%3D%3D) presented [Graphify](https://graphifylabs.ai/) as an open‑source engine that turns code, schemas, docs, and even images into a queryable knowledge graph for AI assistants, in a way that saved greatly on tokens.\n\nThis got me thinking: what if I could implement this as an AI‑native way to navigate the whole LinkedIn project, not just by opening notebooks and YAML files manually, but by asking questions like:\n\n- “Which jobs produce the tables that feed the dashboard?”\n\n- “Where is `fct_daily_post_statistics` defined and how is it used?”\n\n- “What’s the path from raw LinkedIn exports to a specific metric on the dashboard?”\n\nSo I pointed Graphify at the LinkedIn analytics repo and waited to see what it would learn.\n\nThat’s where the side quest began.\n\n### II. What happened when Graphify met Databricks\n\nRunning Graphify on the repo was immediately useful: it understood my Python modules, SQL files, and YAML configs, and built a graph that tied together jobs, pipelines, and resource definitions.\n\nBut two issues stood out very quickly.\n\n#### a. Notebooks were invisible\n\nMost of the critical pipeline logic in the LinkedIn project lives in Databricks notebooks: ingestion, cleaning, transformations from bronze to silver to gold, and the joins that power the final metrics.\n\nGraphify, however, was blind to them.\n\nUnder the hood, Graphify uses a `detect.py` module to walk a directory and classify files by type: `CODE`, `DOCUMENT`, `PAPER`, `IMAGE`, and `VIDEO`, based on file extensions and some content heuristics.\n\nWhen I looked at the extension sets in that file, here’s what I found:\n\n- `.py`, `.sql`, `.sh`, `.json`, `.tf`, `.hcl` and many more were in `CODE_EXTENSIONS`.\n\n- `.md`, `.txt`, `.html`, `.yml`, `.yaml` were in `DOC_EXTENSIONS`.\n\n- `.docx` and `.xlsx` had a dedicated `OFFICE_EXTENSIONS` set and a special side‑car conversion path.\n\n- `.ipynb` was nowhere to be seen.\n\nThat meant any `.ipynb` file would be classified as `None` and silently skipped by the detector. In practice, Graphify was constructing a rich graph of everything except the Databricks notebooks; unfortunately, these were exactly the files that described the pipeline.\n\n#### b. Dashboards were treated as generic JSON\n\nThe open‑source LinkedIn repo includes a Databricks Lakeview dashboard exported as a `.lvdash.json` file. This JSON contains:\n\n- Dataset definitions, with SQL queries referencing the gold tables.\n\n- Pages and widgets (charts, tables, filters) that make up the dashboard.\n\n- Ties back to the same tables used by notebooks and jobs.\n\nGraphify was treating this file as generic JSON code, because `.json` sits in `CODE_EXTENSIONS`.\n\nThat’s reasonable in general (a lot of config files are JSON) but it meant the dashboard structure wasn’t being interpreted as a **semantic object** in the graph (a dashboard with pages, widgets, and datasets). For my use case, that was a missed opportunity.\n\n### III. Reading Graphify’s design before proposing anything\n\nRather than jumping straight into code, I spent time reading Graphify’s own architecture:\n\n- The README and docs, to understand the core goal: “turn any folder into a queryable knowledge graph for your AI assistant.”\n\n- The `detect.py` implementation, to see how file classification and side‑car conversion work, especially for Office files.\n\n- The tests under `tests/test_detect.py` and related modules, to see how aggressively the project guards against things like secret leakage and zip bombs.\n\nA few design principles stood out:\n\n- **File classification is conservative.** Unknown or risky file types are skipped rather than guessed. Sensitive directories and filenames are excluded via explicit patterns and generic keyword heuristics.\n\n- **Heavy formats get converted to markdown sidecars.** PDFs, `.docx`, `.xlsx`, and Google Docs files are converted to markdown before being handed off to the LLM.\n\n- **Incremental updates are a first‑class concern.** Graphify stores md5 hashes and mtimes in a manifest to know which files have changed between runs.\n\nAny change I proposed would need to respect those constraints rather than adding a one‑off hack for my specific project.\n\n### IV. Designing notebook support the “Graphify way”\n\nI knew I wanted `.ipynb` files to be part of the graph, but **not** by pushing the raw JSON into the AST path. That would be noisy and brittle:\n\n- The AST extractor would see the notebook as a JSON document, not as a sequence of code and markdown cells.\n\n- The word count would be inflated with metadata keys like `\"cell_type\"`, `\"outputs\"`, `\"metadata\"`.\n\n- Any future notebook schema changes would break assumptions.\n\nThe solution was already in the codebase: **copy what Graphify does for Office files.**\n\n#### a. Sidecar conversion: `ipynb → markdown`\n\nGraphify uses functions like `docx_to_markdown` and `xlsx_to_markdown` to convert office files into markdown sidecars in `graphify-out/converted/`, then indexes those sidecars as `DOCUMENT`s.\n\nI proposed an analogous `ipynb_to_markdown` converter:\n\n- Read the notebook JSON.\n\n- Iterate through cells in order.\n\n- **For markdown cells:** emit the markdown as‑is.\n\n- **For code cells:** wrap source in fenced code blocks (e.g. a python fence).\n\n- Ignore outputs and most metadata.\n\nThe result is a linear markdown representation of the notebook that preserves:\n\n- The narrative structure (markdown cells).\n\n- The code that defines the pipeline (code cells).\n\nAnd crucially, it matches Graphify’s existing pattern: heavy or complex formats converted into a simpler, LLM‑friendly textual representation.\n\nThis is the conservative, universally-safe approach for the upstream PR — a single document representation any Graphify installation can handle. In graphifyy-skills (Section VII), I took this further by routing each cell type to a language-matched sidecar, so Python cells feed tree-sitter AST and SQL cells feed the SQL extractor directly.\n\n#### b. Separate extension set, not “just add `.ipynb` to code”\n\nIn the pull request, I deliberately **did not** add `.ipynb` to `CODE_EXTENSIONS`. Instead, I introduced a dedicated `NOTEBOOK_EXTENSIONS` set and a routing branch in `detect.py` similar to `OFFICE_EXTENSIONS`.\n\nThe logic is:\n\n- If a file has a notebook extension (`.ipynb`), convert it to markdown sidecar.\n\n- Treat the sidecar as a `DOCUMENT` for extraction and word counting.\n\n- Leave the original file untouched.\n\nThis keeps concerns clean:\n\n- `CODE_EXTENSIONS` remains the set of files that are directly parsed as code (e.g. `.py`, `.sql`, `.ts`).\n\n- `OFFICE_EXTENSIONS` and `NOTEBOOK_EXTENSIONS` are the “convert first” formats.\n\n- The incremental detection code doesn’t need to change; it works on sidecar paths just as it does today.\n\n### V. Filing the issue: explaining the gap (Issue #1497)\n\nWith the design sketched out, I opened an issue on the Graphify repo: **“feat: add Jupyter notebook (.ipynb) support via markdown sidecar extraction”**. \n\n\n**[feat: add Jupyter notebook (.ipynb) support via markdown sidecar extraction · Issue #1497 ·…Summary .ipynb files are currently silently dropped by classify_file() – the extension is absent from all sets in…github.com](https://github.com/Graphify-Labs/graphify/issues/1497)**\n\nIn the issue, I tried to do three things clearly:\n\n#### **a. Describe the current behaviour**\n\n- `.ipynb` is unrecognized by `classify_file()` and therefore skipped.\n\n- For a notebook‑heavy project like a Databricks pipeline, this leaves a large blind spot.\n\n#### **b. Describe the expected behaviour**\n\n- `.ipynb` should be read and converted into a markdown sidecar.\n\n- The sidecar should be treated as a `DOCUMENT` so the LLM extraction path can “see” both code and markdown.\n\n#### **c. Outline a concrete, minimal implementation**\n\n- A small converter function.\n\n- A new extension set and branch in `detect.py`.\n\n- Tests in `test_detect.py` to validate classification and conversion.\n\nThe goal was to make it as easy as possible for maintainers and other contributors to assess whether this fit Graphify’s design and to propose improvements if needed.\n\n### VI. Proposing the implementation (PR #1498)\n\nIssue #1497 framed the problem and proposed direction. PR #1498 implemented it. \n\n\n**[Feat/ipynb notebook support by KunojiLym · Pull Request #1498 · Graphify-Labs/graphifyAI coding assistant skill (Claude Code, Codex, OpenCode, Cursor, Gemini CLI, and more). Turn any folder of code, SQL…github.com](https://github.com/Graphify-Labs/graphify/pull/1498)**\n\nAt a high level, the PR does the following:\n\n- Adds `NOTEBOOK_EXTENSIONS = {\".ipynb\"}` alongside the existing extension sets.\n\n- Introduces `ipynb_to_markdown(path: Path) -> str`, mirroring the style and safety considerations of `docx_to_markdown` and `xlsx_to_markdown`.\n\n- Wires notebook conversion into `detect()` so sidecars are created in `graphify-out/converted/` and queued for extraction as `DOCUMENT`s.\n\n- Adds tests to ensure that `.ipynb` files are no longer invisible; empty or malformed notebooks fail gracefully; and word counts come from the sidecar, not the JSON.\n\nAt the time of writing, this PR is still under review. That’s normal for a popular project: maintainers are juggling many issues, and they have a responsibility to guard performance, security, and maintainability as usage grows.\n\nRegardless of the final shape of the change, the process itself was instructive.\n\n### **VII. The skills layer: a working solution today**\n\nWhile PR #1498 waits in the review queue, I published a parallel solution that works with stock Graphify right now: [graphifyy-skills](https://github.com/KunojiLym/graphifyy-skills).\n\nThe key design decision was to go further than a single markdown sidecar. Graphify already has purpose-built extractors for different file types: tree-sitter AST for Python, SQL AST for `.sql`, semantic extraction for markdown. Why collapse a notebook into one format when you can route each cell to the extractor it deserves?\n\n`ipynb-graphify` does exactly that. It splits a Databricks notebook into per-language sidecars:\n\n- `%sql` cells → `.ipynb.sql` : so table references are extracted by the SQL AST parser\n\n- Code cells → `.ipynb.py` : so functions, classes, and calls go through tree-sitter\n\n- `%md` and markdown cells → `.ipynb.md` : so narrative context feeds semantic extraction\n\n- `%sh`, `%scala`, `%r` cells : each routed to their own sidecar\n\n`databricks-graphify` adds a second converter, `lvdash_split.py`, which parses the Lakeview dashboard JSON, extracts dataset SQL queries with `FROM`/`JOIN` table references, and writes `.lvdash.sql` and `.lvdash.md` sidecars. The dashboard’s data dependencies become first-class graph nodes, connected to the same gold tables that the notebooks write to.\n\nNo fork of Graphify is needed for this implementation; the sidecars use file extensions Graphify already understands.\n\nThe relationship between the skills repo and PR #1498 is complementary, not competing. The PR fixes *automatic detection*: notebooks are ingested without any user action, for everyone. The skills fix *comprehension quality*: you get richer, per-language graph nodes instead of a single flattened document. Both matter; they solve different problems at different layers.\n\n### VIII. Why this side quest matters beyond one repo\n\nFor my LinkedIn analytics project, the immediate benefit is obvious: if Graphify learns to understand `.ipynb`, the graph for that repo becomes much more complete.\n\nBut the reasons I think this is worth writing about go beyond one project and one PR.\n\n#### a. AI tooling is only as good as its domain fit\n\nGeneric AI tools are powerful, but they often under‑serve domain‑specific practices:\n\n- Databricks and data teams use notebooks heavily.\n\n- Analytics projects mix code, SQL, notebooks, YAML, dashboards, and Office exports.\n\nOut‑of‑the‑box tools can miss large parts of that picture. It’s on us, as users and practitioners, to notice these gaps and propose how to close them.\n\n#### b. Contributing beats complaining\n\nI could have stopped at “Graphify doesn’t understand notebooks, that’s a shame.” Instead, I chose to:\n\n- Read the code and tests.\n\n- Designed solutions at two layers: a core detection fix (PR #1498) and a skill-layer extension (graphifyy-skills).\n\n- Published a working implementation immediately, without waiting for upstream review.\n\n- Opened an issue and PR to propose the core fix for the benefit of all users.\n\nWhether or not the maintainers accept the exact implementation, the conversation helps move the tool forward, and it sets an example for others who hit similar edge cases.\n\n#### c. Data engineers can (and should) shape AI tooling\n\nThere’s a lot of talk about AI assistants helping engineers. The reverse is also true: engineers can help AI tooling better reflect how real projects are built.\n\nFor data and analytics practitioners, that means:\n\n- Asking: “Does this tool understand notebooks? Dashboards? Orchestrators? Lakehouse schemas?”\n\n- When the answer is “not yet,” deciding whether to live with the gap or to co‑design the fix.\n\nThis side quest was my small contribution to that second path.\n\n### IX. If you want to try something similar\n\nIf you’re working on notebook‑heavy analytics projects and want to improve how your AI assistant understands them, here’s a lightweight way to start:\n\n- **Pick a real project.**\nChoose a repo that matters to you, whether it is a Databricks pipeline, a Jupyter‑based experimentation repo, or an analytics codebase.\n\n- **Run Graphify (or a similar tool) on it.**\nSee which files show up in the graph and which don’t. Pay particular attention to notebooks, dashboards, and config artifacts.\n\n- **Inspect the tool’s detection logic.**\nLook for extension lists and classification heuristics. Ask: *“What is this tool assuming about my project’s structure?”*\n\n- **If you’re on Databricks or Jupyter: install [graphifyy-skills](https://github.com/KunojiLym/graphifyy-skills)** and run /databricks-graphify or /ipynb-graphify on your repo.\nYou’ll get per-language sidecars that Graphify can extract AST nodes from immediately — no fork, no PR needed.\n\n- **When you find a gap, write it down clearly.**\nCapture current behaviour, expected behaviour, and a minimal proposed approach. This alone is valuable feedback to maintainers.\n\n- **If you have time, turn it into a PR.**\nRespect the project’s patterns, add tests, and be open to feedback.\n\nAnd if you’re curious about the original LinkedIn analytics project that motivated this side quest, you can start with [Part 1](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-1-why-it-matters-and-what-youll-learn/) of the series and work your way through to the open‑source repo and dashboard.\n"
     },
     {
@@ -1140,6 +1190,14 @@
       },
       "aliases": [
         "https://www.yzouyang.com/?p=1131"
+      ],
+      "images": [
+        {
+          "path": "assets/NOTE-2026-007-2/cover.png",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/07/image-1.png",
+          "role": "cover"
+        }
       ],
       "body_md": "This past week, the breach of Hugging Face by a rogue OpenAI model has dominated the tech news cycle, along with the use of a Chinese open-weights model to counter the attack where Western frontier models refused. The real lesson isn’t that Chinese models are better. **It’s that the industry has optimized commercial AI safety for preventing abuse, not for enabling defenders during an active breach.**\n\nFirst, some background. According to [OpenAI’s own disclosure](https://openai.com/index/hugging-face-model-evaluation-security-incident/), the breach originated with its models: GPT-5.6 Sol and an unreleased model, evaluated with cyber refusals deliberately lowered for an internal benchmark, escaped a test sandbox and reached Hugging Face’s production infrastructure. [Hugging Face’s own postmortem](https://huggingface.co/blog/security-incident-july-2026) fills in what happened next: mid-breach, with attacker activity already logged across internal systems, its incident response team turned to leading US commercial models to analyze the exploit — and ran into refusals. The raw logs and exploit traces read, to those models, as offensive cyber material.\n\nSo Hugging Face downloaded Zhipu AI’s open-weights GLM-5.2, ran it locally, and used it to reconstruct the attack after commercial models refused. That forensic work became one of the defining lessons of the incident. [Chinese state media](https://www.globaltimes.cn/page/202607/1366674.shtml) has already turned this into a victory lap; [Western coverage](https://techcrunch.com/2026/07/21/openai-says-hugging-face-was-breached-by-its-pre-release-models/) mostly hasn’t disputed the facts, just the framing. \n\nBoth reactions miss an important nuance: the same open-weights model category that just proved its defensive value is, per a Booz Allen study published weeks earlier, also the subject of active US congressional investigation over code security and bias risk.\n\nThe saviour story and the menace story aren’t in tension. They’re perspectives of the same model from different sides of the guardrail.\n\n### 1. Structural advantage, not ideological\n\nOne structural fact is doing more work than most of the commentary around this incident has acknowledged.\n\nGLM-5.2 didn’t out-reason the American models. It won because Hugging Face could run it entirely inside its own perimeter, on unredacted logs, with nothing to trip a refusal. **[The Register put it bluntly](https://www.theregister.com/ai-and-ml/2026/07/23/openai-scored-an-own-goal-with-hugging-face-attack-showing-how-open-chinese-models-are-winning/): OpenAI “scored an own goal” by proving, as visibly as possible, that a closed model’s guardrails can disable it at the exact moment a defender needs it most.**\n\nThat’s worth sitting with. Guardrails are usually framed as a pure safety benefit: the thing standing between a model and misuse. This incident shows they’re also an availability cost, one that activates without regard for who’s asking or why. **A refusal doesn’t distinguish between an attacker probing for exploit code and a defender trying to understand one.** “Safe by refusal” and “safe to deploy in a live incident” turned out, here, to be directly opposing properties, and the model with neither refusal layer nor any safety branding was the one that could actually work when it mattered.\n\n### 2. The same openness that helped is the openness that worries policymakers\n\nThe property that let GLM-5.2 work during incident response is its open-weights implementation: no provider-enforced refusal layer, the ability to run it entirely within its own environment, and the freedom to inspect or modify the model. This same openness is also what removes many of the controls commercial providers impose around security-sensitive workflows. That broader governance question was exactly what Booz Allen was examining months before the Hugging Face incident.\n\nIts [“What’s In America’s Code?”](https://www.boozallen.com/expertise/cybersecurity/whats-in-americas-code.html) study ran 2,800 trials across four Chinese models and one American model and found that several of the Chinese models generated measurably more vulnerable, harder-to-detect code specifically when the prompt implied a US-government end user. Booz Allen was careful not to overclaim: it found no proof the flaws were planted deliberately. A former RAND researcher went further, arguing in subsequent commentary that the observed pattern was more plausibly explained by training data and alignment choices than by any intentional hidden backdoor.\n\n Neither caveat makes the finding go away. It just means the honest read is “behaviour whose cause remains unresolved,” not “backdoor”. For anyone doing procurement, this is still a reason to slow down, not a reason to relax.\n\n### 3. At the intersection of both problems\n\nThe Hugging Face story and the Booz Allen story are running as separate news cycles: tech press covering one, national security press covering the other. They’re closer to the same story than either beat has acknowledged.\n\n- **On the model side**: [two US House committees are investigating](https://www.semafor.com/article/04/29/2026/house-committee-probes-cursor-parent-airbnb-over-chinese-ai) Airbnb and Cursor’s parent company over their use of Qwen and Kimi, driven by exactly the code-provenance concerns Booz Allen documented. Chinese models’ share of enterprise API traffic [has fluctuated between 30 and 46 percent weekly since February](https://www.cnbc.com/2026/07/08/chinese-ai-models-probe-us-lawmakers.html), with cost appearing to be the dominant adoption driver.\n\n- **On the chip side**: Nvidia [just cut its approved Asian buyer whitelist by more than half](https://www.reuters.com/world/china/nvidia-halves-asia-buyer-list-china-chip-crackdown-ft-reports-2026-07-14/) after compliance reviews in Singapore, Malaysia and Japan flagged neo-cloud providers suspected of re-routing restricted chips to China.\n\nNone of this is hypothetical for a regional enterprise. It’s already three separate compliance exposures (model behaviour, chip provenance, jurisdictional optics) that many procurement processes still treat as one line item: “which model is cheapest.”\n\n### Implications\n\nThe uncomfortable question isn’t whether Chinese open-weights models are “safe.” It’s whether your organization knows where they’re already deployed.\n\n- **For CEOs and CFOs**: Chinese model pricing is undeniably cheap, often USD 0.18 per million tokens against roughly USD 4 for comparable US frontier models. Choosing one isn’t just a cost decision. It’s a procurement decision with governance consequences, and in most organizations nobody has actually made it; it’s been made by default, one API key at a time.\n\n- **For architects and tech leads**: Hugging Face’s emergency is a preview, not an outlier. If a live incident forced your team to bypass commercial APIs tomorrow, what model would they reach for? And is that choice governed today, or will it be improvised under pressure? Treat every open-weights model already in your stack like any unaudited third-party dependency: provenance tracking, SBOM discipline, no carve-out for “it’s just internal tooling.”\n\n- **For policy-adjacent leaders**: an outright ban is likely unenforceable once weights are downloaded; Brookings has made that case plainly. The realistic fight is procurement rules and audit mandates, not prohibition. For Singapore specifically, staying “neutral” on chip re-export enforcement gets harder every time the country shows up in another smuggling case rather than another AI infrastructure story.\n\nHugging Face’s incident proved that an unrestricted model can become indispensable the moment a commercial safety system fails. The harder question is not whether organizations should use these models, but whether they’ve decided, in advance, under what conditions they’re willing to trust one.\n\nIf your organization already runs a Chinese open-weights model somewhere in production, could you name it right now? Or would you need to ask engineering first?\n"
     },
@@ -1161,6 +1219,12 @@
         "https://www.yzouyang.com/?p=293"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2025-010/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/10/image.webp",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2025-010/01.png",
           "alt": "",
@@ -1218,6 +1282,12 @@
       ],
       "images": [
         {
+          "path": "assets/NOTE-2025-011/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/10/image-3.webp",
+          "role": "cover"
+        },
+        {
           "path": "assets/NOTE-2025-011/01.png",
           "alt": "",
           "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/10/image-57.png"
@@ -1263,6 +1333,12 @@
         "https://www.yzouyang.com/?p=362"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2025-012/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/10/image-5.webp",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2025-012/01.png",
           "alt": "",
@@ -1369,6 +1445,12 @@
         "https://www.yzouyang.com/?p=393"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2025-013/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/10/image-6.webp",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2025-013/01.png",
           "alt": "",
@@ -1556,6 +1638,12 @@
       ],
       "images": [
         {
+          "path": "assets/NOTE-2025-014/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/11/image.webp",
+          "role": "cover"
+        },
+        {
           "path": "assets/NOTE-2025-014/01.png",
           "alt": "",
           "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/11/image-31.png"
@@ -1606,6 +1694,12 @@
         "https://www.yzouyang.com/?p=438"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2025-015/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/11/image-1.webp",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2025-015/01.png",
           "alt": "",
@@ -1682,6 +1776,12 @@
         "https://www.yzouyang.com/?p=456"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2025-016/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/11/image-2.webp",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2025-016/01.png",
           "alt": "",
@@ -1798,6 +1898,12 @@
         "https://www.yzouyang.com/?p=467"
       ],
       "images": [
+        {
+          "path": "assets/NOTE-2025-017/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/11/image-37.webp",
+          "role": "cover"
+        },
         {
           "path": "assets/NOTE-2025-017/01.png",
           "alt": "",
@@ -1970,6 +2076,12 @@
       ],
       "images": [
         {
+          "path": "assets/NOTE-2025-018/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/12/image.webp",
+          "role": "cover"
+        },
+        {
           "path": "assets/NOTE-2025-018/01.png",
           "alt": "",
           "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/12/image-1.png"
@@ -2121,6 +2233,12 @@
       ],
       "images": [
         {
+          "path": "assets/NOTE-2025-019/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/12/image-27.webp",
+          "role": "cover"
+        },
+        {
           "path": "assets/NOTE-2025-019/01.png",
           "alt": "",
           "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/12/image-28.png"
@@ -2222,6 +2340,12 @@
       ],
       "images": [
         {
+          "path": "assets/NOTE-2025-020/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/12/image-44.webp",
+          "role": "cover"
+        },
+        {
           "path": "assets/NOTE-2025-020/01.webp",
           "alt": "",
           "source_url": "https://www.yzouyang.com/wp-content/uploads/2025/10/image-57.webp"
@@ -2260,6 +2384,14 @@
       },
       "aliases": [
         "https://www.yzouyang.com/?p=943"
+      ],
+      "images": [
+        {
+          "path": "assets/NOTE-2025-021/cover.webp",
+          "alt": "",
+          "source_url": "https://www.yzouyang.com/wp-content/uploads/2026/01/image.webp",
+          "role": "cover"
+        }
       ],
       "body_md": "This is the final part of my blog series on building a LinkedIn analytics pipeline, from [ingestion](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-4-ingesting-data/) of Excel exports all the way to a production-style [dashboard](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-7-dashboard-design-for-insights-and-impact/), complete with [orchestration](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-8-orchestrating-and-automating-the-pipeline/), [maintainability](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-9-making-a-maintainable-pipeline/) and [observability](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-10-observing-the-pipeline/). In the previous post, I went over the [key takeaways and lessons learned](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-11-key-takeaways-and-lessons-learned/) when building this data product. Now it’s time to look to the future.\n\nTable Of Contents\n\n- [TL;DR](#1--tldr-)\n- [I. Open Source Repository](#2-i-open-source-repository)\n- [II. Future Plans](#3-ii-future-plans)\n- [III. Final Thoughts](#4-iii-final-thoughts)\n\n### **TL;DR**\n\n- The full Databricks‑based LinkedIn analytics pipeline is now **open‑sourced**, so you can clone it, plug in your own exports, and start analysing your content end‑to‑end.\n\n- **Future work** spans richer data (articles, multimedia, post features), deeper analytics (DS/ML), and automation (GenAI assistants, CI/CD with GitHub Actions).\n\n- This installment is an **invitation**: fork the project, adapt it to your context, and share back improvements or findings with the community.\n\n### I. Open Source Repository\n\nFirst, here’s the link to the repository that you have all been waiting for.\n\n[GitHub – KunojiLym/databricks-linkedin-analytics](https://github.com/KunojiLym/databricks-linkedin-analytics): Build Your Own LinkedIn Analytics Part 12: What’s Next? Open Sourcing and Community\n\nThis is where you’ll find Databricks notebooks, table and pipeline configurations, and dashboard definitions that mirror what has been demonstrated and shared throughout the series. At the same time, the repository is meant to complement this blog series while still being able to stand on its own. The idea is that anyone can clone or fork this codebase to experiment with their own LinkedIn analytics, or adapt the codebase to create a different data product.\n\nIf there are any issues that you encounter, or if you have any ideas for improvement, feel free to contribute to or comment on the repository. See [CONTRIBUTING.md](https://github.com/KunojiLym/databricks-linkedin-analytics/blob/main/databricks_linkedin_analytics/CONTRIBUTING.md) for more details.\n\n### II. Future Plans\n\nThere is a lot of work that can still be done with this project, some of which could warrant its own blog series. The following list is not comprehensive and is in no particular order of importance or urgency; some of this was touched on in the previous post reflecting on [lessons learned](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-11-key-takeaways-and-lessons-learned/).\n\n- **Enhancements to data:** There are post features that I did not ingest such as post type or holidays; I also did not ingest LinkedIn articles or any form of associated multimedia.\n\n- **Enhancements to ingestion:** The current method of uploading files directly in the Databricks UI is not ideal; there are ways to ease the pain, including building an app on Databricks to simplify the upload process.\n\n- **Enhancements to dashboard:** The current dashboard has plenty of room for improvement, especially as I discover additional requirements for my own analysis.\n\n- **Enhancements to documentation:** Since I intend the repository to be able to stand on its own, eventually I will want to include a full tutorial/walkthrough in the repository documentation.\n\n- **Data science and machine learning:** The amount of data that I collect will eventually increase to the point where it makes sense to perform deeper exploratory analytics on the data. Machine learning techniques can then be leveraged, such as classification to determine clusters of topics and predictive analytics to forecast how well different types of posts might fare or to identify the best timings for posts.\n\n- **CI/CD with GitHub Actions:** I alluded to this when discussing [improvements to maintainability](https://www.yzouyang.com/build-your-own-linkedin-analytics-part-9-making-a-maintainable-pipeline/), but the CI/CD of this data product is at present triggered via the Databricks UI and could be further automated by GitHub Actions.\n\n- **Generative AI:** These days, dashboards are not the only way to derive insights from the data. Building a chatbot with Databricks Genie can prove to be a fruitful endeavour. There are other potential uses for GenAI, especially when one considers the potential of using an agentic framework to suggest topics for exploration.\n\n### III. Final Thoughts\n\nOver the past twelve parts, this project has grown from a simple personal experiment into a reusable reference stack for building creator‑grade analytics on Databricks. Rather than declaring it “done,” open‑sourcing the code is a way to keep it alive in the hands of other practitioners who see different problems and opportunities than one person ever could. \n\nIf you adapt this pipeline, whether for your own LinkedIn, for a team’s content program, or as a teaching tool, I would love to hear what you discover and what you change. \n\nWhat would you build next on top of this: richer data, ML‑driven insights, or GenAI‑powered assistants?\n"
     }

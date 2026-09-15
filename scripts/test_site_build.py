@@ -12,8 +12,10 @@ from pathlib import Path
 from build import (
     _beat_value_html,
     _inline_markdown,
+    _markdown_to_html,
     _note_asset_href,
     _note_index_title,
+    _writing_note_panel_body,
     figma_embed_html,
     normalize_base,
     resolve_enterprise_overlay,
@@ -181,11 +183,77 @@ def assert_note_asset_href() -> None:
         fail(f"image query string lost a single &amp; escape: {html}")
 
 
+def assert_note_heading_anchors() -> None:
+    site = {"base_path": ""}
+    md = """Table Of Contents
+
+- [TL;DR](#1-tldr)
+- [I. Setting up Databricks Free Edition account](#2-i-setting-up-databricks-free-edition-account)
+
+## TL;DR
+
+Summary.
+
+## I. Setting up Databricks Free Edition account
+
+Body.
+"""
+    html = _markdown_to_html(md, note_id="NOTE-2025-012", site=site)
+    if 'id="1-tldr"' not in html:
+        fail("TOC heading must render Medium-style id on matching h3")
+    if 'id="2-i-setting-up-databricks-free-edition-account"' not in html:
+        fail("TOC heading must map roman-numeral section to Medium anchor id")
+    if 'href="#1-tldr"' not in html:
+        fail("in-note TOC links must stay as fragment hrefs")
+    plain = _markdown_to_html("## Fallback heading\n", note_id="NOTE-x", site=site)
+    if 'id="fallback-heading"' not in plain:
+        fail("headings without TOC must slugify to stable ids")
+
+
+def assert_note_cover_html() -> None:
+    site = {"base_path": ""}
+    row = {
+        "title": "Example",
+        "images": [
+            {
+                "path": "assets/NOTE-2025-012/cover.webp",
+                "alt": "Databricks architecture overview",
+                "role": "cover",
+            }
+        ],
+    }
+    html = _writing_note_panel_body(site, row, "NOTE-2025-012")
+    if 'class="note-cover"' not in html:
+        fail("writing panel must render cover image when images[] has role=cover")
+    if 'src="/assets/notes/NOTE-2025-012/cover.webp"' not in html:
+        fail("cover image must map to vendored /assets/notes/ path")
+
+
+def assert_writing_rows_preserve_images() -> None:
+    export = {
+        "writing": [
+            {
+                "id": "NOTE-2026-007-2",
+                "title": "Example",
+                "images": [{"path": "assets/NOTE-2026-007-2/cover.png", "role": "cover"}],
+            }
+        ]
+    }
+    from build import _writing_rows
+
+    row = _writing_rows(export)[0]
+    if not row.get("images"):
+        fail("_writing_rows must preserve export images metadata for cover rendering")
+
+
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
     assert_evidence_href_https_only()
     assert_note_asset_href()
+    assert_note_heading_anchors()
+    assert_note_cover_html()
+    assert_writing_rows_preserve_images()
 
     site = resolve_site_base(json.loads((DATA / "site.json").read_text(encoding="utf-8")))
     bitly = str((site.get("external") or {}).get("bitly_hub") or "")
