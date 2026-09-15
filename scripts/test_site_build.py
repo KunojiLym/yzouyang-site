@@ -13,6 +13,7 @@ from build import (
     _beat_value_html,
     _inline_markdown,
     _note_asset_href,
+    _note_index_title,
     figma_embed_html,
     normalize_base,
     resolve_enterprise_overlay,
@@ -248,8 +249,8 @@ def main() -> None:
         fail("home search must live in the header for instant access")
     if 'id="catalogue-search"' in home:
         fail("home must not bury catalogue search at page bottom")
-    if not has_html_class(home, "home-entry-grid"):
-        fail("home missing library entry grid")
+    if has_html_class(home, "home-entry-grid"):
+        fail("home must not duplicate header nav with entry grid cards")
     if has_html_class(home, "home-featured-systems"):
         fail("home must not ship scroll plates (use entry grid + tab shells)")
     if has_html_class(home, "home-featured-notes"):
@@ -275,36 +276,44 @@ def main() -> None:
     if 'class="proof-strip"' not in home:
         fail("home missing proof-strip")
     if 'class="cta-row"' in home:
-        fail("home must not ship cta-row (Systems is in the entry grid; contact is in footer)")
-    hero_before_grid = home.split("home-entry-grid", 1)[0]
-    if "View systems" in hero_before_grid:
-        fail("home hero must not duplicate Systems button before the entry grid")
-    if href_attr(site, "/contact/") in hero_before_grid:
+        fail("home must not ship cta-row (catalogue routes live in header nav; contact is in footer)")
+    hero_before_proof = home.split("proof-strip", 1)[0]
+    if "View systems" in hero_before_proof:
+        fail("home hero must not duplicate Systems button")
+    if href_attr(site, "/contact/") in hero_before_proof:
         fail("home hero must not ship Connect button (contact is in footer)")
-    if "Specialist" in hero_before_grid:
+    if "Specialist" in hero_before_proof:
         fail("entrance must not use vague Specialist positioning")
-    if "CTO" in hero_before_grid or "CDAO" in hero_before_grid:
+    if "CTO" in hero_before_proof or "CDAO" in hero_before_proof:
         fail("entrance must not claim CTO/CDAO")
     if "Building intelligible systems" not in home:
         fail("home entrance must use thesis headline")
+    if "cost-intelligence platforms" not in home:
+        fail("home lede must name what is shipped, not restating the thesis")
+    if "The durable part of a platform is not the stack" not in home:
+        fail("home philosophy must not replay the lede")
+    if "bridging the gap" in home:
+        fail("home must not keep the legacy philosophy restatement")
     if 'class="portrait-chip"' in home:
         fail("home must not use hero portrait-chip")
     if href_attr(site, "/career-journey/") in home:
         fail("home must not link to removed Career Journey route")
     if href_attr(site, "/credentials/") not in home:
-        fail("home entry grid must link to credentials")
-    if href_attr(site, "/about/") in home.split("home-entry-grid", 1)[-1]:
-        fail("home entry grid must not link to removed Profile route")
+        fail("home must link to credentials via header or current index")
+    if href_attr(site, "/about/") in home.split("proof-strip", 1)[-1]:
+        fail("home footer area must not link to removed Profile route")
     if 'class="home-philosophy"' not in home and 'class="philosophy home-philosophy"' not in home:
         fail("home must surface philosophy blockquote")
     if 'class="home-competencies"' not in home:
-        fail("home must surface core competencies section")
+        fail("home must surface core competencies in the entrance")
     if 'class="home-competency-list"' not in home:
         fail("home competencies must use editorial list markup")
+    if not has_html_class(home, "home-competency-card"):
+        fail("home competencies must use compact card layout")
     if "Data Engineering Leadership" not in home:
         fail("home competencies must include export competency titles")
-    if href_attr(site, "/notes/") not in home:
-        fail("home entry grid must link to notes")
+    if f"{with_base(site, '/notes/')}#NOTE-" not in home:
+        fail("home current-index must link into notes catalogue records")
     if "folio-toolbar" in home:
         fail("home must not ship an inert folio-toolbar")
     if 'class="operating-themes"' in home:
@@ -786,13 +795,24 @@ def main() -> None:
         fail("notes page missing Medium writing links")
     if "notes-entry" not in notes:
         fail("notes page must render per-note entry panels")
+    if "Publication index with stable NOTE-* catalogue IDs" in notes:
+        fail("notes page must not show legacy publication index lede")
+    if 'class="library-index-meta"' not in notes:
+        fail("notes index entries should show publication date as meta")
+    if "Part 1: How AI is Reshaping" not in notes:
+        fail("notes series index should show part titles without repeating series name")
     note_entry_bodies = re.findall(
         r'<article class="notes-entry">([\s\S]*?)</article>', notes
     )
     if any("<h2" in body for body in note_entry_bodies):
         fail("notes library panels must not duplicate titles inside entry body")
-    if "grouped by category" not in notes:
-        fail("notes page missing category/timeline lede")
+
+    series_title = _note_index_title(
+        {"title": "The AI Disruption Part 1: How AI is Reshaping Work"},
+        series="The AI Disruption",
+    )
+    if not series_title.startswith("Part 1:"):
+        fail("_note_index_title must strip repeated series prefix from index labels")
 
     if not (DIST / "perspectives" / "index.html").is_file():
         fail("perspectives/index.html redirect missing")

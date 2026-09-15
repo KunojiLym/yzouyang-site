@@ -505,6 +505,7 @@ def library_index_html(
             if not panel_id:
                 continue
             kids = node.get("children") or []
+            meta = str(node.get("meta") or node.get("subtitle") or "").strip()
             child_html = "\n" + render_list(kids, nested=True) if kids else ""
             if kids:
                 lines.append(
@@ -514,10 +515,15 @@ def library_index_html(
                     "            </li>"
                 )
             else:
+                meta_html = (
+                    f'\n                <span class="library-index-meta">{esc(meta)}</span>'
+                    if meta
+                    else ""
+                )
                 lines.append(
                     f'            <li>\n'
                     f'              <button type="button" class="library-index-trigger" data-panel-id="{esc(panel_id)}">\n'
-                    f'                <span class="library-index-text">{esc(text)}</span>\n'
+                    f'                <span class="library-index-text">{esc(text)}</span>{meta_html}\n'
                     f"              </button>\n"
                     "            </li>"
                 )
@@ -2278,28 +2284,6 @@ def _credentials_teaser_html(site: dict, export: dict) -> str:
     )
 
 
-def _home_entry_grid_html(site: dict) -> str:
-    routes = (
-        ("Systems", "/systems/", "Case studies and architecture records"),
-        ("Notes", "/notes/", "Publication index with NOTE-* IDs"),
-        ("Credentials", "/credentials/", "Certifications and qualifications"),
-    )
-    cards: list[str] = []
-    for label, path, desc in routes:
-        href = esc(with_base(site, path))
-        cards.append(
-            f'        <a class="home-entry-card" href="{href}">\n'
-            f'          <span class="home-entry-label">{esc(label)}</span>\n'
-            f'          <span class="home-entry-desc">{esc(desc)}</span>\n'
-            f"        </a>"
-        )
-    return (
-        '        <nav class="home-entry-grid" aria-label="Explore the library">\n'
-        + "\n".join(cards)
-        + "\n        </nav>"
-    )
-
-
 def build_home(site: dict, export: dict) -> str:
     person = site["person"]
     location = str(person.get("location") or "").strip()
@@ -2354,23 +2338,21 @@ def build_home(site: dict, export: dict) -> str:
     thesis = esc(str(person.get("headline") or "").strip())
     lede = esc(str(person.get("tagline") or "").strip())
     current_html = _current_index_html(site, export)
-    entry_grid = _home_entry_grid_html(site)
     philosophy_html = _philosophy_block_html(_about_data(site, export), home=True)
+    competencies_html = _home_competencies_html(site, export)
     hero = f"""    <section id="entrance" class="entrance hero home-hero" aria-labelledby="entrance-heading">
 {entrance_img}
       <div class="entrance-copy hero-copy">
 {catalog_html}        <h1 id="entrance-heading">{thesis}</h1>
         <p class="lede">{lede}</p>
 {current_html}
-{entry_grid}
-{philosophy_html}{proof_html}
+{philosophy_html}{competencies_html}{proof_html}
       </div>
     </section>
 """
     return (
         '    <div class="home-shell">\n'
         f"{hero}"
-        f"{_home_competencies_html(site, export)}"
         f"{footer_html(site, compact=True)}"
         "    </div>"
     )
@@ -2392,7 +2374,7 @@ def _home_competency_item_html(row: dict) -> str:
         else ""
     )
     return (
-        f'      <li class="home-competency">\n'
+        f'      <li class="home-competency home-competency-card">\n'
         f"{title_html}"
         f'        <p class="home-competency-body">{body}</p>\n'
         f"      </li>"
@@ -2408,19 +2390,19 @@ def _home_competencies_html(site: dict, export: dict) -> str:
     if not items:
         for bullet in (site.get("about") or {}).get("bullets") or []:
             items.append(
-                '      <li class="home-competency">\n'
+                '      <li class="home-competency home-competency-card">\n'
                 f'        <p class="home-competency-body">{esc(bullet)}</p>\n'
                 "      </li>"
             )
     if not items:
         return ""
     return (
-        '    <section class="home-competencies" aria-labelledby="home-competencies-heading">\n'
-        '      <h2 id="home-competencies-heading" class="home-competencies-label">Core competencies</h2>\n'
-        '      <ul class="home-competency-list">\n'
+        '        <div class="home-competencies" aria-labelledby="home-competencies-heading">\n'
+        '          <h2 id="home-competencies-heading" class="home-competencies-label">Core competencies</h2>\n'
+        '          <ul class="home-competency-list">\n'
         + "\n".join(items)
-        + "\n      </ul>\n"
-        "    </section>\n"
+        + "\n          </ul>\n"
+        "        </div>\n"
     )
 
 
@@ -3087,18 +3069,30 @@ def _notes_category_order(site: dict, categories: set[str]) -> list[str]:
     return ordered
 
 
-def _note_index_label(row: dict, note_id: str) -> str:
-    date_s = str(row.get("date") or "").strip()
+def _note_index_title(row: dict, *, series: str = "") -> str:
     title = str(row.get("title") or "").strip()
-    if len(title) > 48:
-        title = title[:45].rstrip() + "…"
-    if date_s and title:
-        return f"{date_s} · {title}"
-    return title or note_id
+    prefix = series.strip()
+    if prefix and title.lower().startswith(prefix.lower()):
+        rest = title[len(prefix) :].lstrip(" :–—-")
+        if rest:
+            title = rest
+    max_len = 72 if prefix else 56
+    if len(title) > max_len:
+        title = title[: max_len - 1].rstrip() + "…"
+    return title or str(row.get("id") or "").strip()
+
+
+def _note_index_entry(row: dict, note_id: str, *, series: str = "") -> dict:
+    return {
+        "id": note_id,
+        "label": _note_index_title(row, series=series),
+        "meta": str(row.get("date") or "").strip(),
+        "children": [],
+    }
 
 
 def _writing_note_panel_body(
-    site: dict, row: dict, note_id: str, *, lede_html: str = ""
+    site: dict, row: dict, note_id: str,
 ) -> str:
     date_s = esc(str(row.get("date") or ""))
     category = esc(_note_category(row))
@@ -3123,7 +3117,6 @@ def _writing_note_panel_body(
             body_html = f'      <div class="note-body prose">{rendered}</div>\n'
     links_html = _writing_links_html(site, row)
     return (
-        f"{lede_html}"
         f'      <article class="notes-entry">\n'
         f'        <p class="catalogue-line meta">{meta}</p>\n'
         f"{taxonomy_html}"
@@ -3141,28 +3134,22 @@ def _append_note_panel(
     row: dict,
     note_id: str,
     panels: list[str],
-    lede_html: str,
 ) -> None:
     heading = str(row.get("title") or note_id).strip()
     panels.append(
         library_panel_html(
             note_id,
             esc(heading),
-            _writing_note_panel_body(site, row, note_id, lede_html=lede_html),
+            _writing_note_panel_body(site, row, note_id),
             level="h2",
         )
     )
 
 
 def build_perspectives(site: dict, export: dict) -> str:
-    """Publication index — NOTE-* entries grouped by category, ordered by date."""
+    """Notes library — NOTE-* entries grouped by category, ordered by date."""
     rows = _writing_rows(export)
     assigned = _unique_note_catalog_ids(rows)
-    lede_html = (
-        "      <p class=\"page-lede\">Publication index with stable NOTE-* catalogue IDs — "
-        "grouped by category, ordered by date within each topic. "
-        "Essay bodies are on-site; Medium and LinkedIn remain live syndication copies.</p>\n"
-    )
 
     by_category: dict[str, list[tuple[dict, str]]] = {}
     for row, note_id in assigned:
@@ -3170,7 +3157,6 @@ def build_perspectives(site: dict, export: dict) -> str:
 
     toc: list[dict] = []
     panels: list[str] = []
-    first_panel = True
 
     for category in _notes_category_order(site, set(by_category)):
         items = by_category.get(category) or []
@@ -3212,41 +3198,25 @@ def build_perspectives(site: dict, export: dict) -> str:
                     "children": [],
                 }
                 for row, note_id in group_items:
-                    panel_lede = lede_html if first_panel else ""
-                    first_panel = False
                     _append_note_panel(
                         site,
                         row=row,
                         note_id=note_id,
                         panels=panels,
-                        lede_html=panel_lede,
                     )
                     series_node["children"].append(
-                        {
-                            "id": note_id,
-                            "label": _note_index_label(row, note_id),
-                            "children": [],
-                        }
+                        _note_index_entry(row, note_id, series=series)
                     )
                 cat_node["children"].append(series_node)
             else:
                 row, note_id = group_items[0]
-                panel_lede = lede_html if first_panel else ""
-                first_panel = False
                 _append_note_panel(
                     site,
                     row=row,
                     note_id=note_id,
                     panels=panels,
-                    lede_html=panel_lede,
                 )
-                cat_node["children"].append(
-                    {
-                        "id": note_id,
-                        "label": _note_index_label(row, note_id),
-                        "children": [],
-                    }
-                )
+                cat_node["children"].append(_note_index_entry(row, note_id))
 
         toc.append(cat_node)
 
