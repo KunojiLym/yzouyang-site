@@ -91,6 +91,12 @@ def main() -> None:
         synd = row.get("syndication")
         if not isinstance(synd, dict) or not (synd.get("medium") or synd.get("linkedin")):
             fail(f"export.writing {row.get('id')} needs syndication.medium or syndication.linkedin")
+        body_md = str(row.get("body_md") or "")
+        if "wp-content/uploads" in body_md:
+            fail(
+                f"export.writing {row.get('id')} still hotlinks wp-content — "
+                "run import_writing_bodies.py localization + re-export"
+            )
 
     if site.get("writing_highlights") is not None:
         fail("site.writing_highlights must be removed — writing SoT is export.writing")

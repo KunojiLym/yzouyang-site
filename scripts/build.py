@@ -49,6 +49,33 @@ def esc(value: object) -> str:
     )
 
 
+def _env_flag(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _draft_preview_mode() -> bool:
+    return bool(os.environ.get("PREVIEW_INCLUDE_DRAFTS"))
+
+
+def _uat_build_mode() -> bool:
+    return _env_flag("SITE_UAT_BUILD")
+
+
+def _robots_noindex_head() -> str:
+    if _draft_preview_mode() or _uat_build_mode():
+        return '  <meta name="robots" content="noindex, nofollow" />\n'
+    return ""
+
+
+def _html_root_attrs() -> str:
+    attrs = 'lang="en" data-theme="dark"'
+    if _draft_preview_mode():
+        attrs += ' data-draft-preview="1"'
+    if _uat_build_mode():
+        attrs += ' data-uat-build="1"'
+    return attrs
+
+
 def slugify(text: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", text.lower().strip())
     return s.strip("-") or "section"
@@ -894,13 +921,13 @@ def layout(
         else ""
     )
     return f"""<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html {_html_root_attrs()}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{page_title}</title>
   <meta name="description" content="{description}" />
-  <link rel="canonical" href="{canonical}" />
+{_robots_noindex_head()}  <link rel="canonical" href="{canonical}" />
   <meta property="og:title" content="{page_title}" />
   <meta property="og:description" content="{description}" />
   <meta property="og:type" content="website" />
