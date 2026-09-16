@@ -124,6 +124,8 @@ Desktop split-pane index on Systems / Notes / Credentials:
 
 Default pin: **Notes collapsed** (unpinned); **Systems and Credentials expanded** (pinned). Last stored value wins per route.
 
+**Notes reading mode** (visual contract: [design-system.md](design-system.md#reading-mode-notes-only)): essay panels use a narrow measure, editorial masthead, cover image, and serif prose body. In-article heading links live in the **sidebar index** (`data-inarticle-toc`), not a sticky body TOC. When the index is collapsed, `.library-reading-context` shows the active title and section above the panel.
+
 ## Progressive embeds
 
 Figma (and similar) embeds are an implementation pattern, not brand chrome:

@@ -19,6 +19,8 @@ LinkedIn article URLs: operator paste into `syndication.linkedin` when available
 ## Site behaviour
 
 - Notes panels render on-site markdown + **Discuss on Medium** (or LinkedIn when set).
+- **Reading mode** on `/notes/` only: editorial masthead (category · title · dek · byline), cover hero, narrow serif prose (`.note-body.prose`), wrapped code blocks, blockquotes, figures. **Catalogue mode** unchanged on Systems / Credentials / Home — see [design-system.md](design-system.md#reading-mode-notes-only).
+- Publication dates: `writing.yaml` stores full `YYYY-MM-DD`; byline and index meta display as `22 Dec 2025`.
 - Footer **Blog** → `/notes/` (`footer_only` — not in header nav).
 - WP permalinks → `/notes/#NOTE-*` via `dist/<slug>/` stubs + Cloudflare `_redirects` for `/blog/`.
 - `site.json` **must not** contain `writing_highlights`.
@@ -27,9 +29,14 @@ LinkedIn article URLs: operator paste into `syndication.linkedin` when available
 
 | Task | Command / location |
 |---|---|
-| Import / refresh bodies from WP | `python scripts/import_writing_bodies.py yingzhao` (Mac; not public CI) |
-| Export + check | `python scripts/export_public.py yingzhao --check` |
-| Vendor to site | copy `export_public.json` → `yzouyang-site/data/`; after localization, `rsync` `writing/assets/` → `yzouyang-site/assets/notes/` |
+| Import / refresh bodies from WP | `uv run --with pyyaml python scripts/import_writing_bodies.py yingzhao` (Mac; not public CI) |
+| Force re-import one or all bodies | `… --force` (overwrites markdown from WP; sets cover + full date from WP) |
+| Repair syndication lede / broken image markdown | `… --repair-existing` (no WP fetch unless localization needed) |
+| Restore cover metadata from on-disk `cover.*` | `… --restore-covers` |
+| Backfill full publication dates | `… --sync-dates` (WordPress `date`; syndication lede fallback) |
+| Fetch featured covers only | `… --fetch-covers` |
+| Export + check | `uv run --with pyyaml python scripts/export_public.py yingzhao --check` |
+| Vendor to site | `export_public.py yingzhao --vendor-assets ../yzouyang-site/assets/notes`; copy `export_public.json` → `yzouyang-site/data/` |
 | Draft preview | `python scripts/preview.py --include-drafts ../personal-content` |
 | Weekly new URL scan | Dagster job `writing_weekly_ingest` (`agentic-services/writing_pipeline/`) |
 

@@ -13,7 +13,7 @@ from collections import OrderedDict
 from datetime import date
 from html import unescape as html_unescape
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
 
@@ -664,14 +664,22 @@ def library_panel_html(
     level: str = "h2",
     hidden: bool = True,
     extra_attrs: str = "",
+    panel_class: str = "",
+    header_lead: str = "",
+    header_trail: str = "",
 ) -> str:
     tag = level if level in ("h2", "h3", "h4") else "h2"
     hidden_attr = " hidden" if hidden else ""
+    class_bits = "library-panel"
+    if panel_class:
+        class_bits = f"{class_bits} {panel_class}"
     return (
-        f'        <article class="library-panel" data-panel-id="{esc(panel_id)}"{hidden_attr}'
+        f'        <article class="{class_bits}" data-panel-id="{esc(panel_id)}"{hidden_attr}'
         f"{extra_attrs}>\n"
         f'          <header class="library-panel-header">\n'
+        f"{header_lead}"
         f'            <{tag} class="library-panel-title">{heading}</{tag}>\n'
+        f"{header_trail}"
         f"          </header>\n"
         f'          <div class="library-panel-body">\n'
         f"{body}\n"
@@ -1428,7 +1436,7 @@ def _render_code_line(line: str, line_no: int) -> str:
         '<span class="note-code-line">'
         f'<span class="note-code-gutter" aria-hidden="true">{line_no}</span>'
         f'<span class="note-code-text">{esc(line)}</span>'
-        "</span>\n"
+        "</span>"
     )
 
 
@@ -1579,19 +1587,90 @@ def _render_note_heading_html(
     )
 
 
+_LINK_WRAPPED_IMAGE_PREFIX = "[!\\[\\]("
+
+
+def _same_note_image_url(left: str, right: str) -> bool:
+    def norm(url: str) -> str:
+        cleaned = html_unescape(url.strip())
+        parsed = urlparse(cleaned)
+        path = unquote(parsed.path or "")
+        host = (parsed.hostname or "").lower()
+        if host.endswith("wp.com"):
+            marker = "/wp-content/"
+            idx = path.find(marker)
+            if idx >= 0:
+                path = path[idx:]
+        return path.rstrip("/").lower()
+
+    return norm(left) == norm(right)
+
+
+def _unwrap_link_wrapped_images(md: str) -> str:
+    out: list[str] = []
+    i = 0
+    while i < len(md):
+        if not md.startswith(_LINK_WRAPPED_IMAGE_PREFIX, i):
+            out.append(md[i])
+            i += 1
+            continue
+        start = i + len(_LINK_WRAPPED_IMAGE_PREFIX)
+        img_end = md.find(")", start)
+        if img_end == -1:
+            out.append(md[i])
+            i += 1
+            continue
+        img_url = md[start:img_end]
+        if img_end + 1 >= len(md) or md[img_end + 1] != "]" or md[img_end + 2] != "(":
+            out.append(md[i])
+            i += 1
+            continue
+        link_start = img_end + 3
+        link_end = md.find(")", link_start)
+        if link_end == -1:
+            out.append(md[i])
+            i += 1
+            continue
+        link_url = md[link_start:link_end]
+        if _same_note_image_url(img_url, link_url):
+            out.append(f"![]({img_url})")
+            i = link_end + 1
+            continue
+        out.append(md[i])
+        i += 1
+    return "".join(out)
+
+
 def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
-    if not str(md or "").strip():
+    md = _unwrap_link_wrapped_images(str(md or ""))
+    if not md.strip():
         return ""
     toc_map = _extract_toc_anchor_map(md)
     lines = md.splitlines()
     out: list[str] = []
     in_code = False
     code_line_no = 0
+    code_buffer: list[str] = []
     in_list = False
     in_toc_skip = False
+    in_blockquote = False
+    blockquote_bits: list[str] = []
     para: list[str] = []
 
-    def flush_para() -> None:
+    def flush_blockquote() -> None:
+        nonlocal in_blockquote, blockquote_bits
+        if blockquote_bits:
+            joined = " ".join(blockquote_bits).strip()
+            if joined:
+                out.append(
+                    '<blockquote class="note-blockquote">'
+                    f"<p>{_inline_markdown(joined, note_id=note_id, site=site)}</p>"
+                    "</blockquote>"
+                )
+            blockquote_bits = []
+        in_blockquote = False
+
+    def flush_para_body() -> None:
         nonlocal in_list, para
         if para:
             joined = " ".join(para).strip()
@@ -1602,6 +1681,10 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
             out.append("</ul>")
             in_list = False
 
+    def flush_para() -> None:
+        flush_blockquote()
+        flush_para_body()
+
     i = 0
     while i < len(lines):
         raw_line = lines[i]
@@ -1609,18 +1692,22 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
         if line.strip().startswith("```"):
             flush_para()
             if in_code:
+                out.append("".join(code_buffer))
                 out.append("</code></pre>")
                 in_code = False
                 code_line_no = 0
+                code_buffer = []
             else:
+                flush_para()
                 out.append('<pre class="note-code"><code class="note-code-block">')
                 in_code = True
                 code_line_no = 0
+                code_buffer = []
             i += 1
             continue
         if in_code:
             code_line_no += 1
-            out.append(_render_code_line(raw_line, code_line_no))
+            code_buffer.append(_render_code_line(raw_line, code_line_no))
             i += 1
             continue
         if in_toc_skip:
@@ -1668,6 +1755,17 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
             )
             i += 1
             continue
+        quote_match = re.match(r"^>\s?(.*)$", line)
+        if quote_match:
+            flush_para_body()
+            in_blockquote = True
+            bit = quote_match.group(1).strip()
+            if bit:
+                blockquote_bits.append(bit)
+            i += 1
+            continue
+        if in_blockquote:
+            flush_blockquote()
         if line.strip().startswith("- "):
             flush_para()
             if not in_list:
@@ -1686,6 +1784,7 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
         i += 1
     flush_para()
     if in_code:
+        out.append("".join(code_buffer))
         out.append("</code></pre>")
     return "\n".join(out)
 
@@ -3662,6 +3761,75 @@ def _note_series(row: dict) -> str:
     return str(row.get("series") or "").strip()
 
 
+_NOTE_MONTHS = (
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+)
+
+
+def _format_note_date(date_s: str) -> str:
+    raw = str(date_s or "").strip()
+    if not raw:
+        return ""
+    parts = raw.split("-")
+    if len(parts) >= 3:
+        try:
+            year = int(parts[0])
+            month = int(parts[1])
+            day = int(parts[2])
+            if 1 <= month <= 12 and 1 <= day <= 31:
+                return f"{day} {_NOTE_MONTHS[month - 1]} {year}"
+        except ValueError:
+            pass
+    if len(parts) >= 2:
+        try:
+            year = int(parts[0])
+            month = int(parts[1])
+            if 1 <= month <= 12:
+                return f"{_NOTE_MONTHS[month - 1]} {year}"
+        except ValueError:
+            pass
+    return raw
+
+
+def _note_reading_minutes(body_md: str) -> int:
+    text = str(body_md or "")
+    if not text.strip():
+        return 0
+    words = len(re.findall(r"[A-Za-z0-9']+", text))
+    if words <= 0:
+        return 0
+    return max(1, round(words / 220))
+
+
+def _note_byline_html(row: dict, note_id: str, *, read_mins: int) -> str:
+    bits: list[str] = []
+    date_display = _format_note_date(str(row.get("date") or ""))
+    if date_display:
+        bits.append(esc(date_display))
+    if read_mins > 0:
+        bits.append(esc(f"{read_mins} min read"))
+    series = _note_series(row)
+    if series:
+        bits.append(f'<span class="note-series">{esc(series)}</span>')
+    if not bits:
+        return ""
+    return (
+        f'            <p class="note-byline meta">{" · ".join(bits)}'
+        f'<span class="visually-hidden"> ({esc(note_id)})</span></p>\n'
+    )
+
+
 def _note_date_sort_key(row: dict) -> tuple[str, str]:
     return (str(row.get("date") or ""), str(row.get("title") or ""))
 
@@ -3690,7 +3858,7 @@ def _note_index_entry(row: dict, note_id: str, *, series: str = "") -> dict:
     return {
         "id": note_id,
         "label": _note_index_title(row, series=series),
-        "meta": str(row.get("date") or "").strip(),
+        "meta": _format_note_date(str(row.get("date") or "")),
         "children": [],
     }
 
@@ -3721,22 +3889,13 @@ def _note_cover_html(site: dict, row: dict, note_id: str) -> str:
 def _writing_note_panel_body(
     site: dict, row: dict, note_id: str,
 ) -> str:
-    date_s = esc(str(row.get("date") or ""))
-    category = esc(_note_category(row))
-    series = esc(_note_series(row))
-    teaser = str(row.get("teaser") or "").strip()
-    meta = " · ".join(x for x in (note_id, date_s) if x)
-    taxonomy_bits = [f'<span class="note-category">{category}</span>']
-    if series:
-        taxonomy_bits.append(f'<span class="note-series">{series}</span>')
-    taxonomy_html = (
-        f'      <p class="note-taxonomy meta">{" · ".join(taxonomy_bits)}</p>\n'
-    )
-    dek = f'      <p class="note-dek">{esc(teaser)}</p>\n' if teaser else ""
     cover_html = _note_cover_html(site, row, note_id)
     draft_banner = ""
     if row.get("preview_draft"):
-        draft_banner = '      <p class="note-kicker meta">Draft preview — not in PUBLIC export</p>\n'
+        draft_banner = (
+            '      <p class="note-kicker note-kicker--draft meta">'
+            "Draft preview — not in PUBLIC export</p>\n"
+        )
     body_md = str(row.get("body_md") or "").strip()
     body_html = ""
     if body_md:
@@ -3745,12 +3904,9 @@ def _writing_note_panel_body(
             body_html = f'      <div class="note-body prose">{rendered}</div>\n'
     links_html = _writing_links_html(site, row)
     return (
-        f'      <article class="notes-entry">\n'
+        f'      <article class="notes-entry" data-note-id="{esc(note_id)}">\n'
         f'        <span id="{esc(note_id)}-top" class="note-top-anchor"></span>\n'
-        f'        <p class="catalogue-line meta">{meta}</p>\n'
-        f"{taxonomy_html}"
         f"{draft_banner}"
-        f"{dek}"
         f"{cover_html}"
         f"{body_html}"
         f"{links_html}"
@@ -3768,6 +3924,16 @@ def _append_note_panel(
     heading = esc(str(row.get("title") or note_id).strip())
     body_md = str(row.get("body_md") or "").strip()
     toc_attr = _inarticle_toc_attr(body_md)
+    category = esc(_note_category(row))
+    teaser = str(row.get("teaser") or "").strip()
+    read_mins = _note_reading_minutes(body_md)
+    header_lead = (
+        f'            <p class="note-kicker">{category}</p>\n' if category else ""
+    )
+    dek_html = (
+        f'            <p class="note-dek">{esc(teaser)}</p>\n' if teaser else ""
+    )
+    byline_html = _note_byline_html(row, note_id, read_mins=read_mins)
     panels.append(
         library_panel_html(
             note_id,
@@ -3775,6 +3941,9 @@ def _append_note_panel(
             _writing_note_panel_body(site, row, note_id),
             level="h2",
             extra_attrs=toc_attr,
+            panel_class="library-panel--note",
+            header_lead=header_lead,
+            header_trail=f"{dek_html}{byline_html}",
         )
     )
 

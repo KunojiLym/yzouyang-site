@@ -45,6 +45,13 @@
   --code-text: var(--text-default);
   --max: 68rem;
   --max-longform: 80rem;
+  --note-read-max: 42rem;
+  --note-read-lead: 1.72;
+  --text-dropcap: clamp(
+    calc(2.6rem * var(--text-scale)),
+    calc(4vw * var(--text-scale)),
+    calc(3.25rem * var(--text-scale))
+  );
   --header-offset: 4.75rem;
 
   /* Readable type scale — multiply by --text-scale for viewport + user preference. */

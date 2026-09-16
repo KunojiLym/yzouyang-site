@@ -57,18 +57,24 @@ Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underl
 
 Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--header-offset` `4.75rem`.
 
-`html` / `body` set `background-color: var(--bg-deep)`. Theme control: `.theme-toggle` (`aria-pressed`, visible Light/Dark label, brass focus ring).
+**Reading tokens (Notes only):** `--note-read-max` `42rem` (prose measure); `--note-read-lead` `1.72`; `--text-dropcap` (fluid first-letter size); `--note-image-bg` (neutral mat behind inline figures / covers).
+
+`html` / `body` set `background-color: var(--bg-deep)`. Optional reading-size preference: `html[data-reading-size="large"|"xlarge"]` bumps global body line-height (`base.css`). Theme control: `.theme-toggle` (`aria-pressed`, visible Light/Dark label, brass focus ring).
 
 ### Type scale
 
-Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens.css`). Display serif (**Crimson Pro**) is reserved for wordmark, Entrance `h1`, and section titles — not dense list rows.
+Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens.css`). Display serif (**Crimson Pro**) is reserved for wordmark, Entrance `h1`, section titles, and **Notes panel titles** — not dense catalogue list rows or beat grids.
 
 | Use | Face |
 |---|---|
 | `.brand`, `.entrance h1`, section `h2` on Home | Crimson Pro (serif) |
-| Body, nav, TOC, chips, record IDs, search, buttons | Source Sans 3 (sans) |
+| `.library-panel--note .library-panel-title`, in-note section headings (`.note-section-heading--major`) | Crimson Pro (serif) |
+| **Notes essay body** (`.note-body.prose` only) | Crimson Pro (serif) at `--text-md` — see [Reading mode](#reading-mode-notes-only) |
+| Body, nav, TOC, chips, record IDs, search, buttons, SYS beat copy | Source Sans 3 (sans) |
 
 Catalogue IDs (`SYS-01`, `NOTE-2026-014`) use Source Sans 3 with slightly tracked caps — not monospace.
+
+Publication dates in the Notes index and byline use **full calendar dates** when `writing.yaml` stores `YYYY-MM-DD` (display: `22 Dec 2025`). Month-only `YYYY-MM` remains a fallback (`Dec 2025`).
 
 ### Spacing, radius, breakpoints
 
@@ -96,7 +102,7 @@ Inner pages:
 | Route | Page title | Notes |
 |---|---|---|
 | `/systems/` | Systems | Library shell; Pagefind “Search catalogue” |
-| `/notes/` | Notes | Library shell; PUBLIC writing corpus (C2b) |
+| `/notes/` | Notes | Library shell; **Reading mode** for PUBLIC essays (masthead + cover + `.note-body.prose`); index collapsed by default |
 | `/credentials/` | Professional record | Library shell + VERIFY |
 | `/about/`, `/contact/`, `/career-journey/` | *(redirect)* | Home |
 | `/portfolio/`, `/work/`, `/systems/catalogue/` | *(redirect)* | `/systems/` |
@@ -104,15 +110,37 @@ Inner pages:
 
 **Credibility order:** thesis → documented systems → writing → experiments → professional record. Quantified proof metrics live on SYS records (sourced from the public CV via `site.outcomes` / `enterprise_copy`), not in the Home hero.
 
-### Library scanning
+### Library scanning (Catalogue mode)
+
+**Catalogue mode** applies to **Systems**, **Credentials**, and the **Home** featured-record strip: scan, compare, and jump — not sustained reading. Typography stays sans-first; panels use the full library pane width (no `--note-read-max` cap).
 
 - Split-pane catalogue: index list left (desktop) or full-width index (mobile overview); panel body right
 - **Notes:** index **collapsed by default** (unpinned overlay); **Systems / Credentials:** index **expanded by default** (pinned). Hover peek when unpinned; **Escape** dismisses overlay without changing pin mode; rail expand control exposes `aria-expanded`
-- Case studies on `/systems/`: problem → role → decision → outcome → evidence at ~⅓ typical density
+- **Sticky index headers** on Notes: `.library-index-group-label` tiers (category → series → part) stay pinned while scrolling the index — not in-article body headings
+- **Reading context bar** (`.library-reading-context`): when the Notes index is collapsed, a compact title · section strip above the panel body orients the reader; hidden when the index is pinned open
+- Case studies on `/systems/`: problem → role → decision → outcome → evidence at ~⅓ typical density (`.case-beats` grid)
 - **Related Paths** on a record are semantic siblings from the system map — not repeated global nav (Credentials · Notes)
 - **Library strip** footer switches collections (Systems · Notes · Credentials) — browsing chrome, not related evidence
-- Writing: publication rows with catalogue metadata (`NOTE-*`), not blog card grid
-- Header Pagefind + in-panel headings — no sticky long-form TOC on library routes
+- Writing index: publication rows with catalogue metadata (`NOTE-*`, formatted date in `.library-index-meta`), not blog card grid
+- Header Pagefind + in-panel headings — no sticky long-form TOC on library routes (Notes use **in-index** in-article links via `data-inarticle-toc`, not a body TOC rail)
+
+### Reading mode (Notes only)
+
+**Reading mode** applies only to **PUBLIC writing** on `/notes/` (`.library-panel--note`). Do **not** port this stack to Systems, Credentials, or Home — those routes stay in Catalogue mode.
+
+| Element | Pattern | Implementation |
+|---|---|---|
+| Measure | Narrow centered column | `--note-read-max` on panel header + body |
+| Masthead | Category kicker → display title → optional dek → byline | `.note-kicker`, `.library-panel-title`, `.note-dek`, `.note-byline` |
+| Byline | Full date · read time · series | `_format_note_date()`; NOTE id in `.visually-hidden` only |
+| Cover | Featured image above body | `.note-cover` from export `images[]` with `role: cover` |
+| Prose | Essay typography | `.note-body.prose`: `--text-md`, `--note-read-lead`, first-paragraph drop cap |
+| Blockquotes | Editorial pull quotes | `.note-blockquote` (imported `> ` lines); brass rule + italic serif |
+| Code | Wrapped blocks, line gutters | `.note-code` / `.note-code-line`; `pre-wrap` + `overflow-wrap: anywhere` — no horizontal scroll per line |
+| Figures | Centered stack + caption | `.note-figure` / `.note-figure-caption`; `--note-image-bg` mat |
+| In-index TOC | H3/H4 jump links in sidebar | `data-inarticle-toc` on panel; `.library-index-inarticle-*` when index open |
+
+Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content SoT: `personal-content` `writing.yaml` + markdown bodies; full dates via `--sync-dates` on import.
 
 ---
 
@@ -129,7 +157,14 @@ Inner pages:
 | `.site-nav` | **Systems · Notes · Credentials** |
 | `.library-shell` | Split-pane catalogue on Systems / Notes / Credentials |
 | `.library-index-list` / `.library-index-trigger` | Catalogue index (buttons; opens panel) |
+| `.library-index-group` / `.library-index-group-label` | Sticky tiered headers in Notes index (category / series) |
+| `.library-index-inarticle-*` | In-note heading jump links in sidebar when index open |
+| `.library-reading-context` | Notes panel chrome when index collapsed (title · section) |
 | `.library-panel` / `.library-back` | Record body + mobile return to index |
+| `.library-panel--note` | Notes reading-mode panel (measure cap + masthead stack) |
+| `.note-cover` / `.note-body.prose` | Cover hero + markdown essay body (Notes only) |
+| `.note-blockquote` / `.note-figure` / `.note-code-*` | Prose block patterns inside Notes |
+| `.case-beats` | Systems record beat grid (Catalogue mode — sans, scan density) |
 | `#search` + Pagefind | Catalogue search in the sticky header |
 
 **Motion:** Map-node and record hover/focus only. **No** per-section `rise` on Home. Honor `prefers-reduced-motion` on library panel transitions.
@@ -161,6 +196,8 @@ Pre-commit: husky + lint-staged on staged `src/styles/*.css`.
 - Keep primary nav short: **Systems · Notes · Credentials**
 - Brass/gold ≤10%; railway green in hairlines only
 - Derive proof from `site.json` / export only
+- Use **Reading mode** typography only on `/notes/` essay bodies; keep **Catalogue mode** on Systems / Credentials / Home strips
+- Store and display **full publication dates** (`YYYY-MM-DD`) for writing records
 
 **Don’t**
 
@@ -170,3 +207,5 @@ Pre-commit: husky + lint-staged on staged `src/styles/*.css`.
 - Tracked ALL-CAPS eyebrows on every heading; decorative numbered `01 02 03`
 - Invent metrics; cert wall on Home; visitor-facing phone
 - Migration / Phase notes in footer
+- Port Notes drop caps, narrow measure, or serif prose to SYS panels, credential cards, or Home featured rows
+- Horizontal per-line code scroll in Notes; blog-card grids for the writing index

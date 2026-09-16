@@ -11,6 +11,7 @@ from pathlib import Path
 
 from build import (
     _beat_value_html,
+    _format_note_date,
     _inline_markdown,
     _markdown_to_html,
     _note_asset_href,
@@ -285,6 +286,21 @@ def assert_note_prose_blocks() -> None:
     if 'class="note-code-block"' not in code_html:
         fail("fenced code must render note-code-block markup")
 
+    quote_md = "> The pipeline should fail closed.\n> Always verify inputs.\n\nNext para"
+    quote_html = _markdown_to_html(quote_md, note_id="NOTE-2025-011", site=site)
+    if 'class="note-blockquote"' not in quote_html:
+        fail("markdown blockquotes must render note-blockquote")
+    if "fail closed" not in quote_html:
+        fail("note-blockquote must preserve quoted text")
+
+    wrapped_md = (
+        "[!\\[\\](https://i0.wp.com/www.yzouyang.com/wp-content/uploads/a.png?fit=1&ssl=1)]"
+        "(https://i0.wp.com/www.yzouyang.com/wp-content/uploads/a.png?ssl=1)Caption"
+    )
+    wrapped_html = _markdown_to_html(wrapped_md, note_id="NOTE-2025-011", site=site)
+    if 'class="note-figure"' not in wrapped_html:
+        fail("link-wrapped markdown images must unwrap to note-figure blocks")
+
     image_md = "Intro\n\n![](assets/NOTE-2025-011/02.png)Caption line\n\nNext para"
     image_html = _markdown_to_html(image_md, note_id="NOTE-2025-011", site=site)
     if 'class="note-figure"' not in image_html:
@@ -338,6 +354,13 @@ def assert_library_index_controls() -> None:
         fail("notes index must mark top-level category groups for sticky TOC headers")
 
 
+def assert_format_note_date() -> None:
+    if _format_note_date("2025-12-22") != "22 Dec 2025":
+        fail("_format_note_date must render full publication dates")
+    if _format_note_date("2026-05") != "May 2026":
+        fail("_format_note_date must still support month-only fallback")
+
+
 def assert_writing_rows_preserve_images() -> None:
     export = {
         "writing": [
@@ -364,6 +387,7 @@ def main() -> None:
     assert_note_cover_html()
     assert_note_prose_blocks()
     assert_inarticle_toc_sidebar()
+    assert_format_note_date()
     assert_writing_rows_preserve_images()
 
     site = resolve_site_base(json.loads((DATA / "site.json").read_text(encoding="utf-8")))
@@ -1021,8 +1045,8 @@ def main() -> None:
         fail("notes index must list individual NOTE-* catalogue entries")
     if 'library-index-group--depth-' not in notes:
         fail("notes index must group essays by category")
-    if "note-taxonomy" not in notes or "note-category" not in notes:
-        fail("notes panels must show category taxonomy")
+    if "note-kicker" not in notes or "note-byline" not in notes:
+        fail("notes panels must show category kicker and reading byline")
     if "medium.com/@kunojilym" not in notes:
         fail("notes page missing Medium writing links")
     if "notes-entry" not in notes:
