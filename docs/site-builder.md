@@ -75,7 +75,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Route | Builder | Sources |
 |---|---|---|
-| `/` | `build_home` | Token entrance + thesis + `current_index` + proof strip + `home-entry-grid` + competencies + library-card footer |
+| `/` | `build_home` | Token entrance + thesis + CTAs + featured record strip + operating principle + practice areas + split context/platform meta + library-card footer |
 | `/systems/` | `build_systems` | Library shell from export + overlays; Pagefind “Search catalogue” |
 | `/notes/` | `build_notes` | Library shell from PUBLIC writing; Pagefind |
 | `/credentials/` | `build_credentials` | Library shell + VERIFY + Pagefind |
@@ -86,7 +86,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 ## IA rules
 
-- Home is a **Personal Systems Library entrance**: token atmosphere → thesis → current index → proof strip → catalogue entry grid → competencies. No system map, Reading room, Workshop, or `#contact` on Home
+- Home is a **Personal Systems Library entrance**: four viewport-paced snap sections — proposition (thesis + CTAs) → featured records (horizontal strip) → operating principle → practice areas + context/platform meta. No system map, Reading room, Workshop, or `#contact` on Home; no outcome metric strip in the hero
 - **Sticky header** — always reachable; **theme toggle** in `.header-actions`
 - Desktop primary nav is **Systems · Notes · Credentials**; Blog / Medium / LinkedIn / GitHub sit in the library-card footer
 - Systems / Notes / Credentials use the **library split-pane** (`.library-shell`), not longform TOC
@@ -94,6 +94,35 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 - Writing bodies live on `/notes/` (PUBLIC export, C2b)
 - Blog / Medium / LinkedIn / GitHub remain external (`↗`) except footer Blog → `/notes/`
 - Public footer is a **library card** (© + location/focus + mailto + social) — no migration changelog in chrome
+
+## Disclosure standard
+
+Public proof follows three tiers:
+
+1. **Home** — editorial proposition and featured record summaries only; no quantified outcome strip in the hero
+2. **SYS records** — `enterprise_copy` / `outcomes` metrics must already appear in the PUBLIC master CV ([personal-content](https://github.com/KunojiLym/personal-content) `people/yingzhao/data/cv.yaml`); rephrase to match CV language, do not invent numbers or publish unpublished SLAs
+3. **Evidence line** — cite public professional record (CV / LinkedIn role); internal platforms and dashboards are not linked
+
+`scripts/lint.py` caps `outcomes` at three chips; `scripts/test_site_build.py` asserts SYS-01 impact lines stay quantified when metrics are kept.
+
+## Related Paths vs library strip
+
+- **Related Paths** (`.related-paths` on a record panel) — semantic siblings from `system_map.related` for every domain that lists the record (other SYS / LAB / NOTE titles). Not a second copy of global nav; omit generic Credentials / Notes unless that record’s map actually points at one
+- **Library strip** (`.library-strip` footer) — collection switcher between library routes (Systems · Notes · Credentials). Chrome for browsing collections, not “related evidence”
+
+## Library index behaviour
+
+Desktop split-pane index on Systems / Notes / Credentials:
+
+| Control | Behaviour |
+|---|---|
+| **Pin** | Keeps the index column open; stored per route (`localStorage` key `yz-library-index-pinned:<pathname>`) |
+| **Hide** | Dismisses overlay / drawer without changing pin mode |
+| **Rail expand / Show** | Opens unpinned overlay; `aria-expanded` reflects drawer state |
+| **Hover (unpinned)** | Optional peek over the article without resizing the reading column |
+| **Escape** | Same as Hide when overlay / unpinned drawer is open; does not unpin |
+
+Default pin: **Notes collapsed** (unpinned); **Systems and Credentials expanded** (pinned). Last stored value wins per route.
 
 ## Progressive embeds
 
