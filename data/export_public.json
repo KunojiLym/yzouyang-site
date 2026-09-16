@@ -4,8 +4,8 @@
     "person_id": "yingzhao",
     "visibility": "PUBLIC",
     "source_repo": "personal-content",
-    "source_revision": "5be04299cb9e",
-    "source_updated_at": "2026-09-15T10:28:50+08:00",
+    "source_revision": "d091faf9f8ab",
+    "source_updated_at": "2026-09-15T11:17:02+08:00",
     "source_files": [
       "people/yingzhao/data/about.yaml",
       "people/yingzhao/data/certifications.yaml",
@@ -2398,28 +2398,24 @@
   ],
   "about": {
     "visibility_policy": "PUBLIC",
-    "lede": "I design cost-intelligence platforms and governed lakehouse systems so operators can see spend, trust the data, and put AI into production without losing the audit trail.\n",
+    "lede": "I design governed data platforms and cost-intelligence capabilities that make cloud spend, data quality, and AI-enabled decisions visible, explainable, and operationally sustainable.\n",
     "philosophy": "The durable part of a platform is not the stack. It is operators who can explain a decision, and teams who can carry the system after the programme ends.\n",
-    "competencies": [
+    "practice_areas": [
       {
-        "title": "Data Engineering Leadership",
-        "body": "Medallion lakehouse, ETL/ELT, and data governance in production since 2020 — documentation and operating models operators can actually run.\n"
+        "title": "Governed data platforms",
+        "body": "Medallion lakehouse, metadata, quality signals, and operating documentation teams can run after handover.\n"
       },
       {
-        "title": "AI & Analytics Expertise",
-        "body": "Generative AI, ML, and NLP wired into products and operating workflows, with the audit trail left intact.\n"
+        "title": "Cloud economics and platform accountability",
+        "body": "Application-level cost attribution, FinOps discipline, and spend visibility tied to ownership.\n"
       },
       {
-        "title": "Cloud Platform Mastery",
-        "body": "Multi-certified on GCP, Azure, and Databricks; lakehouse and MLOps in production, not a badge wall.\n"
+        "title": "Applied AI with operating controls",
+        "body": "Platform patterns for governed retrieval, orchestration, and traceable automated decisions — not demo deployments.\n"
       },
       {
-        "title": "Cross-Functional Leadership",
-        "body": "Mentorship, standardised documentation, and formal management training across business and technology teams.\n"
-      },
-      {
-        "title": "Product & User Focus",
-        "body": "UX/UI and digital product training, used to ship analytics tools and dashboards stakeholders will actually open.\n"
+        "title": "Adoption and operating models",
+        "body": "Standardised documentation, decision rights, mentoring, and handover so programmes leave capable operators.\n"
       }
     ],
     "career_highlights": [

@@ -13,6 +13,7 @@
   --photo-scrim: rgb(10 11 10 / 72%);
   --photo-chip: rgb(28 22 18 / 88%);
   --photo-ink: #e8dfd0;
+  --note-image-bg: #fefefe;
   --text-strong: #f5efe6;
   --text-default: #efe6d8;
   --text-muted: #b0a090;
@@ -37,6 +38,11 @@
   --bg-gradient-end: #0a0b0a;
   --font-display: "Crimson Pro", "Palatino Linotype", palatino, serif;
   --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-mono: "Consolas", "Liberation Mono", "Courier New", monospace;
+  --code-bg: var(--bg-mid);
+  --code-border: var(--line-strong);
+  --code-gutter: var(--text-faint);
+  --code-text: var(--text-default);
   --max: 68rem;
   --max-longform: 80rem;
   --header-offset: 4.75rem;
@@ -115,6 +121,7 @@
   --photo-scrim: rgb(10 11 10 / 55%);
   --photo-chip: rgb(28 22 18 / 88%);
   --photo-ink: #e8dfd0;
+  --note-image-bg: #fefefe;
   --text-strong: #171414;
   --text-default: #2a2724;
   --text-muted: #5c5548;
@@ -137,6 +144,9 @@
   --glow: rgb(212 163 92 / 10%);
   --bg-gradient-mid: #e2d8c8;
   --bg-gradient-end: #ddd2c0;
+  --code-bg: var(--bg-mid);
+  --code-border: var(--line-soft);
+  --code-text: var(--text-default);
 }
 
 @media (width >= 1280px) {

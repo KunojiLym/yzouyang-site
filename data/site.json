@@ -4,12 +4,16 @@
     "full_name": "Yingzhao Ouyang",
     "brand": "yzouyang",
     "headline": "Building intelligible systems for data, AI, and decision-making.",
-    "tagline": "I design cost-intelligence platforms and governed lakehouse systems so operators can see spend, trust the data, and put AI into production without losing the audit trail.",
+    "tagline": "I design governed data platforms and cost-intelligence capabilities that make cloud spend, data quality, and AI-enabled decisions visible, explainable, and operationally sustainable.",
     "location": "Singapore",
+    "contexts": [
+      "Cloud data platforms",
+      "FinOps",
+      "Governed AI"
+    ],
     "platforms": [
       "Azure",
-      "GCP",
-      "AWS",
+      "Google Cloud",
       "Databricks"
     ],
     "photo": "/assets/profile.jpg",
@@ -18,15 +22,15 @@
   "outcomes": [
     {
       "metric": "50%",
-      "label": "CEI documentation cycle (8 weeks → 4) after standardizing medallion docs"
+      "label": "Documentation cycle 8→4 weeks (about 50% faster) after standardizing medallion docs"
     },
     {
       "metric": "20%",
-      "label": "Query-cost reduction on CEI BigQuery ingest after partitioning"
+      "label": "BigQuery batch ingest costs down about 20% via partitioning"
     },
     {
       "metric": "30%",
-      "label": "Unity Catalog UAT migration efficiency on the CEI lakehouse"
+      "label": "Unity Catalog UAT migration efficiency up about 30%"
     }
   ],
   "contact": {
@@ -93,8 +97,8 @@
       "problem": "Prudential’s Global Technology Infrastructure lacked application-level cost attribution — spend was visible at project level but not traceable to business applications. The Azure Databricks environment also lacked enforced governance — ambiguous lineage, inconsistent dev/ops separation, and thin documentation.",
       "role": "Senior Manager, Cloud Economics and Intelligence (Data Architecture and Solutioning), Global Technology Infrastructure.",
       "decision": "For cost attribution: an attestation and mapping layer that cross-references cloud projects against enterprise application records. For Databricks governance: Unity Catalog, Declarative Asset Bundles with enforced tagging, serverless execution, and medallion patterns — with lineage treated as a first-class artifact.",
-      "outcome": "New-hire ramp 6→4 weeks (~33%) after documentation standards; lineage ambiguities down ~40%; BigQuery framework query costs ~20% via partitioning; first actionable app-level cost view across multi-region operations.",
-      "evidence": "Public role on LinkedIn. CEI internals are not published.",
+      "outcome": "New-hire ramp 6→4 weeks; documentation 8→4 weeks (about 50% faster); lineage ambiguities down about 40%; BigQuery ingest costs down about 20% via partitioning; Unity Catalog UAT migration efficiency up about 30%; application-level cost attribution improving ownership visibility by about 50%.",
+      "evidence": "Public professional record (CV / LinkedIn role). Internal platforms and dashboards are not linked.",
       "evidence_href": "https://www.linkedin.com/in/yzouyang/",
       "evidence_label": "LinkedIn",
       "tools": [
@@ -146,6 +150,23 @@
   ],
   "home_highlights": {
     "rotation": "weekly"
+  },
+  "home_featured": {
+    "systems": [
+      {
+        "id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
+        "record_id": "SYS-01",
+        "title": "Cost intelligence as platform capability",
+        "summary": "Allocation models, ownership metadata, and operator-facing reporting."
+      },
+      {
+        "id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
+        "record_id": "SYS-01",
+        "title": "Governed lakehouse operating patterns",
+        "summary": "Unity Catalog, medallion foundations, and documentation teams can run after handover."
+      }
+    ],
+    "note_id": "NOTE-2026-005"
   },
   "system_map": [
     {

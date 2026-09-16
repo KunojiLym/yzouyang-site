@@ -84,11 +84,12 @@ Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
 
 ## Layer B — Content hierarchy (library order)
 
-Home reads as a personal systems library:
+Home reads as a personal systems library (four snap beats on desktop):
 
-1. **Entrance** — token atmosphere; thesis `h1`; practitioner lede; `current_index`; location/platforms proof strip
-2. **Catalogue entries** — `home-entry-grid` to Systems / Notes / Credentials
-3. **Competencies** — editorial list, not a system map or workshop
+1. **Proposition** — token atmosphere; thesis `h1`; practitioner lede; primary CTAs; scroll hint (not a full exclusive viewport lock — featured records peek below on laptop widths)
+2. **Featured records** — horizontal strip of curated SYS / NOTE summaries (Prudential angles + one writing row)
+3. **Operating principle** — editorial philosophy block
+4. **Practice areas** — capability grid + split context / platform meta strips
 
 Inner pages:
 
@@ -101,12 +102,15 @@ Inner pages:
 | `/portfolio/`, `/work/`, `/systems/catalogue/` | *(redirect)* | `/systems/` |
 | `/perspectives/`, `/blog/` | *(redirect)* | `/notes/` |
 
-**Credibility order:** thesis → documented systems → writing → experiments → professional record.
+**Credibility order:** thesis → documented systems → writing → experiments → professional record. Quantified proof metrics live on SYS records (sourced from the public CV via `site.outcomes` / `enterprise_copy`), not in the Home hero.
 
 ### Library scanning
 
 - Split-pane catalogue: index list left (desktop) or full-width index (mobile overview); panel body right
+- **Notes:** index **collapsed by default** (unpinned overlay); **Systems / Credentials:** index **expanded by default** (pinned). Hover peek when unpinned; **Escape** dismisses overlay without changing pin mode; rail expand control exposes `aria-expanded`
 - Case studies on `/systems/`: problem → role → decision → outcome → evidence at ~⅓ typical density
+- **Related Paths** on a record are semantic siblings from the system map — not repeated global nav (Credentials · Notes)
+- **Library strip** footer switches collections (Systems · Notes · Credentials) — browsing chrome, not related evidence
 - Writing: publication rows with catalogue metadata (`NOTE-*`), not blog card grid
 - Header Pagefind + in-panel headings — no sticky long-form TOC on library routes
 
@@ -117,9 +121,10 @@ Inner pages:
 | Class / pattern | Use |
 |---|---|
 | `.entrance` / `.entrance-atmosphere` | Token atmosphere behind thesis |
-| `.current-index` | Systems / notes highlight lines |
-| `.home-entry-grid` | Catalogue doors to Systems / Notes / Credentials |
-| `.proof-strip` | Singapore + ≤4 platforms |
+| `.home-record-strip` / `.home-featured-records` | Featured SYS / NOTE rows (horizontal snap strip) |
+| `.home-practice-grid` | Practice-area capability cards |
+| `.home-context-strip` / `.home-platform-strip` | Location / platform proof meta |
+| `.proof-strip` | Singapore + ≤4 platforms (legacy class; context strip on current Home) |
 | `.library-card` / `.site-footer` / `.library-page-footer` | Footer: location · focus · mailto · social |
 | `.site-nav` | **Systems · Notes · Credentials** |
 | `.library-shell` | Split-pane catalogue on Systems / Notes / Credentials |

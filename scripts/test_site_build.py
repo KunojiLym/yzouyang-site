@@ -184,6 +184,8 @@ def assert_note_asset_href() -> None:
 
 
 def assert_note_heading_anchors() -> None:
+    from build import _inarticle_toc_from_md, _markdown_to_html
+
     site = {"base_path": ""}
     md = """Table Of Contents
 
@@ -203,8 +205,28 @@ Body.
         fail("TOC heading must render Medium-style id on matching h3")
     if 'id="2-i-setting-up-databricks-free-edition-account"' not in html:
         fail("TOC heading must map roman-numeral section to Medium anchor id")
-    if 'href="#1-tldr"' not in html:
-        fail("in-note TOC links must stay as fragment hrefs")
+    if "Table Of Contents" in html:
+        fail("inline Table Of Contents must not render in note body")
+    if 'href="#1-tldr"' in html:
+        fail("inline TOC list links must not render in note body")
+    if 'class="note-back-top"' in html:
+        fail("back-to-top must live in the section menu, not inline on headings")
+    if 'note-section-heading--major' not in html:
+        fail("major section headings must use tier class")
+    md_nested = """## Major
+
+Intro.
+
+#### Minor bit
+
+Detail.
+"""
+    nested_html = _markdown_to_html(md_nested, note_id="NOTE-x", site=site)
+    if 'note-section-heading--minor' not in nested_html:
+        fail("h4 headings must render as minor section tier")
+    nested_toc = _inarticle_toc_from_md(md_nested)
+    if not nested_toc or not nested_toc[0].get("children"):
+        fail("heading fallback TOC must nest h4 under h3")
     plain = _markdown_to_html("## Fallback heading\n", note_id="NOTE-x", site=site)
     if 'id="fallback-heading"' not in plain:
         fail("headings without TOC must slugify to stable ids")
@@ -227,6 +249,93 @@ def assert_note_cover_html() -> None:
         fail("writing panel must render cover image when images[] has role=cover")
     if 'src="/assets/notes/NOTE-2025-012/cover.webp"' not in html:
         fail("cover image must map to vendored /assets/notes/ path")
+
+
+def assert_note_prose_blocks() -> None:
+    from build import _markdown_to_html
+
+    site = {"base_path": ""}
+    expand_md = (
+        "Expand to see screencap of **DISCOVERY** tab\n"
+        "![](assets/NOTE-2025-011/01.png)Discovery tab caption\n\n"
+        "- bullet after fold"
+    )
+    expand_html = _markdown_to_html(expand_md, note_id="NOTE-2025-011", site=site)
+    if 'class="note-expand"' not in expand_html:
+        fail("Expand to see lines must render as note-expand details")
+    if "<summary" not in expand_html or "DISCOVERY" not in expand_html:
+        fail("note-expand summary must preserve expand label")
+    if 'class="note-figure"' not in expand_html:
+        fail("note-expand body must render block figures")
+    if expand_html.index("note-expand") < expand_html.index("note-figure"):
+        pass
+    elif "note-figure" not in expand_html:
+        fail("note-expand must wrap following image lines")
+
+    code_md = (
+        "Pattern:\n\n```\n"
+        "Content_{date start in YYYY-MM-DD}_{ProfileName}.xlsx\n"
+        "```\n"
+    )
+    code_html = _markdown_to_html(code_md, note_id="NOTE-2025-011", site=site)
+    if 'class="note-code"' not in code_html:
+        fail("fenced code blocks must use note-code pre class")
+    if "note-code-gutter" not in code_html or "note-code-line" not in code_html:
+        fail("fenced code blocks must render line numbers and preserved indentation")
+    if 'class="note-code-block"' not in code_html:
+        fail("fenced code must render note-code-block markup")
+
+    image_md = "Intro\n\n![](assets/NOTE-2025-011/02.png)Caption line\n\nNext para"
+    image_html = _markdown_to_html(image_md, note_id="NOTE-2025-011", site=site)
+    if 'class="note-figure"' not in image_html:
+        fail("standalone markdown image lines must render note-figure blocks")
+    if "<p>Intro</p>" not in image_html:
+        fail("image block must not merge preceding paragraph text")
+
+
+def assert_inarticle_toc_sidebar() -> None:
+    from build import _inarticle_toc_attr, _inarticle_toc_from_md
+
+    md = """Table Of Contents
+
+- [TL;DR](#1-tldr)
+  - [Nested](#nested-bit)
+- [Section two](#section-two)
+
+## TL;DR
+
+Summary.
+
+## Section two
+
+Body.
+"""
+    tree = _inarticle_toc_from_md(md)
+    if len(tree) != 2:
+        fail(f"in-article TOC tree must have two top-level entries, got {len(tree)}")
+    if not tree[0].get("children"):
+        fail("in-article TOC must preserve nested children from embedded TOC")
+    attr = _inarticle_toc_attr(md)
+    if 'data-inarticle-toc="' not in attr:
+        fail("_inarticle_toc_attr must emit data-inarticle-toc on note panels")
+
+
+def assert_library_index_controls() -> None:
+    notes = (DIST / "notes" / "index.html").read_text(encoding="utf-8")
+    for marker in (
+        "library-index-header",
+        "library-index-control",
+        "library-index-pin",
+        "library-index-control-icon",
+        "library-index-rail",
+        "library-index-drawer",
+    ):
+        if marker not in notes:
+            fail(f"notes library index missing {marker}")
+    if 'data-inarticle-toc="' not in notes:
+        fail("notes panels must include data-inarticle-toc for sidebar heading navigation")
+    if 'library-index-group--depth-0' not in notes:
+        fail("notes index must mark top-level category groups for sticky TOC headers")
 
 
 def assert_writing_rows_preserve_images() -> None:
@@ -253,6 +362,8 @@ def main() -> None:
     assert_note_asset_href()
     assert_note_heading_anchors()
     assert_note_cover_html()
+    assert_note_prose_blocks()
+    assert_inarticle_toc_sidebar()
     assert_writing_rows_preserve_images()
 
     site = resolve_site_base(json.loads((DATA / "site.json").read_text(encoding="utf-8")))
@@ -303,14 +414,18 @@ def main() -> None:
         fail("home missing entrance hero")
     if "entrance-atmosphere--tokens" not in home:
         fail("home missing token-based entrance atmosphere (no reference photography)")
-    if 'class="current-index"' not in home:
-        fail("home missing current-index")
-    if 'class="index-status"' in home or ">studying<" in home:
-        fail("home current-index must use topic labels, not -ing status verbs")
-    if 'class="index-topic"' not in home:
-        fail("home current-index missing index-topic labels")
+    if 'class="current-index"' in home:
+        fail("home must not use legacy current-index (use featured record rows)")
+    if not has_html_class(home, "home-featured-records"):
+        fail("home missing featured record rows")
+    if not has_html_class(home, "home-record-row"):
+        fail("home featured records must use record rows")
+    if home.count("SYS-01") < 2:
+        fail("home must feature two Prudential system angles on SYS-01")
+    if "NOTE-2026-005" not in home:
+        fail("home must feature a governance-aligned note")
     if f"{with_base(site, '/systems/')}#SYS-" not in home or f"{with_base(site, '/notes/')}#NOTE-" not in home:
-        fail("home current-index must deep-link to catalogue records, not section indexes")
+        fail("home featured records must deep-link to catalogue records, not section indexes")
     if 'data-library-deck' in home or has_html_class(home, "library-slide"):
         fail("home must not ship the library slide deck")
     if not has_html_class(home, "header-search"):
@@ -331,6 +446,16 @@ def main() -> None:
         fail("home must use viewport-locked home-route shell")
     if not has_html_class(home, "home-shell"):
         fail("home must wrap hero and footer in home-shell for aligned measure")
+    if not has_html_class(home, "home-pacing"):
+        fail("home must use paced snap sections")
+    if not has_html_class(home, "home-snap-proposition"):
+        fail("home missing proposition snap section")
+    if not has_html_class(home, "home-snap-proof"):
+        fail("home missing proof snap section")
+    if not has_html_class(home, "home-record-strip"):
+        fail("home featured records must use horizontal snap strip")
+    if 'class="home-record-rows"' in home:
+        fail("home must not use vertical featured record stack")
     if 'class="system-map-stage"' in home:
         fail("home must not embed the full system map (lives on /systems/)")
     if 'id="workshop"' in home or has_html_class(home, "workshop"):
@@ -341,23 +466,33 @@ def main() -> None:
         fail("home must not show outcome-strip in hero (outcomes live on SYS records)")
     if "professional credentials" in home:
         fail("home still shows cert-count vanity chip")
-    if 'class="proof-strip"' not in home:
-        fail("home missing proof-strip")
+    if 'class="proof-strip"' in home:
+        fail("home must not use legacy proof-strip (split context and platform strips)")
+    if not has_html_class(home, "home-context-strip"):
+        fail("home missing location/context strip")
+    if not has_html_class(home, "home-platform-strip"):
+        fail("home missing platform strip")
+    if "AWS" in home.split("home-platform-strip", 1)[-1]:
+        fail("home platform strip must not list AWS")
     if 'class="cta-row"' in home:
-        fail("home must not ship cta-row (catalogue routes live in header nav; contact is in footer)")
-    hero_before_proof = home.split("proof-strip", 1)[0]
-    if "View systems" in hero_before_proof:
+        fail("home must not ship cta-row (use entrance-actions)")
+    if not has_html_class(home, "entrance-actions"):
+        fail("home missing entrance action links")
+    hero_before_meta = home.split("home-context-strip", 1)[0]
+    if "View systems" in hero_before_meta:
         fail("home hero must not duplicate Systems button")
-    if href_attr(site, "/contact/") in hero_before_proof:
+    if href_attr(site, "/contact/") in hero_before_meta:
         fail("home hero must not ship Connect button (contact is in footer)")
-    if "Specialist" in hero_before_proof:
+    if "Specialist" in hero_before_meta:
         fail("entrance must not use vague Specialist positioning")
-    if "CTO" in hero_before_proof or "CDAO" in hero_before_proof:
+    if "CTO" in hero_before_meta or "CDAO" in hero_before_meta:
         fail("entrance must not claim CTO/CDAO")
     if "Building intelligible systems" not in home:
         fail("home entrance must use thesis headline")
-    if "cost-intelligence platforms" not in home:
-        fail("home lede must name what is shipped, not restating the thesis")
+    if "cost-intelligence" not in home:
+        fail("home lede must name cost-intelligence capability")
+    if "operationally sustainable" not in home:
+        fail("home lede must describe operational sustainability")
     if "The durable part of a platform is not the stack" not in home:
         fail("home philosophy must not replay the lede")
     if "bridging the gap" in home:
@@ -368,20 +503,26 @@ def main() -> None:
         fail("home must not link to removed Career Journey route")
     if href_attr(site, "/credentials/") not in home:
         fail("home must link to credentials via header or current index")
-    if href_attr(site, "/about/") in home.split("proof-strip", 1)[-1]:
+    if href_attr(site, "/about/") in home.split("home-platform-strip", 1)[-1]:
         fail("home footer area must not link to removed Profile route")
     if 'class="home-philosophy"' not in home and 'class="philosophy home-philosophy"' not in home:
         fail("home must surface philosophy blockquote")
-    if 'class="home-competencies"' not in home:
-        fail("home must surface core competencies in the entrance")
-    if 'class="home-competency-list"' not in home:
-        fail("home competencies must use editorial list markup")
-    if not has_html_class(home, "home-competency-card"):
-        fail("home competencies must use compact card layout")
-    if "Data Engineering Leadership" not in home:
-        fail("home competencies must include export competency titles")
+    if "Operating principle" not in home:
+        fail("home must label the philosophy block")
+    if not has_html_class(home, "home-practice-areas"):
+        fail("home must surface practice areas")
+    if not has_html_class(home, "home-practice-item"):
+        fail("home practice areas must use list items")
+    if "Governed data platforms" not in home:
+        fail("home practice areas must include governed data platforms")
+    if "Product & User Focus" in home:
+        fail("home must not surface Product & User Focus competency card")
+    if "Data Engineering Leadership" in home:
+        fail("home must not surface legacy competency cards")
+    if 'class="home-practice-proof"' in home:
+        fail("home practice areas must not show catalogue id proof links")
     if f"{with_base(site, '/notes/')}#NOTE-" not in home:
-        fail("home current-index must link into notes catalogue records")
+        fail("home featured records must link into notes catalogue records")
     if "folio-toolbar" in home:
         fail("home must not ship an inert folio-toolbar")
     if 'class="operating-themes"' in home:
@@ -497,7 +638,7 @@ def main() -> None:
         fail("systems must not use legacy scroll longform layout")
     if "Enterprise Data" not in systems:
         fail("systems index must include enterprise catalogue section")
-    if 'class="library-index-group"' not in systems:
+    if 'library-index-group--depth-' not in systems:
         fail("systems index must use non-clickable group headers for nested sections")
     if 'class="proof-case"' not in systems:
         fail("systems catalogue must include proof-case rows")
@@ -516,6 +657,23 @@ def main() -> None:
         fail("SYS-01 record must carry quantified impact lines")
     if 'related-paths-label' not in systems:
         fail("systems record panels must include related paths")
+    sys01_related = re.search(
+        r'<article class="library-panel[^"]*"[^>]*data-record="SYS-01"[^>]*>[\s\S]*?'
+        r'<p class="related-paths meta">([\s\S]*?)</p>',
+        systems,
+    )
+    if not sys01_related:
+        fail("SYS-01 library panel must include related paths")
+    sys01_related_html = sys01_related.group(1)
+    if "Credentials" in sys01_related_html or "Notes" in sys01_related_html:
+        if sys01_related_html.count("<a ") <= 2:
+            fail("SYS-01 related paths must not be only generic Credentials and Notes")
+    if "SYS-02" not in sys01_related_html and "NOTE-2026-005" not in sys01_related_html:
+        fail("SYS-01 related paths must link sibling records from system_map")
+    if "CEI internals are not published" in systems:
+        fail("Prudential evidence must not use retired CEI internals disclaimer")
+    if "Internal platforms and dashboards are not linked" not in systems:
+        fail("Prudential evidence must disclose public record without linking internal platforms")
     if not has_html_class(systems, "library-strip"):
         fail("systems page must include cross-link strip")
 
@@ -572,6 +730,12 @@ def main() -> None:
         fail("styles.css missing scroll-behavior: auto for prefers-reduced-motion")
     if "repeat(3, minmax(0, 1fr))" in css and "outcome-strip" in css:
         fail("styles.css must not keep outcome-strip 3-column grid in hero")
+    if re.search(
+        r"\.home-snap-proposition\.home-hero\s*\{[^}]*min-height:\s*calc\(100dvh",
+        css,
+        re.S,
+    ):
+        fail("home proposition must not lock to full viewport height (featured records should peek)")
     if "background-color: var(--bg-deep)" not in css:
         fail("styles.css missing solid background-color: var(--bg-deep)")
     if "position: sticky" not in css:
@@ -684,7 +848,7 @@ def main() -> None:
         fail("work page missing SkillUP heading id")
     if 'id="stb-data-engineer-applied-ml"' not in portfolio:
         fail("work page missing STB applied-ML enterprise case")
-    if 'class="library-index-group"' not in portfolio:
+    if 'library-index-group--depth-' not in portfolio:
         fail("systems index must use non-clickable group headers for nested sections")
     if "proof-deck" not in portfolio:
         fail("enterprise case panels must use proof-deck styling")
@@ -773,7 +937,7 @@ def main() -> None:
 
     if 'class="library-index-sub"' not in credentials:
         fail("credentials index missing issuer subcategory list")
-    if 'class="library-index-group"' not in credentials:
+    if 'library-index-group--depth-' not in credentials:
         fail("credentials professional section must be a non-clickable group header")
     if 'class="credentials-featured-grid"' not in credentials:
         fail("credentials featured panel must use credential cards grid")
@@ -801,7 +965,7 @@ def main() -> None:
     if not has_html_class(credentials, "library-index"):
         fail("credentials missing library index")
     if 'data-panel-id="core-competencies"' in credentials:
-        fail("credentials must not host core competencies (they live on home)")
+        fail("credentials must not host core competencies (practice areas live on home)")
     if 'data-panel-id="career-journey"' in credentials:
         fail("credentials must not host career journey panel")
     if 'class="library-index-footer"' in credentials:
@@ -855,7 +1019,7 @@ def main() -> None:
         fail("notes must not duplicate footer external links in the index")
     if 'data-panel-id="NOTE-' not in notes:
         fail("notes index must list individual NOTE-* catalogue entries")
-    if 'class="library-index-group"' not in notes:
+    if 'library-index-group--depth-' not in notes:
         fail("notes index must group essays by category")
     if "note-taxonomy" not in notes or "note-category" not in notes:
         fail("notes panels must show category taxonomy")
@@ -867,6 +1031,7 @@ def main() -> None:
         fail("notes page must not show legacy publication index lede")
     if 'class="library-index-meta"' not in notes:
         fail("notes index entries should show publication date as meta")
+    assert_library_index_controls()
     if "Part 1: How AI is Reshaping" not in notes:
         fail("notes series index should show part titles without repeating series name")
     note_entry_bodies = re.findall(
