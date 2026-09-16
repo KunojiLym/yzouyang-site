@@ -46,12 +46,10 @@ main.page.home-route {
 
 @media (prefers-reduced-motion: no-preference) {
   .home-snap-section:not(.is-in-view) .home-snap-inner {
-    opacity: 0.55;
     transform: translateY(1rem);
   }
 
   .home-snap-section.is-in-view .home-snap-inner {
-    opacity: 1;
     transform: none;
   }
 }
@@ -352,7 +350,7 @@ body:has(main.home-route) .site-header {
 .home-context-strip li,
 .home-platform-strip li {
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--text-default);
   padding: var(--space-tight) var(--space-3);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);

@@ -64,8 +64,9 @@ async function assertSkipLink(page) {
 }
 
 async function assertHomeEntrance(page) {
-  await expect(page.locator(".current-index li")).toHaveCount(2);
-  await expect(page.locator(".home-competency-list .home-competency").first()).toBeVisible();
+  await expect(page.locator(".home-featured-records")).toBeVisible();
+  await expect(page.locator(".home-record-row")).toHaveCount(3);
+  await expect(page.locator(".home-practice-item").first()).toBeVisible();
 }
 
 async function assertFooterLinks(page) {
@@ -242,9 +243,8 @@ test.describe("library shell", () => {
 
   test("notes library opens a writing panel", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop sidebar coverage");
-    await page.goto("/notes/");
+    await page.goto("/notes/#NOTE-2026-005", { waitUntil: "load" });
     await expect(page.locator(".library-shell")).toBeVisible();
-    await libraryIndexPanel(page, "NOTE-2026-005").click();
     await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"].is-active')).toBeVisible();
   });
 
