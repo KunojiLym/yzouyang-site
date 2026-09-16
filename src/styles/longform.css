@@ -232,8 +232,7 @@
 .case-beats {
   display: grid;
   grid-template-columns: minmax(4.75rem, 6.5rem) minmax(0, 1fr);
-  column-gap: var(--space-4);
-  row-gap: var(--space-3);
+  gap: var(--space-3) var(--space-4);
   margin: 0;
 }
 
@@ -249,7 +248,7 @@
   text-transform: uppercase;
   color: var(--text-muted);
   align-self: start;
-  padding-top: 0.125rem;
+  padding-top: var(--space-hairline);
 }
 
 .case-beats dd {

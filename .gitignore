@@ -20,6 +20,9 @@ playwright/.cache/
 # Cloudflare Worker (collect/)
 collect/.wrangler/
 
+# Vendored note assets live under assets/notes/ — not repo root
+/NOTE-*/
+
 # Ad hoc data / WP export scratch files (not part of the tracked data contract)
 data/diy-events*.ndjson
 docs/_about-wp*

@@ -221,8 +221,7 @@ body:has(main.home-route) .site-header {
 }
 
 .home-record-strip {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden auto;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: var(--space-6);
   overscroll-behavior-x: contain;
