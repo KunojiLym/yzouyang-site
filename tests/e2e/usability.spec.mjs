@@ -193,7 +193,9 @@ test.describe("home", () => {
     await expect(page.locator(".home-context-strip li").first()).toContainText("Singapore");
     await expect(page.locator(".entrance-actions")).toBeVisible();
     await assertHomeEntrance(page);
-    await expect(page.getByText("Governed data platforms")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Governed data platforms", exact: true })
+    ).toBeVisible();
     await expect(page.getByText("Operating principle")).toBeVisible();
     await expect(page.locator(".home-entry-grid")).toHaveCount(0);
     await expect(page.locator("main.home-route")).toBeVisible();
