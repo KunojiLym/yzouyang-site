@@ -10,7 +10,7 @@ Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. Legacy stubs: `/about/`, `
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
-**Writing** is on `/notes/`. Header nav is **Systems · Notes · Credentials**. Blog / Medium / LinkedIn / GitHub live in the library-card footer.
+**Writing** is on `/notes/` in **Reading mode** (long-form essays — see [design-system.md](docs/design-system.md#reading-mode-notes-only)). Header nav is **Systems · Notes · Credentials**. Blog / Medium / LinkedIn / GitHub live in the library-card footer.
 
 Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 
@@ -57,8 +57,10 @@ Refresh export:
 
 ```bash
 # in personal-content
-python3 scripts/export_public.py yingzhao --check
+uv run --with pyyaml python scripts/export_public.py yingzhao --check
+uv run --with pyyaml python scripts/export_public.py yingzhao --vendor-assets ../yzouyang-site/assets/notes
 cp people/yingzhao/data/export_public.json ../yzouyang-site/data/export_public.json
+cd ../yzouyang-site && uv run python scripts/build.py && uv run python scripts/test_site_build.py
 ```
 
 `data/export_public.json` must include `_meta.schema_version == 1` and
@@ -80,7 +82,7 @@ Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hos
 ## Docs
 
 - [docs/site-builder.md](docs/site-builder.md) — build pipeline, config map, IA rules
-- [docs/design-system.md](docs/design-system.md) — senior enterprise briefing contract (tokens, proof hierarchy, components)
+- [docs/design-system.md](docs/design-system.md) — tokens, **Reading mode vs Catalogue mode**, proof hierarchy, components
 - [docs/preview-uat.md](docs/preview-uat.md) — offline preview + UAT branch publish
 - [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map

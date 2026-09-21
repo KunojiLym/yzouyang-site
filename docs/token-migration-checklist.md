@@ -132,3 +132,16 @@ Run `grep -rn "border-radius" src/styles/*.css` at migration time to get current
 - `motion.css`, `base.css`: no raw font-size/spacing values present — nothing to migrate.
 - `search.css`: only 2 spacing values, both trivial exact-matches (included above for completeness).
 - Color values in `tokens.css` itself: unchanged, this migration is type/space/radius/breakpoint only.
+
+## Reading tokens (Notes — post Phase 2)
+
+Added in `tokens.css` for `/notes/` essay panels only (not site-wide body):
+
+| Token | Role |
+|---|---|
+| `--note-read-max` | Prose measure (`42rem`) |
+| `--note-read-lead` | Essay line-height (`1.72`) |
+| `--text-dropcap` | First-paragraph drop cap size |
+| `--note-image-bg` | Neutral mat behind inline figures / covers |
+
+See [design-system.md](design-system.md#reading-mode-notes-only).

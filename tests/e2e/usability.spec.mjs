@@ -28,6 +28,25 @@ function libraryIndexPanel(page, panelId) {
   return page.locator(`.library-index-list [data-panel-id="${panelId}"]`).first();
 }
 
+async function activeIndexRowInView(page) {
+  return page.evaluate(() => {
+    const body = document.querySelector(".library-index-body");
+    const active = document.querySelector(
+      ".library-index-trigger[aria-current='location']"
+    );
+    if (!body || !active) return false;
+    const row = active.closest("li");
+    if (!row) return false;
+    const margin = 12;
+    const bodyRect = body.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    return (
+      rowRect.top >= bodyRect.top + margin - 1 &&
+      rowRect.bottom <= bodyRect.bottom - margin + 1
+    );
+  });
+}
+
 async function noHorizontalOverflow(page) {
   const overflow = await page.evaluate(() => {
     return document.documentElement.scrollWidth > window.innerWidth + 2;
@@ -45,8 +64,9 @@ async function assertSkipLink(page) {
 }
 
 async function assertHomeEntrance(page) {
-  await expect(page.locator(".current-index li")).toHaveCount(2);
-  await expect(page.locator(".home-competency-list .home-competency").first()).toBeVisible();
+  await expect(page.locator(".home-featured-records")).toBeVisible();
+  await expect(page.locator(".home-record-row")).toHaveCount(3);
+  await expect(page.locator(".home-practice-item").first()).toBeVisible();
 }
 
 async function assertFooterLinks(page) {
@@ -164,13 +184,19 @@ test.describe("home", () => {
     expect(Number.parseInt(type.fontWeight, 10)).toBeGreaterThanOrEqual(600);
   });
 
-  test("current index, proof strip, and competencies", async ({ page }) => {
+  test("paced sections, featured strip, and practice areas", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator(".current-index li")).toHaveCount(2);
-    await expect(page.locator(".proof-strip")).toBeVisible();
-    await expect(page.locator(".proof-strip li").first()).toContainText("Singapore");
+    await expect(page.locator(".home-snap-section")).toHaveCount(4);
+    await expect(page.locator(".home-record-row")).toHaveCount(3);
+    await expect(page.locator(".home-record-strip")).toBeVisible();
+    await expect(page.locator(".home-context-strip")).toBeVisible();
+    await expect(page.locator(".home-context-strip li").first()).toContainText("Singapore");
+    await expect(page.locator(".entrance-actions")).toBeVisible();
     await assertHomeEntrance(page);
-    await expect(page.getByText("Data Engineering Leadership")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Governed data platforms", exact: true })
+    ).toBeVisible();
+    await expect(page.getByText("Operating principle")).toBeVisible();
     await expect(page.locator(".home-entry-grid")).toHaveCount(0);
     await expect(page.locator("main.home-route")).toBeVisible();
     await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
@@ -219,10 +245,27 @@ test.describe("library shell", () => {
 
   test("notes library opens a writing panel", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop sidebar coverage");
-    await page.goto("/notes/");
+    await page.goto("/notes/#NOTE-2026-005", { waitUntil: "load" });
     await expect(page.locator(".library-shell")).toBeVisible();
-    await libraryIndexPanel(page, "NOTE-2026-005").click();
     await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"].is-active')).toBeVisible();
+  });
+
+  test("notes deep link scrolls catalogue index to active article", async ({
+    page,
+    context,
+  }) => {
+    test.skip(test.info().project.name === "mobile", "desktop sidebar coverage");
+    await context.addInitScript(() => {
+      localStorage.setItem("yz-library-index-pinned:/notes/", "1");
+    });
+    await page.goto("/notes/#NOTE-2025-021", { waitUntil: "load" });
+    await expect(
+      page.locator('.library-panel[data-panel-id="NOTE-2025-021"].is-active')
+    ).toBeVisible();
+    await expect(
+      page.locator('.library-index-trigger[aria-current="location"]')
+    ).toHaveAttribute("data-panel-id", "NOTE-2025-021");
+    await expect.poll(() => activeIndexRowInView(page)).toBe(true);
   });
 
   test("credentials issuer panel uses credential cards", async ({ page }) => {
@@ -268,6 +311,29 @@ test.describe("library shell", () => {
     await expect(page.locator(".library-index-list")).toBeHidden();
     await page.locator(".library-back").click();
     await expect(page.locator(".library-index-list")).toBeVisible();
+  });
+
+  test("notes index starts collapsed and Escape dismisses overlay", async ({ page, context }) => {
+    test.skip(test.info().project.name === "mobile", "desktop rail overlay coverage");
+    await context.addInitScript(() => {
+      localStorage.clear();
+    });
+    await page.goto("/notes/");
+    await expect(page.locator(".library-split")).toHaveClass(/is-index-unpinned/);
+    await expect(page.locator(".library-split")).toHaveClass(/is-index-collapsed/);
+    await expect(page.locator(".library-reading-context")).toBeVisible();
+    const expand = page.locator(".library-index-rail-expand");
+    await expect(expand).toHaveAttribute("aria-expanded", "false");
+    await expand.click();
+    await expect(page.locator(".library-split")).toHaveClass(/is-index-overlay-open/);
+    await expect(page.locator(".library-reading-context")).toBeHidden();
+    await expect(expand).toHaveAttribute("aria-expanded", "true");
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".library-split")).not.toHaveClass(/is-index-overlay-open/);
+    await expect(page.locator(".library-reading-context")).toBeVisible();
+    await expect(expand).toHaveAttribute("aria-expanded", "false");
+    await page.locator(".library-index-rail-pin").click();
+    await expect(page.locator(".library-reading-context")).toBeHidden();
   });
 });
 

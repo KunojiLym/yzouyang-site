@@ -131,6 +131,11 @@
     const split = shell.querySelector(".library-split");
     const overview = shell.querySelector(".library-overview");
     const backBtn = shell.querySelector(".library-back");
+    const showIndexBtn = shell.querySelector(".library-index-show");
+    const pinBtn = shell.querySelector(".library-index-pin");
+    const hideBtn = shell.querySelector(".library-index-hide");
+    const railExpandBtn = shell.querySelector(".library-index-rail-expand");
+    const railPinBtn = shell.querySelector(".library-index-rail-pin");
     const scroller = shell.querySelector(".library-panels");
     const panels = [...shell.querySelectorAll(".library-panel[data-panel-id]")];
     const indexItems = [
@@ -139,10 +144,404 @@
     const panelById = new Map(
       panels.map((panel) => [panel.getAttribute("data-panel-id"), panel])
     );
+
+    function libraryIndexPinKey() {
+      let path = window.location.pathname;
+      if (!path.endsWith("/")) {
+        const baseSlash = path.lastIndexOf("/");
+        path = baseSlash >= 0 ? `${path.slice(0, baseSlash + 1)}` : "/";
+      }
+      return `yz-library-index-pinned:${path}`;
+    }
+
+    function defaultIndexPinnedForRoute() {
+      return !window.location.pathname.includes("/notes/");
+    }
+
+    const INDEX_PIN_KEY = libraryIndexPinKey();
     let activeIndexId = null;
+    let indexPinned = true;
+    let indexDismissed = false;
+    let indexHoverOpen = false;
+    let indexHoverCloseTimer = null;
+    const indexNav = shell.querySelector(".library-index");
+    const libraryPane = shell.querySelector(".library-pane");
+    const panelsRoot = shell.querySelector(".library-panels");
+    let readingContext = libraryPane?.querySelector(".library-reading-context");
+
+    if (libraryPane && panelsRoot && !readingContext) {
+      readingContext = document.createElement("div");
+      readingContext.className = "library-reading-context";
+      readingContext.hidden = true;
+      readingContext.innerHTML =
+        '<button type="button" class="library-reading-context-title"></button>' +
+        '<span class="library-reading-context-sep" aria-hidden="true">·</span>' +
+        '<button type="button" class="library-reading-context-section"></button>';
+      libraryPane.insertBefore(readingContext, panelsRoot);
+    }
+
+    const readingContextTitle = readingContext?.querySelector(
+      ".library-reading-context-title"
+    );
+    const readingContextSection = readingContext?.querySelector(
+      ".library-reading-context-section"
+    );
+    const readingContextSep = readingContext?.querySelector(
+      ".library-reading-context-sep"
+    );
+
+    if (readingContextTitle) {
+      readingContextTitle.setAttribute("aria-label", "Back to top of article");
+    }
+    if (readingContextSection) {
+      readingContextSection.setAttribute("aria-label", "Jump to current section");
+    }
 
     function isMobileLayout() {
       return window.matchMedia("(max-width: 48rem)").matches;
+    }
+
+    function isRailLayout() {
+      return window.matchMedia("(min-width: 49rem)").matches;
+    }
+
+    function isIndexCollapsed() {
+      return !isDrawerOpen();
+    }
+
+    function handleSplitEdgeHover(event) {
+      if (isMobileLayout() || indexPinned || indexDismissed || !isIndexCollapsed()) {
+        return;
+      }
+      const edge = split.getBoundingClientRect().left + 36;
+      if (event.clientX <= edge) {
+        openIndexHover();
+      }
+    }
+
+    function syncPinControls() {
+      const aria = indexPinned
+        ? "Unpin table of contents panel"
+        : "Pin table of contents panel";
+      const title = indexPinned
+        ? "Unpin panel (reveal on hover)"
+        : "Pin panel (keep open)";
+      if (pinBtn) {
+        pinBtn.setAttribute("aria-pressed", indexPinned ? "true" : "false");
+        pinBtn.title = title;
+        pinBtn.setAttribute("aria-label", aria);
+      }
+      if (railPinBtn) {
+        railPinBtn.setAttribute("aria-pressed", indexPinned ? "true" : "false");
+        railPinBtn.title = title;
+        railPinBtn.setAttribute("aria-label", aria);
+      }
+    }
+
+    function readStoredBool(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw === "1") return true;
+        if (raw === "0") return false;
+      } catch (_) {
+        /* ignore */
+      }
+      return fallback;
+    }
+
+    function writeStoredBool(key, value) {
+      try {
+        localStorage.setItem(key, value ? "1" : "0");
+      } catch (_) {
+        /* ignore */
+      }
+    }
+
+    function isDrawerOpen() {
+      if (indexDismissed) return false;
+      if (indexPinned) return true;
+      return indexHoverOpen;
+    }
+
+    function clearIndexHoverTimer() {
+      if (indexHoverCloseTimer) {
+        clearTimeout(indexHoverCloseTimer);
+        indexHoverCloseTimer = null;
+      }
+    }
+
+    function openIndexHover() {
+      if (isMobileLayout() || indexPinned || indexDismissed) return;
+      clearIndexHoverTimer();
+      indexHoverOpen = true;
+      syncIndexVisibility();
+      scrollActiveIndexIntoView(activeIndexId);
+    }
+
+    function closeIndexHover() {
+      if (isMobileLayout() || indexPinned || indexDismissed) return;
+      clearIndexHoverTimer();
+      indexHoverOpen = false;
+      syncIndexVisibility();
+    }
+
+    function scheduleCloseIndexHover() {
+      if (isMobileLayout() || indexPinned || indexDismissed) return;
+      clearIndexHoverTimer();
+      indexHoverCloseTimer = setTimeout(closeIndexHover, 220);
+    }
+
+    function syncIndexControls() {
+      syncPinControls();
+      const collapsed = !isDrawerOpen();
+      const expanded = !collapsed;
+      if (hideBtn) {
+        hideBtn.hidden = collapsed;
+        hideBtn.setAttribute("aria-pressed", "false");
+        hideBtn.title = "Hide panel";
+        hideBtn.setAttribute("aria-label", "Hide table of contents panel");
+      }
+      if (railExpandBtn) {
+        railExpandBtn.setAttribute("aria-pressed", collapsed ? "false" : "true");
+        railExpandBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+        railExpandBtn.title = indexDismissed
+          ? "Show contents"
+          : "Show contents (or hover the rail when unpinned)";
+        railExpandBtn.setAttribute("aria-label", "Show table of contents");
+      }
+      if (showIndexBtn) {
+        showIndexBtn.hidden = !collapsed || isMobileLayout() || isRailLayout();
+        showIndexBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+      }
+    }
+
+    function isOverlayMode() {
+      return isRailLayout() && !indexPinned;
+    }
+
+    function syncIndexVisibility() {
+      if (!split) return;
+      if (isMobileLayout()) {
+        split.classList.remove("is-index-collapsed", "is-index-overlay-open", "is-index-unpinned");
+        syncIndexControls();
+        syncReadingContext();
+        return;
+      }
+      const drawerOpen = isDrawerOpen();
+      if (isOverlayMode()) {
+        split.classList.add("is-index-collapsed", "is-index-unpinned");
+        split.classList.toggle("is-index-overlay-open", drawerOpen);
+      } else {
+        split.classList.remove("is-index-overlay-open", "is-index-unpinned");
+        split.classList.toggle("is-index-collapsed", !drawerOpen);
+      }
+      syncIndexControls();
+      syncReadingContext();
+    }
+
+    function showIndexDrawer() {
+      indexDismissed = false;
+      if (!indexPinned) {
+        indexHoverOpen = true;
+      }
+      syncIndexVisibility();
+      scrollActiveIndexIntoView(activeIndexId);
+    }
+
+    function hideIndexDrawer() {
+      indexDismissed = true;
+      indexHoverOpen = false;
+      clearIndexHoverTimer();
+      syncIndexVisibility();
+    }
+
+    function setIndexPinned(next) {
+      indexPinned = Boolean(next);
+      writeStoredBool(INDEX_PIN_KEY, indexPinned);
+      if (indexPinned) {
+        indexDismissed = false;
+      } else {
+        indexHoverOpen = false;
+      }
+      syncIndexVisibility();
+      if (indexPinned) scrollActiveIndexIntoView(activeIndexId);
+    }
+
+    indexPinned = readStoredBool(INDEX_PIN_KEY, defaultIndexPinnedForRoute());
+
+    function parseInarticleToc(panelId) {
+      const panel = panelById.get(panelId);
+      if (!panel) return [];
+      const raw = panel.getAttribute("data-inarticle-toc") || "";
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function clearInarticleToc() {
+      shell.querySelectorAll(".library-index-inarticle-wrap").forEach((node) => node.remove());
+    }
+
+    let panelScrollHandler = null;
+
+    function unbindPanelScrollSpy() {
+      if (panelScrollHandler && scroller) {
+        scroller.removeEventListener("scroll", panelScrollHandler);
+      }
+      panelScrollHandler = null;
+    }
+
+    function bindPanelScrollSpy() {
+      unbindPanelScrollSpy();
+      if (!scroller) return;
+      panelScrollHandler = () => {
+        syncInarticleTocHighlight();
+        syncReadingContext();
+      };
+      scroller.addEventListener("scroll", panelScrollHandler, { passive: true });
+      panelScrollHandler();
+    }
+
+    function currentSectionHeading(panel) {
+      if (!panel || !scroller) return null;
+      const headings = [...panel.querySelectorAll(".note-section-heading[id]")];
+      if (!headings.length) return null;
+      const scrollerRect = scroller.getBoundingClientRect();
+      const probe = 48;
+      let current = headings[0];
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top - scrollerRect.top <= probe) {
+          current = heading;
+        }
+      }
+      return current;
+    }
+
+    function shouldShowReadingContext() {
+      if (!activeIndexId || !split?.classList.contains("is-detail-open")) return false;
+      if (isMobileLayout()) return true;
+      if (indexPinned) return false;
+      return !isDrawerOpen();
+    }
+
+    function syncReadingContext() {
+      if (!readingContext) return;
+      const show = shouldShowReadingContext();
+      readingContext.hidden = !show;
+      split?.classList.toggle("is-reading-context-visible", show);
+      if (!show || !activeIndexId) return;
+
+      const panel = panelById.get(activeIndexId);
+      if (!panel) return;
+
+      const titleEl = panel.querySelector(".library-panel-title");
+      if (readingContextTitle && titleEl) {
+        readingContextTitle.textContent = titleEl.textContent.trim();
+        readingContextTitle.onclick = (event) => {
+          event.preventDefault();
+          scrollPanelTop(activeIndexId);
+        };
+      }
+
+      const section = currentSectionHeading(panel);
+      if (readingContextSection && readingContextSep) {
+        if (section) {
+          readingContextSection.hidden = false;
+          readingContextSep.hidden = false;
+          readingContextSection.textContent = section.textContent.trim();
+          readingContextSection.onclick = (event) => {
+            event.preventDefault();
+            scrollToAnchor(panel, section.id);
+          };
+        } else {
+          readingContextSection.hidden = true;
+          readingContextSep.hidden = true;
+        }
+      }
+    }
+
+    function syncInarticleTocHighlight() {
+      if (!activeIndexId || !scroller) return;
+      const panel = panelById.get(activeIndexId);
+      if (!panel) return;
+      const section = currentSectionHeading(panel);
+      const links = [
+        ...shell.querySelectorAll(
+          ".library-index-inarticle-wrap .library-index-inarticle-link[data-anchor-id]"
+        ),
+      ];
+      if (!section || !links.length) return;
+      links.forEach((link) => {
+        const match = link.getAttribute("data-anchor-id") === section.id;
+        if (match) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    }
+
+    function scrollPanelTop(panelId) {
+      const panel = panelById.get(panelId);
+      if (!panel) return;
+      scrollToAnchor(panel, `${panelId}-top`);
+    }
+
+    function renderInarticleList(items, depth) {
+      const ul = document.createElement("ul");
+      ul.className = depth === 0 ? "library-index-inarticle" : "library-index-inarticle-sub";
+      items.forEach((item) => {
+        if (!item || !item.id) return;
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `library-index-inarticle-link library-index-inarticle-link--depth-${Math.min(depth, 2)}`;
+        btn.textContent = item.label || item.id;
+        btn.setAttribute("data-anchor-id", item.id);
+        btn.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const panel = panelById.get(activeIndexId);
+          scrollToAnchor(panel, item.id);
+        });
+        li.appendChild(btn);
+        const children = Array.isArray(item.children) ? item.children : [];
+        if (children.length) {
+          li.appendChild(renderInarticleList(children, depth + 1));
+        }
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    function renderInarticleToc(panelId) {
+      clearInarticleToc();
+      if (!panelId) return;
+      const items = parseInarticleToc(panelId);
+      if (!items.length) return;
+      const trigger = indexItems.find(
+        (item) => item.getAttribute("data-panel-id") === panelId
+      );
+      const row = trigger?.closest("li");
+      if (!row) return;
+
+      const wrap = document.createElement("div");
+      wrap.className = "library-index-inarticle-wrap";
+
+      const topBtn = document.createElement("button");
+      topBtn.type = "button";
+      topBtn.className = "library-index-inarticle-top";
+      topBtn.textContent = "↑ Top";
+      topBtn.setAttribute("aria-label", "Back to top of article");
+      topBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        scrollPanelTop(panelId);
+      });
+      wrap.appendChild(topBtn);
+      wrap.appendChild(renderInarticleList(items, 0));
+      row.appendChild(wrap);
     }
 
     function updateHash(indexId) {
@@ -164,29 +563,61 @@
       });
     }
 
+    function scrollActiveIndexIntoView(indexId) {
+      if (!indexId) return;
+      const indexBody = shell.querySelector(".library-index-body");
+      if (!indexBody) return;
+      const trigger = indexItems.find(
+        (item) => item.getAttribute("data-panel-id") === indexId
+      );
+      const row = trigger?.closest("li");
+      if (!row) return;
+
+      const run = () => {
+        const margin = 12;
+        const bodyRect = indexBody.getBoundingClientRect();
+        const rowRect = row.getBoundingClientRect();
+        if (rowRect.top < bodyRect.top + margin) {
+          indexBody.scrollTop += rowRect.top - bodyRect.top - margin;
+        } else if (rowRect.bottom > bodyRect.bottom - margin) {
+          indexBody.scrollTop += rowRect.bottom - bodyRect.bottom + margin;
+        }
+      };
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(run);
+      });
+    }
+
     function syncBackButton() {
       if (!backBtn) return;
       backBtn.hidden = !activeIndexId || !isMobileLayout() || !split?.classList.contains("is-detail-open");
     }
 
+    function findAnchorInPanel(panel, requestedId) {
+      if (!panel || !requestedId) return null;
+      try {
+        return panel.querySelector(`#${CSS.escape(requestedId)}`);
+      } catch (_) {
+        return panel.querySelector(`[id="${requestedId}"]`);
+      }
+    }
+
     function scrollToAnchor(panel, anchorId) {
       if (!anchorId || !scroller || !panel) return;
-      let el = null;
-      try {
-        el = panel.querySelector(`#${CSS.escape(anchorId)}`);
-      } catch (_) {
-        el = panel.querySelector(`[id="${anchorId}"]`);
-      }
+      const el = findAnchorInPanel(panel, anchorId);
       if (!el) return;
       const scroll = () => {
         const top =
           el.getBoundingClientRect().top -
           scroller.getBoundingClientRect().top +
           scroller.scrollTop;
+        const stickyOffset =
+          el.classList.contains("note-top-anchor") || anchorId.endsWith("-top") ? 0 : 12;
         const reduceMotion =
           window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         scroller.scrollTo({
-          top: Math.max(0, top - 12),
+          top: Math.max(0, top - stickyOffset),
           behavior: reduceMotion ? "auto" : "smooth",
         });
       };
@@ -213,18 +644,22 @@
         const firstId = first?.getAttribute("data-panel-id");
         if (firstId) return resolveTarget(firstId);
       }
-      for (const panel of panels) {
-        let anchor = null;
-        try {
-          anchor = panel.querySelector(`#${CSS.escape(requestedId)}`);
-        } catch (_) {
-          anchor = panel.querySelector(`[id="${requestedId}"]`);
+      if (activeIndexId) {
+        const activePanel = panelById.get(activeIndexId);
+        if (activePanel && findAnchorInPanel(activePanel, requestedId)) {
+          return {
+            panelId: activeIndexId,
+            anchorId: requestedId,
+            indexId: activeIndexId,
+          };
         }
-        if (anchor) {
+      }
+      for (const panel of panels) {
+        if (findAnchorInPanel(panel, requestedId)) {
           return {
             panelId: panel.getAttribute("data-panel-id"),
             anchorId: requestedId,
-            indexId: requestedId,
+            indexId: panel.getAttribute("data-panel-id"),
           };
         }
       }
@@ -237,6 +672,9 @@
 
     function showOverview() {
       activeIndexId = null;
+      if (!indexPinned) {
+        indexHoverOpen = false;
+      }
       panels.forEach((panel) => {
         panel.hidden = true;
         panel.classList.remove("is-active");
@@ -244,7 +682,10 @@
       if (overview) overview.hidden = false;
       if (split) split.classList.remove("is-detail-open");
       setIndexHighlight(null);
+      clearInarticleToc();
+      unbindPanelScrollSpy();
       syncBackButton();
+      syncIndexVisibility();
       updateHash(null);
     }
 
@@ -263,8 +704,12 @@
       if (overview) overview.hidden = true;
       if (split) split.classList.add("is-detail-open");
       setIndexHighlight(target.indexId);
+      renderInarticleToc(target.indexId);
+      scrollActiveIndexIntoView(target.indexId);
       syncBackButton();
+      syncIndexVisibility();
       updateHash(target.indexId);
+      bindPanelScrollSpy();
       if (scroller && !target.anchorId) scroller.scrollTop = 0;
       if (target.anchorId) scrollToAnchor(panel, target.anchorId);
     }
@@ -290,6 +735,9 @@
         const resolved = resolveTarget(hashId);
         if (resolved) {
           showPanel(resolved);
+          return;
+        }
+        if (activeIndexId && panelById.has(activeIndexId)) {
           return;
         }
       }
@@ -325,20 +773,92 @@
       });
     }
 
+    if (pinBtn) {
+      pinBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        setIndexPinned(!indexPinned);
+      });
+    }
+
+    if (railExpandBtn) {
+      railExpandBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        showIndexDrawer();
+      });
+    }
+
+    if (railPinBtn) {
+      railPinBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        setIndexPinned(!indexPinned);
+      });
+    }
+
+    if (hideBtn) {
+      hideBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        hideIndexDrawer();
+      });
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (!isDrawerOpen()) return;
+      if (indexPinned && !isMobileLayout()) return;
+      event.preventDefault();
+      hideIndexDrawer();
+    });
+
+    if (showIndexBtn) {
+      showIndexBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        showIndexDrawer();
+      });
+    }
+
+    if (indexNav && isRailLayout()) {
+      indexNav.addEventListener("mouseenter", openIndexHover);
+      indexNav.addEventListener("mouseleave", scheduleCloseIndexHover);
+      indexNav.addEventListener("focusin", openIndexHover);
+      indexNav.addEventListener("focusout", (event) => {
+        if (!indexNav.contains(event.relatedTarget)) {
+          scheduleCloseIndexHover();
+        }
+      });
+    }
+
+    if (split && isRailLayout()) {
+      split.addEventListener("mousemove", handleSplitEdgeHover);
+    }
+
     shell.addEventListener("click", (event) => {
       if (event.target.closest("[data-library-back]")) {
         event.preventDefault();
         showOverview();
+        return;
       }
+      const link = event.target.closest(".note-body a[href^='#']");
+      if (!link) return;
+      const href = link.getAttribute("href") || "";
+      if (href.length < 2) return;
+      const anchorId = decodeURIComponent(href.slice(1));
+      if (!anchorId || panelById.has(anchorId)) return;
+      const panel = link.closest(".library-panel");
+      if (!panel || panel.hidden) return;
+      event.preventDefault();
+      scrollToAnchor(panel, anchorId);
     });
 
     window.addEventListener("hashchange", applyHash);
     window.addEventListener("resize", () => {
       syncBackButton();
+      syncIndexVisibility();
       if (isMobileLayout() && !window.location.hash) {
         showOverview();
       }
     });
+    syncIndexControls();
+    syncIndexVisibility();
     applyHash();
   }
 
@@ -506,6 +1026,46 @@
     observer.observe(mount, { childList: true, subtree: true });
   }
 
+  function initHomePacing() {
+    const main = document.querySelector("main.home-route");
+    if (!main) return;
+    const sections = main.querySelectorAll(".home-snap-section");
+    if (!sections.length) return;
+
+    const reducedMotion =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!reducedMotion && "IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            entry.target.classList.toggle("is-in-view", entry.isIntersecting);
+          });
+        },
+        { root: null, rootMargin: "-12% 0px -28% 0px", threshold: 0.12 }
+      );
+      sections.forEach((section) => observer.observe(section));
+    } else {
+      sections.forEach((section) => section.classList.add("is-in-view"));
+    }
+
+    const strip = main.querySelector(".home-record-strip");
+    if (!strip) return;
+    strip.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      const cards = strip.querySelectorAll(".home-record-row");
+      if (!cards.length) return;
+      const gap = 16;
+      const step = cards[0].getBoundingClientRect().width + gap;
+      strip.scrollBy({
+        left: event.key === "ArrowRight" ? step : -step,
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+      event.preventDefault();
+    });
+  }
+
   function initChrome() {
     initThemeToggle();
     initReadingSizeToggle();
@@ -513,6 +1073,7 @@
     initLibraryShell();
     initTocSpy();
     initSearchResultBadges();
+    initHomePacing();
   }
 
   if (document.readyState === "loading") {

@@ -1,16 +1,16 @@
-# Graph Report - yzouyang-site  (2026-09-12)
+# Graph Report - yzouyang-site  (2026-09-16)
 
 ## Corpus Check
-- 52 files · ~645,933 words
+- 57 files · ~2,210,075 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 491 nodes · 816 edges · 56 communities (33 shown, 23 thin omitted)
-- Extraction: 83% EXTRACTED · 16% INFERRED · 0% AMBIGUOUS · INFERRED: 131 edges (avg confidence: 0.81)
+- 639 nodes · 1223 edges · 66 communities (44 shown, 22 thin omitted)
+- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 132 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `22e380ad`
+- Built from commit: `41c24491`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -66,21 +66,32 @@
 - yzouyang-site
 - docs/cutover.md
 - docs/preview-uat.md
+- build_perspectives
 - chrome.js
 - theme.spec.mjs
 - manifest.json
+- footer_html
+- _map_record_lookup
+- verify_migration.py
+- with_base
+- main
+- esc
+- build_home
+- extracted-code/make_repos/rux3vr/manifest.json
+- .figma-make-import/make_repos/rux3vr/manifest.json
+- longform_page
 
 ## God Nodes (most connected - your core abstractions)
 1. `Career Journey 2025 Deck Slides` - 80 edges
 2. `Employer Brand Logos` - 80 edges
-3. `esc()` - 35 edges
-4. `Cloud Platform Certifications` - 20 edges
-5. `with_base()` - 19 edges
-6. `main()` - 18 edges
-7. `lint-build Job` - 13 edges
-8. `Data Engineering Tech Stack` - 12 edges
-9. `layout()` - 11 edges
-10. `build_home()` - 11 edges
+3. `esc()` - 65 edges
+4. `with_base()` - 28 edges
+5. `main()` - 21 edges
+6. `main()` - 20 edges
+7. `Cloud Platform Certifications` - 20 edges
+8. `_markdown_to_html()` - 15 edges
+9. `build_perspectives()` - 15 edges
+10. `layout()` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Professional Profile Photo` --conceptually_related_to--> `yzouyang-site`  [INFERRED]
@@ -112,15 +123,15 @@
 - **Phase 1 Cutover Gates** — docs_preview_uat_preview_workflow, docs_cutover_operator_checklist, docs_redirects_wp_static_map, docs_cutover_dns_static_host [INFERRED 0.85]
 - **CSS Token Enforcement** — src_styles_readme_tokens_css, src_styles_readme_stylelint_enforcement, src_styles_readme_check_token_drift, docs_design_system_ci_gates [INFERRED 0.85]
 
-## Communities (56 total, 23 thin omitted)
+## Communities (66 total, 22 thin omitted)
 
 ### Community 0 - "Career Journey 2025 Deck Slides"
 Cohesion: 0.07
 Nodes (85): Career Journey 2025 Deck Slides, Cloud Platform Certifications, Employer Brand Logos, Online Learning Platforms, Data Engineering Tech Stack, Diagram showing career journey stages and progression, Diagram illustrating career journey concept, Diagram illustrating career journey concept (+77 more)
 
 ### Community 1 - "build.py"
-Cohesion: 0.08
-Nodes (70): analytics_body(), analytics_head(), assemble_styles(), _atmosphere_figure_html(), _atmosphere_slot(), _beat_value_html(), build_about(), build_career_journey() (+62 more)
+Cohesion: 0.10
+Nodes (37): _collect_expand_body(), _decode_fragment(), _draft_preview_mode(), _education_is_ongoing(), _env_flag(), _extract_inarticle_toc_tree(), _extract_toc_anchor_map(), _heading_anchor_id() (+29 more)
 
 ### Community 2 - "lint-build Job"
 Cohesion: 0.06
@@ -128,7 +139,7 @@ Nodes (35): lint-build Status Check, personal-content writing.yaml Catalog, PyYA
 
 ### Community 3 - "scripts"
 Cohesion: 0.06
-Nodes (32): @axe-core/playwright, husky, lint-staged, devDependencies, @axe-core/playwright, husky, lint-staged, @playwright/test (+24 more)
+Nodes (31): @axe-core/playwright, husky, lint-staged, devDependencies, @axe-core/playwright, husky, lint-staged, @playwright/test (+23 more)
 
 ### Community 4 - "career-journey.yaml slide data"
 Cohesion: 0.09
@@ -152,7 +163,7 @@ Nodes (9): fileFor(), log(), port, root, send(), server, shutdown(), shutdownTim
 
 ### Community 9 - "check_docs_links.py"
 Cohesion: 0.50
-Nodes (8): date, check_links(), check_stale(), iter_markdown_files(), main(), parse_front_matter(), Path, repo_root()
+Nodes (8): check_links(), check_stale(), iter_markdown_files(), main(), parse_front_matter(), date, Path, repo_root()
 
 ### Community 10 - "career-journey.js"
 Cohesion: 0.50
@@ -203,8 +214,8 @@ Cohesion: 0.50
 Nodes (4): Design System CI Gates, Stylelint Token Enforcement, scripts/check_token_drift.py, Stylelint Strict Value Enforcement
 
 ### Community 22 - "compose_home_selected_row"
-Cohesion: 0.39
-Nodes (7): case_copy_by_id(), compose_home_selected_row(), Beats live in enterprise_copy / project_copy, keyed by stable heading id., Home titles/tools compose from shared case copy; beats are not re-authored., fail(), main(), validate_public_visibility()
+Cohesion: 0.33
+Nodes (8): case_copy_by_id(), compose_home_selected_row(), _home_featured_systems_html(), Beats live in enterprise_copy / project_copy, keyed by stable heading id., Home titles/tools compose from shared case copy; beats are not re-authored., fail(), main(), validate_public_visibility()
 
 ### Community 23 - "C2b Writing Inventory (Deferred)"
 Cohesion: 0.67
@@ -227,36 +238,84 @@ Cohesion: 0.67
 Nodes (3): Draft PR Policy, Human Merge Gate, Draft PR Only Policy
 
 ### Community 29 - "test_site_build.py"
-Cohesion: 0.33
-Nodes (11): figma_embed_html(), Match an export enterprise row to overlay copy keyed by heading_id., Compact Figma link, plus an optional real poster image (no live iframe).…, resolve_enterprise_overlay(), assert_no_empty_static_frames(), _contrast(), fail(), _light_block() (+3 more)
+Cohesion: 0.15
+Nodes (30): figma_embed_html(), _inarticle_toc_attr(), _inarticle_toc_from_md(), normalize_base(), _note_asset_href(), _note_index_title(), Match an export enterprise row to overlay copy keyed by heading_id., Normalize export `writing` records for site builders. (+22 more)
 
 ### Community 32 - "usability.spec.mjs"
-Cohesion: 0.15
-Nodes (3): assertTocSearch(), noHorizontalOverflow(), ROUTES
+Cohesion: 0.20
+Nodes (4): escapeRegExp(), expectedRedirectUrl(), LIVE_ROUTES, REDIRECTS
+
+### Community 52 - "build_perspectives"
+Cohesion: 0.27
+Nodes (10): _append_note_panel(), build_perspectives(), library_panel_html(), _note_category(), _note_date_sort_key(), _note_index_entry(), _note_series(), _notes_category_order() (+2 more)
+
+### Community 53 - "chrome.js"
+Cohesion: 0.23
+Nodes (16): applyReadingSize(), applyTheme(), decorateSearchResultRow(), decorateSearchResults(), getPreferredReadingSize(), getPreferredTheme(), initChrome(), initHashRedirects() (+8 more)
 
 ### Community 55 - "manifest.json"
 Cohesion: 0.33
 Nodes (5): commit_sha, lfs_objects, packs, refs, version
 
+### Community 56 - "footer_html"
+Cohesion: 0.18
+Nodes (12): footer_html(), _footer_links_html(), _library_index_header_html(), library_index_html(), _library_index_icon_svg(), _library_index_rail_html(), library_shell(), _nav_anchor_html() (+4 more)
+
+### Community 57 - "_map_record_lookup"
+Cohesion: 0.12
+Nodes (23): _domain_target_label(), _domain_target_section(), _home_slide_link(), _internal_route_link(), _map_detail_panels_html(), _map_detail_panels_only_html(), _map_detail_record_item(), _map_domain_index_html() (+15 more)
+
+### Community 59 - "verify_migration.py"
+Cohesion: 0.47
+Nodes (10): check_export_writing(), check_site_json(), check_vendored_assets(), check_wp_stubs(), fail(), load_export(), main(), ok() (+2 more)
+
+### Community 60 - "with_base"
+Cohesion: 0.12
+Nodes (24): _compose_current_index_rows(), _credentials_teaser_html(), _current_index_html(), _current_index_link_html(), _current_index_topic(), _current_index_topic_label(), _footer_meta_html(), _home_featured_notes_html() (+16 more)
+
+### Community 61 - "main"
+Cohesion: 0.14
+Nodes (19): analytics_body(), analytics_head(), article_json_ld(), assemble_styles(), canonical_url(), _header_search_html(), layout(), load_json() (+11 more)
+
+### Community 62 - "esc"
+Cohesion: 0.14
+Nodes (28): _beat_value_html(), build_credentials(), build_portfolio(), build_systems(), build_systems_catalogue(), case_beats_html(), _case_tools_html(), _cert_card_html() (+20 more)
+
+### Community 63 - "build_home"
+Cohesion: 0.22
+Nodes (11): _about_data(), _atmosphere_figure_html(), _atmosphere_slot(), build_home(), _home_competencies_html(), _home_competency_item_html(), _home_context_meta_html(), _home_entrance_actions_html() (+3 more)
+
+### Community 64 - "extracted-code/make_repos/rux3vr/manifest.json"
+Cohesion: 0.33
+Nodes (5): commit_sha, lfs_objects, packs, refs, version
+
+### Community 65 - ".figma-make-import/make_repos/rux3vr/manifest.json"
+Cohesion: 0.33
+Nodes (5): commit_sha, lfs_objects, packs, refs, version
+
+### Community 66 - "longform_page"
+Cohesion: 0.50
+Nodes (4): longform_page(), Render on-this-page nav. entries: {id, label, children?} trees., Legacy long-page shell (redirect stubs only)., toc_html()
+
 ## Knowledge Gaps
-- **133 isolated node(s):** `version`, `commit_sha`, `refs`, `packs`, `lfs_objects` (+128 more)
+- **143 isolated node(s):** `version`, `commit_sha`, `refs`, `packs`, `lfs_objects` (+138 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Are the 20 inferred relationships involving `Cloud Platform Certifications` (e.g. with `Logo/Branding for Coursera` and `Diagram showing AWS Cloud Practitioner certification level and branding`) actually correct?**
-  _`Cloud Platform Certifications` has 20 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `esc()` connect `esc` to `build.py`, `test_site_build.py`, `build_perspectives`, `compose_home_selected_row`, `footer_html`, `_map_record_lookup`, `with_base`, `main`, `build_home`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
 - **What connects `version`, `commit_sha`, `refs` to the rest of the system?**
-  _133 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _143 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Career Journey 2025 Deck Slides` be split into smaller, more focused modules?**
   _Cohesion score 0.07086834733893557 - nodes in this community are weakly interconnected._
 - **Should `build.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.07863849765258216 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09743589743589744 - nodes in this community are weakly interconnected._
 - **Should `lint-build Job` be split into smaller, more focused modules?**
   _Cohesion score 0.06050420168067227 - nodes in this community are weakly interconnected._
 - **Should `scripts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06060606060606061 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0625 - nodes in this community are weakly interconnected._
 - **Should `career-journey.yaml slide data` be split into smaller, more focused modules?**
   _Cohesion score 0.09486166007905138 - nodes in this community are weakly interconnected._

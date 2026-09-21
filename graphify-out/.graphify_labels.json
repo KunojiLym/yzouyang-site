@@ -51,8 +51,18 @@
   "49": "yzouyang-site",
   "50": "docs/cutover.md",
   "51": "docs/preview-uat.md",
-  "52": "career-journey-animation.spec.mjs",
+  "52": "build_perspectives",
   "53": "chrome.js",
   "54": "theme.spec.mjs",
-  "55": "manifest.json"
+  "55": "manifest.json",
+  "56": "footer_html",
+  "57": "_map_record_lookup",
+  "59": "verify_migration.py",
+  "60": "with_base",
+  "61": "main",
+  "62": "esc",
+  "63": "build_home",
+  "64": "extracted-code/make_repos/rux3vr/manifest.json",
+  "65": ".figma-make-import/make_repos/rux3vr/manifest.json",
+  "66": "longform_page"
 }

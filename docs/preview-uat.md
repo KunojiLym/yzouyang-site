@@ -16,6 +16,8 @@ Runs lint → build (Pagefind included) → local server. No network deploy.
 
 Contract checks: `python scripts/test_site_build.py` after build. Playwright: `npm run test:e2e` (usability + theme) and `npm run test:a11y` (serves root-path `dist/`).
 
+**Notes UAT (Reading mode):** on `/notes/`, confirm cover heroes, full-date bylines (`22 Dec 2025`), wrapped code (no per-line horizontal scroll), blockquotes, sidebar in-article TOC when index is open, and reading context bar when index is collapsed. See [design-system.md](design-system.md#reading-mode-notes-only).
+
 
 ## 2. PR artifact (downloadable dist)
 

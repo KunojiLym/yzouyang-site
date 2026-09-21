@@ -11,6 +11,7 @@
 - [ ] UAT on GitHub Pages (`uat` branch deploy) signed off: https://kunojilym.github.io/yzouyang-site/
 - [ ] Promoted to `main` Pages deploy matches UAT
 - [ ] Preview serves `/`, `/systems/`, `/credentials/`, `/notes/` from PUBLIC export
+- [ ] Notes **Reading mode** signed off: covers, full-date bylines, prose measure, wrapped code, blockquotes (see [design-system.md](design-system.md#reading-mode-notes-only))
 - [ ] Legacy stubs redirect as documented: `/about/`, `/contact/`, `/career-journey/` → `/`; `/portfolio/`, `/work/`, `/systems/catalogue/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/`
 - [ ] Pagefind indexes systems, credentials, and notes (titles + bodies)
 - [ ] Footer **Blog** → `/notes/` (on-site); Medium / LinkedIn still external
