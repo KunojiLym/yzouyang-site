@@ -56,6 +56,15 @@ def has_html_class(html: str, name: str) -> bool:
     return False
 
 
+def html_ul_block(html: str, class_name: str) -> str:
+    match = re.search(
+        rf'<ul class="{re.escape(class_name)}"[^>]*>(.*?)</ul>',
+        html,
+        re.DOTALL,
+    )
+    return match.group(1) if match else ""
+
+
 def infer_base_path_from_dist() -> str:
     index = DIST / "index.html"
     if not index.is_file():
@@ -496,7 +505,8 @@ def main() -> None:
         fail("home missing location/context strip")
     if not has_html_class(home, "home-platform-strip"):
         fail("home missing platform strip")
-    if "AWS" in home.split("home-platform-strip", 1)[-1]:
+    platform_strip = html_ul_block(home, "home-platform-strip")
+    if "AWS" in platform_strip:
         fail("home platform strip must not list AWS")
     if 'class="cta-row"' in home:
         fail("home must not ship cta-row (use entrance-actions)")
