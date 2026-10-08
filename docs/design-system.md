@@ -59,7 +59,7 @@ Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3;
 
 **Reading tokens (Notes only):** `--note-read-max` `34rem` (prose measure); `--note-read-lead` `1.72`; `--text-dropcap` (fluid first-letter size); `--note-image-bg` (neutral mat behind inline figures / covers). Notes prose italics use the real Crimson Pro italic.
 
-`html` / `body` set `background-color: var(--bg-deep)`. Optional reading-size preference: `html[data-reading-size="large"|"xlarge"]` bumps global body line-height (`base.css`). Theme control: `.theme-toggle` (`aria-pressed`, visible Light/Dark label at ≥48rem; icon-only with an accessible name below 48rem, where reading size moves into the Menu; brass focus ring).
+`html` / `body` set `background-color: var(--bg-deep)`. Optional reading-size preference: `html[data-reading-size="large"|"xlarge"]` bumps global body line-height (`base.css`). Theme control: `.theme-toggle` (`aria-pressed`, visible Light/Dark label at ≥48rem; icon-only with an accessible name below 48rem, where reading size moves into the Menu; focus ring uses `--focus-ring`).
 
 ### Type scale
 
@@ -92,7 +92,7 @@ Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
 
 Home reads as a personal systems library (four beats (no scroll-snap; no per-section rise)):
 
-1. **Proposition** — token atmosphere; **identity line** (name · current role · employer, sentence case, sans, readable size — not a caps eyebrow); thesis `h1`; practitioner lede (≥ body size); primary CTAs; **one quiet proof line** (see *Proof on Home*); scroll hint. No scroll-snap; featured records peek below on laptop widths.
+1. **Proposition** — token atmosphere; **identity line** (name on its own line, then current role · employer, sentence case, sans, readable size — not a caps eyebrow); thesis `h1`; practitioner lede (≥ body size); primary CTAs; **one quiet proof line** (see *Proof on Home*); a scroll arrow with no repeated section name. No scroll-snap; featured records peek below on laptop widths.
 2. **Featured records** — horizontal strip of curated SYS / NOTE summaries (one card per enterprise record — SYS-01 / SYS-02 / SYS-03 — with the employer named on a muted line under the record id — plus one writing row)
 3. **Operating principle** — editorial philosophy block
 4. **Practice areas** — capability grid + split context / platform meta strips
@@ -158,7 +158,7 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 | Class / pattern | Use |
 |---|---|
 | `.entrance` / `.entrance-atmosphere` | Token atmosphere behind thesis |
-| `.entrance-identity` | Home identity line (name · role · employer) |
+| `.entrance-identity` | Home identity: name stacked above role · employer at every width |
 | `.entrance-proof` | single quiet proof line under Entrance CTAs |
 | `.home-record-strip` / `.home-featured-records` | Featured SYS / NOTE rows (horizontal snap strip) |
 | `.home-practice-grid` | Practice-area capability cards |
@@ -207,7 +207,7 @@ Pre-commit: husky + lint-staged on staged `src/styles/*.css`.
 - Keep primary nav short: **Systems · Notes · Credentials**
 - Brass/gold ≤10%; railway green in hairlines only
 - Derive proof from `site.json` / export only
-- Identity line on Home: name · role · employer (from `person.job_title` / `person.employer`).
+- Identity line on Home: name on its own line, then role · employer (from `person.job_title` / `person.employer`).
 - One quiet proof line on Home, sourced (see *Proof on Home*).
 - Use **Reading mode** typography only on `/notes/` essay bodies; keep **Catalogue mode** on Systems / Credentials / Home strips
 - Store and display **full publication dates** (`YYYY-MM-DD`) for writing records

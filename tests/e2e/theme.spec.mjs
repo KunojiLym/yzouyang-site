@@ -72,10 +72,11 @@ test.describe("dual theme", () => {
     const toggle = page.locator("[data-theme-toggle]").first();
     await expect(toggle).toBeVisible();
     await expect(toggle).toHaveAttribute("aria-pressed", "true");
-    await expect(toggle).toHaveAccessibleName(/switch to light theme/i);
+    await expect(toggle).toHaveAccessibleName("Dark theme — switch to light");
     await toggle.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect(toggle).toHaveAccessibleName("Light theme — switch to dark");
     expect(await page.evaluate(() => localStorage.getItem("yz-theme"))).toBe("light");
     await page.reload({ waitUntil: "load" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");

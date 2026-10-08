@@ -559,6 +559,24 @@ def assert_deploy_preview_contract() -> None:
     if 'property="og:image:height" content="630"' not in sample:
         fail("og:image:height must use the measured PNG height")
 
+    def assert_not_found_head(site: dict) -> None:
+        page = layout(
+            site,
+            "Not in the catalogue",
+            "404",
+            "    <p>Missing</p>\n",
+            path="/404.html",
+        )
+        if _meta(page, name="robots") != "noindex, nofollow":
+            fail(f"404 robots {_meta(page, name='robots')!r} must always be noindex, nofollow")
+        if _canonical(page):
+            fail("404 must not emit a canonical")
+        if _meta(page, prop="og:url"):
+            fail("404 must not emit og:url")
+
+    assert_not_found_head(preview)
+    assert_not_found_head(live)
+
 
 def _jpeg(marker: int, width: int, height: int, *, prefix: bytes = b"") -> bytes:
     body = bytes([8]) + height.to_bytes(2, "big") + width.to_bytes(2, "big") + bytes([1, 1, 0x11, 0])
@@ -673,6 +691,55 @@ def assert_note_alt_precedence() -> None:
         fail(f"decorative figures render an empty alt and presentation role: {marked}")
     if "Visible caption" not in marked:
         fail("a decorative figure keeps its visible caption")
+    if "aria-hidden" in marked:
+        fail("a decorative figure must not aria-hide a caption that is not the alt")
+
+    repeated = _render_image_block(
+        "![Chart of hours](assets/NOTE-1/a.png)Chart of hours",
+        note_id="NOTE-1",
+        site=site,
+        figures=ctx(),
+    )
+    if 'aria-hidden="true"' not in repeated:
+        fail(f"a plain caption identical to the alt is hidden: {repeated}")
+
+    linked = _render_image_block(
+        "![ILO report](assets/NOTE-1/a.png)[ILO report](https://ilo.org/report)",
+        note_id="NOTE-1",
+        site=site,
+        figures=ctx(),
+    )
+    if "aria-hidden" in linked:
+        fail(f"a caption with a link must stay available: {linked}")
+    if 'alt="ILO report"' not in linked:
+        fail(f"markdown alt still wins when the caption is a link: {linked}")
+
+    sourced = resolve_note_alt(
+        ctx(),
+        "",
+        "dir/chart.png",
+        caption="Source: [ILO](https://ilo.org/report)",
+    )
+    if not sourced.text.startswith("Figure 1 from") or sourced.decorative:
+        fail(f"a Source caption must fall through to Figure N: {sourced}")
+    named = resolve_note_alt(
+        ctx({"dir/chart.png": "Chart of hours"}),
+        "",
+        "dir/chart.png",
+        caption="Source: ILO",
+    )
+    if named.text != "Chart of hours":
+        fail(f"images[].alt still wins over a Source caption: {named}")
+    source_html = _render_image_block(
+        "![](assets/NOTE-1/a.png)Source: [ILO](https://ilo.org/report)",
+        note_id="NOTE-1",
+        site=site,
+        figures=ctx(),
+    )
+    if "aria-hidden" in source_html:
+        fail(f"an attribution caption must not be aria-hidden: {source_html}")
+    if 'alt="Figure 1 from' not in source_html or "ilo.org/report" not in source_html:
+        fail(f"an attribution caption stays visible and is not the alt: {source_html}")
 
     leaked = NoteFigureContext(note_id="NOTE-2", title="Other", alts_by_path={})
     leaked_alt = resolve_note_alt(leaked, "", "dir/chart.png")
@@ -1303,7 +1370,12 @@ def main() -> None:
                 fail(f"{label} JSON-LD url {url} disagrees with canonical")
 
     assert_built_origin(home, "home")
-    assert_built_origin(not_found, "404")
+    if _meta(not_found, name="robots") != "noindex, nofollow":
+        fail("built 404 must always be noindex, nofollow")
+    if _canonical(not_found):
+        fail("built 404 must not emit a canonical")
+    if _meta(not_found, prop="og:url"):
+        fail("built 404 must not emit og:url")
     contact_built = (DIST / "contact" / "index.html").read_text(encoding="utf-8")
     if _canonical(contact_built) and urlparse(_canonical(contact_built)).netloc != urlparse(_canonical(home)).netloc:
         fail("redirect canonical host disagrees with home")
@@ -1456,6 +1528,10 @@ def main() -> None:
     home_target = with_base(site, "/")
     if home_target not in about:
         fail("about redirect must target home")
+    if "<title>Yingzhao Ouyang — Building intelligible systems" not in about:
+        fail("about redirect must use the name-first home title")
+    if "<title>Home</title>" in about:
+        fail("about redirect must not be titled Home")
     if has_html_class(about, "library-shell"):
         fail("about must redirect to home, not ship library shell")
     if not has_html_class(credentials, "library-shell"):

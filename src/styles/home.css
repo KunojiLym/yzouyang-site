@@ -646,20 +646,6 @@ body:has(main.home-route) .site-header {
   color: var(--text-muted);
 }
 
-@media (width >= 30rem) {
-  .entrance-identity {
-    flex-flow: row wrap;
-    align-items: baseline;
-    column-gap: 0;
-  }
-
-  .entrance-name::after {
-    content: " · ";
-    font-weight: 400;
-    color: var(--text-muted);
-  }
-}
-
 .entrance-catalog {
   display: flex;
   align-items: center;

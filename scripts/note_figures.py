@@ -17,6 +17,14 @@ ITALIC_RE = re.compile(r"\*(.+?)\*")
 CODE_RE = re.compile(r"`([^`]+)`")
 MD_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 MD_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+# A real link, not the `[alt](src)` tail of an image.
+_FOCUSABLE_CAPTION_RE = re.compile(
+    r"(?<!!)\[([^\]]+)\]\(([^)]+)\)"
+    r"|<\s*(?:a|button|input|select|textarea|iframe|audio|video|summary)\b"
+    r"|tabindex\s*=",
+    re.IGNORECASE,
+)
+_ATTRIBUTION_CAPTION_RE = re.compile(r"(?i)^source\s*:")
 
 DECORATIVE_ALT = "decorative"
 
@@ -81,6 +89,21 @@ def _is_decorative(value: str) -> bool:
     return value.strip().lower() == DECORATIVE_ALT
 
 
+def caption_is_attribution(caption: str) -> bool:
+    """Source: lines are credits, not a description of the figure."""
+    return bool(_ATTRIBUTION_CAPTION_RE.match(plain_caption_text(caption)))
+
+
+def caption_aria_hidden(caption: str, alt_text: str) -> bool:
+    """Hide a caption only when it repeats a plain-text alt and cannot be focused."""
+    if not str(caption or "").strip() or not str(alt_text or "").strip():
+        return False
+    if _FOCUSABLE_CAPTION_RE.search(caption):
+        return False
+    plain = plain_caption_text(caption)
+    return bool(plain) and plain == alt_text
+
+
 def resolve_note_alt(
     figures: NoteFigureContext,
     alt: str,
@@ -106,7 +129,7 @@ def resolve_note_alt(
     if explicit:
         return ResolvedAlt(explicit, False)
     plain_caption = plain_caption_text(caption) if caption else ""
-    if plain_caption:
+    if plain_caption and not caption_is_attribution(caption):
         return ResolvedAlt(plain_caption, False)
     figures.figure_n += 1
     title = figures.title.strip() or figures.note_id

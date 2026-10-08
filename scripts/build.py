@@ -27,7 +27,7 @@ from note_figures import (
     ResolvedAlt,
     alts_by_full_path,
     local_image_size as _local_image_size,
-    plain_caption_text as _plain_caption_text,
+    caption_aria_hidden as _caption_aria_hidden,
     resolve_note_alt as _resolve_note_alt,
 )
 
@@ -1197,6 +1197,15 @@ def layout(
         else ""
     )
     person_attr = esc(full_name)
+    not_found = active == "404"
+    if not_found:
+        robots_tag = '  <meta name="robots" content="noindex, nofollow" />\n'
+        canonical_tag = ""
+        og_url_tag = ""
+    else:
+        robots_tag = _robots_noindex_head(site)
+        canonical_tag = f'  <link rel="canonical" href="{canonical}" />\n'
+        og_url_tag = f'  <meta property="og:url" content="{canonical}" />\n'
     return f"""<!DOCTYPE html>
 <html {_html_root_attrs()} data-person-name="{person_attr}">
 <head>
@@ -1204,13 +1213,11 @@ def layout(
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{page_title}</title>
   <meta name="description" content="{description}" />
-{_robots_noindex_head(site)}  <link rel="canonical" href="{canonical}" />
-  <meta property="og:site_name" content="{person_attr}" />
+{robots_tag}{canonical_tag}  <meta property="og:site_name" content="{person_attr}" />
   <meta property="og:title" content="{page_title}" />
   <meta property="og:description" content="{description}" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="{canonical}" />
-  <meta property="og:image" content="{og_image}" />
+{og_url_tag}  <meta property="og:image" content="{og_image}" />
 {og_size_meta}  <meta property="og:image:alt" content="{og_alt}" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="{og_image}" />
@@ -1237,7 +1244,7 @@ def layout(
       </nav>
 {header_search_html}
 {_reading_size_button(indent="      ")}
-      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch to light theme">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Dark theme — switch to light">
         <span class="theme-toggle-label">Dark</span>
       </button>
       <details class="nav-menu">
@@ -1646,8 +1653,7 @@ def _render_image_block(
     )
     caption_html = ""
     if caption:
-        plain = _plain_caption_text(caption)
-        hidden = ' aria-hidden="true"' if plain and plain == resolved.text else ""
+        hidden = ' aria-hidden="true"' if _caption_aria_hidden(caption, resolved.text) else ""
         caption_html = (
             f'  <figcaption class="note-figure-caption"{hidden}>'
             f"{_inline_markdown(caption, note_id=note_id, site=site, figures=ctx)}"
@@ -3246,7 +3252,7 @@ def _credentials_teaser_html(site: dict, export: dict) -> str:
 def _home_scroll_hint_html() -> str:
     return (
         '        <p class="home-scroll-hint" aria-hidden="true">'
-        '<span class="home-scroll-hint-label">Featured records</span></p>\n'
+        '<span class="home-scroll-hint-label"></span></p>\n'
     )
 
 
@@ -4525,7 +4531,7 @@ def main() -> None:
         ("portfolio/index.html", "/systems/", "Systems"),
         ("perspectives/index.html", "/notes/", "Notes"),
         ("systems/catalogue/index.html", "/systems/", "Systems"),
-        ("about/index.html", "/", "Home"),
+        ("about/index.html", "/", document_title(site, "Home", "Home")),
         ("contact/index.html", "/", "Home"),
         ("career-journey/index.html", "/", "Home"),
         ("blog/index.html", "/notes/", "Notes"),

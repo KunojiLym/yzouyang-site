@@ -19,7 +19,7 @@
       toggle.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
       toggle.setAttribute(
         "aria-label",
-        theme === "dark" ? "Switch to light theme" : "Switch to dark theme"
+        theme === "dark" ? "Dark theme — switch to light" : "Light theme — switch to dark"
       );
       const label = toggle.querySelector(".theme-toggle-label");
       if (label) label.textContent = theme === "dark" ? "Dark" : "Light";
