@@ -18,50 +18,27 @@ from urllib.parse import unquote, urlparse
 import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
 
 from note_figures import (
-    BOLD_RE,
-    CODE_RE,
-    ITALIC_RE,
-    MD_IMAGE_RE,
-    MD_LINK_RE,
     NoteFigureContext,
-    ResolvedAlt,
     alts_by_full_path,
     local_image_size as _local_image_size,
-    caption_aria_hidden as _caption_aria_hidden,
-    resolve_note_alt as _resolve_note_alt,
 )
+from note_images import (
+    EXPAND_LINE_RE as _EXPAND_LINE_RE,
+    collect_expand_body as _collect_expand_body,
+    figures_for as _figures_for,
+    inline_markdown as _inline_markdown,
+    is_image_line as _is_image_line,
+    note_asset_href as _note_asset_href,
+    render_expand_block as _render_expand_block,
+    render_image_block as _render_image_block,
+    size_attrs_for_src as _size_attrs_for_src,
+)
+from site_paths import esc, normalize_base, with_base
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 DIST = ROOT / "dist"
 SRC = ROOT / "src"
-
-
-def normalize_base(base: object) -> str:
-    text = ("" if base is None else str(base)).strip()
-    if not text or text == "/":
-        return ""
-    return "/" + text.strip("/")
-
-
-def with_base(site: dict, path: str) -> str:
-    """Prefix site-root paths with base_path (for GitHub project Pages)."""
-    if not path or path.startswith(("http://", "https://", "#", "mailto:", "tel:")):
-        return path
-    base = normalize_base(site.get("base_path", ""))
-    if not path.startswith("/"):
-        path = "/" + path
-    return base + path
-
-
-def esc(value: object) -> str:
-    text = "" if value is None else str(value)
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
 
 
 def _env_flag(name: str) -> bool:
@@ -249,139 +226,41 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
   var root = document.documentElement;
   var hash = root.getAttribute("data-library-hash") || "";
   if (!hash) {
-    try {
-      hash = decodeURIComponent((location.hash || "").replace(/^#/, ""));
-    } catch (e) {
-      hash = (location.hash || "").replace(/^#/, "");
-    }
+    try { hash = decodeURIComponent((location.hash || "").replace(/^#/, "")); }
+    catch (e) { hash = (location.hash || "").replace(/^#/, ""); }
   }
   var split = document.getElementById("library-split");
   var panels = split ? split.querySelectorAll(".library-panels > .library-panel") : [];
-  function clearHashFlag() {
-    root.removeAttribute("data-library-hash");
-  }
   if (!split || !panels.length) {
-    clearHashFlag();
+    root.removeAttribute("data-library-hash");
     return;
   }
   var wide = false;
-  try {
-    wide = window.matchMedia("(min-width: 49rem)").matches;
-  } catch (e) {}
-  function panelIdOf(panel) {
-    return panel.getAttribute("data-panel-id") || "";
-  }
+  try { wide = window.matchMedia("(min-width: 49rem)").matches; } catch (e) {}
   function findPanel(id) {
-    var i;
     if (!id) return null;
-    for (i = 0; i < panels.length; i++) {
-      if (panelIdOf(panels[i]) === id || panels[i].getAttribute("data-record") === id) {
-        return panels[i];
-      }
-    }
-    var groups = split.querySelectorAll("[data-panel-group-id]");
-    for (i = 0; i < groups.length; i++) {
-      if (groups[i].getAttribute("data-panel-group-id") !== id) continue;
-      var trigger = groups[i].querySelector(".library-index-trigger[data-panel-id]");
-      if (trigger) return findPanel(trigger.getAttribute("data-panel-id"));
-    }
-    for (i = 0; i < panels.length; i++) {
-      var nodes = panels[i].querySelectorAll("[id]");
-      var n;
-      for (n = 0; n < nodes.length; n++) {
-        if (nodes[n].id === id) return panels[i];
-      }
+    for (var i = 0; i < panels.length; i++) {
+      if (panels[i].getAttribute("data-panel-id") === id || panels[i].getAttribute("data-record") === id) return panels[i];
     }
     return null;
   }
   var target = hash ? findPanel(hash) : null;
   if (!target && wide) target = panels[0];
-  var index;
-  if (!target) {
-    for (index = 0; index < panels.length; index++) {
-      panels[index].hidden = true;
-      panels[index].classList.remove("is-active");
+  if (target) {
+    for (var index = 0; index < panels.length; index++) {
+      var open = panels[index] === target;
+      panels[index].hidden = !open;
+      panels[index].classList.toggle("is-active", open);
     }
-    split.classList.remove("is-detail-open");
-    clearHashFlag();
-    return;
-  }
-  for (index = 0; index < panels.length; index++) {
-    var open = panels[index] === target;
-    panels[index].hidden = !open;
-    panels[index].classList.toggle("is-active", open);
-  }
-  var overview = split.querySelector(".library-overview");
-  if (overview) overview.hidden = true;
-  if (!wide) split.classList.add("is-detail-open");
-  var back = split.querySelector(".library-back");
-  if (back) back.hidden = wide;
-  var path = location.pathname || "/";
-  if (path.slice(-1) !== "/") {
-    var slash = path.lastIndexOf("/");
-    path = slash >= 0 ? path.slice(0, slash + 1) : "/";
-  }
-  var pinned = path.indexOf("/notes/") === -1;
-  try {
-    var storedPin = localStorage.getItem("yz-library-index-pinned:" + path);
-    if (storedPin === "1") pinned = true;
-    if (storedPin === "0") pinned = false;
-  } catch (e) {}
-  var showReading = wide ? !pinned : true;
-  var pane = split.querySelector(".library-pane");
-  var panelsRoot = split.querySelector(".library-panels");
-  if (showReading && pane && panelsRoot && !pane.querySelector(".library-reading-context")) {
-    var bar = document.createElement("div");
-    bar.className = "library-reading-context";
-    var titleBtn = document.createElement("button");
-    titleBtn.type = "button";
-    titleBtn.className = "library-reading-context-title";
-    titleBtn.setAttribute("aria-label", "Back to top of article");
-    var heading = target.querySelector(".library-panel-title");
-    titleBtn.textContent = heading ? heading.textContent.trim() : "";
-    var sep = document.createElement("span");
-    sep.className = "library-reading-context-sep";
-    sep.setAttribute("aria-hidden", "true");
-    sep.textContent = "·";
-    var sectionBtn = document.createElement("button");
-    sectionBtn.type = "button";
-    sectionBtn.className = "library-reading-context-section";
-    sectionBtn.setAttribute("aria-label", "Jump to current section");
-    var sectionHeading = target.querySelector(".note-section-heading[id]");
-    if (sectionHeading) {
-      sectionBtn.textContent = sectionHeading.textContent.trim();
-    } else {
-      sectionBtn.hidden = true;
-      sep.hidden = true;
-    }
-    bar.appendChild(titleBtn);
-    bar.appendChild(sep);
-    bar.appendChild(sectionBtn);
-    pane.insertBefore(bar, panelsRoot);
-  }
-  if (wide) {
-    var activeId = panelIdOf(target);
-    var indexBody = split.querySelector(".library-index-body");
-    var triggers = split.querySelectorAll(".library-index-trigger[data-panel-id]");
-    var row = null;
-    for (index = 0; index < triggers.length; index++) {
-      if (triggers[index].getAttribute("data-panel-id") === activeId) {
-        row = triggers[index].closest("li");
-        break;
-      }
-    }
-    if (row && indexBody) {
-      var margin = 12;
-      var bodyRect = indexBody.getBoundingClientRect();
-      var rowRect = row.getBoundingClientRect();
-      if (rowRect.top < bodyRect.top + margin) {
-        indexBody.scrollTop += rowRect.top - bodyRect.top - margin;
-      } else if (rowRect.bottom > bodyRect.bottom - margin) {
-        indexBody.scrollTop += rowRect.bottom - bodyRect.bottom + margin;
-      }
+    var overview = split.querySelector(".library-overview");
+    if (overview) overview.hidden = true;
+    if (!wide) {
+      split.classList.add("is-detail-open");
+      var back = split.querySelector(".library-back");
+      if (back) back.hidden = false;
     }
   }
-  clearHashFlag();
+  root.removeAttribute("data-library-hash");
 })();
 </script>
 """
@@ -476,15 +355,36 @@ def assemble_styles() -> str:
     return "".join(chunks)
 
 
-def copy(site: dict, path: str, default: object = "") -> object:
-    """Read a dotted site.json path. Missing segments return default."""
+def lookup_site(site: dict, path: str, default: object = "") -> object:
+    """Read a dotted site.json path. Missing or wrong-typed values return default."""
     node: object = site
     for part in path.split("."):
         if isinstance(node, dict) and part in node:
             node = node[part]
         else:
             return default
-    return default if node is None else node
+    if node is None or not isinstance(node, type(default)):
+        return default
+    return node
+
+
+def route_title(site: dict, key: str, fallback: str = "") -> str:
+    """Visible route name from site.json route_titles. The name suffix is separate."""
+    table = lookup_site(site, "route_titles", {})
+    return str(table.get(key) or fallback or "").strip()
+
+
+def _verify_item_label(label_map: dict, raw_href: str, fallback: str) -> str:
+    """Override an export verify label. Keys are stable ids; href is only the match."""
+    for spec in label_map.values():
+        if not isinstance(spec, dict):
+            continue
+        if str(spec.get("href") or "") != raw_href:
+            continue
+        label = str(spec.get("label") or "").strip()
+        if label:
+            return label
+    return fallback
 
 
 def public_origin(site: dict) -> str:
@@ -564,17 +464,12 @@ def canonical_url(site: dict, path: str) -> str:
 
 
 def document_title(site: dict, active: str, title: str) -> str:
-    """Name-first document titles. Home uses the thesis; Credentials uses the DS route name."""
-    person = site.get("person") or {}
+    """Name suffix applied once. Home uses the thesis; other routes use route_titles."""
     name = person_full_name(site)
-    headline = str(person.get("headline") or "").strip()
     if active == "Home":
+        headline = str(lookup_site(site, "person.headline", "")).strip()
         return f"{name} — {headline}" if headline else name
-    if active == "Credentials":
-        return f"Professional record — {name}"
-    if active == "404":
-        return f"Not in the catalogue — {name}"
-    label = str(title or active or "").strip()
+    label = route_title(site, active, str(title or active or "").strip())
     return f"{label} — {name}" if label else name
 
 
@@ -683,7 +578,7 @@ def verify_panel_html(site: dict) -> str:
     items = [i for i in (block.get("items") or []) if isinstance(i, dict)]
     if not items:
         return ""
-    lede = str(copy(site, "credentials_verify.lede", "") or "").strip()
+    lede = str(lookup_site(site, "credentials_verify.lede", "") or "").strip()
     links = []
     for item in items:
         label = str(item.get("label") or "").strip()
@@ -957,7 +852,7 @@ def library_panel_html(
         class_bits = f"{class_bits} {panel_class}"
     return (
         f'        <article class="{class_bits}" data-panel-id="{esc(panel_id)}"{hidden_attr}'
-        f' id="{esc(panel_id)}"{extra_attrs}>\n'
+        f"{extra_attrs}>\n"
         f'          <header class="library-panel-header">\n'
         f"{header_lead}"
         f'            <{tag} class="library-panel-title">{heading}</{tag}>\n'
@@ -978,13 +873,27 @@ def library_section_panel(
     level: str = "h2",
     variant: str = "",
     kicker: str = "",
+    hidden: bool = True,
 ) -> str:
     body = (
         section_fold_open(section_id, esc(heading), level=level, variant=variant, kicker=kicker)
         + inner_html
         + section_fold_close()
     )
-    return library_panel_html(section_id, heading, body, level=level)
+    return library_panel_html(section_id, heading, body, level=level, hidden=hidden)
+
+
+def append_library_panel(panels: list[str], panel_id: str, heading: str, body: str, **kwargs) -> None:
+    """First catalogue panel stays unhidden so the desktop boot paint can show it."""
+    kwargs.setdefault("hidden", bool(panels))
+    panels.append(library_panel_html(panel_id, heading, body, **kwargs))
+
+
+def append_library_section(
+    panels: list[str], section_id: str, heading: str, inner_html: str, **kwargs
+) -> None:
+    kwargs.setdefault("hidden", bool(panels))
+    panels.append(library_section_panel(section_id, heading, inner_html, **kwargs))
 
 
 def _library_strip_html(site: dict, *, active: str) -> str:
@@ -1011,22 +920,6 @@ def _library_strip_html(site: dict, *, active: str) -> str:
     )
 
 
-def _reveal_first_library_panel(html: str) -> str:
-    """Leave the first panel unhidden so the desktop boot paint can show it.
-
-    Later panels stay hidden. Once JS selects another record it sets hidden on
-    this panel, and the boot rule no longer matches.
-    """
-    match = re.search(r"<article\b[^>]*>", html)
-    if not match:
-        return html
-    tag = match.group(0)
-    if not re.search(r"\blibrary-panel\b", tag):
-        return html
-    revealed = re.sub(r"\s+hidden\b", "", tag, count=1)
-    return html[: match.start()] + revealed + html[match.end() :]
-
-
 def library_shell(
     *,
     site: dict,
@@ -1045,7 +938,6 @@ def library_shell(
     record_block = record_panels_html or ""
     if record_block:
         panels_block = f"{panels_block}\n{record_block}" if panels_block else record_block
-    panels_block = _reveal_first_library_panel(panels_block)
     overview_block = (
         f'          <div class="library-overview">\n{overview_html}\n          </div>\n'
         if overview_html.strip()
@@ -1058,13 +950,12 @@ def library_shell(
         if route_lede.strip()
         else ""
     )
-    split_class = "library-split is-booting"
     return (
         f'    <div class="library-shell" id="library-shell">\n'
         f'      <h1 class="visually-hidden">{esc(title)}</h1>\n'
         f"{lede_html}"
         f'      <div class="library-frame">\n'
-        f'        <div class="library-split {split_class}" id="library-split" '
+        f'        <div class="library-split is-booting" id="library-split" '
         f'data-index-default="{esc(index_default)}">\n'
         f"{index}\n"
         f'          <div class="library-pane" aria-live="polite">\n'
@@ -1074,6 +965,13 @@ def library_shell(
         f'              <button type="button" class="library-back" hidden>Back to index</button>\n'
         f"            </div>\n"
         f"{overview_block}"
+        f'            <div class="library-reading-context" hidden>\n'
+        f'              <button type="button" class="library-reading-context-title" '
+        f'aria-label="Back to top of article"></button>\n'
+        f'              <span class="library-reading-context-sep" aria-hidden="true" hidden>·</span>\n'
+        f'              <button type="button" class="library-reading-context-section" '
+        f'aria-label="Jump to current section" hidden></button>\n'
+        f"            </div>\n"
         f'            <div class="library-panels">\n'
         f"{panels_block}\n"
         f"            </div>\n"
@@ -1651,26 +1549,6 @@ def _writing_also_links(row: dict) -> list[tuple[str, str]]:
 def _note_href(site: dict, note_id: str) -> str:
     return with_base(site, f"/notes/#{note_id}")
 
-
-def _is_note_asset_ref(href: str) -> bool:
-    cleaned = href.strip().replace("\\", "/")
-    if cleaned.startswith("/"):
-        cleaned = cleaned[1:]
-    return cleaned.startswith(("assets/", "writing/assets/"))
-
-
-def _note_asset_href(site: dict, note_id: str, rel_path: str) -> str:
-    cleaned = rel_path.strip().replace("\\", "/").lstrip("/")
-    for prefix in ("assets/writing/", "assets/notes/", "writing/assets/", "assets/"):
-        if cleaned.startswith(prefix):
-            cleaned = cleaned[len(prefix) :]
-            break
-    note_prefix = f"{note_id}/"
-    if cleaned.startswith(note_prefix):
-        return with_base(site, f"/assets/notes/{cleaned}")
-    return with_base(site, f"/assets/notes/{note_id}/{cleaned}")
-
-
 _TOC_LINK_RE = re.compile(r"^\s*-\s*\[([^\]]+)\]\(#([^)]+)\)\s*$")
 _TOC_HEADING_RE = re.compile(r"^Table\s+[Oo]f\s+[Cc]ontents\s*$")
 
@@ -1731,124 +1609,6 @@ def _plain_heading_label(text: str) -> str:
     return re.sub(r"\s+", " ", plain)
 
 
-_EXPAND_LINE_RE = re.compile(r"^Expand to see\b", re.I)
-_IMAGE_LINE_RE = re.compile(r"^!\[([^\]]*)\]\(([^)]+)\)(.*)$")
-_BLOCK_BREAK_RE = re.compile(r"^(#{1,4}\s|-\s|\d+\.\s|```)")
-
-
-def _is_image_line(line: str) -> bool:
-    return bool(_IMAGE_LINE_RE.match(line.strip()))
-
-
-_UNCAPTIONED_FIGURES: list[dict] = []
-
-
-def _figures_for(
-    note_id: str,
-    figures: NoteFigureContext | None,
-    *,
-    title: str = "",
-) -> NoteFigureContext:
-    if figures is not None:
-        return figures
-    return NoteFigureContext(note_id=note_id, title=title or note_id)
-
-
-def _size_attrs_for_src(site: dict, note_id: str, raw_src: str) -> str:
-    if not _is_note_asset_ref(raw_src) and not raw_src.startswith("/assets/"):
-        return ""
-    href = _note_asset_href(site, note_id, raw_src)
-    rel = href
-    base = normalize_base(site.get("base_path", ""))
-    if base and rel.startswith(base):
-        rel = rel[len(base) :]
-    path = ROOT / rel.lstrip("/")
-    size = _local_image_size(path)
-    if not size:
-        return ""
-    width, height = size
-    return f' width="{width}" height="{height}"'
-
-
-def _markdown_image_tag(
-    alt: str,
-    src: str,
-    *,
-    note_id: str,
-    site: dict,
-    caption: str = "",
-    figures: NoteFigureContext | None = None,
-    resolved: ResolvedAlt | None = None,
-) -> str:
-    raw_src = html_unescape(src.strip())
-    if _is_note_asset_ref(raw_src):
-        path = esc(_note_asset_href(site, note_id, raw_src))
-    elif raw_src.startswith(("http://", "https://")):
-        path = esc(raw_src)
-    else:
-        path = esc(with_base(site, raw_src))
-    if resolved is None:
-        resolved = _resolve_note_alt(
-            _figures_for(note_id, figures),
-            alt,
-            raw_src,
-            caption=caption,
-        )
-    dims = _size_attrs_for_src(site, note_id, raw_src)
-    role = ' role="presentation"' if resolved.decorative else ""
-    return f'<img src="{path}" alt="{esc(resolved.text)}"{role}{dims} loading="lazy" />'
-
-
-def _render_image_block(
-    line: str,
-    *,
-    note_id: str,
-    site: dict,
-    figures: NoteFigureContext | None = None,
-) -> str:
-    ctx = _figures_for(note_id, figures)
-    match = _IMAGE_LINE_RE.match(line.strip())
-    if not match:
-        return f"<p>{_inline_markdown(line.strip(), note_id=note_id, site=site, figures=ctx)}</p>"
-    alt, src, caption = match.group(1), match.group(2), match.group(3).strip()
-    resolved = _resolve_note_alt(ctx, alt, src, caption=caption)
-    img_html = _markdown_image_tag(
-        alt, src, note_id=note_id, site=site, figures=ctx, resolved=resolved
-    )
-    caption_html = ""
-    if caption:
-        hidden = ' aria-hidden="true"' if _caption_aria_hidden(caption, resolved.text) else ""
-        caption_html = (
-            f'  <figcaption class="note-figure-caption"{hidden}>'
-            f"{_inline_markdown(caption, note_id=note_id, site=site, figures=ctx)}"
-            f"</figcaption>\n"
-        )
-    return f"<figure class=\"note-figure\">\n  {img_html}\n{caption_html}</figure>"
-
-
-def _collect_expand_body(lines: list[str], start: int) -> tuple[list[str], int]:
-    body: list[str] = []
-    i = start
-    while i < len(lines):
-        stripped = lines[i].strip()
-        if not stripped:
-            j = i + 1
-            while j < len(lines) and not lines[j].strip():
-                j += 1
-            if j < len(lines) and _is_image_line(lines[j]):
-                i += 1
-                continue
-            break
-        if _EXPAND_LINE_RE.match(stripped) or _BLOCK_BREAK_RE.match(stripped):
-            break
-        if _is_image_line(stripped):
-            body.append(lines[i])
-            i += 1
-            continue
-        break
-    return body, i
-
-
 def _render_code_line(line: str, line_no: int) -> str:
     return (
         '<span class="note-code-line">'
@@ -1856,35 +1616,6 @@ def _render_code_line(line: str, line_no: int) -> str:
         f'<span class="note-code-text">{esc(line)}</span>'
         "</span>"
     )
-
-
-def _render_expand_block(
-    summary_line: str,
-    body_lines: list[str],
-    *,
-    note_id: str,
-    site: dict,
-    figures: NoteFigureContext | None = None,
-) -> str:
-    ctx = _figures_for(note_id, figures)
-    summary_html = _inline_markdown(summary_line.strip(), note_id=note_id, site=site, figures=ctx)
-    body_parts = [
-        _render_image_block(line, note_id=note_id, site=site, figures=ctx)
-        for line in body_lines
-        if line.strip() and _is_image_line(line)
-    ]
-    if not body_parts:
-        return f"<p>{summary_html}</p>"
-    body_inner = "\n".join(body_parts)
-    return (
-        '<details class="note-expand">\n'
-        f'  <summary class="note-expand-summary">{summary_html}</summary>\n'
-        '  <div class="note-expand-body">\n'
-        f"{body_inner}\n"
-        "  </div>\n"
-        "</details>"
-    )
-
 
 def _extract_inarticle_toc_tree(md: str) -> list[dict]:
     """Nested in-article TOC from embedded Table Of Contents list items."""
@@ -1951,55 +1682,32 @@ def _headings_inarticle_toc(md: str) -> list[dict]:
     return roots
 
 
-def _inarticle_toc_from_md(md: str) -> list[dict]:
+def _prefix_toc_ids(nodes: list[dict], note_id: str) -> None:
+    prefix = f"{note_id}-"
+    for node in nodes:
+        anchor = str(node.get("id") or "")
+        if anchor and not anchor.startswith(prefix):
+            node["id"] = prefix + anchor
+        children = node.get("children") or []
+        if children:
+            _prefix_toc_ids(children, note_id)
+
+
+def _inarticle_toc_from_md(md: str, *, note_id: str = "", scope_anchors: bool = False) -> list[dict]:
     tree = _extract_inarticle_toc_tree(md)
-    if tree:
-        return tree
-    return _headings_inarticle_toc(md)
+    if not tree:
+        tree = _headings_inarticle_toc(md)
+    if scope_anchors and note_id and tree:
+        _prefix_toc_ids(tree, note_id)
+    return tree
 
 
-def _inarticle_toc_attr(md: str) -> str:
-    toc = _inarticle_toc_from_md(md)
+def _inarticle_toc_attr(md: str, *, note_id: str = "", scope_anchors: bool = False) -> str:
+    toc = _inarticle_toc_from_md(md, note_id=note_id, scope_anchors=scope_anchors)
     if not toc:
         return ""
     payload = json.dumps(toc, ensure_ascii=True, separators=(",", ":"))
     return f' data-inarticle-toc="{esc(payload)}"'
-
-
-def _inline_markdown(
-    text: str,
-    *,
-    note_id: str,
-    site: dict,
-    figures: NoteFigureContext | None = None,
-) -> str:
-    ctx = _figures_for(note_id, figures)
-    safe = esc(text)
-    safe = BOLD_RE.sub(r"<strong>\1</strong>", safe)
-    safe = ITALIC_RE.sub(r"<em>\1</em>", safe)
-    safe = CODE_RE.sub(r"<code>\1</code>", safe)
-
-    def img_repl(match: re.Match[str]) -> str:
-        alt, src = match.group(1), match.group(2)
-        return _markdown_image_tag(alt, src, note_id=note_id, site=site, figures=ctx)
-
-    safe = MD_IMAGE_RE.sub(img_repl, safe)
-
-    def link_repl(match: re.Match[str]) -> str:
-        label, href = match.group(1), match.group(2).strip()
-        raw_href = html_unescape(href)
-        if _is_note_asset_ref(raw_href):
-            path = esc(_note_asset_href(site, note_id, raw_href))
-            return f'<a href="{path}">{label}</a>'
-        if raw_href.startswith(("http://", "https://")):
-            return (
-                f'<a class="external" href="{href}" target="_blank" '
-                f'rel="noopener noreferrer">{label}</a>'
-            )
-        return f'<a href="{esc(with_base(site, raw_href))}">{label}</a>'
-
-    return MD_LINK_RE.sub(link_repl, safe)
-
 
 def _render_note_heading_html(
     level: int,
@@ -2073,6 +1781,17 @@ def _unwrap_link_wrapped_images(md: str) -> str:
     return "".join(out)
 
 
+def _note_anchor_ids(md: str, toc_map: dict[str, str]) -> set[str]:
+    found = {anchor for anchor in toc_map.values() if anchor}
+    for raw_line in md.splitlines():
+        match = re.match(r"^(#{1,4})\s+(.*)$", raw_line.strip())
+        if match:
+            anchor = _heading_anchor_id(match.group(2), toc_map)
+            if anchor:
+                found.add(anchor)
+    return found
+
+
 def _markdown_to_html(
     md: str,
     *,
@@ -2080,6 +1799,7 @@ def _markdown_to_html(
     site: dict,
     note_title: str = "",
     figures: NoteFigureContext | None = None,
+    scope_anchors: bool = False,
 ) -> str:
     figures = _figures_for(note_id, figures, title=note_title)
     if note_title and not figures.title:
@@ -2088,6 +1808,22 @@ def _markdown_to_html(
     if not md.strip():
         return ""
     toc_map = _extract_toc_anchor_map(md)
+    anchor_ids = _note_anchor_ids(md, toc_map) if scope_anchors else set()
+
+    def inline(text: str) -> str:
+        return _inline_markdown(
+            text,
+            note_id=note_id,
+            site=site,
+            figures=figures,
+            anchor_ids=anchor_ids,
+            scope_anchors=scope_anchors,
+        )
+
+    def scope(anchor: str) -> str:
+        if scope_anchors and note_id and anchor and not anchor.startswith(f"{note_id}-"):
+            return f"{note_id}-{anchor}"
+        return anchor
     lines = md.splitlines()
     out: list[str] = []
     in_code = False
@@ -2106,7 +1842,7 @@ def _markdown_to_html(
             if joined:
                 out.append(
                     '<blockquote class="note-blockquote">'
-                    f"<p>{_inline_markdown(joined, note_id=note_id, site=site, figures=figures)}</p>"
+                    f"<p>{inline(joined)}</p>"
                     "</blockquote>"
                 )
             blockquote_bits = []
@@ -2117,7 +1853,7 @@ def _markdown_to_html(
         if para:
             joined = " ".join(para).strip()
             if joined:
-                out.append(f"<p>{_inline_markdown(joined, note_id=note_id, site=site, figures=figures)}</p>")
+                out.append(f"<p>{inline(joined)}</p>")
             para = []
         if in_list:
             out.append("</ul>")
@@ -2185,7 +1921,7 @@ def _markdown_to_html(
             raw_level = len(heading.group(1))
             level = 3 if raw_level <= 2 else min(raw_level, 4)
             heading_text = heading.group(2)
-            anchor_id = esc(_heading_anchor_id(heading_text, toc_map))
+            anchor_id = esc(scope(_heading_anchor_id(heading_text, toc_map)))
             out.append(
                 _render_note_heading_html(
                     level,
@@ -2215,7 +1951,7 @@ def _markdown_to_html(
                 out.append("<ul>")
                 in_list = True
             out.append(
-                f"<li>{_inline_markdown(line.strip()[2:], note_id=note_id, site=site, figures=figures)}</li>"
+                f"<li>{inline(line.strip()[2:])}</li>"
             )
             i += 1
             continue
@@ -3402,7 +3138,7 @@ def _credentials_teaser_html(site: dict, export: dict) -> str:
     return (
         '    <section class="home-plate home-credentials-teaser" '
         'aria-labelledby="credentials-heading">\n'
-        '      <h2 id="credentials-heading">Professional record</h2>\n'
+        f'      <h2 id="credentials-heading">{esc(route_title(site, "Credentials"))}</h2>\n'
         f'      <p class="record-context">Featured credentials from a catalogue of '
         f'{esc(summary)}.</p>\n'
         f"{preview_html}"
@@ -3783,9 +3519,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         item for item in (enterprise.get("items") or []) if isinstance(item, dict)
     ]
     used_overlay_ids: set[str] = set()
-    label_overrides = copy(site, "systems_labels", {})
-    if not isinstance(label_overrides, dict):
-        label_overrides = {}
+    label_overrides = lookup_site(site, "systems_labels", {})
     if export_items or ent_copy:
         etitle = str(
             label_overrides.get("enterprise_summaries")
@@ -3820,7 +3554,7 @@ def build_portfolio(site: dict, export: dict) -> str:
                     f"{case_html}\n"
                     "      </div>"
                 )
-                panels.append(library_panel_html(item_id, display_title, body, level="h2"))
+                append_library_panel(panels, item_id, display_title, body, level="h2")
 
         for item in export_items:
             item_title = str(item.get("title") or "")
@@ -3865,7 +3599,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         if outro:
             child_parts.append(f"      <p><em>{esc(outro)}</em></p>")
         child_inner = "\n".join(child_parts)
-        panels.append(library_panel_html(hid, title, child_inner, level="h2"))
+        append_library_panel(panels, hid, title, child_inner, level="h2")
 
         if parent:
             parent_key = str(parent)
@@ -3898,7 +3632,7 @@ def build_portfolio(site: dict, export: dict) -> str:
             + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
-        panels.append(library_section_panel(hid, title, inner))
+        append_library_section(panels, hid, title, inner)
 
     verify = page.get("verify") or {}
     verify_override = site.get("systems_verify") if isinstance(site.get("systems_verify"), dict) else {}
@@ -3907,9 +3641,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         vid = unique_id(vtitle)
         toc.append({"id": vid, "label": vtitle, "children": []})
         vitems = []
-        label_map = copy(site, "systems_verify.item_labels", {})
-        if not isinstance(label_map, dict):
-            label_map = {}
+        label_map = lookup_site(site, "systems_verify.item_labels", {})
         for item in verify.get("items") or []:
             if not isinstance(item, dict):
                 continue
@@ -3920,7 +3652,7 @@ def build_portfolio(site: dict, export: dict) -> str:
             cls = ' class="external"' if external else ""
             if external:
                 attrs += ' target="_blank" rel="noopener noreferrer"'
-            label = str(label_map.get(raw_href) or item.get("label") or href)
+            label = _verify_item_label(label_map, raw_href, str(item.get("label") or href))
             vitems.append(
                 f"      <li><a{cls}{attrs}>{esc(label)}</a></li>"
             )
@@ -3928,7 +3660,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         note = (verify.get("note") or "").strip()
         if note:
             inner += f"\n      <p><em>{esc(note)}</em></p>"
-        panels.append(library_section_panel(vid, vtitle, inner))
+        append_library_section(panels, vid, vtitle, inner)
 
     if not panels:
         panels.append(
@@ -3941,7 +3673,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         )
         toc.append({"id": "empty", "label": "Systems", "children": []})
 
-    systems_lede = str(copy(site, "systems_lede", "") or "").strip()
+    systems_lede = str(lookup_site(site, "systems_lede", "") or "").strip()
     return library_shell(
         site=site,
         title="Systems",
@@ -4082,7 +3814,7 @@ def _certs_by_issuer_html(
 
 def build_credentials(site: dict, export: dict) -> str:
     page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
-    lede = str(copy(site, "credentials_verify.lede", "") or "").strip() or (
+    lede = str(lookup_site(site, "credentials_verify.lede", "") or "").strip() or (
         page.get("lede") or "PUBLIC certifications and qualifications."
     ).strip()
     order = page.get("order") or {}
@@ -4138,12 +3870,11 @@ def build_credentials(site: dict, export: dict) -> str:
                 continue
             hid = unique_id(title)
             toc.append({"id": hid, "label": title, "children": []})
-            panels.append(
-                library_section_panel(
-                    hid,
-                    title,
-                    _credentials_card_grid([_edu_card_html(r) for r in rows]),
-                )
+            append_library_section(
+                panels,
+                hid,
+                title,
+                _credentials_card_grid([_edu_card_html(r) for r in rows]),
             )
         else:
             rows = ordered(certs_by_cat.pop(sid, []), order.get(sid))
@@ -4156,14 +3887,13 @@ def build_credentials(site: dict, export: dict) -> str:
                 _html_parts, children, issuer_panels = _certs_by_issuer_html(rows, unique_id)
                 node["children"] = children
                 for iid, issuer, inner in issuer_panels:
-                    panels.append(library_panel_html(iid, issuer, inner, level="h2"))
+                    append_library_panel(panels, iid, issuer, inner, level="h2")
             else:
-                panels.append(
-                    library_section_panel(
-                        hid,
-                        title,
-                        _credentials_card_grid([_cert_card_html(r) for r in rows]),
-                    )
+                append_library_section(
+                    panels,
+                    hid,
+                    title,
+                    _credentials_card_grid([_cert_card_html(r) for r in rows]),
                 )
 
     for sid, rows in list(certs_by_cat.items()):
@@ -4171,40 +3901,39 @@ def build_credentials(site: dict, export: dict) -> str:
             title = sid.replace("_", " ").title()
             hid = unique_id(title)
             toc.append({"id": hid, "label": title, "children": []})
-            panels.append(
-                library_section_panel(
-                    hid,
-                    title,
-                    _credentials_card_grid([_cert_card_html(r) for r in rows]),
-                )
+            append_library_section(
+                panels,
+                hid,
+                title,
+                _credentials_card_grid([_cert_card_html(r) for r in rows]),
             )
     for sid, rows in list(edu_by_cat.items()):
         if rows:
             title = sid.replace("_", " ").title()
             hid = unique_id(title)
             toc.append({"id": hid, "label": title, "children": []})
-            panels.append(
-                library_section_panel(
-                    hid,
-                    title,
-                    _credentials_card_grid([_edu_card_html(r) for r in rows]),
-                )
+            append_library_section(
+                panels,
+                hid,
+                title,
+                _credentials_card_grid([_edu_card_html(r) for r in rows]),
             )
 
+    cred_title = route_title(site, "Credentials")
     if not panels:
         panels.append(
             library_panel_html(
                 "empty",
-                "Professional record",
+                cred_title,
                 "      <p>No PUBLIC credentials in export.</p>",
                 hidden=False,
             )
         )
-        toc.append({"id": "empty", "label": "Credentials", "children": []})
+        toc.append({"id": "empty", "label": cred_title, "children": []})
 
     return library_shell(
         site=site,
-        title="Professional record",
+        title=cred_title,
         overview_html=overview_html,
         toc=toc,
         panels=panels,
@@ -4373,8 +4102,9 @@ def _writing_note_panel_body(
             site=site,
             note_title=figures.title,
             figures=figures,
+            scope_anchors=True,
         )
-        _UNCAPTIONED_FIGURES.extend(figures.uncaptioned)
+        site.setdefault("_uncaptioned_figures", []).extend(figures.uncaptioned)
         if rendered:
             body_html = f'      <div class="note-body prose">{rendered}</div>\n'
     links_html = _writing_links_html(site, row)
@@ -4398,7 +4128,7 @@ def _append_note_panel(
 ) -> None:
     heading = esc(str(row.get("title") or note_id).strip())
     body_md = str(row.get("body_md") or "").strip()
-    toc_attr = _inarticle_toc_attr(body_md)
+    toc_attr = _inarticle_toc_attr(body_md, note_id=note_id, scope_anchors=True)
     category = esc(_note_category(row))
     teaser = str(row.get("teaser") or "").strip()
     read_mins = _note_reading_minutes(body_md)
@@ -4409,17 +4139,16 @@ def _append_note_panel(
         f'            <p class="note-dek">{esc(teaser)}</p>\n' if teaser else ""
     )
     byline_html = _note_byline_html(row, note_id, read_mins=read_mins)
-    panels.append(
-        library_panel_html(
-            note_id,
-            heading,
-            _writing_note_panel_body(site, row, note_id),
-            level="h2",
-            extra_attrs=toc_attr,
-            panel_class="library-panel--note",
-            header_lead=header_lead,
-            header_trail=f"{dek_html}{byline_html}",
-        )
+    append_library_panel(
+        panels,
+        note_id,
+        heading,
+        _writing_note_panel_body(site, row, note_id),
+        level="h2",
+        extra_attrs=toc_attr,
+        panel_class="library-panel--note",
+        header_lead=header_lead,
+        header_trail=f"{dek_html}{byline_html}",
     )
 
 
@@ -4526,7 +4255,7 @@ def build_not_found(site: dict) -> str:
     credentials = esc(with_base(site, "/credentials/"))
     return (
         '    <article class="not-found">\n'
-        "      <h1>Not in the catalogue</h1>\n"
+        f'      <h1>{esc(route_title(site, "404"))}</h1>\n'
         "      <p>That record isn't on the shelves.</p>\n"
         '      <p class="not-found-links">'
         f'<a href="{home}">Home</a> · '
@@ -4592,8 +4321,6 @@ def main() -> None:
     except DeployBaseError as exc:
         print(f"build error: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
-    _UNCAPTIONED_FIGURES.clear()
-
     export = _merge_preview_drafts(load_json(DATA / "export_public.json"))
     site["_export"] = export
     if DIST.exists():
@@ -4684,7 +4411,7 @@ def main() -> None:
         DIST / "404.html",
         layout(
             site,
-            "Not in the catalogue",
+            route_title(site, "404"),
             "404",
             build_not_found(site),
             path="/404.html",
@@ -4784,7 +4511,7 @@ def main() -> None:
 """
     write(DIST / "_redirects", redirects)
 
-    print(f"uncaptioned-figures {len(_UNCAPTIONED_FIGURES)}")
+    print(f"uncaptioned-figures {len(site.setdefault('_uncaptioned_figures', []))}")
     print(f"built {len(pages)} pages + 404 + work redirect -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:

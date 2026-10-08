@@ -478,7 +478,7 @@ html[data-reading-size="xlarge"] .header-actions {
     width: max-content;
     max-width: calc(100vw - (2 * var(--gutter)));
     padding: var(--space-3);
-    background: var(--header-bg);
+    background: var(--bg-deep);
     border: 1px solid var(--line-soft);
     border-radius: var(--radius-md);
   }

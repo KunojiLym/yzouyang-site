@@ -2,6 +2,11 @@
 
 Alt state lives on a NoteFigureContext for one note. Callers must not stash it
 on the shared site dict, and image keys are full relative paths.
+
+The decorative alt marker is the literal string "decorative" (matched
+case-insensitively, see DECORATIVE_ALT). Put it in images[].alt or the
+markdown image alt. It renders alt="" and role="presentation". An empty alt
+is not decorative and falls through to the caption or the Figure N fallback.
 """
 
 from __future__ import annotations
@@ -113,8 +118,9 @@ def resolve_note_alt(
 ) -> ResolvedAlt:
     """images[].alt, then markdown alt, then caption, then Figure N.
 
-    An explicit decorative marker in either alt field renders an empty alt.
-    An empty alt is not decorative. Each call resolves one figure.
+    The decorative marker is the literal string "decorative". An explicit
+    marker in either alt field renders an empty alt. An empty alt is not
+    decorative. Each call resolves one figure.
     """
     key = image_path_key(src)
     if key in figures.alts_by_path:

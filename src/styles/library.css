@@ -602,6 +602,7 @@ body:has(main.library-route) {
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
+  min-height: calc(var(--space-2) * 2 + (var(--text-sm) * 1.35) + 1px);
   margin: 0;
   padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--line-soft);
@@ -794,13 +795,13 @@ body:has(main.library-route) {
 }
 
 /* Hash deep links, only until the inline script clears data-library-hash.
-   replaceState does not move :target, so these rules must not outlive boot
-   or a later index click cannot change the visible panel. */
-html[data-library-hash] .library-panels > .library-panel:not(:is(:target, :has(:target))) {
+   Panels are chosen by data-panel-id. Record ids on the article would
+   steal the first Tab and scroll the record under the reading bar. */
+html[data-library-hash] .library-panels > .library-panel:not(.is-active) {
   display: none !important;
 }
 
-html[data-library-hash] .library-panels > .library-panel:is(:target, :has(:target)) {
+html[data-library-hash] .library-panels > .library-panel.is-active {
   display: block !important;
 }
 
@@ -1271,6 +1272,10 @@ main.page .library-panel--note .library-panel-title {
   html[data-library-boot="detail"] .library-panels > .library-panel:first-child:not([hidden]) {
     display: block;
   }
+
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-reading-context {
+    display: flex !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1392,5 +1397,9 @@ main.page .library-panel--note .library-panel-title {
 
   html[data-library-hash] .library-split.is-booting .library-back {
     display: inline-flex !important;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open .library-reading-context {
+    display: flex !important;
   }
 }

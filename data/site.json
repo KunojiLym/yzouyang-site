@@ -50,6 +50,10 @@
     "preview_mode": true,
     "preview_origin": "https://kunojilym.github.io/yzouyang-site"
   },
+  "route_titles": {
+    "Credentials": "Professional record",
+    "404": "Not in the catalogue"
+  },
   "page_meta": {
     "Home": "Yingzhao Ouyang — building intelligible systems for data, AI, and decision-making. Selected system records, notes, and public experiments.",
     "Work": "Selected systems and public architectures: problem, role, decision, outcome, and evidence from enterprise and applied-AI work.",
@@ -171,13 +175,17 @@
   "systems_verify": {
     "title": "Verify",
     "item_labels": {
-      "/credentials/": "Credentials and issuer links"
+      "credentials": {
+        "href": "/credentials/",
+        "label": "Credentials and issuer links"
+      }
     }
   },
   "home_featured": {
     "systems": [
       {
         "id": "prudential-singapore-senior-data-engineer-solutioning-architecture",
+        "experience_id": "prudential-cei-2023",
         "record_id": "SYS-01",
         "employer": "Prudential Services Singapore",
         "title": "Cost intelligence as platform capability",
@@ -185,6 +193,7 @@
       },
       {
         "id": "sph-media-lead-data-engineer",
+        "experience_id": "sph-media-2022",
         "record_id": "SYS-02",
         "employer": "SPH Media",
         "title": "Resilient media data platform on AWS",
@@ -192,6 +201,7 @@
       },
       {
         "id": "stb-data-engineer-applied-ml",
+        "experience_id": "stb-2020",
         "record_id": "SYS-03",
         "employer": "Singapore Tourism Board",
         "title": "Production ML for tourism arrival forecasts",

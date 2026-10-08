@@ -430,6 +430,19 @@ test.describe("layout", () => {
   });
 });
 
+test.describe("library focus order", () => {
+  test("first Tab on a deep-linked note is the skip link", async ({ page }) => {
+    await page.goto("/notes/#NOTE-2026-005", { waitUntil: "load" });
+    await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"].is-active')).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(page.locator("a.skip-link")).toBeFocused();
+    const panelScroll = await page.locator(".library-panels").evaluate((el) => el.scrollTop);
+    const windowScroll = await page.evaluate(() => window.scrollY);
+    expect(panelScroll).toBe(0);
+    expect(windowScroll).toBe(0);
+  });
+});
+
 test.describe("library boot CLS", () => {
   test("notes and deep links stay under 0.1", async ({ browser }) => {
     test.skip(test.info().project.name === "mobile", "viewports are set per case");

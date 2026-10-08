@@ -33,7 +33,7 @@ from build import (
     website_json_ld,
     with_base,
 )
-from launch_facts import LOCKED_PROOF_TEXT, launch_fact_errors
+from launch_facts import launch_fact_errors
 from note_figures import NoteFigureContext, local_image_size, resolve_note_alt
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -753,8 +753,9 @@ def assert_launch_facts() -> None:
     errors = launch_fact_errors(site, export)
     if errors:
         fail("; ".join(errors))
-    if site["home_proof_line"]["text"] != LOCKED_PROOF_TEXT:
-        fail("locked proof line changed")
+    facts_source = (ROOT / "scripts" / "launch_facts.py").read_text(encoding="utf-8")
+    if "LOCKED_PROOF_TEXT" in facts_source:
+        fail("proof sentence must live only in site.json")
     bad_title = json.loads(json.dumps(site))
     bad_title["person"]["job_title"] = bad_title["person"]["job_title"].replace("&", "and")
     if not any("job_title" in item for item in launch_fact_errors(bad_title, export)):
@@ -771,8 +772,13 @@ def assert_launch_facts() -> None:
     bad_source["home_proof_line"]["sources"] = ["outcomes[9]"]
     if not any("does not resolve" in item for item in launch_fact_errors(bad_source, export)):
         fail("proof sources must resolve in site.json or export")
+    seeded = json.loads(json.dumps(site))
+    seeded["home_featured"]["systems"][0]["experience_id"] = "prudential-anything"
+    if not any(
+        "prudential-anything" in item for item in launch_fact_errors(seeded, export)
+    ):
+        fail("a featured experience_id must match an experience id exactly")
     bad_number = json.loads(json.dumps(site))
-    bad_number["home_proof_line"]["text"] = LOCKED_PROOF_TEXT
     bad_number["outcomes"][0]["label"] = "Documentation cycle without digits"
     bad_number["enterprise_copy"][
         "prudential-singapore-senior-data-engineer-solutioning-architecture"
@@ -799,8 +805,13 @@ def assert_library_boot_panel() -> None:
         fail("library boot script must use the same 49rem rail as the CSS")
     if "data-library-hash" not in boot:
         fail("library boot script must record the hash before first paint")
-    if ".library-panel:is(:target, :has(:target))" not in css:
-        fail("deep-link panels must be visible from the hash before first paint")
+    if ":target" in css:
+        fail("library CSS must not use :target; it steals sequential focus and scrolls the record")
+    if 'getAttribute("data-panel-id")' not in boot and "getAttribute('data-panel-id')" not in boot:
+        fail("hash boot must select panels by data-panel-id")
+    panel_fn = boot.split("def library_panel_html", 1)[1].split("\ndef ", 1)[0]
+    if re.search(r'\sid="\{esc\(panel_id\)\}"', panel_fn):
+        fail("library panels must not carry the record id")
     chrome = (ROOT / "src" / "chrome.js").read_text(encoding="utf-8")
     if 'classList.add("is-booting")' in chrome:
         fail("is-booting belongs on the shell markup only")
@@ -816,6 +827,36 @@ def assert_library_boot_panel() -> None:
             fail(f"{rel} first panel must be unhidden so the desktop boot paint can show it")
 
 
+def assert_unique_ids() -> None:
+    id_re = re.compile(r'(?<![\w-])id="([^"]*)"')
+    panel_re = re.compile(r"<article\b[^>]*\blibrary-panel\b[^>]*>")
+    site = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
+    labels = site["systems_verify"]["item_labels"]
+    if any(str(key).startswith("/") for key in labels):
+        fail("systems_verify.item_labels must be keyed by a stable id, not an href")
+    systems = (DIST / "systems" / "index.html").read_text(encoding="utf-8")
+    if "Credentials and issuer links" not in systems:
+        fail("credentials verify label override was not applied")
+    for path in sorted(DIST.rglob("*.html")):
+        if "pagefind" in path.parts:
+            continue
+        html = path.read_text(encoding="utf-8")
+        counts: dict[str, int] = {}
+        for found in id_re.findall(html):
+            if not found:
+                continue
+            counts[found] = counts.get(found, 0) + 1
+        dupes = sorted(item for item, count in counts.items() if count > 1)
+        rel = path.relative_to(DIST)
+        if dupes:
+            fail(f"{rel} duplicate ids: {', '.join(dupes)}")
+        if "library-split library-split" in html:
+            fail(f"{rel} emits library-split twice")
+        for tag in panel_re.findall(html):
+            if re.search(r'\sid="', tag):
+                fail(f"{rel} library panel still has an id")
+
+
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
@@ -825,6 +866,7 @@ def main() -> None:
     assert_note_alt_precedence()
     assert_launch_facts()
     assert_library_boot_panel()
+    assert_unique_ids()
     assert_note_asset_href()
     assert_note_heading_anchors()
     assert_note_cover_html()

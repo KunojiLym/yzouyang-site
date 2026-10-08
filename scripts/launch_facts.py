@@ -1,15 +1,12 @@
-"""Check hand-typed Home identity facts against the public export."""
+"""Check hand-typed Home identity facts against the public export.
+
+The proof sentence lives only in site.json home_proof_line.text. This module
+checks that every number in that sentence appears in the resolved sources.
+"""
 
 from __future__ import annotations
 
 import re
-
-# Locked proof line. The en dash in the experience title normalises to a comma;
-# this sentence itself stays as written.
-LOCKED_PROOF_TEXT = (
-    "At Prudential: documentation cycle cut from 8 to 4 weeks and "
-    "new-hire ramp from 6 to 4 weeks, after standardising platform documentation."
-)
 
 _EN_DASH_GAP = " \u2013 "
 _INDEXED_KEY_RE = re.compile(r"^([A-Za-z0-9_-]+)(?:\[(\d+)\])?$")
@@ -43,27 +40,15 @@ def current_experience(export: dict) -> dict | None:
     return rows[0] if rows else None
 
 
-def _hyphen_prefix(left: str, right: str) -> str:
-    limit = min(len(left), len(right))
-    best = ""
-    for index in range(limit):
-        if left[index] != right[index]:
-            break
-        if left[index] == "-":
-            best = left[: index + 1]
-    return best
-
-
-def experience_for_record(record_id: str, export: dict) -> dict | None:
-    """Match a featured id to an experience by the longest shared hyphen prefix."""
-    best: dict | None = None
-    best_len = 0
+def experience_for_record(experience_id: str, export: dict) -> dict | None:
+    """Match home_featured.experience_id to an experience id exactly."""
+    wanted = str(experience_id or "").strip()
+    if not wanted:
+        return None
     for row in _experiences(export):
-        prefix = _hyphen_prefix(record_id, str(row.get("id") or ""))
-        if len(prefix) > best_len:
-            best = row
-            best_len = len(prefix)
-    return best
+        if str(row.get("id") or "") == wanted:
+            return row
+    return None
 
 
 def _step(node: object, token: str) -> object:
@@ -147,24 +132,30 @@ def launch_fact_errors(site: dict, export: dict) -> list[str]:
     for raw in systems:
         if not isinstance(raw, dict):
             continue
-        record_id = str(raw.get("id") or "").strip()
+        experience_id = str(raw.get("experience_id") or "").strip()
+        card_id = str(raw.get("id") or raw.get("record_id") or "").strip()
         card_employer = str(raw.get("employer") or "")
-        match = experience_for_record(record_id, export) if record_id else None
+        if not experience_id:
+            errors.append(f"home_featured system {card_id!r} requires experience_id")
+            continue
+        match = experience_for_record(experience_id, export)
         if match is None:
-            errors.append(f"home_featured system {record_id!r} does not match an experience id")
+            errors.append(
+                f"home_featured experience_id {experience_id!r} does not match an experience id"
+            )
             continue
         organization = str(match.get("organization") or "")
         if card_employer != organization:
             errors.append(
-                f"home_featured {record_id!r} employer must match "
+                f"home_featured {card_id!r} employer must match "
                 f"{match.get('id')} organization exactly "
                 f"({card_employer!r} != {organization!r})"
             )
 
     proof = site.get("home_proof_line") if isinstance(site.get("home_proof_line"), dict) else {}
     text = str(proof.get("text") or "")
-    if text != LOCKED_PROOF_TEXT:
-        errors.append("home_proof_line.text must stay the locked proof sentence")
+    if not text.strip():
+        errors.append("home_proof_line.text is required")
     sources = proof.get("sources")
     if not isinstance(sources, list) or not sources:
         errors.append("home_proof_line.sources must list at least one site or export path")
