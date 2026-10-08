@@ -249,11 +249,10 @@ test.describe("library shell", () => {
 
     await page.goto("/notes/#NOTE-2025-021", { waitUntil: "load" });
     await expect.poll(() => visibleLibraryPanelIds(page)).toEqual(["NOTE-2025-021"]);
-    const railExpand = page.locator(".library-index-rail-expand");
-    if (await railExpand.isVisible()) {
-      await railExpand.click();
-    }
-    await libraryIndexPanel(page, "NOTE-2026-005").click();
+    await page.locator(".library-index-rail-expand").click();
+    const noteTrigger = libraryIndexPanel(page, "NOTE-2026-005");
+    await expect(noteTrigger).toBeVisible();
+    await noteTrigger.click();
     await expect.poll(() => visibleLibraryPanelIds(page)).toEqual(["NOTE-2026-005"]);
   });
 

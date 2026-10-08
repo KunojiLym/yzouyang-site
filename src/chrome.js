@@ -874,7 +874,12 @@
     applyHash();
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        split?.classList.add("is-boot-settle");
         split?.classList.remove("is-booting");
+        requestAnimationFrame(() => {
+          scrollActiveIndexIntoView(activeIndexId);
+          requestAnimationFrame(() => split?.classList.remove("is-boot-settle"));
+        });
       });
     });
   }
