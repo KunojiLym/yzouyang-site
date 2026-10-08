@@ -85,7 +85,9 @@ def main() -> None:
     # build.py can run Pagefind itself, but we always skip it there and run
     # it once here instead — running both would index the same dist/ twice.
     build_cmd = [sys.executable, "scripts/build.py", "--skip-pagefind"]
-    run(build_cmd, env={**env, "SITE_BASE_PATH": args.base_path} if args.base_path else env or None)
+    # Always pass SITE_BASE_PATH, including empty, so local root preview does not
+    # pick up the project path derived from deploy.preview_origin.
+    run(build_cmd, env={**env, "SITE_BASE_PATH": args.base_path})
     if not args.skip_pagefind:
         run_pagefind()
 

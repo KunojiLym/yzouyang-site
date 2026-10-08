@@ -44,7 +44,7 @@ Build flags:
 - `--base-path /yzouyang-site` or env `SITE_BASE_PATH` — prefix asset/nav URLs for GitHub project Pages
 - `--skip-pagefind` — HTML only (search UI will 404)
 
-CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, then **rebuilds with empty base path** before Playwright so CSS/Pagefind resolve at `/`.
+CI derives the Pages asset prefix from `deploy.preview_origin` (do not also set `SITE_BASE_PATH`), uploads that artifact, then **rebuilds with empty `SITE_BASE_PATH`** before Playwright so CSS/Pagefind resolve at `/`. Turning `deploy.preview_mode` off is the cutover: canonical, Open Graph, and the asset prefix all follow `public_origin`.
 
 ## `site.json` map
 
@@ -65,7 +65,7 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 | `project_copy` | Optional per-project `outcome` / `scope` / `tools` overrides (tools ≤5) |
 | `section_copy` | Optional systems section intro overrides keyed by export section id |
 | `analytics` | Jetpack / optional GA4 / DIY beacon |
-| `base_path` | Overridden by CLI/env at build time |
+| `base_path` | Derived from the active origin unless CLI or `SITE_BASE_PATH` overrides it. Empty override is the local/e2e exception while preview is on |
 
 ### Enterprise heading ids
 

@@ -129,7 +129,6 @@
 
     const split = shell.querySelector(".library-split");
     const routeTitle = document.title;
-    if (split) split.classList.add("is-booting");
     const overview = shell.querySelector(".library-overview");
     const backBtn = shell.querySelector(".library-back");
     const showIndexBtn = shell.querySelector(".library-index-show");

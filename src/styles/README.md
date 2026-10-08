@@ -12,7 +12,7 @@ Source of truth for the site's CSS. [`scripts/build.py`](../../scripts/build.py)
 | `components.css` | Shared page patterns: headings, lists, credential cards, embed fallbacks, proof blocks |
 | `longform.css` | Legacy long-form dossier layout (`.page-with-toc`, sticky sidebar TOC) — retained for any remaining TOC-style panels, not the primary library chrome |
 | `search.css` | Pagefind dark theme |
-| `motion.css` | `rise` + `prefers-reduced-motion` |
+| `motion.css` | `prefers-reduced-motion` |
 | `career-journey.css` | *(not assembled)* — WIP slide chrome for the deferred native `/career-journey/` page; see [docs/career-journey-native-plan.md](../../docs/career-journey-native-plan.md) |
 
 Visual contract: [docs/design-system.md](../../docs/design-system.md).

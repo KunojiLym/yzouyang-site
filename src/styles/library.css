@@ -1257,8 +1257,8 @@ main.page .library-panel--note .library-panel-title {
     visibility: hidden;
   }
 
-  html[data-library-boot="detail"] .library-panels > .library-panel:first-child {
-    display: block !important;
+  html[data-library-boot="detail"] .library-panels > .library-panel:first-child:not([hidden]) {
+    display: block;
   }
 }
 

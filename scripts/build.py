@@ -17,6 +17,20 @@ from urllib.parse import unquote, urlparse
 
 import yaml  # PyYAML — declared in pyproject.toml; run `uv sync` first.
 
+from note_figures import (
+    BOLD_RE,
+    CODE_RE,
+    ITALIC_RE,
+    MD_IMAGE_RE,
+    MD_LINK_RE,
+    NoteFigureContext,
+    ResolvedAlt,
+    alts_by_full_path,
+    local_image_size as _local_image_size,
+    plain_caption_text as _plain_caption_text,
+    resolve_note_alt as _resolve_note_alt,
+)
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 DIST = ROOT / "dist"
@@ -67,15 +81,21 @@ def _deploy(site: dict) -> dict:
     return block if isinstance(block, dict) else {}
 
 
-def preview_mode(site: dict) -> bool:
+def deploy_preview_enabled(site: dict) -> bool:
+    """deploy.preview_mode. Distinct from draft preview and UAT builds."""
     return bool(_deploy(site).get("preview_mode"))
 
 
-def _robots_noindex_head(site: dict | None = None) -> str:
-    if site is not None and preview_mode(site):
-        return '  <meta name="robots" content="noindex, follow" />\n'
+class DeployBaseError(ValueError):
+    """base_path disagrees with the origin selected by deploy.preview_mode."""
+
+
+def _robots_noindex_head(site: dict) -> str:
+    """Strictest robots directive wins. site is required."""
     if _draft_preview_mode() or _uat_build_mode():
         return '  <meta name="robots" content="noindex, nofollow" />\n'
+    if deploy_preview_enabled(site):
+        return '  <meta name="robots" content="noindex, follow" />\n'
     return ""
 
 
@@ -206,10 +226,10 @@ THEME_BOOT_SCRIPT = """<script>
   if (reading !== "default") {
     document.documentElement.setAttribute("data-reading-size", reading);
   }
-  var libraryBoot = "detail";
+  var libraryBoot = "overview";
   try {
-    if (window.matchMedia && window.matchMedia("(max-width: 48rem)").matches) {
-      libraryBoot = "overview";
+    if (window.matchMedia && window.matchMedia("(min-width: 49rem)").matches) {
+      libraryBoot = "detail";
     }
   } catch (e) {}
   document.documentElement.setAttribute("data-library-boot", libraryBoot);
@@ -306,18 +326,81 @@ def assemble_styles() -> str:
     return "".join(chunks)
 
 
+def copy(site: dict, path: str, default: object = "") -> object:
+    """Read a dotted site.json path. Missing segments return default."""
+    node: object = site
+    for part in path.split("."):
+        if isinstance(node, dict) and part in node:
+            node = node[part]
+        else:
+            return default
+    return default if node is None else node
+
+
 def public_origin(site: dict) -> str:
     return str(site.get("public_origin") or "https://www.yzouyang.com").rstrip("/")
 
 
 def site_origin(site: dict) -> str:
-    """Preview origin while preview_mode is on; public origin after the one-boolean cutover."""
-    deploy = _deploy(site)
-    if deploy.get("preview_mode"):
-        preview = str(deploy.get("preview_origin") or "").strip().rstrip("/")
+    """Preview origin while deploy.preview_mode is on; public origin after cutover."""
+    if deploy_preview_enabled(site):
+        preview = str(_deploy(site).get("preview_origin") or "").strip().rstrip("/")
         if preview:
             return preview
     return public_origin(site)
+
+
+def origin_base_path(origin: str) -> str:
+    return normalize_base(urlparse(origin).path)
+
+
+def resolve_site_base_path(
+    site: dict,
+    *,
+    explicit: str | None,
+    explicit_set: bool,
+) -> str:
+    """Base path follows the active origin unless CLI or SITE_BASE_PATH overrides it.
+
+    An empty override is the local and e2e exception while preview is on.
+    After preview_mode is turned off, a leftover project path is an error:
+    canonical would move to the public origin while assets stayed prefixed.
+    """
+    derived = origin_base_path(site_origin(site))
+    chosen = normalize_base(explicit) if explicit_set else derived
+    public_base = origin_base_path(public_origin(site))
+    if deploy_preview_enabled(site):
+        if chosen and chosen != derived:
+            raise DeployBaseError(
+                f"base_path {chosen!r} does not match preview origin path {derived!r}. "
+                "Leave SITE_BASE_PATH unset so it is derived from deploy.preview_origin, "
+                "or set it to that path. An empty SITE_BASE_PATH is only for local/e2e."
+            )
+        return chosen
+    if chosen != public_base:
+        raise DeployBaseError(
+            f"deploy.preview_mode is off but base_path is {chosen!r}; "
+            f"a live build must use the public origin path {public_base!r}. "
+            "Unset SITE_BASE_PATH. The cutover is the preview_mode flag alone."
+        )
+    return chosen
+
+
+OG_IMAGE_PATH = "/assets/og/og-default.png"
+
+
+def person_full_name(site: dict) -> str:
+    person = site.get("person") if isinstance(site.get("person"), dict) else {}
+    name = str(person.get("full_name") or "Yingzhao Ouyang").strip()
+    return name or "Yingzhao Ouyang"
+
+
+def og_image_url(site: dict) -> str:
+    return canonical_url(site, OG_IMAGE_PATH)
+
+
+def og_image_dimensions() -> tuple[int, int] | None:
+    return _local_image_size(ROOT / "assets" / "og" / "og-default.png")
 
 
 def canonical_url(site: dict, path: str) -> str:
@@ -333,7 +416,7 @@ def canonical_url(site: dict, path: str) -> str:
 def document_title(site: dict, active: str, title: str) -> str:
     """Name-first document titles. Home uses the thesis; Credentials uses the DS route name."""
     person = site.get("person") or {}
-    name = str(person.get("full_name") or "Yingzhao Ouyang").strip()
+    name = person_full_name(site)
     headline = str(person.get("headline") or "").strip()
     if active == "Home":
         return f"{name} — {headline}" if headline else name
@@ -362,7 +445,7 @@ def person_json_ld(site: dict) -> str:
         url = str(ext.get(key) or "").strip()
         if url.startswith(("http://", "https://")):
             same_as.append(url)
-    name = person.get("full_name") or "Yingzhao Ouyang"
+    name = person_full_name(site)
     job = str(person.get("job_title") or "").strip()
     employer = str(person.get("employer") or "").strip()
     location = str(person.get("location") or "").strip()
@@ -372,7 +455,7 @@ def person_json_ld(site: dict) -> str:
         "name": name,
         "url": site_origin(site) + "/",
         "jobTitle": job,
-        "image": canonical_url(site, "/assets/og/og-default.png"),
+        "image": og_image_url(site),
         "sameAs": same_as,
     }
     if employer:
@@ -407,7 +490,7 @@ def article_json_ld(site: dict, row: dict, note_id: str) -> str:
         "datePublished": str(row.get("date") or "").strip() or None,
         "author": {
             "@type": "Person",
-            "name": (site.get("person") or {}).get("full_name") or "Yingzhao Ouyang",
+            "name": person_full_name(site),
         },
     }
     data = {k: v for k, v in data.items() if v}
@@ -450,7 +533,7 @@ def verify_panel_html(site: dict) -> str:
     items = [i for i in (block.get("items") or []) if isinstance(i, dict)]
     if not items:
         return ""
-    lede = str(block.get("lede") or "").strip()
+    lede = str(copy(site, "credentials_verify.lede", "") or "").strip()
     links = []
     for item in items:
         label = str(item.get("label") or "").strip()
@@ -778,6 +861,22 @@ def _library_strip_html(site: dict, *, active: str) -> str:
     )
 
 
+def _reveal_first_library_panel(html: str) -> str:
+    """Leave the first panel unhidden so the desktop boot paint can show it.
+
+    Later panels stay hidden. Once JS selects another record it sets hidden on
+    this panel, and the boot rule no longer matches.
+    """
+    match = re.search(r"<article\b[^>]*>", html)
+    if not match:
+        return html
+    tag = match.group(0)
+    if not re.search(r"\blibrary-panel\b", tag):
+        return html
+    revealed = re.sub(r"\s+hidden\b", "", tag, count=1)
+    return html[: match.start()] + revealed + html[match.end() :]
+
+
 def library_shell(
     *,
     site: dict,
@@ -793,12 +892,15 @@ def library_shell(
 ) -> str:
     index = library_index_html(toc, footer_html=index_footer_html)
     panels_block = "\n".join(panels)
+    record_block = record_panels_html or ""
+    if record_block:
+        panels_block = f"{panels_block}\n{record_block}" if panels_block else record_block
+    panels_block = _reveal_first_library_panel(panels_block)
     overview_block = (
         f'          <div class="library-overview">\n{overview_html}\n          </div>\n'
         if overview_html.strip()
         else ""
     )
-    record_block = record_panels_html or ""
     strip_block = strip_html or ""
     page_footer = footer_html(site, compact=True)
     lede_html = (
@@ -824,7 +926,6 @@ def library_shell(
         f"{overview_block}"
         f'            <div class="library-panels">\n'
         f"{panels_block}\n"
-        f"{record_block}\n"
         f"            </div>\n"
         f"          </div>\n"
         f"        </div>\n"
@@ -1007,6 +1108,19 @@ def footer_html(site: dict, *, compact: bool = False, active: str = "") -> str:
   </footer>"""
 
 
+def _reading_size_button(*, indent: str) -> str:
+    lines = [
+        '<button type="button" class="theme-toggle reading-size-toggle" data-reading-size-toggle aria-pressed="false" aria-label="Text size: standard. Click to make text larger.">',
+        '  <span class="reading-size-steps" aria-hidden="true">',
+        '    <span class="reading-size-step is-active" data-step="default">A</span>',
+        '    <span class="reading-size-step" data-step="large">A</span>',
+        '    <span class="reading-size-step" data-step="xlarge">A</span>',
+        "  </span>",
+        "</button>",
+    ]
+    return "\n".join(f"{indent}{line}" if line else line for line in lines)
+
+
 def layout(
     site: dict,
     title: str,
@@ -1023,11 +1137,19 @@ def layout(
 ) -> str:
     person = site["person"]
     brand = esc(person.get("brand", "yzouyang"))
-    full_name = str(person.get("full_name") or "Yingzhao Ouyang")
+    full_name = person_full_name(site)
     page_title = esc(document_title(site, active, title))
     description = esc(page_description(site, active, title))
     canonical = esc(canonical_url(site, path))
-    og_image = esc(canonical_url(site, "/assets/og/og-default.png"))
+    og_image = esc(og_image_url(site))
+    og_size = og_image_dimensions()
+    og_size_meta = ""
+    if og_size:
+        og_width, og_height = og_size
+        og_size_meta = (
+            f'  <meta property="og:image:width" content="{og_width}" />\n'
+            f'  <meta property="og:image:height" content="{og_height}" />\n'
+        )
     og_alt = esc(f"{brand} — {person.get('headline') or ''}".strip(" —"))
     favicon_svg = esc(with_base(site, "/assets/favicon.svg"))
     favicon_png = esc(with_base(site, "/assets/favicon-32.png"))
@@ -1089,9 +1211,7 @@ def layout(
   <meta property="og:type" content="website" />
   <meta property="og:url" content="{canonical}" />
   <meta property="og:image" content="{og_image}" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="{og_alt}" />
+{og_size_meta}  <meta property="og:image:alt" content="{og_alt}" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="{og_image}" />
   <link rel="icon" href="{favicon_svg}" type="image/svg+xml" />
@@ -1116,13 +1236,7 @@ def layout(
         {desktop_nav}
       </nav>
 {header_search_html}
-      <button type="button" class="theme-toggle reading-size-toggle" data-reading-size-toggle aria-pressed="false" aria-label="Text size: standard. Click to make text larger.">
-        <span class="reading-size-steps" aria-hidden="true">
-          <span class="reading-size-step is-active" data-step="default">A</span>
-          <span class="reading-size-step" data-step="large">A</span>
-          <span class="reading-size-step" data-step="xlarge">A</span>
-        </span>
-      </button>
+{_reading_size_button(indent="      ")}
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch to light theme">
         <span class="theme-toggle-label">Dark</span>
       </button>
@@ -1131,13 +1245,7 @@ def layout(
         <nav class="site-nav" aria-label="Primary">
         {mobile_nav}
         </nav>
-        <button type="button" class="theme-toggle reading-size-toggle" data-reading-size-toggle aria-pressed="false" aria-label="Text size: standard. Click to make text larger.">
-          <span class="reading-size-steps" aria-hidden="true">
-            <span class="reading-size-step is-active" data-step="default">A</span>
-            <span class="reading-size-step" data-step="large">A</span>
-            <span class="reading-size-step" data-step="xlarge">A</span>
-          </span>
-        </button>
+{_reading_size_button(indent="        ")}
       </details>
     </div>
   </header>
@@ -1461,83 +1569,18 @@ def _is_image_line(line: str) -> bool:
     return bool(_IMAGE_LINE_RE.match(line.strip()))
 
 
-def _plain_caption_text(text: str) -> str:
-    plain = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", text)
-    plain = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", plain)
-    plain = re.sub(r"\*\*(.+?)\*\*", r"\1", plain)
-    plain = re.sub(r"\*(.+?)\*", r"\1", plain)
-    plain = re.sub(r"`([^`]+)`", r"\1", plain)
-    plain = html_unescape(plain).replace("\u00a0", " ")
-    plain = re.sub(r"\s+", " ", plain).strip()
-    if len(plain) > 140:
-        plain = plain[:139].rstrip() + "…"
-    return plain
+_UNCAPTIONED_FIGURES: list[dict] = []
 
 
-def _figure_state(site: dict) -> dict:
-    state = site.get("_figure_state")
-    if not isinstance(state, dict):
-        state = {"n": 0, "uncaptioned": []}
-        site["_figure_state"] = state
-    return state
-
-
-def _known_alt_for_src(site: dict, src: str) -> str:
-    alts = site.get("_image_alts")
-    if not isinstance(alts, dict):
-        return ""
-    raw = html_unescape(src.strip()).replace("\\", "/").split("?")[0]
-    name = raw.rstrip("/").split("/")[-1]
-    for key in (raw, raw.lstrip("/"), name):
-        found = str(alts.get(key) or "").strip()
-        if found:
-            return found
-    return ""
-
-
-def _local_image_size(path: Path) -> tuple[int, int] | None:
-    """Read PNG, JPEG, or WebP pixel size without a third-party image library."""
-    try:
-        data = path.read_bytes()
-    except OSError:
-        return None
-    if data.startswith(b"\x89PNG\r\n\x1a\n") and len(data) >= 24:
-        width, height = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
-        return (width, height) if width and height else None
-    if data[:2] == b"\xff\xd8":
-        i = 2
-        while i + 8 < len(data):
-            if data[i] != 0xFF:
-                i += 1
-                continue
-            marker = data[i + 1]
-            if marker in {0xC0, 0xC1, 0xC2}:
-                height = int.from_bytes(data[i + 5 : i + 7], "big")
-                width = int.from_bytes(data[i + 7 : i + 9], "big")
-                return (width, height) if width and height else None
-            if marker == 0xD8 or marker == 0xD9:
-                i += 2
-                continue
-            size = int.from_bytes(data[i + 2 : i + 4], "big")
-            if size < 2:
-                break
-            i += 2 + size
-        return None
-    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
-        if data[12:16] == b"VP8X" and len(data) >= 30:
-            width = 1 + int.from_bytes(data[24:27], "little")
-            height = 1 + int.from_bytes(data[27:30], "little")
-            return width, height
-        if data[12:16] == b"VP8 " and len(data) >= 30 and data[23:26] == b"\x9d\x01\x2a":
-            width = int.from_bytes(data[26:28], "little") & 0x3FFF
-            height = int.from_bytes(data[28:30], "little") & 0x3FFF
-            return (width, height) if width and height else None
-        if data[12:16] == b"VP8L" and len(data) >= 25 and data[20] == 0x2F:
-            bits = int.from_bytes(data[21:25], "little")
-            width = (bits & 0x3FFF) + 1
-            height = ((bits >> 14) & 0x3FFF) + 1
-            return width, height
-    return None
+def _figures_for(
+    note_id: str,
+    figures: NoteFigureContext | None,
+    *,
+    title: str = "",
+) -> NoteFigureContext:
+    if figures is not None:
+        return figures
+    return NoteFigureContext(note_id=note_id, title=title or note_id)
 
 
 def _size_attrs_for_src(site: dict, note_id: str, raw_src: str) -> str:
@@ -1556,39 +1599,6 @@ def _size_attrs_for_src(site: dict, note_id: str, raw_src: str) -> str:
     return f' width="{width}" height="{height}"'
 
 
-def _resolve_note_alt(
-    alt: str,
-    src: str,
-    *,
-    note_id: str,
-    site: dict,
-    caption: str = "",
-) -> str:
-    """Covers are handled separately. images[].alt wins; else caption; else a logged fallback."""
-    known = _known_alt_for_src(site, src)
-    if known:
-        return known
-    explicit = str(alt or "").strip()
-    if explicit:
-        return explicit
-    plain_caption = _plain_caption_text(caption) if caption else ""
-    if plain_caption:
-        return plain_caption
-    state = _figure_state(site)
-    state["n"] = int(state.get("n") or 0) + 1
-    title = str(site.get("_note_title") or note_id).strip() or note_id
-    fallback = f"Figure {state['n']} from “{title}”"
-    record = {"note_id": note_id, "src": html_unescape(src.strip()), "alt": fallback}
-    logged = state.setdefault("uncaptioned", [])
-    if isinstance(logged, list):
-        logged.append(record)
-    print(
-        f"uncaptioned-figure {note_id} {record['src']}",
-        file=sys.stderr,
-    )
-    return fallback
-
-
 def _markdown_image_tag(
     alt: str,
     src: str,
@@ -1596,6 +1606,8 @@ def _markdown_image_tag(
     note_id: str,
     site: dict,
     caption: str = "",
+    figures: NoteFigureContext | None = None,
+    resolved: ResolvedAlt | None = None,
 ) -> str:
     raw_src = html_unescape(src.strip())
     if _is_note_asset_ref(raw_src):
@@ -1604,27 +1616,41 @@ def _markdown_image_tag(
         path = esc(raw_src)
     else:
         path = esc(with_base(site, raw_src))
-    resolved = _resolve_note_alt(alt, raw_src, note_id=note_id, site=site, caption=caption)
+    if resolved is None:
+        resolved = _resolve_note_alt(
+            _figures_for(note_id, figures),
+            alt,
+            raw_src,
+            caption=caption,
+        )
     dims = _size_attrs_for_src(site, note_id, raw_src)
-    return f'<img src="{path}" alt="{esc(resolved)}"{dims} loading="lazy" />'
+    role = ' role="presentation"' if resolved.decorative else ""
+    return f'<img src="{path}" alt="{esc(resolved.text)}"{role}{dims} loading="lazy" />'
 
 
-def _render_image_block(line: str, *, note_id: str, site: dict) -> str:
+def _render_image_block(
+    line: str,
+    *,
+    note_id: str,
+    site: dict,
+    figures: NoteFigureContext | None = None,
+) -> str:
+    ctx = _figures_for(note_id, figures)
     match = _IMAGE_LINE_RE.match(line.strip())
     if not match:
-        return f"<p>{_inline_markdown(line.strip(), note_id=note_id, site=site)}</p>"
+        return f"<p>{_inline_markdown(line.strip(), note_id=note_id, site=site, figures=ctx)}</p>"
     alt, src, caption = match.group(1), match.group(2), match.group(3).strip()
-    resolved = _resolve_note_alt(alt, src, note_id=note_id, site=site, caption=caption)
+    resolved = _resolve_note_alt(ctx, alt, src, caption=caption)
     img_html = _markdown_image_tag(
-        resolved, src, note_id=note_id, site=site, caption=""
+        alt, src, note_id=note_id, site=site, figures=ctx, resolved=resolved
     )
     caption_html = ""
     if caption:
         plain = _plain_caption_text(caption)
-        hidden = ' aria-hidden="true"' if plain and plain == resolved else ""
+        hidden = ' aria-hidden="true"' if plain and plain == resolved.text else ""
         caption_html = (
             f'  <figcaption class="note-figure-caption"{hidden}>'
-            f"{_inline_markdown(caption, note_id=note_id, site=site)}"
+            f"{_inline_markdown(caption, note_id=note_id, site=site, figures=ctx)}"
             f"</figcaption>\n"
         )
     return f"<figure class=\"note-figure\">\n  {img_html}\n{caption_html}</figure>"
@@ -1663,11 +1689,17 @@ def _render_code_line(line: str, line_no: int) -> str:
 
 
 def _render_expand_block(
-    summary_line: str, body_lines: list[str], *, note_id: str, site: dict
+    summary_line: str,
+    body_lines: list[str],
+    *,
+    note_id: str,
+    site: dict,
+    figures: NoteFigureContext | None = None,
 ) -> str:
-    summary_html = _inline_markdown(summary_line.strip(), note_id=note_id, site=site)
+    ctx = _figures_for(note_id, figures)
+    summary_html = _inline_markdown(summary_line.strip(), note_id=note_id, site=site, figures=ctx)
     body_parts = [
-        _render_image_block(line, note_id=note_id, site=site)
+        _render_image_block(line, note_id=note_id, site=site, figures=ctx)
         for line in body_lines
         if line.strip() and _is_image_line(line)
     ]
@@ -1764,17 +1796,24 @@ def _inarticle_toc_attr(md: str) -> str:
     return f' data-inarticle-toc="{esc(payload)}"'
 
 
-def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
+def _inline_markdown(
+    text: str,
+    *,
+    note_id: str,
+    site: dict,
+    figures: NoteFigureContext | None = None,
+) -> str:
+    ctx = _figures_for(note_id, figures)
     safe = esc(text)
-    safe = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", safe)
-    safe = re.sub(r"\*(.+?)\*", r"<em>\1</em>", safe)
-    safe = re.sub(r"`([^`]+)`", r"<code>\1</code>", safe)
+    safe = BOLD_RE.sub(r"<strong>\1</strong>", safe)
+    safe = ITALIC_RE.sub(r"<em>\1</em>", safe)
+    safe = CODE_RE.sub(r"<code>\1</code>", safe)
 
     def img_repl(match: re.Match[str]) -> str:
         alt, src = match.group(1), match.group(2)
-        return _markdown_image_tag(alt, src, note_id=note_id, site=site)
+        return _markdown_image_tag(alt, src, note_id=note_id, site=site, figures=ctx)
 
-    safe = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", img_repl, safe)
+    safe = MD_IMAGE_RE.sub(img_repl, safe)
 
     def link_repl(match: re.Match[str]) -> str:
         label, href = match.group(1), match.group(2).strip()
@@ -1789,7 +1828,7 @@ def _inline_markdown(text: str, *, note_id: str, site: dict) -> str:
             )
         return f'<a href="{esc(with_base(site, raw_href))}">{label}</a>'
 
-    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_repl, safe)
+    return MD_LINK_RE.sub(link_repl, safe)
 
 
 def _render_note_heading_html(
@@ -1799,8 +1838,9 @@ def _render_note_heading_html(
     *,
     note_id: str,
     site: dict,
+    figures: NoteFigureContext | None = None,
 ) -> str:
-    inner = _inline_markdown(heading_text, note_id=note_id, site=site)
+    inner = _inline_markdown(heading_text, note_id=note_id, site=site, figures=figures)
     tier = "major" if level <= 3 else "minor"
     return (
         f'<h{level} id="{anchor_id}" '
@@ -1863,10 +1903,17 @@ def _unwrap_link_wrapped_images(md: str) -> str:
     return "".join(out)
 
 
-def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = "") -> str:
-    if note_title:
-        site["_note_title"] = note_title
-    site["_figure_state"] = {"n": 0, "uncaptioned": site.get("_uncaptioned_figures") or []}
+def _markdown_to_html(
+    md: str,
+    *,
+    note_id: str,
+    site: dict,
+    note_title: str = "",
+    figures: NoteFigureContext | None = None,
+) -> str:
+    figures = _figures_for(note_id, figures, title=note_title)
+    if note_title and not figures.title:
+        figures.title = note_title
     md = _unwrap_link_wrapped_images(str(md or ""))
     if not md.strip():
         return ""
@@ -1889,7 +1936,7 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = ""
             if joined:
                 out.append(
                     '<blockquote class="note-blockquote">'
-                    f"<p>{_inline_markdown(joined, note_id=note_id, site=site)}</p>"
+                    f"<p>{_inline_markdown(joined, note_id=note_id, site=site, figures=figures)}</p>"
                     "</blockquote>"
                 )
             blockquote_bits = []
@@ -1900,7 +1947,7 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = ""
         if para:
             joined = " ".join(para).strip()
             if joined:
-                out.append(f"<p>{_inline_markdown(joined, note_id=note_id, site=site)}</p>")
+                out.append(f"<p>{_inline_markdown(joined, note_id=note_id, site=site, figures=figures)}</p>")
             para = []
         if in_list:
             out.append("</ul>")
@@ -1953,13 +2000,13 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = ""
             flush_para()
             body_lines, next_i = _collect_expand_body(lines, i + 1)
             out.append(
-                _render_expand_block(line, body_lines, note_id=note_id, site=site)
+                _render_expand_block(line, body_lines, note_id=note_id, site=site, figures=figures)
             )
             i = next_i
             continue
         if _is_image_line(line):
             flush_para()
-            out.append(_render_image_block(line, note_id=note_id, site=site))
+            out.append(_render_image_block(line, note_id=note_id, site=site, figures=figures))
             i += 1
             continue
         heading = re.match(r"^(#{1,4})\s+(.*)$", line)
@@ -1976,6 +2023,7 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = ""
                     heading_text,
                     note_id=note_id,
                     site=site,
+                    figures=figures,
                 )
             )
             i += 1
@@ -1997,7 +2045,7 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = ""
                 out.append("<ul>")
                 in_list = True
             out.append(
-                f"<li>{_inline_markdown(line.strip()[2:], note_id=note_id, site=site)}</li>"
+                f"<li>{_inline_markdown(line.strip()[2:], note_id=note_id, site=site, figures=figures)}</li>"
             )
             i += 1
             continue
@@ -2011,10 +2059,6 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = ""
     if in_code:
         out.append("".join(code_buffer))
         out.append("</code></pre>")
-    state = _figure_state(site)
-    logged = state.get("uncaptioned") or []
-    if isinstance(logged, list):
-        site["_uncaptioned_figures"] = logged
     return "\n".join(out)
 
 
@@ -3266,7 +3310,7 @@ def build_home(site: dict, export: dict) -> str:
     philosophy_html = _philosophy_block_html(_about_data(site, export), home=True)
     practice_html = _home_practice_areas_html(site, export)
     hero = f"""    <div class="home-pacing" data-home-pacing>
-    <section id="entrance" class="entrance hero home-hero home-snap-section home-snap-proposition is-in-view" aria-labelledby="entrance-heading">
+    <section id="entrance" class="entrance hero home-hero home-snap-section home-snap-proposition" aria-labelledby="entrance-heading">
 {entrance_img}
       <div class="entrance-copy hero-copy home-snap-inner">
 {identity_html}        <h1 id="entrance-heading">{thesis}</h1>
@@ -3569,7 +3613,9 @@ def build_portfolio(site: dict, export: dict) -> str:
         item for item in (enterprise.get("items") or []) if isinstance(item, dict)
     ]
     used_overlay_ids: set[str] = set()
-    label_overrides = site.get("systems_labels") if isinstance(site.get("systems_labels"), dict) else {}
+    label_overrides = copy(site, "systems_labels", {})
+    if not isinstance(label_overrides, dict):
+        label_overrides = {}
     if export_items or ent_copy:
         etitle = str(
             label_overrides.get("enterprise_summaries")
@@ -3691,6 +3737,9 @@ def build_portfolio(site: dict, export: dict) -> str:
         vid = unique_id(vtitle)
         toc.append({"id": vid, "label": vtitle, "children": []})
         vitems = []
+        label_map = copy(site, "systems_verify.item_labels", {})
+        if not isinstance(label_map, dict):
+            label_map = {}
         for item in verify.get("items") or []:
             if not isinstance(item, dict):
                 continue
@@ -3701,7 +3750,6 @@ def build_portfolio(site: dict, export: dict) -> str:
             cls = ' class="external"' if external else ""
             if external:
                 attrs += ' target="_blank" rel="noopener noreferrer"'
-            label_map = verify_override.get("item_labels") if isinstance(verify_override.get("item_labels"), dict) else {}
             label = str(label_map.get(raw_href) or item.get("label") or href)
             vitems.append(
                 f"      <li><a{cls}{attrs}>{esc(label)}</a></li>"
@@ -3723,7 +3771,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         )
         toc.append({"id": "empty", "label": "Systems", "children": []})
 
-    systems_lede = str(site.get("systems_lede") or "").strip()
+    systems_lede = str(copy(site, "systems_lede", "") or "").strip()
     return library_shell(
         site=site,
         title="Systems",
@@ -3864,8 +3912,7 @@ def _certs_by_issuer_html(
 
 def build_credentials(site: dict, export: dict) -> str:
     page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
-    verify_block = site.get("credentials_verify") if isinstance(site.get("credentials_verify"), dict) else {}
-    lede = str(verify_block.get("lede") or "").strip() or (
+    lede = str(copy(site, "credentials_verify.lede", "") or "").strip() or (
         page.get("lede") or "PUBLIC certifications and qualifications."
     ).strip()
     order = page.get("order") or {}
@@ -4143,26 +4190,21 @@ def _writing_note_panel_body(
             "Draft preview — not in PUBLIC export</p>\n"
         )
     body_md = str(row.get("body_md") or "").strip()
-    alts: dict[str, str] = {}
-    for image in row.get("images") or []:
-        if not isinstance(image, dict):
-            continue
-        image_alt = str(image.get("alt") or "").strip()
-        image_path = str(image.get("path") or "").strip()
-        if not image_alt or not image_path:
-            continue
-        alts[image_path] = image_alt
-        alts[image_path.replace("\\", "/").split("/")[-1]] = image_alt
-    site["_image_alts"] = alts
-    site["_note_title"] = str(row.get("title") or note_id).strip()
+    figures = NoteFigureContext(
+        note_id=note_id,
+        title=str(row.get("title") or note_id).strip(),
+        alts_by_path=alts_by_full_path(row.get("images")),
+    )
     body_html = ""
     if body_md:
         rendered = _markdown_to_html(
             body_md,
             note_id=note_id,
             site=site,
-            note_title=str(row.get("title") or note_id),
+            note_title=figures.title,
+            figures=figures,
         )
+        _UNCAPTIONED_FIGURES.extend(figures.uncaptioned)
         if rendered:
             body_html = f'      <div class="note-body prose">{rendered}</div>\n'
     links_html = _writing_links_html(site, row)
@@ -4365,11 +4407,22 @@ def main() -> None:
     args = parser.parse_args()
 
     site = load_json(DATA / "site.json")
+    explicit_set = False
+    explicit: str | None = None
     if args.base_path is not None:
-        site["base_path"] = args.base_path
+        explicit_set = True
+        explicit = args.base_path
     elif os.environ.get("SITE_BASE_PATH") is not None:
-        site["base_path"] = os.environ["SITE_BASE_PATH"]
-    site["base_path"] = normalize_base(site.get("base_path", ""))
+        explicit_set = True
+        explicit = os.environ.get("SITE_BASE_PATH")
+    try:
+        site["base_path"] = resolve_site_base_path(
+            site, explicit=explicit, explicit_set=explicit_set
+        )
+    except DeployBaseError as exc:
+        print(f"build error: {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
+    _UNCAPTIONED_FIGURES.clear()
 
     export = _merge_preview_drafts(load_json(DATA / "export_public.json"))
     site["_export"] = export
@@ -4561,8 +4614,7 @@ def main() -> None:
 """
     write(DIST / "_redirects", redirects)
 
-    logged = site.get("_uncaptioned_figures") or []
-    print(f"uncaptioned-figures {len(logged)}")
+    print(f"uncaptioned-figures {len(_UNCAPTIONED_FIGURES)}")
     print(f"built {len(pages)} pages + 404 + work redirect -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:

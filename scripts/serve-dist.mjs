@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import http from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
-import { join, resolve, extname, normalize } from "node:path";
+import { join, resolve, extname, normalize, sep } from "node:path";
 
 const root = resolve(process.env.SERVE_DIST_ROOT || "dist");
 const host = process.env.SERVE_DIST_HOST || "127.0.0.1";
@@ -33,18 +33,24 @@ function send(res, status, body) {
   res.end(body);
 }
 
+function insideRoot(candidate) {
+  if (candidate === root) return true;
+  const prefix = root.endsWith(sep) ? root : `${root}${sep}`;
+  return candidate.startsWith(prefix);
+}
+
 function fileFor(urlPath) {
   const decoded = decodeURIComponent(urlPath.split("?")[0]);
   const safe = normalize(decoded).replace(/^(\.\.[/\\])+/, "");
   let path = resolve(join(root, safe));
-  if (!path.startsWith(root)) return null;
+  if (!insideRoot(path)) return null;
   if (existsSync(path) && statSync(path).isDirectory()) {
     path = join(path, "index.html");
   }
   if (!existsSync(path) && !extname(path)) {
     path = join(path, "index.html");
   }
-  return path.startsWith(root) ? path : null;
+  return insideRoot(path) ? path : null;
 }
 
 const server = http.createServer((req, res) => {

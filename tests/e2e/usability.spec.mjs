@@ -28,6 +28,14 @@ function libraryIndexPanel(page, panelId) {
   return page.locator(`.library-index-list [data-panel-id="${panelId}"]`).first();
 }
 
+async function visibleLibraryPanelIds(page) {
+  return page.locator(".library-panels > .library-panel").evaluateAll((nodes) =>
+    nodes
+      .filter((node) => getComputedStyle(node).display !== "none")
+      .map((node) => node.getAttribute("data-panel-id"))
+  );
+}
+
 async function activeIndexRowInView(page) {
   return page.evaluate(() => {
     const body = document.querySelector(".library-index-body");
@@ -221,6 +229,34 @@ test.describe("home", () => {
 });
 
 test.describe("library shell", () => {
+  test("exactly one library panel is visible after a deep link and an index click", async ({
+    page,
+  }) => {
+    test.skip(test.info().project.name === "mobile", "desktop panel stack");
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await page.goto("/systems/#stb-data-engineer-applied-ml", { waitUntil: "load" });
+    await expect
+      .poll(() => visibleLibraryPanelIds(page))
+      .toEqual(["stb-data-engineer-applied-ml"]);
+    await libraryIndexPanel(
+      page,
+      "prudential-singapore-senior-data-engineer-solutioning-architecture"
+    ).click();
+    await expect
+      .poll(() => visibleLibraryPanelIds(page))
+      .toEqual(["prudential-singapore-senior-data-engineer-solutioning-architecture"]);
+
+    await page.goto("/notes/#NOTE-2025-021", { waitUntil: "load" });
+    await expect.poll(() => visibleLibraryPanelIds(page)).toEqual(["NOTE-2025-021"]);
+    const railExpand = page.locator(".library-index-rail-expand");
+    if (await railExpand.isVisible()) {
+      await railExpand.click();
+    }
+    await libraryIndexPanel(page, "NOTE-2026-005").click();
+    await expect.poll(() => visibleLibraryPanelIds(page)).toEqual(["NOTE-2026-005"]);
+  });
+
   test("systems index opens a panel and honors hash records", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop sidebar coverage");
     await page.goto("/systems/");

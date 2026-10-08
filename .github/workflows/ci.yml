@@ -82,9 +82,11 @@ jobs:
       - name: DIY collect smoke
         run: uv run python scripts/test_diy_collect.py
 
+      # Asset prefix comes from deploy.preview_origin while preview_mode is on,
+      # and from public_origin after that one flag is turned off. Do not set
+      # SITE_BASE_PATH here — a hardcoded /yzouyang-site would survive cutover.
       - name: Build (GitHub Pages base path)
         env:
-          SITE_BASE_PATH: /yzouyang-site
           SITE_UAT_BUILD: ${{ steps.meta.outputs.deploy_env == 'uat' && '1' || '' }}
         run: uv run python scripts/build.py --skip-pagefind
 
@@ -125,7 +127,8 @@ jobs:
       - name: Stylelint (token enforcement)
         run: npm run lint:css
 
-      # e2e serves dist at /; Pages build uses /yzouyang-site asset prefixes — rebuild root for tests
+      # e2e serves dist at /. Empty SITE_BASE_PATH is the local/e2e exception
+      # while preview_mode is still on; it must not be used for the Pages artifact.
       - name: Build root site for e2e
         env:
           SITE_BASE_PATH: ""
