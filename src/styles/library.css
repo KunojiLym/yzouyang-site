@@ -17,6 +17,12 @@ body:has(main.library-route) {
   overflow: hidden;
 }
 
+.library-route-lede {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
 .library-shell {
   display: flex;
   flex-direction: column;
@@ -42,8 +48,8 @@ body:has(main.library-route) {
 .library-split {
   --library-rail-width: 2.75rem;
   --library-overlay-width: min(20rem, 38vw);
-  --library-fold-duration: 0.42s;
-  --library-fold-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --library-fold-duration: var(--dur-slow);
+  --library-fold-ease: var(--ease-standard);
 
   display: grid;
   grid-template-columns: minmax(11rem, 0.34fr) minmax(0, 0.66fr);
@@ -98,9 +104,9 @@ body:has(main.library-route) {
   color: var(--text-muted);
   cursor: pointer;
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
 }
 
 .library-index-control:hover {
@@ -140,12 +146,9 @@ body:has(main.library-route) {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition:
-    transform var(--library-fold-duration) var(--library-fold-ease),
-    opacity calc(var(--library-fold-duration) * 0.65) ease,
-    visibility 0s linear var(--library-fold-duration),
-    box-shadow var(--library-fold-duration) var(--library-fold-ease),
-    padding var(--library-fold-duration) var(--library-fold-ease);
+  transition-property: transform, opacity, visibility;
+  transition-duration: var(--dur-slow), var(--dur-base), var(--dur-slow);
+  transition-timing-function: var(--ease-standard), var(--ease-standard), var(--ease-standard);
 }
 
 .library-split:not(.is-index-collapsed) .library-index-drawer,
@@ -154,12 +157,9 @@ body:has(main.library-route) {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transition:
-    transform var(--library-fold-duration) var(--library-fold-ease),
-    opacity calc(var(--library-fold-duration) * 0.65) ease 0.06s,
-    visibility 0s linear 0s,
-    box-shadow var(--library-fold-duration) var(--library-fold-ease),
-    padding var(--library-fold-duration) var(--library-fold-ease);
+  transition-property: transform, opacity, visibility;
+  transition-duration: var(--dur-slow), var(--dur-base), var(--dur-fast);
+  transition-timing-function: var(--ease-out), var(--ease-out), var(--ease-standard);
 }
 
 .library-index-label {
@@ -242,14 +242,14 @@ body:has(main.library-route) {
   cursor: pointer;
 }
 
-.library-index-inarticle-top:hover,
-.library-index-inarticle-top:focus-visible {
+.library-index-inarticle-top:hover {
   background: rgb(196 154 90 / 8%);
   color: var(--accent);
-  outline: none;
 }
 
 .library-index-inarticle-top:focus-visible {
+  background: rgb(196 154 90 / 8%);
+  color: var(--accent);
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
@@ -298,21 +298,19 @@ body:has(main.library-route) {
 
 .library-index-inarticle-link--depth-1 {
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-muted);
 }
 
 .library-index-inarticle-link--depth-2 {
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-faint);
 }
 
-.library-index-inarticle-link:hover,
-.library-index-inarticle-link:focus-visible {
+.library-index-inarticle-link:hover {
   background: rgb(196 154 90 / 8%);
   color: var(--text-strong);
-  outline: none;
 }
 
 .library-index-inarticle-link[aria-current="location"] {
@@ -321,6 +319,8 @@ body:has(main.library-route) {
 }
 
 .library-index-inarticle-link:focus-visible {
+  background: rgb(196 154 90 / 8%);
+  color: var(--text-strong);
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
@@ -352,8 +352,8 @@ body:has(main.library-route) {
   border-left: 2px solid transparent;
   border-radius: var(--radius-sm);
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
 }
 
 .library-index-trigger {
@@ -370,8 +370,8 @@ body:has(main.library-route) {
   color: inherit;
   cursor: pointer;
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
 }
 
 .library-index-group {
@@ -416,7 +416,7 @@ body:has(main.library-route) {
   letter-spacing: 0.02em;
   text-transform: none;
   color: var(--text-faint);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .library-index-group > .library-index-sub {
@@ -602,6 +602,7 @@ body:has(main.library-route) {
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
+  min-height: calc(var(--space-2) * 2 + (var(--text-sm) * 1.35) + 1px);
   margin: 0;
   padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--line-soft);
@@ -637,15 +638,13 @@ body:has(main.library-route) {
 }
 
 .library-reading-context-title:hover,
-.library-reading-context-title:focus-visible,
-.library-reading-context-section:hover,
-.library-reading-context-section:focus-visible {
+.library-reading-context-section:hover {
   color: var(--accent);
-  outline: none;
 }
 
 .library-reading-context-title:focus-visible,
 .library-reading-context-section:focus-visible {
+  color: var(--accent);
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
@@ -720,7 +719,7 @@ body:has(main.library-route) {
 
 .library-panel--note .library-panel-title {
   font-size: var(--text-display-1);
-  line-height: 1.12;
+  line-height: var(--lh-heading);
   letter-spacing: -0.025em;
 }
 
@@ -731,7 +730,7 @@ body:has(main.library-route) {
   background: none;
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent-text);
@@ -777,11 +776,33 @@ body:has(main.library-route) {
 
 .library-panel.is-active {
   display: block;
-  animation: map-panel-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.library-panel.is-active.is-enter {
+  animation: map-panel-in var(--dur-base) var(--ease-out) both;
+}
+
+.library-split.is-booting,
+.library-split.is-booting *,
+.library-split.is-boot-settle,
+.library-split.is-boot-settle * {
+  transition: none !important;
+  animation: none !important;
 }
 
 .library-panel[hidden] {
   display: none !important;
+}
+
+/* Hash deep links, only until the inline script clears data-library-hash.
+   Panels are chosen by data-panel-id. Record ids on the article would
+   steal the first Tab and scroll the record under the reading bar. */
+html[data-library-hash] .library-panels > .library-panel:not(.is-active) {
+  display: none !important;
+}
+
+html[data-library-hash] .library-panels > .library-panel.is-active {
+  display: block !important;
 }
 
 .library-panel-header {
@@ -794,7 +815,13 @@ main.page .library-panel-title,
   font-family: var(--font-display);
   font-size: var(--text-display-3);
   font-weight: 600;
+  line-height: var(--lh-heading);
   color: var(--text-strong);
+}
+
+main.page .library-panel--note .library-panel-title {
+  font-size: var(--text-display-1);
+  line-height: var(--lh-heading);
 }
 
 .library-panel-body .section-fold {
@@ -825,7 +852,7 @@ main.page .library-panel-title,
 .note-kicker {
   margin: 0 0 var(--space-3);
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent-text);
@@ -1015,8 +1042,8 @@ main.page .library-panel-title,
   color: var(--text-muted);
   border-radius: var(--radius-md);
   transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+    background-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
 }
 
 .note-body.prose .note-expand > summary:hover {
@@ -1082,7 +1109,7 @@ main.page .library-panel-title,
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 600;
-  line-height: 1.25;
+  line-height: var(--lh-heading);
   color: var(--text-strong);
 }
 
@@ -1212,6 +1239,45 @@ main.page .library-panel-title,
   }
 }
 
+@media (width >= 49rem) {
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {
+    grid-template-columns: var(--library-rail-width) minmax(0, 1fr);
+    position: relative;
+    overflow: visible;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index {
+    width: var(--library-rail-width);
+    overflow: visible;
+    z-index: 20;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index-rail {
+    display: flex;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index-drawer {
+    position: absolute;
+    left: var(--library-rail-width);
+    top: 0;
+    bottom: 0;
+    width: var(--library-overlay-width);
+    max-width: calc(100% - var(--library-rail-width));
+    flex: none;
+    transform: scaleX(0);
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  html[data-library-boot="detail"] .library-panels > .library-panel:first-child:not([hidden]) {
+    display: block;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-reading-context {
+    display: flex !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .library-split,
   .library-index-drawer,
@@ -1283,10 +1349,18 @@ main.page .library-panel-title,
   }
 }
 
-/* Mobile: master-detail */
+/* Mobile: master-detail. Notes prose margins use the page gutter (20px @375). */
 @media (width <= 48rem) {
   .library-shell {
     padding: var(--space-3) var(--space-4) var(--space-2);
+  }
+
+  main.library-route:has(.library-panel--note) .library-shell {
+    padding-inline: var(--gutter);
+  }
+
+  main.library-route:has(.library-panel--note) .library-panels {
+    padding-inline: 0;
   }
 
   .library-split {
@@ -1315,5 +1389,17 @@ main.page .library-panel-title,
 
   .library-split.is-detail-open .library-back {
     display: inline-flex;
+  }
+
+  html[data-library-hash] .library-split.is-booting .library-index {
+    display: none;
+  }
+
+  html[data-library-hash] .library-split.is-booting .library-back {
+    display: inline-flex !important;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open .library-reading-context {
+    display: flex !important;
   }
 }

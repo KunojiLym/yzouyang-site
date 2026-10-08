@@ -49,7 +49,7 @@ close-complete, timeout, and bind-error events. Playwright e2e starts and stops
 the same Node server through global setup/teardown so lifecycle events are
 visible during normal test runs.
 
-CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty). Contract tests + Playwright usability e2e run on every PR.
+CI derives the Pages asset prefix from `deploy.preview_origin` while `deploy.preview_mode` is on (`/yzouyang-site` today). Local preview passes an empty `SITE_BASE_PATH` so it serves at `/`. Contract tests + Playwright usability e2e run on every PR.
 
 Optional repo secret **`NTFY_TOPIC_URL`** (full ntfy HTTPS URL; same topic as Alertmanager is fine): on `lint-build` or Pages `deploy` **failure**, CI POSTs the Actions run URL only. Unset = skip, job stays green. Never commit the URL.
 
