@@ -244,7 +244,20 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
     }
     return null;
   }
+  function findLegacy(id) {
+    if (!id) return null;
+    var suffix = "-" + id;
+    for (var i = 0; i < panels.length; i++) {
+      var nodes = panels[i].querySelectorAll("[id]");
+      for (var j = 0; j < nodes.length; j++) {
+        var nodeId = nodes[j].id || "";
+        if (nodeId.length > suffix.length && nodeId.slice(-suffix.length) === suffix) return panels[i];
+      }
+    }
+    return null;
+  }
   var target = hash ? findPanel(hash) : null;
+  if (!target && hash) target = findLegacy(hash);
   if (!target && wide) target = panels[0];
   if (target) {
     for (var index = 0; index < panels.length; index++) {
@@ -876,7 +889,7 @@ def library_section_panel(
     hidden: bool = True,
 ) -> str:
     body = (
-        section_fold_open(section_id, esc(heading), level=level, variant=variant, kicker=kicker)
+        section_fold_open(esc(heading), level=level, variant=variant, kicker=kicker)
         + inner_html
         + section_fold_close()
     )
@@ -986,7 +999,6 @@ def library_shell(
 
 
 def section_fold_open(
-    section_id: str,
     heading: str,
     *,
     level: str = "h2",
@@ -998,6 +1010,8 @@ def section_fold_open(
     Summary is the visible section title. Nested h2/h3 inside <summary>
     breaks disclosure semantics, so the summary carries role=heading
     instead of a second, visually-hidden heading that duplicated the title.
+    The summary has no id: the section id is the panel hash, and a matching
+    fragment would start sequential focus inside the record.
     """
     aria_level = "2" if level == "h2" else "3"
     extra = f" section-fold--{variant}" if variant else ""
@@ -1006,7 +1020,7 @@ def section_fold_open(
     )
     return (
         f'    <details class="section-fold{extra}" open>\n'
-        f'      <summary class="section-fold-summary" id="{esc(section_id)}" '
+        f'      <summary class="section-fold-summary" '
         f'role="heading" aria-level="{aria_level}">'
         f"{heading}</summary>\n"
         f'      <div class="section-fold-body">\n'

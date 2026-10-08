@@ -664,6 +664,26 @@
           };
         }
       }
+      const legacy = findLegacyAnchor(requestedId);
+      if (legacy) return legacy;
+      return null;
+    }
+
+    function findLegacyAnchor(requestedId) {
+      const suffix = `-${requestedId}`;
+      for (const panel of panels) {
+        const nodes = panel.querySelectorAll("[id]");
+        for (const node of nodes) {
+          const id = node.id || "";
+          if (id.length > suffix.length && id.endsWith(suffix)) {
+            return {
+              panelId: panel.getAttribute("data-panel-id"),
+              anchorId: id,
+              indexId: panel.getAttribute("data-panel-id"),
+            };
+          }
+        }
+      }
       return null;
     }
 

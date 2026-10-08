@@ -431,15 +431,34 @@ test.describe("layout", () => {
 });
 
 test.describe("library focus order", () => {
-  test("first Tab on a deep-linked note is the skip link", async ({ page }) => {
-    await page.goto("/notes/#NOTE-2026-005", { waitUntil: "load" });
-    await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"].is-active')).toBeVisible();
+  test("first Tab on a deep-linked record is the skip link", async ({ page }) => {
+    const routes = [
+      { path: "/notes/#NOTE-2026-005", panel: "NOTE-2026-005" },
+      { path: "/systems/#verify", panel: "verify" },
+      { path: "/credentials/#academic-qualifications", panel: "academic-qualifications" },
+    ];
+    for (const route of routes) {
+      await page.goto(route.path, { waitUntil: "load" });
+      await expect(
+        page.locator(`.library-panel[data-panel-id="${route.panel}"].is-active`)
+      ).toBeVisible();
+      await page.keyboard.press("Tab");
+      await expect(page.locator("a.skip-link")).toBeFocused();
+      const panelScroll = await page.locator(".library-panels").evaluate((el) => el.scrollTop);
+      const windowScroll = await page.evaluate(() => window.scrollY);
+      expect(panelScroll, route.path).toBe(0);
+      expect(windowScroll, route.path).toBe(0);
+    }
+  });
+
+  test("legacy note section hash opens the note that contains it", async ({ page }) => {
+    const hash = "2-i-setting-up-databricks-free-edition-account";
+    await page.goto(`/notes/#${hash}`, { waitUntil: "load" });
+    const active = page.locator(".library-panel.is-active");
+    await expect(active).toHaveAttribute("data-panel-id", "NOTE-2025-012");
+    await expect(active.locator(`[id$="-${hash}"]`)).toHaveCount(1);
     await page.keyboard.press("Tab");
     await expect(page.locator("a.skip-link")).toBeFocused();
-    const panelScroll = await page.locator(".library-panels").evaluate((el) => el.scrollTop);
-    const windowScroll = await page.evaluate(() => window.scrollY);
-    expect(panelScroll).toBe(0);
-    expect(windowScroll).toBe(0);
   });
 });
 

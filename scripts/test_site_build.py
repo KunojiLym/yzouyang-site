@@ -223,11 +223,11 @@ Summary.
 
 Body.
 """
-    html = _markdown_to_html(md, note_id="NOTE-2025-012", site=site)
-    if 'id="1-tldr"' not in html:
-        fail("TOC heading must render Medium-style id on matching h3")
-    if 'id="2-i-setting-up-databricks-free-edition-account"' not in html:
-        fail("TOC heading must map roman-numeral section to Medium anchor id")
+    html = _markdown_to_html(md, note_id="NOTE-2025-012", site=site, scope_anchors=True)
+    if 'id="NOTE-2025-012-1-tldr"' not in html or 'id="1-tldr"' in html:
+        fail("TOC heading must render the note-scoped Medium id")
+    if 'id="NOTE-2025-012-2-i-setting-up-databricks-free-edition-account"' not in html:
+        fail("TOC heading must map roman-numeral section to the note-scoped Medium id")
     if "Table Of Contents" in html:
         fail("inline Table Of Contents must not render in note body")
     if 'href="#1-tldr"' in html:
