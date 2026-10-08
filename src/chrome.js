@@ -126,6 +126,7 @@
   function initLibraryShell() {
     const shell = document.querySelector(".library-shell");
     if (!shell) return;
+    document.documentElement.removeAttribute("data-library-hash");
 
     const split = shell.querySelector(".library-split");
     const routeTitle = document.title;

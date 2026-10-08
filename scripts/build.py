@@ -227,14 +227,164 @@ THEME_BOOT_SCRIPT = """<script>
     document.documentElement.setAttribute("data-reading-size", reading);
   }
   var libraryBoot = "overview";
+  var libraryHash = "";
   try {
-    if (window.matchMedia && window.matchMedia("(min-width: 49rem)").matches) {
+    libraryHash = decodeURIComponent((location.hash || "").replace(/^#/, ""));
+  } catch (e) {
+    libraryHash = (location.hash || "").replace(/^#/, "");
+  }
+  try {
+    if (libraryHash || (window.matchMedia && window.matchMedia("(min-width: 49rem)").matches)) {
       libraryBoot = "detail";
     }
-  } catch (e) {}
+  } catch (e2) {}
   document.documentElement.setAttribute("data-library-boot", libraryBoot);
+  if (libraryHash) {
+    document.documentElement.setAttribute("data-library-hash", libraryHash);
+  }
 })();
 </script>"""
+LIBRARY_HASH_BOOT_SCRIPT = """<script>
+(function () {
+  var root = document.documentElement;
+  var hash = root.getAttribute("data-library-hash") || "";
+  if (!hash) {
+    try {
+      hash = decodeURIComponent((location.hash || "").replace(/^#/, ""));
+    } catch (e) {
+      hash = (location.hash || "").replace(/^#/, "");
+    }
+  }
+  var split = document.getElementById("library-split");
+  var panels = split ? split.querySelectorAll(".library-panels > .library-panel") : [];
+  function clearHashFlag() {
+    root.removeAttribute("data-library-hash");
+  }
+  if (!split || !panels.length) {
+    clearHashFlag();
+    return;
+  }
+  var wide = false;
+  try {
+    wide = window.matchMedia("(min-width: 49rem)").matches;
+  } catch (e) {}
+  function panelIdOf(panel) {
+    return panel.getAttribute("data-panel-id") || "";
+  }
+  function findPanel(id) {
+    var i;
+    if (!id) return null;
+    for (i = 0; i < panels.length; i++) {
+      if (panelIdOf(panels[i]) === id || panels[i].getAttribute("data-record") === id) {
+        return panels[i];
+      }
+    }
+    var groups = split.querySelectorAll("[data-panel-group-id]");
+    for (i = 0; i < groups.length; i++) {
+      if (groups[i].getAttribute("data-panel-group-id") !== id) continue;
+      var trigger = groups[i].querySelector(".library-index-trigger[data-panel-id]");
+      if (trigger) return findPanel(trigger.getAttribute("data-panel-id"));
+    }
+    for (i = 0; i < panels.length; i++) {
+      var nodes = panels[i].querySelectorAll("[id]");
+      var n;
+      for (n = 0; n < nodes.length; n++) {
+        if (nodes[n].id === id) return panels[i];
+      }
+    }
+    return null;
+  }
+  var target = hash ? findPanel(hash) : null;
+  if (!target && wide) target = panels[0];
+  var index;
+  if (!target) {
+    for (index = 0; index < panels.length; index++) {
+      panels[index].hidden = true;
+      panels[index].classList.remove("is-active");
+    }
+    split.classList.remove("is-detail-open");
+    clearHashFlag();
+    return;
+  }
+  for (index = 0; index < panels.length; index++) {
+    var open = panels[index] === target;
+    panels[index].hidden = !open;
+    panels[index].classList.toggle("is-active", open);
+  }
+  var overview = split.querySelector(".library-overview");
+  if (overview) overview.hidden = true;
+  if (!wide) split.classList.add("is-detail-open");
+  var back = split.querySelector(".library-back");
+  if (back) back.hidden = wide;
+  var path = location.pathname || "/";
+  if (path.slice(-1) !== "/") {
+    var slash = path.lastIndexOf("/");
+    path = slash >= 0 ? path.slice(0, slash + 1) : "/";
+  }
+  var pinned = path.indexOf("/notes/") === -1;
+  try {
+    var storedPin = localStorage.getItem("yz-library-index-pinned:" + path);
+    if (storedPin === "1") pinned = true;
+    if (storedPin === "0") pinned = false;
+  } catch (e) {}
+  var showReading = wide ? !pinned : true;
+  var pane = split.querySelector(".library-pane");
+  var panelsRoot = split.querySelector(".library-panels");
+  if (showReading && pane && panelsRoot && !pane.querySelector(".library-reading-context")) {
+    var bar = document.createElement("div");
+    bar.className = "library-reading-context";
+    var titleBtn = document.createElement("button");
+    titleBtn.type = "button";
+    titleBtn.className = "library-reading-context-title";
+    titleBtn.setAttribute("aria-label", "Back to top of article");
+    var heading = target.querySelector(".library-panel-title");
+    titleBtn.textContent = heading ? heading.textContent.trim() : "";
+    var sep = document.createElement("span");
+    sep.className = "library-reading-context-sep";
+    sep.setAttribute("aria-hidden", "true");
+    sep.textContent = "·";
+    var sectionBtn = document.createElement("button");
+    sectionBtn.type = "button";
+    sectionBtn.className = "library-reading-context-section";
+    sectionBtn.setAttribute("aria-label", "Jump to current section");
+    var sectionHeading = target.querySelector(".note-section-heading[id]");
+    if (sectionHeading) {
+      sectionBtn.textContent = sectionHeading.textContent.trim();
+    } else {
+      sectionBtn.hidden = true;
+      sep.hidden = true;
+    }
+    bar.appendChild(titleBtn);
+    bar.appendChild(sep);
+    bar.appendChild(sectionBtn);
+    pane.insertBefore(bar, panelsRoot);
+  }
+  if (wide) {
+    var activeId = panelIdOf(target);
+    var indexBody = split.querySelector(".library-index-body");
+    var triggers = split.querySelectorAll(".library-index-trigger[data-panel-id]");
+    var row = null;
+    for (index = 0; index < triggers.length; index++) {
+      if (triggers[index].getAttribute("data-panel-id") === activeId) {
+        row = triggers[index].closest("li");
+        break;
+      }
+    }
+    if (row && indexBody) {
+      var margin = 12;
+      var bodyRect = indexBody.getBoundingClientRect();
+      var rowRect = row.getBoundingClientRect();
+      if (rowRect.top < bodyRect.top + margin) {
+        indexBody.scrollTop += rowRect.top - bodyRect.top - margin;
+      } else if (rowRect.bottom > bodyRect.bottom - margin) {
+        indexBody.scrollTop += rowRect.bottom - bodyRect.bottom + margin;
+      }
+    }
+  }
+  clearHashFlag();
+})();
+</script>
+"""
 
 
 def _nav_anchor_html(site: dict, item: dict, active: str) -> str:
@@ -807,7 +957,7 @@ def library_panel_html(
         class_bits = f"{class_bits} {panel_class}"
     return (
         f'        <article class="{class_bits}" data-panel-id="{esc(panel_id)}"{hidden_attr}'
-        f"{extra_attrs}>\n"
+        f' id="{esc(panel_id)}"{extra_attrs}>\n'
         f'          <header class="library-panel-header">\n'
         f"{header_lead}"
         f'            <{tag} class="library-panel-title">{heading}</{tag}>\n'
@@ -927,6 +1077,7 @@ def library_shell(
         f'            <div class="library-panels">\n'
         f"{panels_block}\n"
         f"            </div>\n"
+        f"{LIBRARY_HASH_BOOT_SCRIPT}"
         f"          </div>\n"
         f"        </div>\n"
         f"{strip_block}\n"
@@ -1245,14 +1396,27 @@ def layout(
 {header_search_html}
 {_reading_size_button(indent="      ")}
       <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Dark theme — switch to light">
+        <span class="theme-toggle-icon" aria-hidden="true">
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" width="20" height="20" focusable="false">
+            <path fill="currentColor" d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"></path>
+          </svg>
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" width="20" height="20" focusable="false">
+            <circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+            <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+            </g>
+          </svg>
+        </span>
         <span class="theme-toggle-label">Dark</span>
       </button>
       <details class="nav-menu">
         <summary>Menu</summary>
+        <div class="nav-menu-panel">
         <nav class="site-nav" aria-label="Primary">
         {mobile_nav}
         </nav>
 {_reading_size_button(indent="        ")}
+        </div>
       </details>
     </div>
   </header>

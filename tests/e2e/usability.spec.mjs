@@ -429,3 +429,44 @@ test.describe("layout", () => {
     await noHorizontalOverflow(page);
   });
 });
+
+test.describe("library boot CLS", () => {
+  test("notes and deep links stay under 0.1", async ({ browser }) => {
+    test.skip(test.info().project.name === "mobile", "viewports are set per case");
+    const cases = [
+      { path: "/notes/", width: 1280, height: 800 },
+      { path: "/notes/", width: 375, height: 812 },
+      { path: "/notes/#NOTE-2026-005", width: 1280, height: 800 },
+      { path: "/notes/#NOTE-2026-005", width: 375, height: 812 },
+      { path: "/systems/#SYS-03", width: 1280, height: 800 },
+      { path: "/systems/#SYS-03", width: 375, height: 812 },
+    ];
+    const scores = [];
+    for (const item of cases) {
+      const context = await browser.newContext({
+        viewport: { width: item.width, height: item.height },
+      });
+      await context.addInitScript(() => {
+        try {
+          localStorage.clear();
+        } catch (e) {
+          /* ignore */
+        }
+        window.__cls = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (!entry.hadRecentInput) window.__cls += entry.value;
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+      });
+      const page = await context.newPage();
+      await page.goto(item.path, { waitUntil: "load" });
+      await page.waitForTimeout(1800);
+      const cls = await page.evaluate(() => window.__cls || 0);
+      scores.push(`${item.path} @${item.width} ${cls.toFixed(3)}`);
+      expect(cls, `${item.path} @${item.width}`).toBeLessThan(0.1);
+      await context.close();
+    }
+    console.log(scores.join("\n"));
+  });
+});

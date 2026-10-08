@@ -144,6 +144,12 @@ main.page .item-list h2,
   margin: 0 0 var(--space-2);
 }
 
+.credential-card-meta.meta {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
 .item-list p {
   margin: 0 0 var(--space-2);
 }

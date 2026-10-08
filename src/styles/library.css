@@ -242,14 +242,14 @@ body:has(main.library-route) {
   cursor: pointer;
 }
 
-.library-index-inarticle-top:hover,
-.library-index-inarticle-top:focus-visible {
+.library-index-inarticle-top:hover {
   background: rgb(196 154 90 / 8%);
   color: var(--accent);
-  outline: none;
 }
 
 .library-index-inarticle-top:focus-visible {
+  background: rgb(196 154 90 / 8%);
+  color: var(--accent);
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
@@ -308,11 +308,9 @@ body:has(main.library-route) {
   color: var(--text-faint);
 }
 
-.library-index-inarticle-link:hover,
-.library-index-inarticle-link:focus-visible {
+.library-index-inarticle-link:hover {
   background: rgb(196 154 90 / 8%);
   color: var(--text-strong);
-  outline: none;
 }
 
 .library-index-inarticle-link[aria-current="location"] {
@@ -321,6 +319,8 @@ body:has(main.library-route) {
 }
 
 .library-index-inarticle-link:focus-visible {
+  background: rgb(196 154 90 / 8%);
+  color: var(--text-strong);
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
@@ -637,15 +637,13 @@ body:has(main.library-route) {
 }
 
 .library-reading-context-title:hover,
-.library-reading-context-title:focus-visible,
-.library-reading-context-section:hover,
-.library-reading-context-section:focus-visible {
+.library-reading-context-section:hover {
   color: var(--accent);
-  outline: none;
 }
 
 .library-reading-context-title:focus-visible,
 .library-reading-context-section:focus-visible {
+  color: var(--accent);
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
@@ -793,6 +791,17 @@ body:has(main.library-route) {
 
 .library-panel[hidden] {
   display: none !important;
+}
+
+/* Hash deep links, only until the inline script clears data-library-hash.
+   replaceState does not move :target, so these rules must not outlive boot
+   or a later index click cannot change the visible panel. */
+html[data-library-hash] .library-panels > .library-panel:not(:is(:target, :has(:target))) {
+  display: none !important;
+}
+
+html[data-library-hash] .library-panels > .library-panel:is(:target, :has(:target)) {
+  display: block !important;
 }
 
 .library-panel-header {
@@ -1375,5 +1384,13 @@ main.page .library-panel--note .library-panel-title {
 
   .library-split.is-detail-open .library-back {
     display: inline-flex;
+  }
+
+  html[data-library-hash] .library-split.is-booting .library-index {
+    display: none;
+  }
+
+  html[data-library-hash] .library-split.is-booting .library-back {
+    display: inline-flex !important;
   }
 }

@@ -797,6 +797,10 @@ def assert_library_boot_panel() -> None:
     boot = (ROOT / "scripts" / "build.py").read_text(encoding="utf-8")
     if 'matchMedia("(min-width: 49rem)")' not in boot:
         fail("library boot script must use the same 49rem rail as the CSS")
+    if "data-library-hash" not in boot:
+        fail("library boot script must record the hash before first paint")
+    if ".library-panel:is(:target, :has(:target))" not in css:
+        fail("deep-link panels must be visible from the hash before first paint")
     chrome = (ROOT / "src" / "chrome.js").read_text(encoding="utf-8")
     if 'classList.add("is-booting")' in chrome:
         fail("is-booting belongs on the shell markup only")

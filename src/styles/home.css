@@ -223,7 +223,7 @@ body:has(main.home-route) .site-header {
 }
 
 .home-record-strip:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -1198,10 +1198,14 @@ main.page .entrance h1 {
 }
 
 .map-node.domain-highlight circle,
-.map-node:focus-visible circle,
 .map-node:hover circle {
   fill: rgb(196 154 90 / 22%);
   stroke: var(--accent);
+}
+
+.map-node:focus-visible circle {
+  fill: rgb(196 154 90 / 22%);
+  stroke: var(--focus-ring);
 }
 
 .map-node.domain-highlight .map-node-label,
