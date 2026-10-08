@@ -65,7 +65,7 @@ async function assertSkipLink(page) {
 
 async function assertHomeEntrance(page) {
   await expect(page.locator(".home-featured-records")).toBeVisible();
-  await expect(page.locator(".home-record-row")).toHaveCount(3);
+  await expect(page.locator(".home-record-row")).toHaveCount(4);
   await expect(page.locator(".home-practice-item").first()).toBeVisible();
 }
 
@@ -187,7 +187,7 @@ test.describe("home", () => {
   test("paced sections, featured strip, and practice areas", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".home-snap-section")).toHaveCount(4);
-    await expect(page.locator(".home-record-row")).toHaveCount(3);
+    await expect(page.locator(".home-record-row")).toHaveCount(4);
     await expect(page.locator(".home-record-strip")).toBeVisible();
     await expect(page.locator(".home-context-strip")).toBeVisible();
     await expect(page.locator(".home-context-strip li").first()).toContainText("Singapore");

@@ -50,6 +50,12 @@ function fileFor(urlPath) {
 const server = http.createServer((req, res) => {
   const path = fileFor(req.url || "/");
   if (!path || !existsSync(path) || !statSync(path).isFile()) {
+    const missing = join(root, "404.html");
+    if (existsSync(missing) && statSync(missing).isFile()) {
+      res.writeHead(404, { "content-type": types[".html"] });
+      createReadStream(missing).pipe(res);
+      return;
+    }
     send(res, 404, "not found");
     return;
   }

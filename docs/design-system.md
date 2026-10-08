@@ -40,7 +40,7 @@ Default is **dark** (`data-theme="dark"` on `<html>`). If `localStorage` key `yz
 
 #### Light (tobacco paper — AA-hardened)
 
-Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underline. Body links use `--accent-link` (`#6b4f10`, hover `#5c450e`). `--text-faint` is chrome/meta only — never body copy. No pure `#FFFFFF` page fill.
+Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underline. **Focus uses `--focus-ring`**: dark `#c49a5a`, light `#6b4f10`; 2px solid, 2px offset; ≥3:1 on every surface. Body links use `--accent-link` (`#6b4f10`, hover `#5c450e`). `--text-faint` is chrome/meta only — never body copy. No pure `#FFFFFF` page fill.
 
 | Token | Role | Approx value |
 |---|---|---|
@@ -55,11 +55,11 @@ Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underl
 | `--accent-link` | Body links | `#6b4f10` |
 | `--glow` | Soft amber wash | `rgb(212 163 92 / 10%)` |
 
-Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--header-offset` `4.75rem`.
+Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--header-offset` `4.75rem`; `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
 
-**Reading tokens (Notes only):** `--note-read-max` `42rem` (prose measure); `--note-read-lead` `1.72`; `--text-dropcap` (fluid first-letter size); `--note-image-bg` (neutral mat behind inline figures / covers).
+**Reading tokens (Notes only):** `--note-read-max` `34rem` (prose measure); `--note-read-lead` `1.72`; `--text-dropcap` (fluid first-letter size); `--note-image-bg` (neutral mat behind inline figures / covers). Notes prose italics use the real Crimson Pro italic.
 
-`html` / `body` set `background-color: var(--bg-deep)`. Optional reading-size preference: `html[data-reading-size="large"|"xlarge"]` bumps global body line-height (`base.css`). Theme control: `.theme-toggle` (`aria-pressed`, visible Light/Dark label, brass focus ring).
+`html` / `body` set `background-color: var(--bg-deep)`. Optional reading-size preference: `html[data-reading-size="large"|"xlarge"]` bumps global body line-height (`base.css`). Theme control: `.theme-toggle` (`aria-pressed`, visible Light/Dark label at ≥48rem; icon-only with an accessible name below 48rem, where reading size moves into the Menu; brass focus ring).
 
 ### Type scale
 
@@ -90,10 +90,10 @@ Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
 
 ## Layer B — Content hierarchy (library order)
 
-Home reads as a personal systems library (four snap beats on desktop):
+Home reads as a personal systems library (four beats (no scroll-snap; no per-section rise)):
 
-1. **Proposition** — token atmosphere; thesis `h1`; practitioner lede; primary CTAs; scroll hint (not a full exclusive viewport lock — featured records peek below on laptop widths)
-2. **Featured records** — horizontal strip of curated SYS / NOTE summaries (Prudential angles + one writing row)
+1. **Proposition** — token atmosphere; **identity line** (name · current role · employer, sentence case, sans, readable size — not a caps eyebrow); thesis `h1`; practitioner lede (≥ body size); primary CTAs; **one quiet proof line** (see *Proof on Home*); scroll hint. No scroll-snap; featured records peek below on laptop widths.
+2. **Featured records** — horizontal strip of curated SYS / NOTE summaries (one card per enterprise record — SYS-01 / SYS-02 / SYS-03 — with the employer named on a muted line under the record id — plus one writing row)
 3. **Operating principle** — editorial philosophy block
 4. **Practice areas** — capability grid + split context / platform meta strips
 
@@ -108,7 +108,16 @@ Inner pages:
 | `/portfolio/`, `/work/`, `/systems/catalogue/` | *(redirect)* | `/systems/` |
 | `/perspectives/`, `/blog/` | *(redirect)* | `/notes/` |
 
-**Credibility order:** thesis → documented systems → writing → experiments → professional record. Quantified proof metrics live on SYS records (sourced from the public CV via `site.outcomes` / `enterprise_copy`), not in the Home hero.
+**Credibility order:** thesis → documented systems → writing → experiments → professional record. Quantified proof lives on SYS records (sourced from the public CV via `site.outcomes` / `enterprise_copy`). **Home carries at most one quiet proof line**; there is no metrics hero and no outcome strip.
+
+### Proof on Home
+
+**Proof on Home (one line, quiet).** The Entrance may carry **exactly one** proof sentence, placed after the CTAs, set in body sans at `--text-sm`, `--text-muted`, with an optional railway-green hairline rule (not brass). It must:
+- cite only facts present in `data/site.json` or `data/export_public.json` (record the JSON paths in `home_proof_line.sources`);
+- name the employer/context and keep a baseline for every number (e.g. "8 to 4 weeks", not "50%");
+- never be enlarged, bolded, split into tiles, animated, or repeated elsewhere on Home.
+
+**Still banned:** boardroom outcome strip; metric counters or big-number tiles; a metrics hero; more than one proof line; unit-less percentages.
 
 ### Library scanning (Catalogue mode)
 
@@ -149,6 +158,8 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 | Class / pattern | Use |
 |---|---|
 | `.entrance` / `.entrance-atmosphere` | Token atmosphere behind thesis |
+| `.entrance-identity` | Home identity line (name · role · employer) |
+| `.entrance-proof` | single quiet proof line under Entrance CTAs |
 | `.home-record-strip` / `.home-featured-records` | Featured SYS / NOTE rows (horizontal snap strip) |
 | `.home-practice-grid` | Practice-area capability cards |
 | `.home-context-strip` / `.home-platform-strip` | Location / platform proof meta |
@@ -167,7 +178,7 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 | `.case-beats` | Systems record beat grid (Catalogue mode — sans, scan density) |
 | `#search` + Pagefind | Catalogue search in the sticky header |
 
-**Motion:** Map-node and record hover/focus only. **No** per-section `rise` on Home. Honor `prefers-reduced-motion` on library panel transitions.
+**Motion:** Map-node and record hover/focus only. **No** per-section `rise` on Home. Honor `prefers-reduced-motion` on library panel transitions. Durations use three tokens only: `--dur-fast` 150ms, `--dur-base` 240ms, `--dur-slow` 400ms.
 
 External nav links use `.external` (↗ via CSS `::after`).
 
@@ -196,12 +207,14 @@ Pre-commit: husky + lint-staged on staged `src/styles/*.css`.
 - Keep primary nav short: **Systems · Notes · Credentials**
 - Brass/gold ≤10%; railway green in hairlines only
 - Derive proof from `site.json` / export only
+- Identity line on Home: name · role · employer (from `person.job_title` / `person.employer`).
+- One quiet proof line on Home, sourced (see *Proof on Home*).
 - Use **Reading mode** typography only on `/notes/` essay bodies; keep **Catalogue mode** on Systems / Credentials / Home strips
 - Store and display **full publication dates** (`YYYY-MM-DD`) for writing records
 
 **Don’t**
 
-- Boardroom outcome strip in hero; portrait chip on Home
+- Boardroom outcome strip, metric counters, or metrics hero on Home; more than one proof line; portrait chip on Home
 - Steampunk tropes (gears, rockets, chalkboard props); retired scroll-home “Workshop” crop
 - Fraunces/Sora, cream `#f4f0e8`, or SaaS card kits
 - Tracked ALL-CAPS eyebrows on every heading; decorative numbered `01 02 03`

@@ -72,7 +72,7 @@ test.describe("dual theme", () => {
     const toggle = page.locator("[data-theme-toggle]").first();
     await expect(toggle).toBeVisible();
     await expect(toggle).toHaveAttribute("aria-pressed", "true");
-    await expect(toggle).toHaveAccessibleName(/theme: dark/i);
+    await expect(toggle).toHaveAccessibleName(/switch to light theme/i);
     await toggle.click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await expect(toggle).toHaveAttribute("aria-pressed", "false");
@@ -83,7 +83,11 @@ test.describe("dual theme", () => {
 
   test("reading size toggle cycles and persists", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    const toggle = page.locator("[data-reading-size-toggle]").first();
+    const menu = page.locator("details.nav-menu");
+    if ((await page.locator("[data-reading-size-toggle]:visible").count()) === 0) {
+      await menu.locator("summary").click();
+    }
+    const toggle = page.locator("[data-reading-size-toggle]:visible").first();
     await expect(toggle).toBeVisible();
     await expect(toggle).toHaveAccessibleName(/text size: standard/i);
     await expect(toggle.locator(".reading-size-step.is-active")).toHaveAttribute("data-step", "default");

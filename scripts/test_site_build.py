@@ -16,9 +16,11 @@ from build import (
     _markdown_to_html,
     _note_asset_href,
     _note_index_title,
+    _robots_noindex_head,
     _writing_note_panel_body,
     figma_embed_html,
     normalize_base,
+    person_json_ld,
     resolve_enterprise_overlay,
     with_base,
 )
@@ -453,8 +455,24 @@ def main() -> None:
         fail("home missing featured record rows")
     if not has_html_class(home, "home-record-row"):
         fail("home featured records must use record rows")
-    if home.count("SYS-01") < 2:
-        fail("home must feature two Prudential system angles on SYS-01")
+    if (
+        home.count('data-record="SYS-01"') != 1
+        or home.count('data-record="SYS-02"') != 1
+        or home.count('data-record="SYS-03"') != 1
+    ):
+        fail("home featured strip must show SYS-01, SYS-02, and SYS-03 once each")
+    if "Governed lakehouse operating patterns" in home:
+        fail("the second SYS-01 angle must leave Home")
+    if home.count('class="entrance-proof"') != 1:
+        fail("home must carry exactly one quiet proof line")
+    if "entrance-identity" not in home or "entrance-name" not in home or "entrance-role" not in home:
+        fail("home missing identity line")
+    if "home-record-employer" not in home:
+        fail("featured system cards must name the employer on a meta line")
+    if "Prudential Services Singapore" not in home or "SPH Media" not in home:
+        fail("featured employers must come from the export organizations")
+    if "Singapore Tourism Board" not in home:
+        fail("SYS-03 card must name Singapore Tourism Board")
     if "NOTE-2026-005" not in home:
         fail("home must feature a governance-aligned note")
     if f"{with_base(site, '/systems/')}#SYS-" not in home or f"{with_base(site, '/notes/')}#NOTE-" not in home:
@@ -670,8 +688,10 @@ def main() -> None:
         fail("systems page must render catalogue panels")
     if 'class="page-with-toc"' in systems:
         fail("systems must not use legacy scroll longform layout")
-    if "Enterprise Data" not in systems:
-        fail("systems index must include enterprise catalogue section")
+    if "Enterprise records" not in systems:
+        fail("systems index must include the enterprise records section")
+    if "Selected Work Summaries" in systems:
+        fail("systems index must not keep the Selected Work Summaries label")
     if 'library-index-group--depth-' not in systems:
         fail("systems index must use non-clickable group headers for nested sections")
     if 'class="proof-case"' not in systems:
@@ -706,8 +726,10 @@ def main() -> None:
         fail("SYS-01 related paths must link sibling records from system_map")
     if "CEI internals are not published" in systems:
         fail("Prudential evidence must not use retired CEI internals disclaimer")
-    if "Internal platforms and dashboards are not linked" not in systems:
-        fail("Prudential evidence must disclose public record without linking internal platforms")
+    if "Public record: LinkedIn role. Internal dashboards are not public." not in systems:
+        fail("Prudential evidence must disclose the public record without linking internal dashboards")
+    if "Internal platforms and dashboards are not linked" in systems:
+        fail("Prudential evidence must use the tightened public-record sentence")
     if not has_html_class(systems, "library-strip"):
         fail("systems page must include cross-link strip")
 
@@ -790,6 +812,10 @@ def main() -> None:
         fail("styles.css missing --text-scale for responsive reading sizes")
     if "transform: scale(" in css:
         fail("assembled CSS must not include scale() transforms")
+    if css.count("@keyframes") != 1 or "@keyframes map-panel-in" not in css:
+        fail("only map-panel-in may remain as a keyframe")
+    if "--dur-fast: 150ms" not in css or "--dur-base: 240ms" not in css or "--dur-slow: 400ms" not in css:
+        fail("motion durations must be the three tokens 150/240/400ms")
 
     bg_deep = _token_hex(css, "--bg-deep")
     bg_mid = _token_hex(css, "--bg-mid")
@@ -872,8 +898,64 @@ def main() -> None:
         fail("work page must not ship an inert folio-toolbar")
     if "folio-toolbar" in credentials:
         fail("credentials must not ship an inert folio-toolbar")
-    if ">Systems<" not in portfolio and "Systems —" not in portfolio:
-        fail("systems page must title as Systems")
+    if "<title>Systems — Yingzhao Ouyang</title>" not in portfolio:
+        fail("systems title must be Systems — Yingzhao Ouyang")
+    if "<title>Yingzhao Ouyang — Building intelligible systems" not in home:
+        fail("home title must lead with the name and the thesis")
+    if "<title>Notes — Yingzhao Ouyang</title>" not in notes:
+        fail("notes title must be Notes — Yingzhao Ouyang")
+    if "<title>Professional record — Yingzhao Ouyang</title>" not in credentials:
+        fail("credentials title must use the DS route name")
+    not_found = (DIST / "404.html").read_text(encoding="utf-8")
+    if "<title>Not in the catalogue — Yingzhao Ouyang</title>" not in not_found:
+        fail("404 title must be Not in the catalogue — Yingzhao Ouyang")
+    if "That record isn't on the shelves." not in not_found:
+        fail("404 must use the catalogue-voice line")
+    if 'rel="icon"' not in home or "favicon.svg" not in home:
+        fail("pages must link a favicon")
+    if "/assets/og/og-default.png" not in home:
+        fail("og:image must point at the default share card")
+    if not (DIST / "assets" / "og" / "og-default.png").is_file():
+        fail("og image must be copied into dist")
+    if "Crimson+Pro:ital,wght@0,400;0,600;1,400" not in home:
+        fail("font stylesheet must load real Crimson Pro italic")
+    if 'content="noindex, follow"' not in home:
+        fail("preview_mode must mark every page noindex, follow")
+    if 'content="noindex, follow"' not in not_found:
+        fail("404 must carry noindex while preview_mode is true")
+    launched = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
+    launched.setdefault("deploy", {})["preview_mode"] = False
+    if _robots_noindex_head(launched):
+        fail("preview_mode false must not emit noindex")
+    person_ld = person_json_ld(site)
+    if '"jobTitle":"Senior Manager, Cloud Economics & Intelligence"' not in person_ld:
+        fail("JSON-LD jobTitle must be the current role, not the thesis")
+    if '"email"' in person_ld:
+        fail("JSON-LD must not repeat the footer email")
+    if "/notes/" in person_ld:
+        fail("JSON-LD sameAs must not include the relative notes path")
+    for url in (
+        "https://www.linkedin.com/in/yzouyang/",
+        "https://www.github.com/KunojiLym",
+        "https://medium.com/@kunojilym",
+    ):
+        if url not in person_ld:
+            fail(f"JSON-LD sameAs missing absolute URL {url}")
+    for phrase in (
+        "Bitly optional",
+        "in the searchable catalogue",
+        "Selected technical, data science, and product/UX work",
+        "Selected Work Summaries",
+        "How to Verify",
+    ):
+        for label, html in (
+            ("home", home),
+            ("systems", systems),
+            ("notes", notes),
+            ("credentials", credentials),
+        ):
+            if phrase in html:
+                fail(f"{label} still shows visitor-facing internal copy: {phrase}")
     if "Senior Manager, Cloud Economics and Intelligence" not in portfolio:
         fail("Prudential title must match master CV (Senior Manager, Cloud Economics…)")
     if "Senior Data Engineer, Solutioning" in portfolio:
@@ -927,7 +1009,7 @@ def main() -> None:
             fail(f"case-tools exceeds 5 labels: {labels}")
     if "first-party LinkedIn analytics" not in portfolio:
         fail("tutorial blurb must lead with the user outcome")
-    ent_pos = portfolio.find("Enterprise Data")
+    ent_pos = portfolio.find("Enterprise records")
     tut_pos = portfolio.find("Featured Tutorial")
     if ent_pos == -1 or tut_pos == -1 or ent_pos > tut_pos:
         fail("enterprise summaries must precede tutorial/bootcamp sections")

@@ -45,24 +45,6 @@ html.library-deck-root {
   scroll-behavior: auto;
 }
 
-html.library-deck-root .site-header-wrap::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 3px;
-  width: var(--deck-progress, 0%);
-  background: linear-gradient(
-    90deg,
-    rgb(196 154 90 / 35%) 0%,
-    var(--accent) 55%,
-    var(--accent-hover) 100%
-  );
-  box-shadow: 0 0 0.75rem rgb(196 154 90 / 35%);
-  transition: width 0.2s ease-out;
-  pointer-events: none;
-}
-
 .header-actions {
   display: flex;
   flex-wrap: nowrap;
@@ -265,7 +247,7 @@ html[data-reading-size="xlarge"] .header-actions {
   height: var(--header-control-height);
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color var(--dur-fast) var(--ease-standard);
   white-space: nowrap;
 }
 
@@ -279,7 +261,7 @@ html[data-reading-size="xlarge"] .header-actions {
   border-radius: var(--radius-sm);
   background: var(--accent);
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity var(--dur-base) var(--ease-standard);
 }
 
 .site-nav a:hover::after,
@@ -406,4 +388,66 @@ html[data-reading-size="xlarge"] .header-actions {
   content: " ↗";
   font-size: 0.75em; /* intentional one-off: relative to parent, not the fixed ramp */
   opacity: 0.7;
+}
+
+/* One-row header below 48rem: icon search + icon theme; reading size lives in Menu. */
+@media (width <= 48rem) {
+  .site-header {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--gutter);
+  }
+
+  .header-actions {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+    margin-left: auto;
+  }
+
+  .header-actions > .reading-size-toggle {
+    display: none;
+  }
+
+  .nav-menu .reading-size-toggle {
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+    margin-top: var(--space-2);
+  }
+
+  .theme-toggle:not(.reading-size-toggle) {
+    position: relative;
+    inline-size: var(--space-10);
+    block-size: var(--space-10);
+    height: var(--space-10);
+    padding: 0;
+    justify-content: center;
+  }
+
+  .theme-toggle-label {
+    position: absolute;
+    clip: rect(0, 0, 0, 0);
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .header-search {
+    order: 0;
+    flex: 0 0 var(--space-10);
+    inline-size: var(--space-10);
+    width: var(--space-10);
+    max-width: var(--space-10);
+  }
+
+  .header-search:focus-within {
+    position: absolute;
+    inset-inline: var(--gutter);
+    inset-block-start: var(--space-3);
+    inline-size: auto;
+    width: auto;
+    max-width: none;
+    flex-basis: auto;
+    z-index: 80;
+  }
 }

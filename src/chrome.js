@@ -19,7 +19,7 @@
       toggle.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
       toggle.setAttribute(
         "aria-label",
-        theme === "dark" ? "Theme: dark" : "Theme: light"
+        theme === "dark" ? "Switch to light theme" : "Switch to dark theme"
       );
       const label = toggle.querySelector(".theme-toggle-label");
       if (label) label.textContent = theme === "dark" ? "Dark" : "Light";
@@ -70,8 +70,7 @@
     } else {
       root.setAttribute("data-reading-size", size);
     }
-    const toggle = document.querySelector("[data-reading-size-toggle]");
-    if (toggle) {
+    document.querySelectorAll("[data-reading-size-toggle]").forEach(function (toggle) {
       const pressed = size !== "default";
       toggle.setAttribute("aria-pressed", pressed ? "true" : "false");
       toggle.setAttribute(
@@ -85,14 +84,13 @@
           step.getAttribute("data-step") === size
         );
       });
-    }
+    });
   }
 
   function initReadingSizeToggle() {
     applyReadingSize(getPreferredReadingSize());
-    const toggle = document.querySelector("[data-reading-size-toggle]");
-    if (!toggle) return;
-    toggle.addEventListener("click", () => {
+    document.querySelectorAll("[data-reading-size-toggle]").forEach(function (toggle) {
+      toggle.addEventListener("click", () => {
       const current = getPreferredReadingSize();
       const index = READING_SIZES.indexOf(current);
       const next = READING_SIZES[(index + 1) % READING_SIZES.length];
@@ -106,6 +104,7 @@
       } catch (_) {
         /* ignore */
       }
+    });
     });
   }
 
@@ -129,6 +128,8 @@
     if (!shell) return;
 
     const split = shell.querySelector(".library-split");
+    const routeTitle = document.title;
+    if (split) split.classList.add("is-booting");
     const overview = shell.querySelector(".library-overview");
     const backBtn = shell.querySelector(".library-back");
     const showIndexBtn = shell.querySelector(".library-index-show");
@@ -681,6 +682,7 @@
       });
       if (overview) overview.hidden = false;
       if (split) split.classList.remove("is-detail-open");
+      document.title = routeTitle;
       setIndexHighlight(null);
       clearInarticleToc();
       unbindPanelScrollSpy();
@@ -697,10 +699,21 @@
         const open = entry.getAttribute("data-panel-id") === target.panelId;
         entry.hidden = !open;
         entry.classList.toggle("is-active", open);
+        entry.classList.toggle(
+          "is-enter",
+          open && !split?.classList.contains("is-booting")
+        );
         if (open) {
           void entry.offsetWidth;
         }
       });
+      if (panel.classList.contains("library-panel--note")) {
+        const heading = panel.querySelector(".library-panel-title");
+        const name = document.documentElement.getAttribute("data-person-name");
+        if (heading && name) {
+          document.title = heading.textContent.trim() + " — " + name;
+        }
+      }
       if (overview) overview.hidden = true;
       if (split) split.classList.add("is-detail-open");
       setIndexHighlight(target.indexId);
@@ -860,6 +873,11 @@
     syncIndexControls();
     syncIndexVisibility();
     applyHash();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        split?.classList.remove("is-booting");
+      });
+    });
   }
 
   function initTocSpy() {
@@ -978,6 +996,7 @@
       img.className = "pagefind-ui__result-image search-result-photo";
       img.src = imgSrc;
       img.alt = "";
+      img.setAttribute("role", "presentation");
       img.decoding = "async";
       img.loading = "lazy";
       thumb.appendChild(img);
@@ -1035,20 +1054,6 @@
     const reducedMotion =
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (!reducedMotion && "IntersectionObserver" in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            entry.target.classList.toggle("is-in-view", entry.isIntersecting);
-          });
-        },
-        { root: null, rootMargin: "-12% 0px -28% 0px", threshold: 0.12 }
-      );
-      sections.forEach((section) => observer.observe(section));
-    } else {
-      sections.forEach((section) => section.classList.add("is-in-view"));
-    }
 
     const strip = main.querySelector(".home-record-strip");
     if (!strip) return;

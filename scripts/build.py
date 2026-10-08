@@ -62,7 +62,18 @@ def _uat_build_mode() -> bool:
     return _env_flag("SITE_UAT_BUILD")
 
 
-def _robots_noindex_head() -> str:
+def _deploy(site: dict) -> dict:
+    block = site.get("deploy")
+    return block if isinstance(block, dict) else {}
+
+
+def preview_mode(site: dict) -> bool:
+    return bool(_deploy(site).get("preview_mode"))
+
+
+def _robots_noindex_head(site: dict | None = None) -> str:
+    if site is not None and preview_mode(site):
+        return '  <meta name="robots" content="noindex, follow" />\n'
     if _draft_preview_mode() or _uat_build_mode():
         return '  <meta name="robots" content="noindex, nofollow" />\n'
     return ""
@@ -195,6 +206,13 @@ THEME_BOOT_SCRIPT = """<script>
   if (reading !== "default") {
     document.documentElement.setAttribute("data-reading-size", reading);
   }
+  var libraryBoot = "detail";
+  try {
+    if (window.matchMedia && window.matchMedia("(max-width: 48rem)").matches) {
+      libraryBoot = "overview";
+    }
+  } catch (e) {}
+  document.documentElement.setAttribute("data-library-boot", libraryBoot);
 })();
 </script>"""
 
@@ -292,14 +310,39 @@ def public_origin(site: dict) -> str:
     return str(site.get("public_origin") or "https://www.yzouyang.com").rstrip("/")
 
 
+def site_origin(site: dict) -> str:
+    """Preview origin while preview_mode is on; public origin after the one-boolean cutover."""
+    deploy = _deploy(site)
+    if deploy.get("preview_mode"):
+        preview = str(deploy.get("preview_origin") or "").strip().rstrip("/")
+        if preview:
+            return preview
+    return public_origin(site)
+
+
 def canonical_url(site: dict, path: str) -> str:
-    origin = public_origin(site)
+    origin = site_origin(site)
     if not path or path == "/" or path == "/index.html":
         return origin + "/"
     rel = path.replace("index.html", "")
     if not rel.startswith("/"):
         rel = "/" + rel
     return origin + rel
+
+
+def document_title(site: dict, active: str, title: str) -> str:
+    """Name-first document titles. Home uses the thesis; Credentials uses the DS route name."""
+    person = site.get("person") or {}
+    name = str(person.get("full_name") or "Yingzhao Ouyang").strip()
+    headline = str(person.get("headline") or "").strip()
+    if active == "Home":
+        return f"{name} — {headline}" if headline else name
+    if active == "Credentials":
+        return f"Professional record — {name}"
+    if active == "404":
+        return f"Not in the catalogue — {name}"
+    label = str(title or active or "").strip()
+    return f"{label} — {name}" if label else name
 
 
 def page_description(site: dict, active: str, title: str) -> str:
@@ -314,28 +357,34 @@ def page_description(site: dict, active: str, title: str) -> str:
 def person_json_ld(site: dict) -> str:
     person = site.get("person") or {}
     ext = site.get("external") or {}
-    contact = site.get("contact") or {}
-    same_as = [
-        str(ext.get(k) or "").strip()
-        for k in ("linkedin", "github", "medium", "blog")
-        if str(ext.get(k) or "").strip()
-    ]
-    data = {
+    same_as = []
+    for key in ("linkedin", "github", "medium"):
+        url = str(ext.get(key) or "").strip()
+        if url.startswith(("http://", "https://")):
+            same_as.append(url)
+    name = person.get("full_name") or "Yingzhao Ouyang"
+    job = str(person.get("job_title") or "").strip()
+    employer = str(person.get("employer") or "").strip()
+    location = str(person.get("location") or "").strip()
+    data: dict = {
         "@context": "https://schema.org",
         "@type": "Person",
-        "name": person.get("full_name") or "Yingzhao Ouyang",
-        "url": public_origin(site) + "/",
-        "jobTitle": person.get("headline") or "",
-        "email": contact.get("email") or "",
-        "image": canonical_url(site, str(person.get("photo") or "/assets/profile.jpg")),
+        "name": name,
+        "url": site_origin(site) + "/",
+        "jobTitle": job,
+        "image": canonical_url(site, "/assets/og/og-default.png"),
         "sameAs": same_as,
     }
+    if employer:
+        data["worksFor"] = {"@type": "Organization", "name": employer}
+    if location:
+        data["homeLocation"] = {"@type": "Place", "name": location}
     payload = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
     return f'  <script type="application/ld+json">{payload}</script>'
 
 
 def website_json_ld(site: dict) -> str:
-    origin = public_origin(site)
+    origin = site_origin(site)
     person = site.get("person") or {}
     data = {
         "@context": "https://schema.org",
@@ -739,6 +788,8 @@ def library_shell(
     strip_html: str = "",
     record_panels_html: str = "",
     index_footer_html: str = "",
+    index_default: str = "open",
+    route_lede: str = "",
 ) -> str:
     index = library_index_html(toc, footer_html=index_footer_html)
     panels_block = "\n".join(panels)
@@ -750,11 +801,19 @@ def library_shell(
     record_block = record_panels_html or ""
     strip_block = strip_html or ""
     page_footer = footer_html(site, compact=True)
+    lede_html = (
+        f'      <p class="page-lede library-route-lede">{esc(route_lede)}</p>\n'
+        if route_lede.strip()
+        else ""
+    )
+    split_class = "library-split is-booting"
     return (
         f'    <div class="library-shell" id="library-shell">\n'
-        f'      <h1 class="visually-hidden">{title}</h1>\n'
+        f'      <h1 class="visually-hidden">{esc(title)}</h1>\n'
+        f"{lede_html}"
         f'      <div class="library-frame">\n'
-        f'        <div class="library-split" id="library-split">\n'
+        f'        <div class="library-split {split_class}" id="library-split" '
+        f'data-index-default="{esc(index_default)}">\n'
         f"{index}\n"
         f'          <div class="library-pane" aria-live="polite">\n'
         f'            <div class="library-pane-toolbar">\n'
@@ -964,10 +1023,15 @@ def layout(
 ) -> str:
     person = site["person"]
     brand = esc(person.get("brand", "yzouyang"))
-    page_title = f"{esc(title)} — {brand}"
+    full_name = str(person.get("full_name") or "Yingzhao Ouyang")
+    page_title = esc(document_title(site, active, title))
     description = esc(page_description(site, active, title))
     canonical = esc(canonical_url(site, path))
-    og_image = esc(canonical_url(site, str(person.get("photo") or "/assets/profile.jpg")))
+    og_image = esc(canonical_url(site, "/assets/og/og-default.png"))
+    og_alt = esc(f"{brand} — {person.get('headline') or ''}".strip(" —"))
+    favicon_svg = esc(with_base(site, "/assets/favicon.svg"))
+    favicon_png = esc(with_base(site, "/assets/favicon-32.png"))
+    apple_icon = esc(with_base(site, "/assets/apple-touch-icon.png"))
     pf_attr = " data-pagefind-body" if pagefind else ""
     head_analytics = analytics_head(site)
     body_analytics = analytics_body(site, active)
@@ -1010,24 +1074,33 @@ def layout(
         if use_pagefind_ui
         else ""
     )
+    person_attr = esc(full_name)
     return f"""<!DOCTYPE html>
-<html {_html_root_attrs()}>
+<html {_html_root_attrs()} data-person-name="{person_attr}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{page_title}</title>
   <meta name="description" content="{description}" />
-{_robots_noindex_head()}  <link rel="canonical" href="{canonical}" />
+{_robots_noindex_head(site)}  <link rel="canonical" href="{canonical}" />
+  <meta property="og:site_name" content="{person_attr}" />
   <meta property="og:title" content="{page_title}" />
   <meta property="og:description" content="{description}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="{canonical}" />
   <meta property="og:image" content="{og_image}" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{og_alt}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="{og_image}" />
+  <link rel="icon" href="{favicon_svg}" type="image/svg+xml" />
+  <link rel="icon" href="{favicon_png}" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="{apple_icon}" />
 {THEME_BOOT_SCRIPT}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />{pf_css_tag}
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />{pf_css_tag}
   <link rel="stylesheet" href="{css}" />
 {person_json_ld(site)}
 {extra_head}
@@ -1050,7 +1123,7 @@ def layout(
           <span class="reading-size-step" data-step="xlarge">A</span>
         </span>
       </button>
-      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Theme: dark">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch to light theme">
         <span class="theme-toggle-label">Dark</span>
       </button>
       <details class="nav-menu">
@@ -1058,6 +1131,13 @@ def layout(
         <nav class="site-nav" aria-label="Primary">
         {mobile_nav}
         </nav>
+        <button type="button" class="theme-toggle reading-size-toggle" data-reading-size-toggle aria-pressed="false" aria-label="Text size: standard. Click to make text larger.">
+          <span class="reading-size-steps" aria-hidden="true">
+            <span class="reading-size-step is-active" data-step="default">A</span>
+            <span class="reading-size-step" data-step="large">A</span>
+            <span class="reading-size-step" data-step="xlarge">A</span>
+          </span>
+        </button>
       </details>
     </div>
   </header>
@@ -1381,7 +1461,142 @@ def _is_image_line(line: str) -> bool:
     return bool(_IMAGE_LINE_RE.match(line.strip()))
 
 
-def _markdown_image_tag(alt: str, src: str, *, note_id: str, site: dict) -> str:
+def _plain_caption_text(text: str) -> str:
+    plain = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", text)
+    plain = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", plain)
+    plain = re.sub(r"\*\*(.+?)\*\*", r"\1", plain)
+    plain = re.sub(r"\*(.+?)\*", r"\1", plain)
+    plain = re.sub(r"`([^`]+)`", r"\1", plain)
+    plain = html_unescape(plain).replace("\u00a0", " ")
+    plain = re.sub(r"\s+", " ", plain).strip()
+    if len(plain) > 140:
+        plain = plain[:139].rstrip() + "…"
+    return plain
+
+
+def _figure_state(site: dict) -> dict:
+    state = site.get("_figure_state")
+    if not isinstance(state, dict):
+        state = {"n": 0, "uncaptioned": []}
+        site["_figure_state"] = state
+    return state
+
+
+def _known_alt_for_src(site: dict, src: str) -> str:
+    alts = site.get("_image_alts")
+    if not isinstance(alts, dict):
+        return ""
+    raw = html_unescape(src.strip()).replace("\\", "/").split("?")[0]
+    name = raw.rstrip("/").split("/")[-1]
+    for key in (raw, raw.lstrip("/"), name):
+        found = str(alts.get(key) or "").strip()
+        if found:
+            return found
+    return ""
+
+
+def _local_image_size(path: Path) -> tuple[int, int] | None:
+    """Read PNG, JPEG, or WebP pixel size without a third-party image library."""
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    if data.startswith(b"\x89PNG\r\n\x1a\n") and len(data) >= 24:
+        width, height = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+        return (width, height) if width and height else None
+    if data[:2] == b"\xff\xd8":
+        i = 2
+        while i + 8 < len(data):
+            if data[i] != 0xFF:
+                i += 1
+                continue
+            marker = data[i + 1]
+            if marker in {0xC0, 0xC1, 0xC2}:
+                height = int.from_bytes(data[i + 5 : i + 7], "big")
+                width = int.from_bytes(data[i + 7 : i + 9], "big")
+                return (width, height) if width and height else None
+            if marker == 0xD8 or marker == 0xD9:
+                i += 2
+                continue
+            size = int.from_bytes(data[i + 2 : i + 4], "big")
+            if size < 2:
+                break
+            i += 2 + size
+        return None
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        if data[12:16] == b"VP8X" and len(data) >= 30:
+            width = 1 + int.from_bytes(data[24:27], "little")
+            height = 1 + int.from_bytes(data[27:30], "little")
+            return width, height
+        if data[12:16] == b"VP8 " and len(data) >= 30 and data[23:26] == b"\x9d\x01\x2a":
+            width = int.from_bytes(data[26:28], "little") & 0x3FFF
+            height = int.from_bytes(data[28:30], "little") & 0x3FFF
+            return (width, height) if width and height else None
+        if data[12:16] == b"VP8L" and len(data) >= 25 and data[20] == 0x2F:
+            bits = int.from_bytes(data[21:25], "little")
+            width = (bits & 0x3FFF) + 1
+            height = ((bits >> 14) & 0x3FFF) + 1
+            return width, height
+    return None
+
+
+def _size_attrs_for_src(site: dict, note_id: str, raw_src: str) -> str:
+    if not _is_note_asset_ref(raw_src) and not raw_src.startswith("/assets/"):
+        return ""
+    href = _note_asset_href(site, note_id, raw_src)
+    rel = href
+    base = normalize_base(site.get("base_path", ""))
+    if base and rel.startswith(base):
+        rel = rel[len(base) :]
+    path = ROOT / rel.lstrip("/")
+    size = _local_image_size(path)
+    if not size:
+        return ""
+    width, height = size
+    return f' width="{width}" height="{height}"'
+
+
+def _resolve_note_alt(
+    alt: str,
+    src: str,
+    *,
+    note_id: str,
+    site: dict,
+    caption: str = "",
+) -> str:
+    """Covers are handled separately. images[].alt wins; else caption; else a logged fallback."""
+    known = _known_alt_for_src(site, src)
+    if known:
+        return known
+    explicit = str(alt or "").strip()
+    if explicit:
+        return explicit
+    plain_caption = _plain_caption_text(caption) if caption else ""
+    if plain_caption:
+        return plain_caption
+    state = _figure_state(site)
+    state["n"] = int(state.get("n") or 0) + 1
+    title = str(site.get("_note_title") or note_id).strip() or note_id
+    fallback = f"Figure {state['n']} from “{title}”"
+    record = {"note_id": note_id, "src": html_unescape(src.strip()), "alt": fallback}
+    logged = state.setdefault("uncaptioned", [])
+    if isinstance(logged, list):
+        logged.append(record)
+    print(
+        f"uncaptioned-figure {note_id} {record['src']}",
+        file=sys.stderr,
+    )
+    return fallback
+
+
+def _markdown_image_tag(
+    alt: str,
+    src: str,
+    *,
+    note_id: str,
+    site: dict,
+    caption: str = "",
+) -> str:
     raw_src = html_unescape(src.strip())
     if _is_note_asset_ref(raw_src):
         path = esc(_note_asset_href(site, note_id, raw_src))
@@ -1389,7 +1604,9 @@ def _markdown_image_tag(alt: str, src: str, *, note_id: str, site: dict) -> str:
         path = esc(raw_src)
     else:
         path = esc(with_base(site, raw_src))
-    return f'<img src="{path}" alt="{esc(alt)}" loading="lazy" />'
+    resolved = _resolve_note_alt(alt, raw_src, note_id=note_id, site=site, caption=caption)
+    dims = _size_attrs_for_src(site, note_id, raw_src)
+    return f'<img src="{path}" alt="{esc(resolved)}"{dims} loading="lazy" />'
 
 
 def _render_image_block(line: str, *, note_id: str, site: dict) -> str:
@@ -1397,11 +1614,16 @@ def _render_image_block(line: str, *, note_id: str, site: dict) -> str:
     if not match:
         return f"<p>{_inline_markdown(line.strip(), note_id=note_id, site=site)}</p>"
     alt, src, caption = match.group(1), match.group(2), match.group(3).strip()
-    img_html = _markdown_image_tag(alt, src, note_id=note_id, site=site)
+    resolved = _resolve_note_alt(alt, src, note_id=note_id, site=site, caption=caption)
+    img_html = _markdown_image_tag(
+        resolved, src, note_id=note_id, site=site, caption=""
+    )
     caption_html = ""
     if caption:
+        plain = _plain_caption_text(caption)
+        hidden = ' aria-hidden="true"' if plain and plain == resolved else ""
         caption_html = (
-            f'  <figcaption class="note-figure-caption">'
+            f'  <figcaption class="note-figure-caption"{hidden}>'
             f"{_inline_markdown(caption, note_id=note_id, site=site)}"
             f"</figcaption>\n"
         )
@@ -1641,7 +1863,10 @@ def _unwrap_link_wrapped_images(md: str) -> str:
     return "".join(out)
 
 
-def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
+def _markdown_to_html(md: str, *, note_id: str, site: dict, note_title: str = "") -> str:
+    if note_title:
+        site["_note_title"] = note_title
+    site["_figure_state"] = {"n": 0, "uncaptioned": site.get("_uncaptioned_figures") or []}
     md = _unwrap_link_wrapped_images(str(md or ""))
     if not md.strip():
         return ""
@@ -1786,6 +2011,10 @@ def _markdown_to_html(md: str, *, note_id: str, site: dict) -> str:
     if in_code:
         out.append("".join(code_buffer))
         out.append("</code></pre>")
+    state = _figure_state(site)
+    logged = state.get("uncaptioned") or []
+    if isinstance(logged, list):
+        site["_uncaptioned_figures"] = logged
     return "\n".join(out)
 
 
@@ -2056,11 +2285,18 @@ def _home_featured_record_row_html(
     summary: str,
     href: str,
     cta: str,
+    employer: str = "",
 ) -> str:
-    kind_label = "Featured system" if kind == "system" else "Featured note"
+    kind_label = record_id if kind == "system" else "Featured note"
+    employer_html = ""
+    if kind == "system" and employer.strip():
+        employer_html = (
+            f'            <p class="home-record-employer">{esc(employer.strip())}</p>\n'
+        )
     return (
         f'          <article class="home-record-row" data-record="{esc(record_id)}">\n'
         f'            <p class="home-record-kind">{esc(kind_label)}</p>\n'
+        f"{employer_html}"
         f'            <h3 class="home-record-title">{esc(title)}</h3>\n'
         f'            <p class="home-record-summary">{esc(summary)}</p>\n'
         f'            <p class="home-record-cta">'
@@ -2087,6 +2323,7 @@ def _home_featured_records_html(site: dict, export: dict) -> str:
             problem = str(composed.get("problem") or "").strip()
             summary = _short_title(problem, max_len=120) if problem else ""
         href = with_base(site, f"/systems/#{record_id}")
+        employer = str(raw.get("employer") or "").strip()
         rows.append(
             _home_featured_record_row_html(
                 site,
@@ -2096,6 +2333,7 @@ def _home_featured_records_html(site: dict, export: dict) -> str:
                 summary=summary,
                 href=href,
                 cta="Explore record →",
+                employer=employer,
             )
         )
     note_id = str(config.get("note_id") or "").strip()
@@ -2970,7 +3208,6 @@ def _home_scroll_hint_html() -> str:
 
 def build_home(site: dict, export: dict) -> str:
     person = site["person"]
-    location = str(person.get("location") or "").strip()
     full_name = str(person.get("full_name") or "").strip()
     meta_html = _home_context_meta_html(site)
 
@@ -2984,7 +3221,8 @@ def build_home(site: dict, export: dict) -> str:
         obj_pos = esc(str(atmosphere.get("object_position") or "center center"))
         entrance_img = (
             f'      <div class="entrance-atmosphere" aria-hidden="true">\n'
-            f'        <img class="entrance-photo" src="{src}" alt=""{wh} '
+            # Ornamental atmosphere still — the thesis is the content, so this image is not described.
+            f'        <img class="entrance-photo" src="{src}" alt="" role="presentation"{wh} '
             f'decoding="async" fetchpriority="high" style="object-position: {obj_pos}" />\n'
             f'        <div class="entrance-scrim"></div>\n'
             f'        <div class="entrance-vignette"></div>\n'
@@ -2999,18 +3237,26 @@ def build_home(site: dict, export: dict) -> str:
             "      </div>"
         )
 
-    catalog_html = ""
-    if location:
-        catalog_label = (
-            f"{full_name.upper()} · {location.upper()}"
-            if full_name
-            else f"RECORD · {location.upper()}"
+    job = str(person.get("job_title") or "").strip()
+    employer = str(person.get("employer") or "").strip()
+    role_bits = [bit for bit in (job, employer) if bit]
+    identity_html = ""
+    if full_name or role_bits:
+        role_html = (
+            f'<span class="entrance-role">{esc(" · ".join(role_bits))}</span>'
+            if role_bits
+            else ""
         )
-        catalog_html = (
-            f'        <p class="entrance-catalog">'
-            f'<span class="entrance-catalog-dot" aria-hidden="true"></span>'
-            f"{esc(catalog_label)}</p>\n"
+        identity_html = (
+            '        <p class="entrance-identity">'
+            f'<span class="entrance-name">{esc(full_name)}</span>'
+            f"{role_html}</p>\n"
         )
+    proof = site.get("home_proof_line") if isinstance(site.get("home_proof_line"), dict) else {}
+    proof_text = str(proof.get("text") or "").strip()
+    proof_html = (
+        f'        <p class="entrance-proof">{esc(proof_text)}</p>\n' if proof_text else ""
+    )
 
     thesis = esc(str(person.get("headline") or "").strip())
     lede = esc(str(person.get("tagline") or "").strip())
@@ -3023,9 +3269,9 @@ def build_home(site: dict, export: dict) -> str:
     <section id="entrance" class="entrance hero home-hero home-snap-section home-snap-proposition is-in-view" aria-labelledby="entrance-heading">
 {entrance_img}
       <div class="entrance-copy hero-copy home-snap-inner">
-{catalog_html}        <h1 id="entrance-heading">{thesis}</h1>
+{identity_html}        <h1 id="entrance-heading">{thesis}</h1>
         <p class="lede">{lede}</p>
-{actions_html}{scroll_hint_html}
+{actions_html}{proof_html}{scroll_hint_html}
       </div>
     </section>
     <section class="home-snap-section home-snap-proof" aria-labelledby="home-featured-heading">
@@ -3293,7 +3539,6 @@ def build_systems_catalogue(site: dict, export: dict) -> str:
 
 def build_portfolio(site: dict, export: dict) -> str:
     page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
-    lede = (page.get("lede") or "Selected PUBLIC projects.").strip()
     projects = [p for p in (export.get("projects") or []) if isinstance(p, dict)]
     copy_map = site.get("project_copy") if isinstance(site.get("project_copy"), dict) else {}
     section_copy = site.get("section_copy") if isinstance(site.get("section_copy"), dict) else {}
@@ -3324,8 +3569,13 @@ def build_portfolio(site: dict, export: dict) -> str:
         item for item in (enterprise.get("items") or []) if isinstance(item, dict)
     ]
     used_overlay_ids: set[str] = set()
+    label_overrides = site.get("systems_labels") if isinstance(site.get("systems_labels"), dict) else {}
     if export_items or ent_copy:
-        etitle = str(enterprise.get("title") or "Enterprise summaries")
+        etitle = str(
+            label_overrides.get("enterprise_summaries")
+            or enterprise.get("title")
+            or "Enterprise summaries"
+        )
         eid = unique_id(etitle)
         ent_node = {"id": eid, "label": etitle, "children": []}
         toc.append(ent_node)
@@ -3435,24 +3685,26 @@ def build_portfolio(site: dict, export: dict) -> str:
         panels.append(library_section_panel(hid, title, inner))
 
     verify = page.get("verify") or {}
+    verify_override = site.get("systems_verify") if isinstance(site.get("systems_verify"), dict) else {}
     if isinstance(verify, dict) and verify.get("items"):
-        vtitle = str(verify.get("title") or "Verify")
+        vtitle = str(verify_override.get("title") or verify.get("title") or "Verify")
         vid = unique_id(vtitle)
         toc.append({"id": vid, "label": vtitle, "children": []})
         vitems = []
         for item in verify.get("items") or []:
             if not isinstance(item, dict):
                 continue
-            href = item.get("href") or "#"
-            if str(href).startswith("/"):
-                href = with_base(site, href)
-            external = not str(item.get("href") or "").startswith("/")
+            raw_href = str(item.get("href") or "#")
+            href = with_base(site, raw_href) if raw_href.startswith("/") else raw_href
+            external = not raw_href.startswith("/")
             attrs = f' href="{esc(href)}"'
             cls = ' class="external"' if external else ""
             if external:
                 attrs += ' target="_blank" rel="noopener noreferrer"'
+            label_map = verify_override.get("item_labels") if isinstance(verify_override.get("item_labels"), dict) else {}
+            label = str(label_map.get(raw_href) or item.get("label") or href)
             vitems.append(
-                f"      <li><a{cls}{attrs}>{esc(item.get('label') or href)}</a></li>"
+                f"      <li><a{cls}{attrs}>{esc(label)}</a></li>"
             )
         inner = '      <ul class="competency-list">\n' + "\n".join(vitems) + "\n      </ul>"
         note = (verify.get("note") or "").strip()
@@ -3471,15 +3723,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         )
         toc.append({"id": "empty", "label": "Systems", "children": []})
 
-    if panels and lede.strip():
-        first = panels[0]
-        lede_block = f'      <p class="page-lede">{esc(lede)}</p>\n'
-        panels[0] = first.replace(
-            '<div class="library-panel-body">\n',
-            f'<div class="library-panel-body">\n{lede_block}',
-            1,
-        )
-
+    systems_lede = str(site.get("systems_lede") or "").strip()
     return library_shell(
         site=site,
         title="Systems",
@@ -3488,6 +3732,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         panels=panels,
         strip_html=_library_strip_html(site, active="systems"),
         record_panels_html=_map_record_panels_library_html(site),
+        route_lede=systems_lede,
     )
 
 
@@ -3619,7 +3864,10 @@ def _certs_by_issuer_html(
 
 def build_credentials(site: dict, export: dict) -> str:
     page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
-    lede = (page.get("lede") or "PUBLIC certifications and qualifications.").strip()
+    verify_block = site.get("credentials_verify") if isinstance(site.get("credentials_verify"), dict) else {}
+    lede = str(verify_block.get("lede") or "").strip() or (
+        page.get("lede") or "PUBLIC certifications and qualifications."
+    ).strip()
     order = page.get("order") or {}
     certs = [c for c in (export.get("certifications") or []) if isinstance(c, dict)]
     education = [e for e in (export.get("education") or []) if isinstance(e, dict)]
@@ -3645,12 +3893,7 @@ def build_credentials(site: dict, export: dict) -> str:
     toc: list[dict] = []
     used_ids: set[str] = set()
 
-    overview_html = (
-        f'      <p class="page-lede">{esc(lede)}</p>\n'
-        f'      <p class="record-context">{len(certs)} certifications and '
-        f"{len(education)} qualifications in the searchable catalogue — "
-        "each entry includes an issuer verify link where available.</p>\n"
-    )
+    overview_html = f'      <p class="page-lede">{esc(lede)}</p>\n' if lede else ""
 
     def unique_id(label: str) -> str:
         base = slugify(label)
@@ -3877,11 +4120,14 @@ def _note_cover_html(site: dict, row: dict, note_id: str) -> str:
     rel = str(cover.get("path") or "").strip()
     if not rel:
         return ""
-    alt = esc(str(cover.get("alt") or "").strip())
-    href = esc(_note_asset_href(site, note_id, rel))
+    supplied = str(cover.get("alt") or "").strip()
+    title = str(row.get("title") or note_id).strip()
+    alt = supplied or f"Cover image for “{title}”"
+    href = _note_asset_href(site, note_id, rel)
+    dims = _size_attrs_for_src(site, note_id, rel)
     return (
         f'      <figure class="note-cover">\n'
-        f'        <img src="{href}" alt="{alt}" loading="eager" />\n'
+        f'        <img src="{esc(href)}" alt="{esc(alt)}"{dims} loading="eager" />\n'
         f"      </figure>\n"
     )
 
@@ -3897,9 +4143,26 @@ def _writing_note_panel_body(
             "Draft preview — not in PUBLIC export</p>\n"
         )
     body_md = str(row.get("body_md") or "").strip()
+    alts: dict[str, str] = {}
+    for image in row.get("images") or []:
+        if not isinstance(image, dict):
+            continue
+        image_alt = str(image.get("alt") or "").strip()
+        image_path = str(image.get("path") or "").strip()
+        if not image_alt or not image_path:
+            continue
+        alts[image_path] = image_alt
+        alts[image_path.replace("\\", "/").split("/")[-1]] = image_alt
+    site["_image_alts"] = alts
+    site["_note_title"] = str(row.get("title") or note_id).strip()
     body_html = ""
     if body_md:
-        rendered = _markdown_to_html(body_md, note_id=note_id, site=site)
+        rendered = _markdown_to_html(
+            body_md,
+            note_id=note_id,
+            site=site,
+            note_title=str(row.get("title") or note_id),
+        )
         if rendered:
             body_html = f'      <div class="note-body prose">{rendered}</div>\n'
     links_html = _writing_links_html(site, row)
@@ -4040,7 +4303,48 @@ def build_perspectives(site: dict, export: dict) -> str:
         toc=toc,
         panels=panels,
         strip_html=_library_strip_html(site, active="notes"),
+        index_default="collapsed",
     )
+
+
+def build_not_found(site: dict) -> str:
+    home = esc(with_base(site, "/"))
+    systems = esc(with_base(site, "/systems/"))
+    notes = esc(with_base(site, "/notes/"))
+    credentials = esc(with_base(site, "/credentials/"))
+    return (
+        '    <article class="not-found">\n'
+        "      <h1>Not in the catalogue</h1>\n"
+        "      <p>That record isn't on the shelves.</p>\n"
+        '      <p class="not-found-links">'
+        f'<a href="{home}">Home</a> · '
+        f'<a href="{systems}">Systems</a> · '
+        f'<a href="{notes}">Notes</a> · '
+        f'<a href="{credentials}">Credentials</a>'
+        "</p>\n"
+        "    </article>\n"
+    )
+
+
+def _redirect_document(site: dict, target_path: str, label: str, body: str) -> str:
+    href = esc(with_base(site, target_path.split("#", 1)[0]) + (
+        "#" + target_path.split("#", 1)[1] if "#" in target_path else ""
+    ))
+    canon = esc(canonical_url(site, target_path))
+    robots = _robots_noindex_head(site)
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="refresh" content="0;url={href}" />
+{robots}  <link rel="canonical" href="{canon}" />
+  <title>{esc(label)}</title>
+</head>
+<body>
+{body}
+</body>
+</html>
+"""
 
 
 def main() -> None:
@@ -4153,34 +4457,35 @@ def main() -> None:
             ),
         )
 
-    systems_target = with_base(site, "/systems/")
-    catalogue_target = systems_target
-    notes_target = with_base(site, "/notes/")
-    home_target = with_base(site, "/")
-    for rel_path, target, label in (
-        ("portfolio/index.html", catalogue_target, "Systems"),
-        ("perspectives/index.html", notes_target, "Notes"),
-        ("systems/catalogue/index.html", catalogue_target, "Systems"),
-        ("about/index.html", home_target, "Home"),
-        ("contact/index.html", home_target, "Home"),
-        ("career-journey/index.html", home_target, "Home"),
-        ("blog/index.html", notes_target, "Notes"),
+    write(
+        DIST / "404.html",
+        layout(
+            site,
+            "Not in the catalogue",
+            "404",
+            build_not_found(site),
+            path="/404.html",
+        ),
+    )
+
+    for rel_path, target_path, label in (
+        ("portfolio/index.html", "/systems/", "Systems"),
+        ("perspectives/index.html", "/notes/", "Notes"),
+        ("systems/catalogue/index.html", "/systems/", "Systems"),
+        ("about/index.html", "/", "Home"),
+        ("contact/index.html", "/", "Home"),
+        ("career-journey/index.html", "/", "Home"),
+        ("blog/index.html", "/notes/", "Notes"),
     ):
+        href = with_base(site, target_path)
         write(
             DIST / rel_path,
-            f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="refresh" content="0;url={esc(target)}" />
-  <link rel="canonical" href="{esc(target)}" />
-  <title>{esc(label)}</title>
-</head>
-<body>
-  <p>Moved to <a href="{esc(target)}">{esc(target)}</a>.</p>
-</body>
-</html>
-""",
+            _redirect_document(
+                site,
+                target_path,
+                label,
+                f'  <p>Moved to <a href="{esc(href)}">{esc(href)}</a>.</p>',
+            ),
         )
 
     for row in _writing_rows(export):
@@ -4192,40 +4497,27 @@ def main() -> None:
         if not slug:
             continue
         note_id = _note_catalog_id(row, 0)
-        target = f"{notes_target}#{note_id}"
+        target_path = f"/notes/#{note_id}"
+        href = f"{with_base(site, '/notes/')}#{note_id}"
         write(
             DIST / slug / "index.html",
-            f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="refresh" content="0;url={esc(target)}" />
-  <link rel="canonical" href="{esc(target)}" />
-  <title>{esc(str(row.get("title") or slug))}</title>
-</head>
-<body>
-  <p>Moved to <a href="{esc(target)}">{esc(target)}</a>.</p>
-</body>
-</html>
-""",
+            _redirect_document(
+                site,
+                target_path,
+                str(row.get("title") or slug),
+                f'  <p>Moved to <a href="{esc(href)}">{esc(href)}</a>.</p>',
+            ),
         )
 
-    work_target = catalogue_target
+    work_href = with_base(site, "/systems/")
     write(
         DIST / "work" / "index.html",
-        f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="refresh" content="0;url={esc(work_target)}" />
-  <link rel="canonical" href="{esc(canonical_url(site, "/systems/"))}" />
-  <title>Work</title>
-</head>
-<body>
-  <p>Selected work lives at <a href="{esc(work_target)}">/systems/</a>.</p>
-</body>
-</html>
-""",
+        _redirect_document(
+            site,
+            "/systems/",
+            "Work",
+            f'  <p>Selected work lives at <a href="{esc(work_href)}">/systems/</a>.</p>',
+        ),
     )
 
     write(DIST / "styles.css", assemble_styles())
@@ -4243,7 +4535,7 @@ def main() -> None:
         shutil.copytree(notes_assets, DIST / "assets" / "notes", dirs_exist_ok=True)
     (DIST / "data").mkdir(exist_ok=True)
     shutil.copyfile(DATA / "export_public.json", DIST / "data" / "export_public.json")
-    site_out = {k: v for k, v in site.items() if k != "_export"}
+    site_out = {k: v for k, v in site.items() if not str(k).startswith("_")}
     write(DIST / "data" / "site.json", json.dumps(site_out, indent=2) + "\n")
 
     base = site["base_path"]
@@ -4269,7 +4561,9 @@ def main() -> None:
 """
     write(DIST / "_redirects", redirects)
 
-    print(f"built {len(pages)} pages + work redirect -> {DIST} (base_path={base or '/'})")
+    logged = site.get("_uncaptioned_figures") or []
+    print(f"uncaptioned-figures {len(logged)}")
+    print(f"built {len(pages)} pages + 404 + work redirect -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:
         run_pagefind()
