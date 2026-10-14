@@ -25,6 +25,9 @@ test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
     test(`${route} has no axe violations`, async ({ page }, testInfo) => {
       await page.goto(route, { waitUntil: "networkidle" });
 
+      // AxeBuilder#options replaces the whole run-options object, so withTags
+      // must come after it or WCAG-only filtering is wiped (best-practice
+      // rules such as aria-allowed-role would then fail the suite).
       const builder = new AxeBuilder({ page })
         .options({ iframes: false })
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
