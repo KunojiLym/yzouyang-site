@@ -22,18 +22,20 @@ from note_figures import (
     alts_by_full_path,
     local_image_size as _local_image_size,
 )
+from inline_markdown import (
+    inline_markdown as _inline_markdown,
+    render_expand_block as _render_expand_block,
+    render_image_block as _render_image_block,
+)
 from note_images import (
     EXPAND_LINE_RE as _EXPAND_LINE_RE,
     collect_expand_body as _collect_expand_body,
     figures_for as _figures_for,
-    inline_markdown as _inline_markdown,
     is_image_line as _is_image_line,
     note_asset_href as _note_asset_href,
-    render_expand_block as _render_expand_block,
-    render_image_block as _render_image_block,
     size_attrs_for_src as _size_attrs_for_src,
 )
-from site_paths import esc, normalize_base, with_base
+from site_paths import esc, lookup_site, normalize_base, with_base
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -180,6 +182,13 @@ CASE_BEAT_KEYS = (
     ("evidence", "Evidence"),
 )
 THEME_BOOT_SCRIPT = """<script>
+function yzLibraryHash() {
+  try {
+    return decodeURIComponent((location.hash || "").replace(/^#/, ""));
+  } catch (e) {
+    return (location.hash || "").replace(/^#/, "");
+  }
+}
 (function () {
   var KEY = "yz-theme";
   var theme = "dark";
@@ -204,12 +213,7 @@ THEME_BOOT_SCRIPT = """<script>
     document.documentElement.setAttribute("data-reading-size", reading);
   }
   var libraryBoot = "overview";
-  var libraryHash = "";
-  try {
-    libraryHash = decodeURIComponent((location.hash || "").replace(/^#/, ""));
-  } catch (e) {
-    libraryHash = (location.hash || "").replace(/^#/, "");
-  }
+  var libraryHash = yzLibraryHash();
   try {
     if (libraryHash || (window.matchMedia && window.matchMedia("(min-width: 49rem)").matches)) {
       libraryBoot = "detail";
@@ -224,11 +228,7 @@ THEME_BOOT_SCRIPT = """<script>
 LIBRARY_HASH_BOOT_SCRIPT = """<script>
 (function () {
   var root = document.documentElement;
-  var hash = root.getAttribute("data-library-hash") || "";
-  if (!hash) {
-    try { hash = decodeURIComponent((location.hash || "").replace(/^#/, "")); }
-    catch (e) { hash = (location.hash || "").replace(/^#/, ""); }
-  }
+  var hash = root.getAttribute("data-library-hash") || yzLibraryHash();
   var split = document.getElementById("library-split");
   var panels = split ? split.querySelectorAll(".library-panels > .library-panel") : [];
   if (!split || !panels.length) {
@@ -368,36 +368,30 @@ def assemble_styles() -> str:
     return "".join(chunks)
 
 
-def lookup_site(site: dict, path: str, default: object = "") -> object:
-    """Read a dotted site.json path. Missing or wrong-typed values return default."""
-    node: object = site
-    for part in path.split("."):
-        if isinstance(node, dict) and part in node:
-            node = node[part]
-        else:
-            return default
-    if node is None or not isinstance(node, type(default)):
-        return default
-    return node
-
-
 def route_title(site: dict, key: str, fallback: str = "") -> str:
     """Visible route name from site.json route_titles. The name suffix is separate."""
     table = lookup_site(site, "route_titles", {})
     return str(table.get(key) or fallback or "").strip()
 
 
-def _verify_item_label(label_map: dict, raw_href: str, fallback: str) -> str:
-    """Override an export verify label. Keys are stable ids; href is only the match."""
-    for spec in label_map.values():
-        if not isinstance(spec, dict):
-            continue
-        if str(spec.get("href") or "") != raw_href:
-            continue
-        label = str(spec.get("label") or "").strip()
-        if label:
-            return label
-    return fallback
+def _verify_item_key(item: dict) -> str:
+    """Stable id for a verify row. An explicit id wins over the path slug."""
+    explicit = str(item.get("id") or item.get("key") or "").strip()
+    if explicit:
+        return explicit
+    raw = str(item.get("href") or "").strip()
+    if raw.startswith("/") and not raw.startswith("//"):
+        return raw.strip("/")
+    return ""
+
+
+def _verify_item_label(label_map: dict, item_key: str, fallback: str) -> str:
+    """Override an export verify label. Match the stable id, not the href."""
+    spec = label_map.get(item_key) if item_key else None
+    if not isinstance(spec, dict):
+        return fallback
+    label = str(spec.get("label") or "").strip()
+    return label or fallback
 
 
 def public_origin(site: dict) -> str:
@@ -453,7 +447,7 @@ OG_IMAGE_PATH = "/assets/og/og-default.png"
 
 
 def person_full_name(site: dict) -> str:
-    person = site.get("person") if isinstance(site.get("person"), dict) else {}
+    person = lookup_site(site, "person", {})
     name = str(person.get("full_name") or "Yingzhao Ouyang").strip()
     return name or "Yingzhao Ouyang"
 
@@ -487,7 +481,7 @@ def document_title(site: dict, active: str, title: str) -> str:
 
 
 def page_description(site: dict, active: str, title: str) -> str:
-    meta = site.get("page_meta") if isinstance(site.get("page_meta"), dict) else {}
+    meta = lookup_site(site, "page_meta", {})
     for key in (active, title):
         text = str(meta.get(key) or "").strip()
         if text:
@@ -587,7 +581,7 @@ def case_beats_html(row: dict, indent: str = "          ") -> str:
 
 
 def verify_panel_html(site: dict) -> str:
-    block = site.get("credentials_verify") if isinstance(site.get("credentials_verify"), dict) else {}
+    block = lookup_site(site, "credentials_verify", {})
     items = [i for i in (block.get("items") or []) if isinstance(i, dict)]
     if not items:
         return ""
@@ -1390,11 +1384,11 @@ def case_copy_by_id(site: dict, case_id: str) -> dict:
     """Beats live in enterprise_copy / project_copy, keyed by stable heading id."""
     if not case_id:
         return {}
-    ent = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
+    ent = lookup_site(site, "enterprise_copy", {})
     overlay = ent.get(case_id)
     if isinstance(overlay, dict):
         return overlay
-    projects = site.get("project_copy") if isinstance(site.get("project_copy"), dict) else {}
+    projects = lookup_site(site, "project_copy", {})
     overlay = projects.get(case_id)
     return overlay if isinstance(overlay, dict) else {}
 
@@ -1450,7 +1444,7 @@ def resolve_enterprise_overlay(item: dict, ent_copy: dict) -> tuple[str, dict]:
 
 
 def _atmosphere_slot(site: dict, key: str) -> dict:
-    block = site.get("atmosphere") if isinstance(site.get("atmosphere"), dict) else {}
+    block = lookup_site(site, "atmosphere", {})
     row = block.get(key)
     return row if isinstance(row, dict) else {}
 
@@ -3216,7 +3210,7 @@ def build_home(site: dict, export: dict) -> str:
             f'<span class="entrance-name">{esc(full_name)}</span>'
             f"{role_html}</p>\n"
         )
-    proof = site.get("home_proof_line") if isinstance(site.get("home_proof_line"), dict) else {}
+    proof = lookup_site(site, "home_proof_line", {})
     proof_text = str(proof.get("text") or "").strip()
     proof_html = (
         f'        <p class="entrance-proof">{esc(proof_text)}</p>\n' if proof_text else ""
@@ -3264,7 +3258,7 @@ def build_home(site: dict, export: dict) -> str:
 def _about_data(site: dict, export: dict) -> dict:
     about = export.get("about") if isinstance(export.get("about"), dict) else {}
     if not about:
-        about = site.get("about") if isinstance(site.get("about"), dict) else {}
+        about = lookup_site(site, "about", {})
     return about
 
 
@@ -3504,8 +3498,8 @@ def build_systems_catalogue(site: dict, export: dict) -> str:
 def build_portfolio(site: dict, export: dict) -> str:
     page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
     projects = [p for p in (export.get("projects") or []) if isinstance(p, dict)]
-    copy_map = site.get("project_copy") if isinstance(site.get("project_copy"), dict) else {}
-    section_copy = site.get("section_copy") if isinstance(site.get("section_copy"), dict) else {}
+    copy_map = lookup_site(site, "project_copy", {})
+    section_copy = lookup_site(site, "section_copy", {})
     by_section: dict[str, list] = {}
     for p in projects:
         by_section.setdefault(str(p.get("section") or "other"), []).append(p)
@@ -3528,7 +3522,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         return eid
 
     enterprise = page.get("enterprise_summaries") or {}
-    ent_copy = site.get("enterprise_copy") if isinstance(site.get("enterprise_copy"), dict) else {}
+    ent_copy = lookup_site(site, "enterprise_copy", {})
     export_items = [
         item for item in (enterprise.get("items") or []) if isinstance(item, dict)
     ]
@@ -3649,7 +3643,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         append_library_section(panels, hid, title, inner)
 
     verify = page.get("verify") or {}
-    verify_override = site.get("systems_verify") if isinstance(site.get("systems_verify"), dict) else {}
+    verify_override = lookup_site(site, "systems_verify", {})
     if isinstance(verify, dict) and verify.get("items"):
         vtitle = str(verify_override.get("title") or verify.get("title") or "Verify")
         vid = unique_id(vtitle)
@@ -3666,7 +3660,9 @@ def build_portfolio(site: dict, export: dict) -> str:
             cls = ' class="external"' if external else ""
             if external:
                 attrs += ' target="_blank" rel="noopener noreferrer"'
-            label = _verify_item_label(label_map, raw_href, str(item.get("label") or href))
+            label = _verify_item_label(
+                label_map, _verify_item_key(item), str(item.get("label") or href)
+            )
             vitems.append(
                 f"      <li><a{cls}{attrs}>{esc(label)}</a></li>"
             )
@@ -4093,7 +4089,10 @@ def _note_cover_html(site: dict, row: dict, note_id: str) -> str:
 
 
 def _writing_note_panel_body(
-    site: dict, row: dict, note_id: str,
+    site: dict,
+    row: dict,
+    note_id: str,
+    uncaptioned: list[dict] | None = None,
 ) -> str:
     cover_html = _note_cover_html(site, row, note_id)
     draft_banner = ""
@@ -4118,7 +4117,8 @@ def _writing_note_panel_body(
             figures=figures,
             scope_anchors=True,
         )
-        site.setdefault("_uncaptioned_figures", []).extend(figures.uncaptioned)
+        if uncaptioned is not None:
+            uncaptioned.extend(figures.uncaptioned)
         if rendered:
             body_html = f'      <div class="note-body prose">{rendered}</div>\n'
     links_html = _writing_links_html(site, row)
@@ -4139,6 +4139,7 @@ def _append_note_panel(
     row: dict,
     note_id: str,
     panels: list[str],
+    uncaptioned: list[dict] | None = None,
 ) -> None:
     heading = esc(str(row.get("title") or note_id).strip())
     body_md = str(row.get("body_md") or "").strip()
@@ -4157,7 +4158,7 @@ def _append_note_panel(
         panels,
         note_id,
         heading,
-        _writing_note_panel_body(site, row, note_id),
+        _writing_note_panel_body(site, row, note_id, uncaptioned),
         level="h2",
         extra_attrs=toc_attr,
         panel_class="library-panel--note",
@@ -4166,7 +4167,9 @@ def _append_note_panel(
     )
 
 
-def build_perspectives(site: dict, export: dict) -> str:
+def build_perspectives(
+    site: dict, export: dict, uncaptioned: list[dict] | None = None,
+) -> str:
     """Notes library — NOTE-* entries grouped by category, ordered by date."""
     rows = _writing_rows(export)
     assigned = _unique_note_catalog_ids(rows)
@@ -4223,6 +4226,7 @@ def build_perspectives(site: dict, export: dict) -> str:
                         row=row,
                         note_id=note_id,
                         panels=panels,
+                        uncaptioned=uncaptioned,
                     )
                     series_node["children"].append(
                         _note_index_entry(row, note_id, series=series)
@@ -4235,6 +4239,7 @@ def build_perspectives(site: dict, export: dict) -> str:
                     row=row,
                     note_id=note_id,
                     panels=panels,
+                    uncaptioned=uncaptioned,
                 )
                 cat_node["children"].append(_note_index_entry(row, note_id))
 
@@ -4349,6 +4354,7 @@ def main() -> None:
                     pass
     DIST.mkdir(parents=True, exist_ok=True)
 
+    uncaptioned_figures: list[dict] = []
     writing_rows = _writing_rows(export)
     note_assigned = _unique_note_catalog_ids(writing_rows)
     start_notes = [(r, nid) for r, nid in note_assigned if r.get("start_here")]
@@ -4380,7 +4386,7 @@ def main() -> None:
             "/notes/",
             "Notes",
             "Notes",
-            build_perspectives(site, export),
+            build_perspectives(site, export, uncaptioned_figures),
             True,
             article_json_ld(site, featured_note_row, featured_note_id),
         ),
@@ -4525,7 +4531,7 @@ def main() -> None:
 """
     write(DIST / "_redirects", redirects)
 
-    print(f"uncaptioned-figures {len(site.setdefault('_uncaptioned_figures', []))}")
+    print(f"uncaptioned-figures {len(uncaptioned_figures)}")
     print(f"built {len(pages)} pages + 404 + work redirect -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:
