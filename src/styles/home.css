@@ -75,27 +75,6 @@ html:has(main.home-route) {
   padding: var(--space-6) 0 var(--space-8);
 }
 
-.home-scroll-hint {
-  margin: auto 0 0;
-  padding-top: var(--space-4);
-  font-size: var(--text-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.home-scroll-hint-label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.home-scroll-hint-label::after {
-  content: "↓";
-  font-size: var(--text-sm);
-  line-height: 1;
-}
-
 .home-shell {
   width: 100%;
   max-width: none;
@@ -113,14 +92,6 @@ html:has(main.home-route) {
     transition: none;
     opacity: 1;
     transform: none;
-  }
-
-  .home-record-strip {
-    scroll-snap-type: none;
-  }
-
-  .home-record-row {
-    scroll-snap-align: none;
   }
 }
 
@@ -178,7 +149,7 @@ body:has(main.home-route) .site-header {
 .entrance-actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-3) var(--space-5);
   margin: 0 0 var(--space-5);
 }
@@ -205,6 +176,33 @@ body:has(main.home-route) .site-header {
   font-weight: 400;
 }
 
+.entrance-action--primary {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--space-10);
+  padding: 0 var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--line-strong));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--text-strong);
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.entrance-action--primary:hover,
+.entrance-action--primary:focus-visible {
+  color: var(--text-strong);
+  border-color: color-mix(in srgb, var(--accent) 10%, var(--line-strong));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.entrance-action--primary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .home-featured-records {
   margin: 0;
   max-width: none;
@@ -212,30 +210,36 @@ body:has(main.home-route) .site-header {
 }
 
 .home-record-strip {
-  overflow: hidden auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: var(--gutter);
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  margin: 0 calc(-1 * var(--gutter));
-  padding: var(--space-2) var(--gutter) var(--space-3);
-}
-
-.home-record-strip:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+  overflow: visible;
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-3);
+  scroll-snap-type: none;
 }
 
 .home-record-strip-track {
-  display: flex;
+  display: grid;
+  width: auto;
   gap: var(--space-4);
-  width: max-content;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (width >= 40rem) {
+  .home-record-strip-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 72rem) {
+  .home-record-strip-track {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .home-record-row {
-  flex: 0 0 clamp(16rem, 72vw, 22rem);
-  scroll-snap-align: start;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   padding: var(--space-4);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
@@ -283,6 +287,8 @@ body:has(main.home-route) .site-header {
 
 .home-record-cta {
   margin: 0;
+  margin-top: auto;
+  padding-top: var(--space-2);
   font-size: var(--text-sm);
 }
 
@@ -591,6 +597,8 @@ body:has(main.home-route) .site-header {
 .home-hero .entrance-copy {
   display: flex;
   flex-direction: column;
+  max-width: var(--frame-max);
+  width: 100%;
 }
 
 .entrance-copy,
@@ -635,15 +643,15 @@ body:has(main.home-route) .site-header {
 }
 
 .entrance-proof {
-  margin: var(--space-4) 0 0;
+  margin: 0 0 var(--space-4);
   max-width: 40rem;
   padding-inline-start: var(--space-3);
   border-inline-start: 2px solid var(--line-strong);
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--text-proof);
   font-weight: 400;
   line-height: 1.45;
-  color: var(--text-muted);
+  color: var(--text-default);
 }
 
 .entrance-catalog {
@@ -1320,10 +1328,6 @@ main.page .entrance h1 {
   .home-snap-proof {
     min-height: auto;
     padding: var(--space-6) 0;
-  }
-
-  .home-record-row {
-    flex-basis: min(82vw, 20rem);
   }
 
   .entrance-copy {

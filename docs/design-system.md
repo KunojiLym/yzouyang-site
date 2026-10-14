@@ -55,7 +55,7 @@ Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underl
 | `--accent-link` | Body links | `#6b4f10` |
 | `--glow` | Soft amber wash | `rgb(212 163 92 / 10%)` |
 
-Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--header-offset` `4.75rem`; `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
+Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--frame-max` aliases `--max-longform` (Home hero, header, and featured grid share this frame); `--text-proof` fluid 17–19px (17px at 1280, 19px at 1440); `--header-offset` `4.75rem`; `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
 
 **Reading tokens (Notes only):** `--note-read-max` `34rem` (prose measure); `--note-read-lead` `1.72`; `--text-dropcap` (fluid first-letter size); `--note-image-bg` (neutral mat behind inline figures / covers). Notes prose italics use the real Crimson Pro italic.
 
@@ -92,8 +92,8 @@ Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
 
 Home reads as a personal systems library (four beats (no scroll-snap; no per-section rise)):
 
-1. **Proposition** — token atmosphere; **identity line** (name on its own line, then current role · employer, sentence case, sans, readable size — not a caps eyebrow); thesis `h1`; practitioner lede (≥ body size); primary CTAs; **one quiet proof line** (see *Proof on Home*); a scroll arrow with no repeated section name. No scroll-snap; featured records peek below on laptop widths.
-2. **Featured records** — horizontal strip of curated SYS / NOTE summaries (one card per enterprise record — SYS-01 / SYS-02 / SYS-03 — with the employer named on a muted line under the record id — plus one writing row)
+1. **Proposition** — token atmosphere; **identity line** (name on its own line, then current role · employer, sentence case, sans, readable size — not a caps eyebrow); thesis `h1`; practitioner lede (≥ body size); **one proof line** directly under the lede (see *Proof on Home*); one outlined primary action (“Explore selected systems”) and a text link (“Read the notes”). No scroll-snap and no scroll arrow. Hero, header, and featured grid share `--frame-max`.
+2. **Featured records** — grid of curated SYS / NOTE summaries (1 column, 2 from `40rem`, 4 from `72rem`; no 3-column step). One card per enterprise record — SYS-01 / SYS-02 / SYS-03 — with the employer named on a muted line under the record id — plus one writing row. The grid does not scroll or clip horizontally.
 3. **Operating principle** — editorial philosophy block
 4. **Practice areas** — capability grid + split context / platform meta strips
 
@@ -112,16 +112,16 @@ Inner pages:
 
 ### Proof on Home
 
-**Proof on Home (one line, quiet).** The Entrance may carry **exactly one** proof sentence, placed after the CTAs, set in body sans at `--text-sm`, `--text-muted`, with an optional railway-green hairline rule (not brass). It must:
+**Proof on Home (one line).** The Entrance carries **exactly one** proof sentence, placed directly under the lede and above the CTAs. Body sans at `--text-proof` (fluid 17–19px: 17px at 1280, 19px at 1440), in full `--text-default`, with the railway-green left rule (`--line-strong`, not brass). It must:
 - cite only facts present in `data/site.json` or `data/export_public.json` (record the JSON paths in `home_proof_line.sources`);
 - name the employer/context and keep a baseline for every number (e.g. "8 to 4 weeks", not "50%");
-- never be enlarged, bolded, split into tiles, animated, or repeated elsewhere on Home.
+- stay one sentence: not bolded, not split into tiles, not animated, not repeated elsewhere on Home, and not promoted into a metrics hero.
 
 **Still banned:** boardroom outcome strip; metric counters or big-number tiles; a metrics hero; more than one proof line; unit-less percentages.
 
 ### Library scanning (Catalogue mode)
 
-**Catalogue mode** applies to **Systems**, **Credentials**, and the **Home** featured-record strip: scan, compare, and jump — not sustained reading. Typography stays sans-first; panels use the full library pane width (no `--note-read-max` cap).
+**Catalogue mode** applies to **Systems**, **Credentials**, and the **Home** featured-record grid: scan, compare, and jump — not sustained reading. Typography stays sans-first; panels use the full library pane width (no `--note-read-max` cap).
 
 - Split-pane catalogue: index list left (desktop) or full-width index (mobile overview); panel body right
 - **Notes:** index **collapsed by default** (unpinned overlay); **Systems / Credentials:** index **expanded by default** (pinned). Hover peek when unpinned; **Escape** dismisses overlay without changing pin mode; rail expand control exposes `aria-expanded`
@@ -159,8 +159,8 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 |---|---|
 | `.entrance` / `.entrance-atmosphere` | Token atmosphere behind thesis |
 | `.entrance-identity` | Home identity: name stacked above role · employer at every width |
-| `.entrance-proof` | single quiet proof line under Entrance CTAs |
-| `.home-record-strip` / `.home-featured-records` | Featured SYS / NOTE rows (horizontal snap strip) |
+| `.entrance-proof` | single proof line under the lede, above Entrance CTAs |
+| `.home-record-strip` / `.home-featured-records` | Featured SYS / NOTE grid (1 / 2 / 4 columns; no horizontal scroll) |
 | `.home-practice-grid` | Practice-area capability cards |
 | `.home-context-strip` / `.home-platform-strip` | Location / platform proof meta |
 | `.proof-strip` | Singapore + ≤4 platforms (legacy class; context strip on current Home) |
@@ -208,7 +208,7 @@ Pre-commit: husky + lint-staged on staged `src/styles/*.css`.
 - Brass/gold ≤10%; railway green in hairlines only
 - Derive proof from `site.json` / export only
 - Identity line on Home: name on its own line, then role · employer (from `person.job_title` / `person.employer`).
-- One quiet proof line on Home, sourced (see *Proof on Home*).
+- One proof line on Home, under the lede and above the CTAs, sourced (see *Proof on Home*).
 - Use **Reading mode** typography only on `/notes/` essay bodies; keep **Catalogue mode** on Systems / Credentials / Home strips
 - Store and display **full publication dates** (`YYYY-MM-DD`) for writing records
 
