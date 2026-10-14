@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import re
 
+from site_paths import lookup_site
+
 _EN_DASH_GAP = " \u2013 "
 _INDEXED_KEY_RE = re.compile(r"^([A-Za-z0-9_-]+)(?:\[(\d+)\])?$")
 _NUMBER_RE = re.compile(r"\d+")
@@ -105,9 +107,94 @@ def _strings(node: object) -> list[str]:
     return []
 
 
+def _case_id_for_record(site: dict, record_id: str) -> str:
+    """home_selected is the record catalog: SYS-03 is the STB case, not the card text."""
+    if not record_id:
+        return ""
+    selected = lookup_site(site, "home_selected", [])
+    for row in selected:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("record_id") or "").strip() == record_id:
+            return str(row.get("id") or "").strip()
+    return ""
+
+
+def _leading_slug(value: str) -> str:
+    for part in str(value or "").split("-"):
+        if part and not part.isdigit():
+            return part
+    return ""
+
+
+def _experience_belongs_to_record(case_id: str, experience_id: str) -> bool:
+    """The experience id and the record's case id share a leading slug token.
+
+    stb-2020 belongs with stb-data-engineer-applied-ml. prudential-cei-2023
+    does not, even when the card's employer string is rewritten to match.
+    """
+    case_slug = _leading_slug(case_id)
+    experience_slug = _leading_slug(experience_id)
+    return bool(case_slug) and case_slug == experience_slug
+
+
+def _proof_sequence_errors(
+    text: str,
+    sources: list[object],
+    site: dict,
+    export: dict,
+) -> list[str]:
+    """Proof numbers must follow source order, and every numbered source is used.
+
+    Membership alone lets 4-then-8 pass when the sources say 8-then-4, and it
+    lets a sentence drop the second clause. The proof sequence has to be a
+    subsequence of the sources in order, and each source that contains a
+    number has to contribute at least one.
+    """
+    errors: list[str] = []
+    flat: list[str] = []
+    spans: list[tuple[str, int, int]] = []
+    for path in sources:
+        if not isinstance(path, str) or not path.strip():
+            errors.append("home_proof_line.sources entries must be non-empty paths")
+            continue
+        cleaned = path.strip()
+        resolved = resolve_source(site, export, cleaned)
+        if resolved is _MISSING:
+            errors.append(f"home_proof_line source {path!r} does not resolve in site.json or export")
+            continue
+        start = len(flat)
+        flat.extend(_NUMBER_RE.findall("\n".join(_strings(resolved))))
+        spans.append((cleaned, start, len(flat)))
+    if errors:
+        return errors
+    matched: list[int] = []
+    pos = 0
+    for number in _NUMBER_RE.findall(text):
+        found_at: int | None = None
+        while pos < len(flat):
+            if flat[pos] == number:
+                found_at = pos
+                pos += 1
+                break
+            pos += 1
+        if found_at is None:
+            errors.append(
+                f"home_proof_line number {number} is not in the resolved source strings"
+            )
+            return errors
+        matched.append(found_at)
+    for path, start, end in spans:
+        if start == end:
+            continue
+        if not any(start <= index < end for index in matched):
+            errors.append(f"home_proof_line dropped a clause from source {path!r}")
+    return errors
+
+
 def launch_fact_errors(site: dict, export: dict) -> list[str]:
     errors: list[str] = []
-    person = site.get("person") if isinstance(site.get("person"), dict) else {}
+    person = lookup_site(site, "person", {})
     role = current_experience(export)
     if role is None:
         errors.append("export.experiences has no current role to check person.job_title")
@@ -127,13 +214,14 @@ def launch_fact_errors(site: dict, export: dict) -> list[str]:
                 f"exactly ({employer!r} != {organization!r})"
             )
 
-    featured = site.get("home_featured") if isinstance(site.get("home_featured"), dict) else {}
+    featured = lookup_site(site, "home_featured", {})
     systems = featured.get("systems") if isinstance(featured.get("systems"), list) else []
     for raw in systems:
         if not isinstance(raw, dict):
             continue
         experience_id = str(raw.get("experience_id") or "").strip()
-        card_id = str(raw.get("id") or raw.get("record_id") or "").strip()
+        record_id = str(raw.get("record_id") or "").strip()
+        card_id = str(raw.get("id") or record_id).strip()
         card_employer = str(raw.get("employer") or "")
         if not experience_id:
             errors.append(f"home_featured system {card_id!r} requires experience_id")
@@ -151,8 +239,14 @@ def launch_fact_errors(site: dict, export: dict) -> list[str]:
                 f"{match.get('id')} organization exactly "
                 f"({card_employer!r} != {organization!r})"
             )
+        case_id = _case_id_for_record(site, record_id) or card_id
+        if case_id and not _experience_belongs_to_record(case_id, experience_id):
+            errors.append(
+                f"home_featured record {record_id or card_id!r} experience_id "
+                f"{experience_id!r} does not belong to {case_id!r}"
+            )
 
-    proof = site.get("home_proof_line") if isinstance(site.get("home_proof_line"), dict) else {}
+    proof = lookup_site(site, "home_proof_line", {})
     text = str(proof.get("text") or "")
     if not text.strip():
         errors.append("home_proof_line.text is required")
@@ -160,19 +254,6 @@ def launch_fact_errors(site: dict, export: dict) -> list[str]:
     if not isinstance(sources, list) or not sources:
         errors.append("home_proof_line.sources must list at least one site or export path")
         return errors
-    source_numbers: list[str] = []
-    for path in sources:
-        if not isinstance(path, str) or not path.strip():
-            errors.append("home_proof_line.sources entries must be non-empty paths")
-            continue
-        resolved = resolve_source(site, export, path.strip())
-        if resolved is _MISSING:
-            errors.append(f"home_proof_line source {path!r} does not resolve in site.json or export")
-            continue
-        source_numbers.extend(_NUMBER_RE.findall("\n".join(_strings(resolved))))
-    for number in _NUMBER_RE.findall(text):
-        if number not in source_numbers:
-            errors.append(
-                f"home_proof_line number {number} is not in the resolved source strings"
-            )
+    if text.strip():
+        errors.extend(_proof_sequence_errors(text, sources, site, export))
     return errors

@@ -167,19 +167,7 @@
     let indexHoverCloseTimer = null;
     const indexNav = shell.querySelector(".library-index");
     const libraryPane = shell.querySelector(".library-pane");
-    const panelsRoot = shell.querySelector(".library-panels");
     let readingContext = libraryPane?.querySelector(".library-reading-context");
-
-    if (libraryPane && panelsRoot && !readingContext) {
-      readingContext = document.createElement("div");
-      readingContext.className = "library-reading-context";
-      readingContext.hidden = true;
-      readingContext.innerHTML =
-        '<button type="button" class="library-reading-context-title"></button>' +
-        '<span class="library-reading-context-sep" aria-hidden="true">·</span>' +
-        '<button type="button" class="library-reading-context-section"></button>';
-      libraryPane.insertBefore(readingContext, panelsRoot);
-    }
 
     const readingContextTitle = readingContext?.querySelector(
       ".library-reading-context-title"

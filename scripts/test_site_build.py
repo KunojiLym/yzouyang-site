@@ -21,6 +21,8 @@ from build import (
     _redirect_document,
     _render_image_block,
     _robots_noindex_head,
+    _verify_item_key,
+    _verify_item_label,
     _writing_note_panel_body,
     figma_embed_html,
     layout,
@@ -33,6 +35,7 @@ from build import (
     website_json_ld,
     with_base,
 )
+from site_paths import lookup_site
 from launch_facts import launch_fact_errors
 from note_figures import NoteFigureContext, local_image_size, resolve_note_alt
 
@@ -788,6 +791,31 @@ def assert_launch_facts() -> None:
     ]
     if not missing_numbers:
         fail("every number in the proof line must appear in the resolved sources")
+    crossed = json.loads(json.dumps(site))
+    stb = crossed["home_featured"]["systems"][2]
+    stb["experience_id"] = "prudential-cei-2023"
+    stb["employer"] = "Prudential Services Singapore"
+    belonged = [
+        item for item in launch_fact_errors(crossed, export) if "does not belong" in item
+    ]
+    if not belonged or not any("SYS-03" in item for item in belonged):
+        fail("a card pointed at STB with Prudential's experience_id must fail")
+    swapped = json.loads(json.dumps(site))
+    swapped["home_proof_line"]["text"] = (
+        "At Prudential: documentation cycle cut from 4 to 8 weeks and "
+        "new-hire ramp from 4 to 6 weeks, after standardising platform documentation."
+    )
+    if not any(
+        item.startswith("home_proof_line number") for item in launch_fact_errors(swapped, export)
+    ):
+        fail("swapped proof numbers must fail")
+    dropped = json.loads(json.dumps(site))
+    dropped["home_proof_line"]["text"] = (
+        "At Prudential: documentation cycle cut from 8 to 4 weeks, "
+        "after standardising platform documentation."
+    )
+    if not any("dropped a clause" in item for item in launch_fact_errors(dropped, export)):
+        fail("a dropped proof clause must fail")
 
 
 def assert_library_boot_panel() -> None:
@@ -809,12 +837,18 @@ def assert_library_boot_panel() -> None:
         fail("library CSS must not use :target; it steals sequential focus and scrolls the record")
     if 'getAttribute("data-panel-id")' not in boot and "getAttribute('data-panel-id')" not in boot:
         fail("hash boot must select panels by data-panel-id")
+    if boot.count("function yzLibraryHash()") != 1:
+        fail("hash decoding must live in one shared helper")
+    if boot.count("yzLibraryHash()") < 3:
+        fail("theme boot and the pre-paint hash script must both call the shared helper")
     panel_fn = boot.split("def library_panel_html", 1)[1].split("\ndef ", 1)[0]
     if re.search(r'\sid="\{esc\(panel_id\)\}"', panel_fn):
         fail("library panels must not carry the record id")
     chrome = (ROOT / "src" / "chrome.js").read_text(encoding="utf-8")
     if 'classList.add("is-booting")' in chrome:
         fail("is-booting belongs on the shell markup only")
+    if "insertBefore(readingContext" in chrome:
+        fail("reading context markup is server-rendered; chrome.js must not recreate it")
     for rel in ("notes/index.html", "systems/index.html"):
         html = (DIST / rel).read_text(encoding="utf-8")
         first = re.search(
@@ -825,6 +859,53 @@ def assert_library_boot_panel() -> None:
             fail(f"{rel} missing a library panel")
         if first.group(1):
             fail(f"{rel} first panel must be unhidden so the desktop boot paint can show it")
+
+
+def assert_lookup_site() -> None:
+    sample = {"person": {"full_name": "Yingzhao"}, "n": None, "items": [1], "title": "Home"}
+    if lookup_site(sample, "person", None) != {"full_name": "Yingzhao"}:
+        fail("lookup_site(default=None) must return a present value")
+    if lookup_site(sample, "missing", None) is not None:
+        fail("lookup_site(default=None) must return None when the path is missing")
+    if lookup_site(sample, "person.full_name", None) != "Yingzhao":
+        fail("lookup_site(default=None) must walk a dotted path")
+    if lookup_site(sample, "n", "fallback") != "fallback":
+        fail("a stored null must return the default")
+    if lookup_site(sample, "person", "") != "":
+        fail("a dict must not pass a string default")
+    if lookup_site(sample, "items", []) != [1]:
+        fail("a list value must return when the default is a list")
+    if lookup_site(sample, "title", {}) != {}:
+        fail("a string must not pass a dict default")
+
+
+def assert_verify_label_matches_key() -> None:
+    labels = {"credentials": {"href": "/not-the-match/", "label": "Credentials and issuer links"}}
+    item = {"label": "Comprehensive certifications", "href": "/credentials/"}
+    if _verify_item_key(item) != "credentials":
+        fail("an internal verify path must yield its stable key")
+    if _verify_item_label(labels, _verify_item_key(item), "fallback") != "Credentials and issuer links":
+        fail("verify labels must match the stable key, not the href")
+    explicit = {"id": "credentials", "href": "https://example.com/other"}
+    if _verify_item_label(labels, _verify_item_key(explicit), "fallback") != "Credentials and issuer links":
+        fail("an explicit verify id must win over the href")
+    if _verify_item_label(labels, "linkedin", "fallback") != "fallback":
+        fail("a verify label must not be chosen by scanning hrefs")
+
+
+def assert_uncaptioned_figures_are_per_render() -> None:
+    site = {"base_path": ""}
+    row = {"title": "Signal", "body_md": "![](assets/a.png)\n"}
+    first: list[dict] = []
+    second: list[dict] = []
+    _writing_note_panel_body(site, row, "NOTE-1", first)
+    _writing_note_panel_body(site, row, "NOTE-1", second)
+    if "_uncaptioned_figures" in site:
+        fail("uncaptioned figures must not be stored on the shared site dict")
+    if len(first) != 1 or len(second) != 1:
+        fail(f"each render records its own uncaptioned figure: {len(first)} {len(second)}")
+    if first[0] is second[0]:
+        fail("uncaptioned figure records leaked across renders")
 
 
 def assert_unique_ids() -> None:
@@ -866,6 +947,9 @@ def main() -> None:
     assert_note_alt_precedence()
     assert_launch_facts()
     assert_library_boot_panel()
+    assert_lookup_site()
+    assert_verify_label_matches_key()
+    assert_uncaptioned_figures_are_per_render()
     assert_unique_ids()
     assert_note_asset_href()
     assert_note_heading_anchors()
