@@ -340,11 +340,14 @@ test.describe("home", () => {
         expect(Math.abs(metrics.heroX - 104), "hero x @1440").toBeLessThanOrEqual(1);
       }
       if (width <= 768) {
+        expect(metrics.searchH, `search height @${width}`).toBeGreaterThanOrEqual(39);
+        expect(metrics.searchH, `search height @${width}`).toBeLessThanOrEqual(41);
         expect(metrics.themeH, `theme height @${width}`).toBeGreaterThanOrEqual(39);
         expect(metrics.themeH, `theme height @${width}`).toBeLessThanOrEqual(41);
         expect(metrics.menuH, `menu height @${width}`).toBeGreaterThanOrEqual(39);
         expect(metrics.menuH, `menu height @${width}`).toBeLessThanOrEqual(41);
-        expect(Math.abs(metrics.themeH - metrics.menuH), `theme vs menu @${width}`).toBeLessThanOrEqual(0.5);
+        const compact = [metrics.searchH, metrics.themeH, metrics.menuH];
+        expect(Math.max(...compact) - Math.min(...compact), `header controls @${width}`).toBeLessThanOrEqual(0.5);
       } else {
         const controls = [metrics.searchH, metrics.themeH];
         if (metrics.readingH > 0) controls.push(metrics.readingH);
