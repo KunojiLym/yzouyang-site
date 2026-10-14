@@ -185,7 +185,9 @@ body:has(main.home-route) .site-header {
   height: var(--space-10);
   padding: 0 var(--space-4);
   white-space: nowrap;
-  border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--line-strong));
+
+  /* Dark page: ~45% brass in the hairline is 3:1. Light parchment needs the hardened accent. */
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line-strong));
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--text-strong);
@@ -197,8 +199,14 @@ body:has(main.home-route) .site-header {
 .entrance-action--primary:hover,
 .entrance-action--primary:focus-visible {
   color: var(--text-strong);
-  border-color: color-mix(in srgb, var(--accent) 10%, var(--line-strong));
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line-strong));
   background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+[data-theme="light"] .entrance-action--primary,
+[data-theme="light"] .entrance-action--primary:hover,
+[data-theme="light"] .entrance-action--primary:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--accent-text));
 }
 
 .entrance-action--primary:focus-visible {

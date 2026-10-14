@@ -339,10 +339,16 @@ test.describe("home", () => {
         expect(metrics.proofSize, "proof size @1440").toBeLessThanOrEqual(19.5);
         expect(Math.abs(metrics.heroX - 104), "hero x @1440").toBeLessThanOrEqual(1);
       }
-      if (width === 768 || width === 1280) {
+      if (width <= 768) {
+        expect(metrics.themeH, `theme height @${width}`).toBeGreaterThanOrEqual(39);
+        expect(metrics.themeH, `theme height @${width}`).toBeLessThanOrEqual(41);
+        expect(metrics.menuH, `menu height @${width}`).toBeGreaterThanOrEqual(39);
+        expect(metrics.menuH, `menu height @${width}`).toBeLessThanOrEqual(41);
+        expect(Math.abs(metrics.themeH - metrics.menuH), `theme vs menu @${width}`).toBeLessThanOrEqual(0.5);
+      } else {
         const controls = [metrics.searchH, metrics.themeH];
-        if (width === 768) controls.push(metrics.menuH);
-        if (width === 1280) controls.push(metrics.readingH);
+        if (metrics.readingH > 0) controls.push(metrics.readingH);
+        if (metrics.menuH > 0) controls.push(metrics.menuH);
         const min = Math.min(...controls);
         const max = Math.max(...controls);
         expect(max - min, `header control height @${width} ${controls.join(",")}`).toBeLessThanOrEqual(0.5);

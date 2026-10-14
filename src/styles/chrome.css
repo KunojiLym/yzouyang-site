@@ -433,10 +433,14 @@ html[data-reading-size="xlarge"] .header-actions {
   .theme-toggle:not(.reading-size-toggle) {
     position: relative;
     inline-size: var(--space-10);
-    block-size: var(--header-control-height);
-    height: var(--header-control-height);
+    block-size: var(--space-10);
+    height: var(--space-10);
     padding: 0;
     justify-content: center;
+  }
+
+  .nav-menu > summary {
+    height: var(--space-10);
   }
 
   .theme-toggle-label {
