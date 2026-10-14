@@ -12,6 +12,7 @@ from pathlib import Path
 # scripts/ is on sys.path[0] when this file is run directly, so this is a
 # plain sibling import, not a package import.
 from build import compose_home_selected_row
+from launch_facts import launch_fact_errors
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -319,6 +320,10 @@ def main() -> None:
                 "dist has Systems/Credentials but missing pagefind/pagefind-ui.js "
                 "(run python scripts/build.py without --skip-pagefind)"
             )
+
+    fact_errors = launch_fact_errors(site, export)
+    if fact_errors:
+        fail("; ".join(fact_errors))
 
     print("lint ok")
 

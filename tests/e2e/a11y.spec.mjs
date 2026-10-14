@@ -5,7 +5,14 @@ import AxeBuilder from "@axe-core/playwright";
 // review already recorded in docs/design-system.md, but it makes sure a
 // future change (new component, new page) can't silently regress contrast,
 // landmarks, or ARIA wiring without a human noticing.
-const ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
+const ROUTES = [
+  "/",
+  "/systems/",
+  "/notes/",
+  "/notes/#NOTE-2026-005",
+  "/credentials/",
+  "/does-not-exist/",
+];
 
 // Pagefind's third-party markup in the sticky header (#search) has known upstream
 // a11y quirks outside this repo's control. Home and library routes all mount the
@@ -20,7 +27,7 @@ test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
 
       const builder = new AxeBuilder({ page })
         .options({ iframes: false })
-        .withTags(["wcag2a", "wcag2aa"])
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
         .exclude(KNOWN_THIRD_PARTY_EXCLUDES);
 
       const results = await builder.analyze();

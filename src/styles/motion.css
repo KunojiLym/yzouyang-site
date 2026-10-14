@@ -1,26 +1,4 @@
-/* Motion — scroll reveals, entrance rise; honor reduced motion */
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes record-pulse {
-  from {
-    box-shadow: inset 3px 0 0 rgb(196 154 90 / 0%);
-  }
-
-  to {
-    box-shadow: inset 3px 0 0 rgb(196 154 90 / 85%);
-  }
-}
+/* Motion — three duration tokens; honor reduced motion */
 
 @keyframes map-panel-in {
   from {
@@ -31,43 +9,6 @@
   to {
     opacity: 1;
     transform: translateX(0);
-  }
-}
-
-@keyframes hint-bob {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: translateY(0);
-  }
-
-  50% {
-    opacity: 0.95;
-    transform: translateY(0.35rem);
-  }
-}
-
-@keyframes map-line-in {
-  from {
-    opacity: 0;
-    stroke-dashoffset: 24;
-  }
-
-  to {
-    opacity: 0.55;
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes section-heading-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.65rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 

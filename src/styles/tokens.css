@@ -26,7 +26,7 @@
   --accent-soft: rgb(196 154 90 / 18%);
   --accent-hover: #dbb06e;
   --accent-active: #a88448;
-  --focus-ring: rgb(196 154 90 / 65%);
+  --focus-ring: #c49a5a;
   --line-strong: rgb(74 92 78 / 28%);
   --line-soft: rgb(74 92 78 / 14%);
   --line: var(--line-soft);
@@ -45,7 +45,16 @@
   --code-text: var(--text-default);
   --max: 68rem;
   --max-longform: 80rem;
-  --note-read-max: 42rem;
+  --gutter: clamp(1.25rem, 5vw, 1.5rem);
+  --note-read-max: 34rem;
+  --lh-display: 1.1;
+  --lh-heading: 1.2;
+  --track-caps: 0.08em;
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --note-read-lead: 1.72;
   --text-dropcap: clamp(
     calc(2.6rem * var(--text-scale)),
@@ -57,9 +66,9 @@
   /* Readable type scale — multiply by --text-scale for viewport + user preference. */
   --text-scale: 1;
   --text-xs: calc(0.8125rem * var(--text-scale));
-  --text-sm: calc(0.9375rem * var(--text-scale));
+  --text-sm: calc(0.875rem * var(--text-scale));
   --text-base: calc(1rem * var(--text-scale));
-  --text-md: calc(1.125rem * var(--text-scale));
+  --text-md: calc(1.1875rem * var(--text-scale));
   --text-lg: calc(1.25rem * var(--text-scale));
   --text-xl: calc(1.375rem * var(--text-scale));
 
@@ -72,7 +81,7 @@
   --text-display-1: clamp(
     calc(1.9rem * var(--text-scale)),
     calc(3.6vw * var(--text-scale)),
-    calc(2.45rem * var(--text-scale))
+    calc(2.5rem * var(--text-scale))
   );
   --text-display-2: clamp(
     calc(1.35rem * var(--text-scale)),
@@ -141,7 +150,7 @@
   --accent-soft: rgb(196 154 90 / 22%);
   --accent-hover: #5c450e;
   --accent-active: #6b4f10;
-  --focus-ring: rgb(196 154 90 / 65%);
+  --focus-ring: #6b4f10;
   --line-strong: rgb(74 92 78 / 22%);
   --line-soft: rgb(74 92 78 / 12%);
   --line: var(--line-soft);

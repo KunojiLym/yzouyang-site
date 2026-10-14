@@ -8,20 +8,33 @@ import os
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 from build import (
+    DeployBaseError,
     _beat_value_html,
     _format_note_date,
     _inline_markdown,
     _markdown_to_html,
     _note_asset_href,
     _note_index_title,
+    _redirect_document,
+    _render_image_block,
+    _robots_noindex_head,
     _writing_note_panel_body,
     figma_embed_html,
+    layout,
     normalize_base,
+    og_image_dimensions,
+    person_json_ld,
     resolve_enterprise_overlay,
+    resolve_site_base_path,
+    site_origin,
+    website_json_ld,
     with_base,
 )
+from launch_facts import launch_fact_errors
+from note_figures import NoteFigureContext, local_image_size, resolve_note_alt
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
@@ -210,11 +223,11 @@ Summary.
 
 Body.
 """
-    html = _markdown_to_html(md, note_id="NOTE-2025-012", site=site)
-    if 'id="1-tldr"' not in html:
-        fail("TOC heading must render Medium-style id on matching h3")
-    if 'id="2-i-setting-up-databricks-free-edition-account"' not in html:
-        fail("TOC heading must map roman-numeral section to Medium anchor id")
+    html = _markdown_to_html(md, note_id="NOTE-2025-012", site=site, scope_anchors=True)
+    if 'id="NOTE-2025-012-1-tldr"' not in html or 'id="1-tldr"' in html:
+        fail("TOC heading must render the note-scoped Medium id")
+    if 'id="NOTE-2025-012-2-i-setting-up-databricks-free-edition-account"' not in html:
+        fail("TOC heading must map roman-numeral section to the note-scoped Medium id")
     if "Table Of Contents" in html:
         fail("inline Table Of Contents must not render in note body")
     if 'href="#1-tldr"' in html:
@@ -387,10 +400,473 @@ def assert_writing_rows_preserve_images() -> None:
         fail("_writing_rows must preserve export images metadata for cover rendering")
 
 
+def _meta(html: str, *, prop: str = "", name: str = "") -> str:
+    if prop:
+        match = re.search(
+            rf'<meta property="{re.escape(prop)}" content="([^"]*)"',
+            html,
+        )
+    else:
+        match = re.search(rf'<meta name="{re.escape(name)}" content="([^"]*)"', html)
+    return match.group(1) if match else ""
+
+
+def _canonical(html: str) -> str:
+    match = re.search(r'<link rel="canonical" href="([^"]+)"', html)
+    return match.group(1) if match else ""
+
+
+def _json_ld_urls(html: str) -> list[str]:
+    urls: list[str] = []
+    for match in re.finditer(
+        r'<script type="application/ld\+json">(\{.*?\})</script>',
+        html,
+    ):
+        data = json.loads(match.group(1))
+        url = data.get("url")
+        if isinstance(url, str):
+            urls.append(url)
+    return urls
+
+
+def _with_env(updates: dict[str, str | None], fn) -> None:
+    saved: dict[str, str | None] = {}
+    for key, value in updates.items():
+        saved[key] = os.environ.get(key)
+        if value is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = value
+    try:
+        fn()
+    finally:
+        for key, value in saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+
+def _site_for_preview(mode: bool) -> dict:
+    raw = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
+    raw.setdefault("deploy", {})["preview_mode"] = mode
+    raw["base_path"] = resolve_site_base_path(raw, explicit=None, explicit_set=False)
+    return raw
+
+
+def _assert_rendered_head(site: dict, *, robots: str, origin: str) -> None:
+    page = layout(
+        site,
+        "Home",
+        "Home",
+        "    <p>Home</p>\n",
+        path="/",
+        extra_head=website_json_ld(site),
+    )
+    redirect = _redirect_document(site, "/systems/", "Systems", "  <p>Moved.</p>")
+    found_robots = _meta(page, name="robots")
+    if found_robots != robots:
+        fail(f"rendered robots {found_robots!r} != {robots!r}")
+    redirect_robots = _meta(redirect, name="robots")
+    if redirect_robots != robots:
+        fail(f"redirect robots {redirect_robots!r} != {robots!r}")
+    canonical = _canonical(page)
+    if canonical != origin + "/":
+        fail(f"canonical {canonical!r} != {origin}/")
+    if _canonical(redirect) != origin + "/systems/":
+        fail(f"redirect canonical {_canonical(redirect)!r} is not {origin}/systems/")
+    if _meta(page, prop="og:url") != canonical:
+        fail("og:url must match canonical")
+    og_image = _meta(page, prop="og:image")
+    if og_image != origin + "/assets/og/og-default.png":
+        fail(f"og:image {og_image!r} is not on {origin}")
+    urls = _json_ld_urls(page)
+    if origin + "/" not in urls:
+        fail(f"JSON-LD url missing {origin}/ in {urls}")
+    person = person_json_ld(site)
+    if '"image":"' + origin + '/assets/og/og-default.png"' not in person:
+        fail("JSON-LD Person.image must stay on the OG card for this origin")
+    styles = re.search(r'href="([^"]*)/styles\.css"', page)
+    if not styles:
+        fail("rendered page missing styles.css")
+    prefix = normalize_base(styles.group(1))
+    expected_base = normalize_base(site.get("base_path", ""))
+    if prefix != expected_base:
+        fail(f"asset prefix {prefix!r} != base_path {expected_base!r}")
+    if robots == "" and prefix and not origin.endswith(prefix):
+        fail("live canonical origin and asset prefix disagree")
+
+
+def assert_deploy_preview_contract() -> None:
+    try:
+        _robots_noindex_head()  # type: ignore[call-arg]
+    except TypeError:
+        pass
+    else:
+        fail("_robots_noindex_head requires site")
+
+    preview = _site_for_preview(True)
+    live = _site_for_preview(False)
+    if preview["base_path"] != "/yzouyang-site":
+        fail("preview base_path must be derived from preview_origin")
+    if live["base_path"] != "":
+        fail("live base_path must be derived from the public origin")
+    if resolve_site_base_path(preview, explicit="", explicit_set=True) != "":
+        fail("empty SITE_BASE_PATH must stay the local/e2e exception while preview is on")
+    try:
+        resolve_site_base_path(live, explicit="/yzouyang-site", explicit_set=True)
+    except DeployBaseError:
+        pass
+    else:
+        fail("preview_mode off must reject a leftover /yzouyang-site base path")
+    try:
+        resolve_site_base_path(preview, explicit="/elsewhere", explicit_set=True)
+    except DeployBaseError:
+        pass
+    else:
+        fail("a preview base path that is not the origin path must fail")
+
+    preview_origin = site_origin(preview)
+    live_origin = site_origin(live)
+    _assert_rendered_head(preview, robots="noindex, follow", origin=preview_origin)
+    _with_env(
+        {"SITE_UAT_BUILD": None, "PREVIEW_INCLUDE_DRAFTS": None},
+        lambda: _assert_rendered_head(live, robots="", origin=live_origin),
+    )
+
+    def assert_strict(site: dict, origin: str) -> None:
+        _assert_rendered_head(site, robots="noindex, nofollow", origin=origin)
+
+    _with_env(
+        {"SITE_UAT_BUILD": "1", "PREVIEW_INCLUDE_DRAFTS": None},
+        lambda: assert_strict(preview, preview_origin),
+    )
+    _with_env(
+        {"SITE_UAT_BUILD": None, "PREVIEW_INCLUDE_DRAFTS": "1"},
+        lambda: assert_strict(preview, preview_origin),
+    )
+    _with_env(
+        {"SITE_UAT_BUILD": "1", "PREVIEW_INCLUDE_DRAFTS": None},
+        lambda: assert_strict(live, live_origin),
+    )
+
+    size = og_image_dimensions()
+    if size != (1200, 630):
+        fail(f"og:image dimensions {size} must come from the PNG, expected 1200x630")
+    sample = layout(preview, "Home", "Home", "    <p>Home</p>\n", path="/")
+    if 'property="og:image:width" content="1200"' not in sample:
+        fail("og:image:width must use the measured PNG width")
+    if 'property="og:image:height" content="630"' not in sample:
+        fail("og:image:height must use the measured PNG height")
+
+    def assert_not_found_head(site: dict) -> None:
+        page = layout(
+            site,
+            "Not in the catalogue",
+            "404",
+            "    <p>Missing</p>\n",
+            path="/404.html",
+        )
+        if _meta(page, name="robots") != "noindex, nofollow":
+            fail(f"404 robots {_meta(page, name='robots')!r} must always be noindex, nofollow")
+        if _canonical(page):
+            fail("404 must not emit a canonical")
+        if _meta(page, prop="og:url"):
+            fail("404 must not emit og:url")
+
+    assert_not_found_head(preview)
+    assert_not_found_head(live)
+
+
+def _jpeg(marker: int, width: int, height: int, *, prefix: bytes = b"") -> bytes:
+    body = bytes([8]) + height.to_bytes(2, "big") + width.to_bytes(2, "big") + bytes([1, 1, 0x11, 0])
+    segment = bytes([0xFF, marker]) + (len(body) + 2).to_bytes(2, "big") + body
+    return b"\xff\xd8" + prefix + segment + b"\xff\xd9"
+
+
+def assert_local_image_size() -> None:
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        png = root / "card.png"
+        # Signature, then IHDR length/type so width and height sit at bytes 16 and 20.
+        png.write_bytes(
+            b"\x89PNG\r\n\x1a\n"
+            + (13).to_bytes(4, "big")
+            + b"IHDR"
+            + (1200).to_bytes(4, "big")
+            + (630).to_bytes(4, "big")
+            + bytes(5)
+        )
+        if local_image_size(png) != (1200, 630):
+            fail("PNG size must be read from the IHDR")
+        app0 = b"\xff\xe0\x00\x04JF"
+        for marker, label in ((0xC0, "SOF0"), (0xC3, "SOF3"), (0xCA, "SOF10"), (0xCF, "SOF15")):
+            path = root / f"{label}.jpg"
+            path.write_bytes(_jpeg(marker, 640, 480, prefix=app0))
+            if local_image_size(path) != (640, 480):
+                fail(f"JPEG {label} marker must yield the frame size")
+        dht = root / "dht-only.jpg"
+        dht.write_bytes(b"\xff\xd8\xff\xc4\x00\x04\x00\x00\xff\xd9")
+        if local_image_size(dht) is not None:
+            fail("a DHT marker must not be treated as a JPEG frame")
+
+
+def assert_note_alt_precedence() -> None:
+    def ctx(alts: dict[str, str] | None = None) -> NoteFigureContext:
+        return NoteFigureContext(note_id="NOTE-1", title="Signal", alts_by_path=dict(alts or {}))
+
+    from_images = resolve_note_alt(
+        ctx({"dir/chart.png": "From images"}),
+        "From markdown",
+        "dir/chart.png",
+        caption="From caption",
+    )
+    if from_images.text != "From images" or from_images.decorative:
+        fail(f"images[].alt must win: {from_images}")
+
+    from_markdown = resolve_note_alt(
+        ctx(),
+        "From markdown",
+        "dir/chart.png",
+        caption="From caption",
+    )
+    if from_markdown.text != "From markdown" or from_markdown.decorative:
+        fail(f"markdown alt must beat caption: {from_markdown}")
+
+    from_caption = resolve_note_alt(ctx(), "", "./dir/chart.png?w=1", caption="**Bold** caption")
+    if from_caption.text != "Bold caption" or from_caption.decorative:
+        fail(f"caption must beat the Figure fallback: {from_caption}")
+
+    fallback_ctx = ctx()
+    fallback = resolve_note_alt(fallback_ctx, "", "other/chart.png", caption="")
+    if fallback.text != "Figure 1 from “Signal”" or fallback.decorative:
+        fail(f"missing alt must use Figure N: {fallback}")
+    if len(fallback_ctx.uncaptioned) != 1:
+        fail("Figure N fallback must be recorded once")
+    again = resolve_note_alt(fallback_ctx, "", "dir/chart.png")
+    if again.text != "Figure 2 from “Signal”" or fallback_ctx.figure_n != 2:
+        fail(f"each uncaptioned figure resolves once and increments: {again} n={fallback_ctx.figure_n}")
+    basename = ctx({"dir/chart.png": "Full path"})
+    missed = resolve_note_alt(basename, "", "other/chart.png")
+    if missed.text == "Full path" or "Figure 1" not in missed.text:
+        fail(f"alt lookup must use the full path, not the basename: {missed}")
+    hit = resolve_note_alt(basename, "", "dir/chart.png")
+    if hit.text != "Full path":
+        fail(f"full relative path must hit images[].alt: {hit}")
+
+    decorative_images = resolve_note_alt(
+        ctx({"dir/chart.png": "Decorative"}),
+        "From markdown",
+        "/dir/chart.png",
+        caption="From caption",
+    )
+    if not decorative_images.decorative or decorative_images.text != "":
+        fail("images[].alt decorative marker must win and clear the alt")
+
+    decorative_markdown = resolve_note_alt(ctx(), "decorative", "dir/plain.png", caption="From caption")
+    if not decorative_markdown.decorative or decorative_markdown.text != "":
+        fail("markdown decorative marker must clear the alt")
+
+    site = {"base_path": ""}
+    block_ctx = ctx()
+    html = _render_image_block(
+        "![](assets/NOTE-1/a.png)",
+        note_id="NOTE-1",
+        site=site,
+        figures=block_ctx,
+    )
+    if 'alt="Figure 1 from “Signal”"' not in html or "Figure 2" in html:
+        fail(f"a figure must resolve its alt once: {html}")
+    if len(block_ctx.uncaptioned) != 1:
+        fail("rendering one figure must record one uncaptioned fallback")
+    marked = _render_image_block(
+        "![decorative](assets/NOTE-1/b.png)Visible caption",
+        note_id="NOTE-1",
+        site=site,
+        figures=ctx(),
+    )
+    if 'alt=""' not in marked or 'role="presentation"' not in marked:
+        fail(f"decorative figures render an empty alt and presentation role: {marked}")
+    if "Visible caption" not in marked:
+        fail("a decorative figure keeps its visible caption")
+    if "aria-hidden" in marked:
+        fail("a decorative figure must not aria-hide a caption that is not the alt")
+
+    repeated = _render_image_block(
+        "![Chart of hours](assets/NOTE-1/a.png)Chart of hours",
+        note_id="NOTE-1",
+        site=site,
+        figures=ctx(),
+    )
+    if 'aria-hidden="true"' not in repeated:
+        fail(f"a plain caption identical to the alt is hidden: {repeated}")
+
+    linked = _render_image_block(
+        "![ILO report](assets/NOTE-1/a.png)[ILO report](https://ilo.org/report)",
+        note_id="NOTE-1",
+        site=site,
+        figures=ctx(),
+    )
+    if "aria-hidden" in linked:
+        fail(f"a caption with a link must stay available: {linked}")
+    if 'alt="ILO report"' not in linked:
+        fail(f"markdown alt still wins when the caption is a link: {linked}")
+
+    sourced = resolve_note_alt(
+        ctx(),
+        "",
+        "dir/chart.png",
+        caption="Source: [ILO](https://ilo.org/report)",
+    )
+    if not sourced.text.startswith("Figure 1 from") or sourced.decorative:
+        fail(f"a Source caption must fall through to Figure N: {sourced}")
+    named = resolve_note_alt(
+        ctx({"dir/chart.png": "Chart of hours"}),
+        "",
+        "dir/chart.png",
+        caption="Source: ILO",
+    )
+    if named.text != "Chart of hours":
+        fail(f"images[].alt still wins over a Source caption: {named}")
+    source_html = _render_image_block(
+        "![](assets/NOTE-1/a.png)Source: [ILO](https://ilo.org/report)",
+        note_id="NOTE-1",
+        site=site,
+        figures=ctx(),
+    )
+    if "aria-hidden" in source_html:
+        fail(f"an attribution caption must not be aria-hidden: {source_html}")
+    if 'alt="Figure 1 from' not in source_html or "ilo.org/report" not in source_html:
+        fail(f"an attribution caption stays visible and is not the alt: {source_html}")
+
+    leaked = NoteFigureContext(note_id="NOTE-2", title="Other", alts_by_path={})
+    leaked_alt = resolve_note_alt(leaked, "", "dir/chart.png")
+    if leaked_alt.text == "From images":
+        fail("alt state leaked across note contexts")
+
+
+def assert_launch_facts() -> None:
+    site = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
+    export = json.loads((DATA / "export_public.json").read_text(encoding="utf-8"))
+    errors = launch_fact_errors(site, export)
+    if errors:
+        fail("; ".join(errors))
+    facts_source = (ROOT / "scripts" / "launch_facts.py").read_text(encoding="utf-8")
+    if "LOCKED_PROOF_TEXT" in facts_source:
+        fail("proof sentence must live only in site.json")
+    bad_title = json.loads(json.dumps(site))
+    bad_title["person"]["job_title"] = bad_title["person"]["job_title"].replace("&", "and")
+    if not any("job_title" in item for item in launch_fact_errors(bad_title, export)):
+        fail("job_title must match the experience title exactly, including &")
+    bad_employer = json.loads(json.dumps(site))
+    bad_employer["person"]["employer"] = "Prudential"
+    if not any("employer" in item for item in launch_fact_errors(bad_employer, export)):
+        fail("person.employer must match the experience organization exactly")
+    bad_card = json.loads(json.dumps(site))
+    bad_card["home_featured"]["systems"][2]["employer"] = "STB"
+    if not any("stb-data-engineer" in item for item in launch_fact_errors(bad_card, export)):
+        fail("featured SYS employer must match that record's organization")
+    bad_source = json.loads(json.dumps(site))
+    bad_source["home_proof_line"]["sources"] = ["outcomes[9]"]
+    if not any("does not resolve" in item for item in launch_fact_errors(bad_source, export)):
+        fail("proof sources must resolve in site.json or export")
+    seeded = json.loads(json.dumps(site))
+    seeded["home_featured"]["systems"][0]["experience_id"] = "prudential-anything"
+    if not any(
+        "prudential-anything" in item for item in launch_fact_errors(seeded, export)
+    ):
+        fail("a featured experience_id must match an experience id exactly")
+    bad_number = json.loads(json.dumps(site))
+    bad_number["outcomes"][0]["label"] = "Documentation cycle without digits"
+    bad_number["enterprise_copy"][
+        "prudential-singapore-senior-data-engineer-solutioning-architecture"
+    ]["outcome"] = "Ramp and documentation improved."
+    missing_numbers = [
+        item for item in launch_fact_errors(bad_number, export) if item.startswith("home_proof_line number")
+    ]
+    if not missing_numbers:
+        fail("every number in the proof line must appear in the resolved sources")
+
+
+def assert_library_boot_panel() -> None:
+    css = (ROOT / "src" / "styles" / "library.css").read_text(encoding="utf-8")
+    rule = re.search(
+        r'html\[data-library-boot="detail"\] \.library-panels > \.library-panel:first-child:not\(\[hidden\]\) \{([^}]+)\}',
+        css,
+    )
+    if rule is None or "display: block" not in rule.group(1) or "!important" in rule.group(1):
+        fail("desktop boot must show only the unhidden first panel, without beating [hidden]")
+    if "library-panel:first-child {" in css:
+        fail("boot rule must not target every first panel, including hidden ones")
+    boot = (ROOT / "scripts" / "build.py").read_text(encoding="utf-8")
+    if 'matchMedia("(min-width: 49rem)")' not in boot:
+        fail("library boot script must use the same 49rem rail as the CSS")
+    if "data-library-hash" not in boot:
+        fail("library boot script must record the hash before first paint")
+    if ":target" in css:
+        fail("library CSS must not use :target; it steals sequential focus and scrolls the record")
+    if 'getAttribute("data-panel-id")' not in boot and "getAttribute('data-panel-id')" not in boot:
+        fail("hash boot must select panels by data-panel-id")
+    panel_fn = boot.split("def library_panel_html", 1)[1].split("\ndef ", 1)[0]
+    if re.search(r'\sid="\{esc\(panel_id\)\}"', panel_fn):
+        fail("library panels must not carry the record id")
+    chrome = (ROOT / "src" / "chrome.js").read_text(encoding="utf-8")
+    if 'classList.add("is-booting")' in chrome:
+        fail("is-booting belongs on the shell markup only")
+    for rel in ("notes/index.html", "systems/index.html"):
+        html = (DIST / rel).read_text(encoding="utf-8")
+        first = re.search(
+            r'<article class="library-panel[^"]*" data-panel-id="[^"]*"\s*(hidden)?',
+            html,
+        )
+        if first is None:
+            fail(f"{rel} missing a library panel")
+        if first.group(1):
+            fail(f"{rel} first panel must be unhidden so the desktop boot paint can show it")
+
+
+def assert_unique_ids() -> None:
+    id_re = re.compile(r'(?<![\w-])id="([^"]*)"')
+    panel_re = re.compile(r"<article\b[^>]*\blibrary-panel\b[^>]*>")
+    site = json.loads((DATA / "site.json").read_text(encoding="utf-8"))
+    labels = site["systems_verify"]["item_labels"]
+    if any(str(key).startswith("/") for key in labels):
+        fail("systems_verify.item_labels must be keyed by a stable id, not an href")
+    systems = (DIST / "systems" / "index.html").read_text(encoding="utf-8")
+    if "Credentials and issuer links" not in systems:
+        fail("credentials verify label override was not applied")
+    for path in sorted(DIST.rglob("*.html")):
+        if "pagefind" in path.parts:
+            continue
+        html = path.read_text(encoding="utf-8")
+        counts: dict[str, int] = {}
+        for found in id_re.findall(html):
+            if not found:
+                continue
+            counts[found] = counts.get(found, 0) + 1
+        dupes = sorted(item for item, count in counts.items() if count > 1)
+        rel = path.relative_to(DIST)
+        if dupes:
+            fail(f"{rel} duplicate ids: {', '.join(dupes)}")
+        if "library-split library-split" in html:
+            fail(f"{rel} emits library-split twice")
+        for tag in panel_re.findall(html):
+            if re.search(r'\sid="', tag):
+                fail(f"{rel} library panel still has an id")
+
+
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
     assert_evidence_href_https_only()
+    assert_deploy_preview_contract()
+    assert_local_image_size()
+    assert_note_alt_precedence()
+    assert_launch_facts()
+    assert_library_boot_panel()
+    assert_unique_ids()
     assert_note_asset_href()
     assert_note_heading_anchors()
     assert_note_cover_html()
@@ -453,8 +929,20 @@ def main() -> None:
         fail("home missing featured record rows")
     if not has_html_class(home, "home-record-row"):
         fail("home featured records must use record rows")
-    if home.count("SYS-01") < 2:
-        fail("home must feature two Prudential system angles on SYS-01")
+    if (
+        home.count('data-record="SYS-01"') != 1
+        or home.count('data-record="SYS-02"') != 1
+        or home.count('data-record="SYS-03"') != 1
+    ):
+        fail("home featured strip must show SYS-01, SYS-02, and SYS-03 once each")
+    if "Governed lakehouse operating patterns" in home:
+        fail("the second SYS-01 angle must leave Home")
+    if home.count('class="entrance-proof"') != 1:
+        fail("home must carry exactly one quiet proof line")
+    if "entrance-identity" not in home or "entrance-name" not in home or "entrance-role" not in home:
+        fail("home missing identity line")
+    if "home-record-employer" not in home:
+        fail("featured system cards must name the employer on a meta line")
     if "NOTE-2026-005" not in home:
         fail("home must feature a governance-aligned note")
     if f"{with_base(site, '/systems/')}#SYS-" not in home or f"{with_base(site, '/notes/')}#NOTE-" not in home:
@@ -670,8 +1158,10 @@ def main() -> None:
         fail("systems page must render catalogue panels")
     if 'class="page-with-toc"' in systems:
         fail("systems must not use legacy scroll longform layout")
-    if "Enterprise Data" not in systems:
-        fail("systems index must include enterprise catalogue section")
+    if "Enterprise records" not in systems:
+        fail("systems index must include the enterprise records section")
+    if "Selected Work Summaries" in systems:
+        fail("systems index must not keep the Selected Work Summaries label")
     if 'library-index-group--depth-' not in systems:
         fail("systems index must use non-clickable group headers for nested sections")
     if 'class="proof-case"' not in systems:
@@ -706,8 +1196,10 @@ def main() -> None:
         fail("SYS-01 related paths must link sibling records from system_map")
     if "CEI internals are not published" in systems:
         fail("Prudential evidence must not use retired CEI internals disclaimer")
-    if "Internal platforms and dashboards are not linked" not in systems:
-        fail("Prudential evidence must disclose public record without linking internal platforms")
+    if "Public record: LinkedIn role. Internal dashboards are not public." not in systems:
+        fail("Prudential evidence must disclose the public record without linking internal dashboards")
+    if "Internal platforms and dashboards are not linked" in systems:
+        fail("Prudential evidence must use the tightened public-record sentence")
     if not has_html_class(systems, "library-strip"):
         fail("systems page must include cross-link strip")
 
@@ -790,6 +1282,10 @@ def main() -> None:
         fail("styles.css missing --text-scale for responsive reading sizes")
     if "transform: scale(" in css:
         fail("assembled CSS must not include scale() transforms")
+    if css.count("@keyframes") != 1 or "@keyframes map-panel-in" not in css:
+        fail("only map-panel-in may remain as a keyframe")
+    if "--dur-fast: 150ms" not in css or "--dur-base: 240ms" not in css or "--dur-slow: 400ms" not in css:
+        fail("motion durations must be the three tokens 150/240/400ms")
 
     bg_deep = _token_hex(css, "--bg-deep")
     bg_mid = _token_hex(css, "--bg-mid")
@@ -872,8 +1368,94 @@ def main() -> None:
         fail("work page must not ship an inert folio-toolbar")
     if "folio-toolbar" in credentials:
         fail("credentials must not ship an inert folio-toolbar")
-    if ">Systems<" not in portfolio and "Systems —" not in portfolio:
-        fail("systems page must title as Systems")
+    if "<title>Systems — Yingzhao Ouyang</title>" not in portfolio:
+        fail("systems title must be Systems — Yingzhao Ouyang")
+    if "<title>Yingzhao Ouyang — Building intelligible systems" not in home:
+        fail("home title must lead with the name and the thesis")
+    if "<title>Notes — Yingzhao Ouyang</title>" not in notes:
+        fail("notes title must be Notes — Yingzhao Ouyang")
+    if "<title>Professional record — Yingzhao Ouyang</title>" not in credentials:
+        fail("credentials title must use the DS route name")
+    not_found = (DIST / "404.html").read_text(encoding="utf-8")
+    if "<title>Not in the catalogue — Yingzhao Ouyang</title>" not in not_found:
+        fail("404 title must be Not in the catalogue — Yingzhao Ouyang")
+    if "That record isn't on the shelves." not in not_found:
+        fail("404 must use the catalogue-voice line")
+    if 'rel="icon"' not in home or "favicon.svg" not in home:
+        fail("pages must link a favicon")
+    if "/assets/og/og-default.png" not in home:
+        fail("og:image must point at the default share card")
+    if not (DIST / "assets" / "og" / "og-default.png").is_file():
+        fail("og image must be copied into dist")
+    if "Crimson+Pro:ital,wght@0,400;0,600;1,400" not in home:
+        fail("font stylesheet must load real Crimson Pro italic")
+    def assert_built_origin(html: str, label: str) -> None:
+        canon = _canonical(html)
+        if not canon:
+            fail(f"{label} missing canonical")
+        og_url = _meta(html, prop="og:url")
+        og_image = _meta(html, prop="og:image")
+        if og_url and og_url != canon:
+            fail(f"{label} og:url must match canonical")
+        styles = re.search(r'href="([^"]*)/styles\.css"', html)
+        prefix = normalize_base(styles.group(1)) if styles else ""
+        canon_path = urlparse(canon).path
+        if prefix and not (canon_path.startswith(prefix + "/") or canon_path.rstrip("/") == prefix):
+            fail(f"{label} asset prefix {prefix!r} disagrees with canonical path {canon_path!r}")
+        if og_image:
+            image = urlparse(og_image)
+            page = urlparse(canon)
+            if (image.scheme, image.netloc) != (page.scheme, page.netloc):
+                fail(f"{label} og:image host disagrees with canonical")
+            if prefix and not image.path.startswith(prefix + "/"):
+                fail(f"{label} og:image path {image.path!r} disagrees with asset prefix {prefix!r}")
+            if not prefix and image.path.startswith("/yzouyang-site/") and "www.yzouyang.com" in canon:
+                fail(f"{label} canonical is public while og:image stays on the project path")
+        for url in _json_ld_urls(html):
+            if urlparse(url).netloc != urlparse(canon).netloc:
+                fail(f"{label} JSON-LD url {url} disagrees with canonical")
+
+    assert_built_origin(home, "home")
+    if _meta(not_found, name="robots") != "noindex, nofollow":
+        fail("built 404 must always be noindex, nofollow")
+    if _canonical(not_found):
+        fail("built 404 must not emit a canonical")
+    if _meta(not_found, prop="og:url"):
+        fail("built 404 must not emit og:url")
+    contact_built = (DIST / "contact" / "index.html").read_text(encoding="utf-8")
+    if _canonical(contact_built) and urlparse(_canonical(contact_built)).netloc != urlparse(_canonical(home)).netloc:
+        fail("redirect canonical host disagrees with home")
+    if _meta(contact_built, name="robots") != _meta(home, name="robots"):
+        fail("redirect robots must match the page robots directive")
+    person_ld = person_json_ld(site)
+    if '"jobTitle":"Senior Manager, Cloud Economics & Intelligence"' not in person_ld:
+        fail("JSON-LD jobTitle must be the current role, not the thesis")
+    if '"email"' in person_ld:
+        fail("JSON-LD must not repeat the footer email")
+    if "/notes/" in person_ld:
+        fail("JSON-LD sameAs must not include the relative notes path")
+    for url in (
+        "https://www.linkedin.com/in/yzouyang/",
+        "https://www.github.com/KunojiLym",
+        "https://medium.com/@kunojilym",
+    ):
+        if url not in person_ld:
+            fail(f"JSON-LD sameAs missing absolute URL {url}")
+    for phrase in (
+        "Bitly optional",
+        "in the searchable catalogue",
+        "Selected technical, data science, and product/UX work",
+        "Selected Work Summaries",
+        "How to Verify",
+    ):
+        for label, html in (
+            ("home", home),
+            ("systems", systems),
+            ("notes", notes),
+            ("credentials", credentials),
+        ):
+            if phrase in html:
+                fail(f"{label} still shows visitor-facing internal copy: {phrase}")
     if "Senior Manager, Cloud Economics and Intelligence" not in portfolio:
         fail("Prudential title must match master CV (Senior Manager, Cloud Economics…)")
     if "Senior Data Engineer, Solutioning" in portfolio:
@@ -927,7 +1509,7 @@ def main() -> None:
             fail(f"case-tools exceeds 5 labels: {labels}")
     if "first-party LinkedIn analytics" not in portfolio:
         fail("tutorial blurb must lead with the user outcome")
-    ent_pos = portfolio.find("Enterprise Data")
+    ent_pos = portfolio.find("Enterprise records")
     tut_pos = portfolio.find("Featured Tutorial")
     if ent_pos == -1 or tut_pos == -1 or ent_pos > tut_pos:
         fail("enterprise summaries must precede tutorial/bootcamp sections")
@@ -992,6 +1574,10 @@ def main() -> None:
     home_target = with_base(site, "/")
     if home_target not in about:
         fail("about redirect must target home")
+    if "<title>Yingzhao Ouyang — Building intelligible systems" not in about:
+        fail("about redirect must use the name-first home title")
+    if "<title>Home</title>" in about:
+        fail("about redirect must not be titled Home")
     if has_html_class(about, "library-shell"):
         fail("about must redirect to home, not ship library shell")
     if not has_html_class(credentials, "library-shell"):

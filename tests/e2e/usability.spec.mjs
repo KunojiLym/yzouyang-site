@@ -28,6 +28,14 @@ function libraryIndexPanel(page, panelId) {
   return page.locator(`.library-index-list [data-panel-id="${panelId}"]`).first();
 }
 
+async function visibleLibraryPanelIds(page) {
+  return page.locator(".library-panels > .library-panel").evaluateAll((nodes) =>
+    nodes
+      .filter((node) => getComputedStyle(node).display !== "none")
+      .map((node) => node.getAttribute("data-panel-id"))
+  );
+}
+
 async function activeIndexRowInView(page) {
   return page.evaluate(() => {
     const body = document.querySelector(".library-index-body");
@@ -65,7 +73,7 @@ async function assertSkipLink(page) {
 
 async function assertHomeEntrance(page) {
   await expect(page.locator(".home-featured-records")).toBeVisible();
-  await expect(page.locator(".home-record-row")).toHaveCount(3);
+  await expect(page.locator(".home-record-row")).toHaveCount(4);
   await expect(page.locator(".home-practice-item").first()).toBeVisible();
 }
 
@@ -187,7 +195,7 @@ test.describe("home", () => {
   test("paced sections, featured strip, and practice areas", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".home-snap-section")).toHaveCount(4);
-    await expect(page.locator(".home-record-row")).toHaveCount(3);
+    await expect(page.locator(".home-record-row")).toHaveCount(4);
     await expect(page.locator(".home-record-strip")).toBeVisible();
     await expect(page.locator(".home-context-strip")).toBeVisible();
     await expect(page.locator(".home-context-strip li").first()).toContainText("Singapore");
@@ -221,6 +229,33 @@ test.describe("home", () => {
 });
 
 test.describe("library shell", () => {
+  test("exactly one library panel is visible after a deep link and an index click", async ({
+    page,
+  }) => {
+    test.skip(test.info().project.name === "mobile", "desktop panel stack");
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await page.goto("/systems/#stb-data-engineer-applied-ml", { waitUntil: "load" });
+    await expect
+      .poll(() => visibleLibraryPanelIds(page))
+      .toEqual(["stb-data-engineer-applied-ml"]);
+    await libraryIndexPanel(
+      page,
+      "prudential-singapore-senior-data-engineer-solutioning-architecture"
+    ).click();
+    await expect
+      .poll(() => visibleLibraryPanelIds(page))
+      .toEqual(["prudential-singapore-senior-data-engineer-solutioning-architecture"]);
+
+    await page.goto("/notes/#NOTE-2025-021", { waitUntil: "load" });
+    await expect.poll(() => visibleLibraryPanelIds(page)).toEqual(["NOTE-2025-021"]);
+    await page.locator(".library-index-rail-expand").click();
+    const noteTrigger = libraryIndexPanel(page, "NOTE-2026-005");
+    await expect(noteTrigger).toBeVisible();
+    await noteTrigger.click();
+    await expect.poll(() => visibleLibraryPanelIds(page)).toEqual(["NOTE-2026-005"]);
+  });
+
   test("systems index opens a panel and honors hash records", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop sidebar coverage");
     await page.goto("/systems/");
@@ -392,5 +427,78 @@ test.describe("layout", () => {
     expect(Math.abs(toggleBox.y - menuBox.y)).toBeLessThan(24);
     expect(toggleBox.x).toBeLessThan(menuBox.x);
     await noHorizontalOverflow(page);
+  });
+});
+
+test.describe("library focus order", () => {
+  test("first Tab on a deep-linked record is the skip link", async ({ page }) => {
+    const routes = [
+      { path: "/notes/#NOTE-2026-005", panel: "NOTE-2026-005" },
+      { path: "/systems/#verify", panel: "verify" },
+      { path: "/credentials/#academic-qualifications", panel: "academic-qualifications" },
+    ];
+    for (const route of routes) {
+      await page.goto(route.path, { waitUntil: "load" });
+      await expect(
+        page.locator(`.library-panel[data-panel-id="${route.panel}"].is-active`)
+      ).toBeVisible();
+      await page.keyboard.press("Tab");
+      await expect(page.locator("a.skip-link")).toBeFocused();
+      const panelScroll = await page.locator(".library-panels").evaluate((el) => el.scrollTop);
+      const windowScroll = await page.evaluate(() => window.scrollY);
+      expect(panelScroll, route.path).toBe(0);
+      expect(windowScroll, route.path).toBe(0);
+    }
+  });
+
+  test("legacy note section hash opens the note that contains it", async ({ page }) => {
+    const hash = "2-i-setting-up-databricks-free-edition-account";
+    await page.goto(`/notes/#${hash}`, { waitUntil: "load" });
+    const active = page.locator(".library-panel.is-active");
+    await expect(active).toHaveAttribute("data-panel-id", "NOTE-2025-012");
+    await expect(active.locator(`[id$="-${hash}"]`)).toHaveCount(1);
+    await page.keyboard.press("Tab");
+    await expect(page.locator("a.skip-link")).toBeFocused();
+  });
+});
+
+test.describe("library boot CLS", () => {
+  test("notes and deep links stay under 0.1", async ({ browser }) => {
+    test.skip(test.info().project.name === "mobile", "viewports are set per case");
+    const cases = [
+      { path: "/notes/", width: 1280, height: 800 },
+      { path: "/notes/", width: 375, height: 812 },
+      { path: "/notes/#NOTE-2026-005", width: 1280, height: 800 },
+      { path: "/notes/#NOTE-2026-005", width: 375, height: 812 },
+      { path: "/systems/#SYS-03", width: 1280, height: 800 },
+      { path: "/systems/#SYS-03", width: 375, height: 812 },
+    ];
+    const scores = [];
+    for (const item of cases) {
+      const context = await browser.newContext({
+        viewport: { width: item.width, height: item.height },
+      });
+      await context.addInitScript(() => {
+        try {
+          localStorage.clear();
+        } catch (e) {
+          /* ignore */
+        }
+        window.__cls = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (!entry.hadRecentInput) window.__cls += entry.value;
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+      });
+      const page = await context.newPage();
+      await page.goto(item.path, { waitUntil: "load" });
+      await page.waitForTimeout(1800);
+      const cls = await page.evaluate(() => window.__cls || 0);
+      scores.push(`${item.path} @${item.width} ${cls.toFixed(3)}`);
+      expect(cls, `${item.path} @${item.width}`).toBeLessThan(0.1);
+      await context.close();
+    }
+    console.log(scores.join("\n"));
   });
 });
