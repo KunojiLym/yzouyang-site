@@ -1,8 +1,9 @@
-# Career Journey — native slide data.
+# Career Journey — native slide data (deferred).
 #
-# Source of truth for the /career-journey/ page (scripts/build.py ->
-# build_career_journey()). This version is rebuilt from the operator-provided
-# Figma raw export and PowerPoint export of "Career Journey 2025" received on
+# Retained source for a future /career-journey/ page (see
+# docs/career-journey-native-plan.md). Not read by scripts/lint.py or
+# scripts/build.py today; route redirects to Home. Rebuilt from operator
+# Figma/PPT export of "Career Journey 2025" received on
 # 2026-08-08. The slide sequence, section titles, and visible copy follow the
 # PPT export; the page uses native HTML so the content remains accessible,
 # responsive, and indexable rather than embedding the deck as screenshots.

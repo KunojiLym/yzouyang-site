@@ -5,11 +5,19 @@ import AxeBuilder from "@axe-core/playwright";
 // review already recorded in docs/design-system.md, but it makes sure a
 // future change (new component, new page) can't silently regress contrast,
 // landmarks, or ARIA wiring without a human noticing.
-const ROUTES = ["/", "/about/", "/portfolio/", "/credentials/", "/perspectives/", "/career-journey/"];
+const ROUTES = [
+  "/",
+  "/systems/",
+  "/notes/",
+  "/notes/#NOTE-2026-005",
+  "/credentials/",
+  "/does-not-exist/",
+];
 
-// Pagefind's third-party markup on Portfolio/Credentials has known upstream
-// a11y quirks outside this repo's control; scoped out rather than ignored
-// so a real regression elsewhere on those pages still fails the build.
+// Pagefind's third-party markup in the sticky header (#search) has known upstream
+// a11y quirks outside this repo's control. Home and library routes all mount the
+// header search UI; exclude #search on every route in this suite so regressions
+// elsewhere on the page still fail the build.
 const KNOWN_THIRD_PARTY_EXCLUDES = ["#search"];
 
 test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
@@ -21,16 +29,9 @@ test.describe("automated accessibility (axe-core, WCAG2A/AA)", () => {
       // must come after it or WCAG-only filtering is wiped (best-practice
       // rules such as aria-allowed-role would then fail the suite).
       const builder = new AxeBuilder({ page })
-        .exclude(KNOWN_THIRD_PARTY_EXCLUDES)
-        // Belt-and-suspenders attempt to keep axe out of the Figma embed's
-        // iframe. In practice @axe-core/playwright still walks into
-        // same-origin-accessible iframes via Playwright's own frame
-        // enumeration regardless of this option or .exclude("iframe") —
-        // verified by running this suite locally and seeing violations with
-        // target[0] === "iframe" even with both of those in place. The real
-        // filter is below, against the actual result nodes.
         .options({ iframes: false })
-        .withTags(["wcag2a", "wcag2aa"]);
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .exclude(KNOWN_THIRD_PARTY_EXCLUDES);
 
       const results = await builder.analyze();
 

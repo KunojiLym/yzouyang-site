@@ -229,6 +229,49 @@
   margin: 0 0 var(--space-4);
 }
 
+.case-beats {
+  display: grid;
+  grid-template-columns: minmax(4.75rem, 6.5rem) minmax(0, 1fr);
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.case-beats > div {
+  display: contents;
+}
+
+.case-beats dt {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  align-self: start;
+  padding-top: var(--space-hairline);
+}
+
+.case-beats dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-default);
+}
+
+.case-beats + .case-tools,
+.proof-case > .case-tools,
+.item-list .case-tools {
+  margin: var(--space-5) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line-soft);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.section-fold--enterprise .case-beats dd {
+  color: var(--text-muted);
+}
+
 .section-fold--public {
   background: var(--bg-mid);
 }
@@ -244,15 +287,27 @@
 }
 
 .section-fold--public .case-beats dt {
-  font-size: var(--text-xs);
-
   /* --text-faint is 3.0:1 on light --bg-mid; --text-muted is AA. */
   color: var(--text-muted);
 }
 
 .section-fold--public .case-beats dd {
-  font-size: var(--text-sm);
   color: var(--text-muted);
+}
+
+@media (width <= 640px) {
+  .case-beats {
+    grid-template-columns: 1fr;
+    row-gap: var(--space-2);
+  }
+
+  .case-beats dt {
+    padding-top: var(--space-1);
+  }
+
+  .case-beats > div:first-of-type dt {
+    padding-top: 0;
+  }
 }
 
 /* Clip, don't display:none — keep for skip/chrome utilities. */

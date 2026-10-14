@@ -5,7 +5,7 @@ How the static site is produced and extended. Visual rules live in [design-syste
 ## Pipeline
 
 ```text
-data/site.json  +  data/export_public.json  +  data/career-journey.yaml
+data/site.json  +  data/export_public.json  (+  data/career-journey.yaml retained for a deferred page)
         │
         ▼
  scripts/build.py  (f-string HTML, copy assets/CSS)
@@ -14,7 +14,7 @@ data/site.json  +  data/export_public.json  +  data/career-journey.yaml
      dist/**/index.html
         │
         ▼
- Pagefind index (portfolio + credentials only)
+ Pagefind index (systems + notes + credentials)
         │
         ▼
  preview.py  /  CI  /  GitHub Pages
@@ -22,7 +22,7 @@ data/site.json  +  data/export_public.json  +  data/career-journey.yaml
 
 - **Config / chrome / curated writing / outcomes:** [`data/site.json`](../data/site.json)
 - **PUBLIC narrative + projects + certs:** vendored from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` → [`data/export_public.json`](../data/export_public.json)
-- **Career Journey slide content:** [`data/career-journey.yaml`](../data/career-journey.yaml) (+ Tier 3 partials in `data/career-journey-slides/`) — see [career-journey-native-plan.md](career-journey-native-plan.md) for the schema
+- **Career Journey (deferred):** [`data/career-journey.yaml`](../data/career-journey.yaml) is retained source for a future native page but is **not** read by `lint.py` or `build.py` today; `/career-journey/` **redirects to Home**. Plan: [career-journey-native-plan.md](career-journey-native-plan.md)
 - **Styles:** [`src/styles/`](../src/styles/) modules → assembled by build into `dist/styles.css` (see [`src/styles/README.md`](../src/styles/README.md))
 - **No Jinja** — page HTML is built in [`scripts/build.py`](../scripts/build.py)
 - **Python deps** (currently just PyYAML) managed with [uv](https://docs.astral.sh/uv/) — `pyproject.toml` is this repo's uv project file; run `uv sync` once before any script below
@@ -31,39 +31,41 @@ data/site.json  +  data/export_public.json  +  data/career-journey.yaml
 
 | Script | Role |
 |---|---|
-| `uv run python scripts/lint.py` | Input validation (`site.json` / export / `career-journey.yaml`); Pagefind presence if `dist/` exists |
+| `uv run python scripts/lint.py` | Input validation (`site.json` / export); Pagefind presence if `dist/` exists |
 | `uv run python scripts/build.py` | Write pages + assets; runs Pagefind unless `--skip-pagefind` |
 | `uv run python scripts/preview.py` | Lint → build → local `http.server` |
 | `uv run python scripts/test_site_build.py` | Contract checks on `dist/` |
-| `npm run test:e2e` | Playwright usability (serves root-path `dist/`) |
+| `npm run test:e2e` | Playwright usability + theme (`tests/e2e/usability.spec.mjs`, `tests/e2e/theme.spec.mjs`) |
+| `npm run test:a11y` | axe-core WCAG2A/AA on live routes |
+| `npm run test:visual` | Screenshot regression (non-blocking in CI until baselines exist) |
 
 Build flags:
 
 - `--base-path /yzouyang-site` or env `SITE_BASE_PATH` — prefix asset/nav URLs for GitHub project Pages
 - `--skip-pagefind` — HTML only (search UI will 404)
 
-CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, then **rebuilds with empty base path** before Playwright so CSS/Pagefind resolve at `/`.
+CI derives the Pages asset prefix from `deploy.preview_origin` (do not also set `SITE_BASE_PATH`), uploads that artifact, then **rebuilds with empty `SITE_BASE_PATH`** before Playwright so CSS/Pagefind resolve at `/`. Turning `deploy.preview_mode` off is the cutover: canonical, Open Graph, and the asset prefix all follow `public_origin`.
 
 ## `site.json` map
 
 | Key | Purpose |
 |---|---|
-| `person` | Name, brand, headline (platform-leader proposition), tagline, location, platforms (≤4 on Home), photo |
-| `outcomes` | Curated Home proof: `{ "metric", "label" }` (2–3; system + intervention; public CV facts only) |
-| `contact` | PUBLIC email only (no visitor-facing phone) |
-| `external` | Blog, Medium, LinkedIn, GitHub, Bitly shorts, digital card hub |
-| `nav` | Work · Perspectives · About · Credentials · Contact, then external Blog/Medium/LinkedIn/GitHub under **Elsewhere** |
+| `person` | Name, brand, headline (thesis), tagline, location, platforms (≤4 on Home) |
+| `outcomes` | Curated proof metrics — used on matching SYS records, not a Home hero strip |
+| `current_index` | Home highlight lines (systems / notes) |
+| `nav` | Systems · Notes · Credentials; Blog/Medium/LinkedIn/GitHub are footer-only or `footer_only` |
 | `page_meta` | Per-page meta descriptions (never reuse the role headline for every route) |
 | `public_origin` | Canonical / OG origin (`https://www.yzouyang.com`) |
-| `operating_themes` | Four Home theme rows |
+| `operating_themes` | *(deprecated on Home — empty)* |
+| `contact` | PUBLIC email only (no visitor-facing phone) |
+| `external` | Blog, Medium, LinkedIn, GitHub, Bitly shorts, digital card hub |
 | `credentials_verify` | VERIFY panel links (issuer records already in export) |
-| `writing_highlights` | Curated About / Perspectives list: `title`, `url`, `venue`, `date`, optional `start_here` |
-| `home_selected` | Home selected-systems (2–3): `{ id, title, tools?, evidence? }`. Beats compose from `enterprise_copy` / `project_copy` by `id`; `href` defaults to `/portfolio/#{id}` |
+| `home_selected` | Optional Home highlight pool: `{ id, record_id?, domains?, title, tools? }` |
 | `enterprise_copy` | Work enterprise overlays keyed by stable `heading_id` (not the export title string). Extra keys not in the export are appended as additional cases. Optional `evidence_href` / `evidence_label` turn Evidence into a verification link. See deep-link note below |
 | `project_copy` | Optional per-project `outcome` / `scope` / `tools` overrides (tools ≤5) |
-| `section_copy` | Optional portfolio section intro overrides keyed by export section id |
+| `section_copy` | Optional systems section intro overrides keyed by export section id |
 | `analytics` | Jetpack / optional GA4 / DIY beacon |
-| `base_path` | Overridden by CLI/env at build time |
+| `base_path` | Derived from the active origin unless CLI or `SITE_BASE_PATH` overrides it. Empty override is the local/e2e exception while preview is on |
 
 ### Enterprise heading ids
 
@@ -73,24 +75,56 @@ CI builds Pages with `SITE_BASE_PATH=/yzouyang-site`, uploads that artifact, the
 
 | Route | Builder | Sources |
 |---|---|---|
-| `/` | `build_home` | `person` + `outcomes` + proof strip + CTAs (View selected work / Contact) + `home_selected` composed from `enterprise_copy` / `project_copy` + operating themes; `#contact` from `contact`/`external` |
-| `/about/` | `build_about` | export `about` + `writing_highlights`; longform sidebar (no Pagefind) |
-| `/portfolio/` (nav **Work**; `/work/` redirects here) | `build_portfolio` | export `portfolio` + `projects` + `project_copy` / `enterprise_copy` / `section_copy`; enterprise summaries first; Pagefind; `.folio-deck` rows |
-| `/perspectives/` | `build_perspectives` | `writing_highlights` start-here (3) + remainder; no Pagefind |
-| `/credentials/` | `build_credentials` | export `credentials` + certs/edu + VERIFY panel + Pagefind |
-| `/career-journey/` | `build_career_journey` | `data/career-journey.yaml`; only built if that file exists. Not in primary nav — reachable from an About link + direct/shared URL. See [career-journey-native-plan.md](career-journey-native-plan.md) |
-| `/contact/` | `build_contact_redirect` | Meta refresh + link to `/#contact` |
+| `/` | `build_home` | Token entrance + thesis + CTAs + featured record strip + operating principle + practice areas + split context/platform meta + library-card footer |
+| `/systems/` | `build_systems` | Library shell from export + overlays; Pagefind “Search catalogue” |
+| `/notes/` | `build_notes` | Library shell from PUBLIC writing; Pagefind |
+| `/credentials/` | `build_credentials` | Library shell + VERIFY + Pagefind |
+| `/about/`, `/contact/` | redirect stubs | 301 → `/` |
+| `/portfolio/`, `/work/`, `/systems/catalogue/` | redirect stubs | 301 → `/systems/` |
+| `/perspectives/`, `/blog/` | redirect stubs | 301 → `/notes/` (client may append first-panel hash) |
+| `/career-journey/` | redirect stub | 301 → `/` |
 
 ## IA rules
 
-- Home is a **proof-led dossier**: headline → outcomes → location/platforms → CTAs → selected systems → operating themes → `#contact`
-- **Sticky header** — always reachable; **theme toggle** in `.header-actions`; Contact is a primary nav item to `/#contact`
-- Desktop primary nav is **Work · Perspectives · About · Credentials · Contact**; Blog / Medium / LinkedIn / GitHub sit under **Elsewhere**
-- Portfolio / Credentials / About / Perspectives — **sticky sidebar TOC** (`.page-with-toc`) with nested subcategories; major sections are collapsible (`.section-fold`)
+- Home is a **Personal Systems Library entrance**: four viewport-paced snap sections — proposition (thesis + CTAs) → featured records (horizontal strip) → operating principle → practice areas + context/platform meta. No system map, Reading room, Workshop, or `#contact` on Home; no outcome metric strip in the hero
+- **Sticky header** — always reachable; **theme toggle** in `.header-actions`
+- Desktop primary nav is **Systems · Notes · Credentials**; Blog / Medium / LinkedIn / GitHub sit in the library-card footer
+- Systems / Notes / Credentials use the **library split-pane** (`.library-shell`), not longform TOC
 - No cert-count vanity chip on Home; no visitor-facing phone
-- Writing bodies stay on Blog / Medium / LinkedIn until **C2b**; `/perspectives/` is a start-here index (phase 1 tags + 3 start-here)
-- Blog / Medium / LinkedIn / GitHub remain external (`↗`)
-- Public footer (© + mailto + social) — no migration changelog in chrome
+- Writing bodies live on `/notes/` (PUBLIC export, C2b)
+- Blog / Medium / LinkedIn / GitHub remain external (`↗`) except footer Blog → `/notes/`
+- Public footer is a **library card** (© + location/focus + mailto + social) — no migration changelog in chrome
+
+## Disclosure standard
+
+Public proof follows three tiers:
+
+1. **Home** — editorial proposition and featured record summaries only; no quantified outcome strip in the hero
+2. **SYS records** — `enterprise_copy` / `outcomes` metrics must already appear in the PUBLIC master CV ([personal-content](https://github.com/KunojiLym/personal-content) `people/yingzhao/data/cv.yaml`); rephrase to match CV language, do not invent numbers or publish unpublished SLAs
+3. **Evidence line** — cite public professional record (CV / LinkedIn role); internal platforms and dashboards are not linked
+
+`scripts/lint.py` caps `outcomes` at three chips; `scripts/test_site_build.py` asserts SYS-01 impact lines stay quantified when metrics are kept.
+
+## Related Paths vs library strip
+
+- **Related Paths** (`.related-paths` on a record panel) — semantic siblings from `system_map.related` for every domain that lists the record (other SYS / LAB / NOTE titles). Not a second copy of global nav; omit generic Credentials / Notes unless that record’s map actually points at one
+- **Library strip** (`.library-strip` footer) — collection switcher between library routes (Systems · Notes · Credentials). Chrome for browsing collections, not “related evidence”
+
+## Library index behaviour
+
+Desktop split-pane index on Systems / Notes / Credentials:
+
+| Control | Behaviour |
+|---|---|
+| **Pin** | Keeps the index column open; stored per route (`localStorage` key `yz-library-index-pinned:<pathname>`) |
+| **Hide** | Dismisses overlay / drawer without changing pin mode |
+| **Rail expand / Show** | Opens unpinned overlay; `aria-expanded` reflects drawer state |
+| **Hover (unpinned)** | Optional peek over the article without resizing the reading column |
+| **Escape** | Same as Hide when overlay / unpinned drawer is open; does not unpin |
+
+Default pin: **Notes collapsed** (unpinned); **Systems and Credentials expanded** (pinned). Last stored value wins per route.
+
+**Notes reading mode** (visual contract: [design-system.md](design-system.md#reading-mode-notes-only)): essay panels use a narrow measure, editorial masthead, cover image, and serif prose body. In-article heading links live in the **sidebar index** (`data-inarticle-toc`), not a sticky body TOC. When the index is collapsed, `.library-reading-context` shows the active title and section above the panel.
 
 ## Progressive embeds
 
@@ -109,8 +143,8 @@ Figma (and similar) embeds are an implementation pattern, not brand chrome:
 A checklist for adding a new page, section, or component without reintroducing the raw-value drift Phase 1–3 cleaned up. Read [design-system.md](design-system.md) first for the visual contract (palette, type/spacing/radius scales, IA rules); this section is the mechanical "what do I touch, in what order" companion.
 
 1. **Reach for a token before writing a number.** Every `font-size` needs a `--text-*` (or `--text-display-*` if it's a fluid heading); every `margin`/`padding`/`gap` needs a `--space-*`; every `border-radius` needs a `--radius-*`. The full tables are in design-system.md's "Layer A" section. If nothing fits, that's a signal to reconsider the layout — don't invent a one-off. If a one-off is genuinely unavoidable (e.g. something intentionally relative to a parent font-size), add it with a `/* intentional one-off: why */` comment and register it in `.stylelintrc.json`'s `ignoreValues`, the same way the `chrome.css` arrow markers are handled.
-2. **Reuse an existing breakpoint.** `--bp-sm` (800px, hero-style two-column collapse), `--bp-md` (900px, nav/sidebar collapse), and `--bp-lg` (1024px, outcome-strip 3-column row) are the documented widths — see design-system.md's "Breakpoints" table. A new additional breakpoint is a design decision to write down in design-system.md, not a silent `@media` addition (custom properties can't be read inside `@media`, so breakpoints are documented constants, not `var()`).
-3. **Pick the right CSS module.** `src/styles/README.md` has the file-by-file responsibility table (chrome vs. home vs. components vs. longform vs. search vs. motion). Add rules to the module that already owns that concern rather than starting a new file.
+2. **Reuse an existing breakpoint.** `--bp-sm` (800px, entrance stack), `--bp-md` (900px, nav/sidebar collapse), `--bp-lg` (1024px, record grid) — see design-system.md.
+3. **Pick the right CSS module.** `src/styles/README.md` has the file-by-file responsibility table (`chrome`, `home`, `library`, `components`, `longform`, `search`, `motion`). Add rules to the module that already owns that concern rather than starting a new file.
 4. **Colors and fonts come from `tokens.css` only.** Dual-theme color tokens live in `:root, [data-theme="dark"]` and `[data-theme="light"]`. No raw hex codes or `font-family` literals in any other CSS file — `scripts/check_token_drift.py` fails CI on both.
 5. **Update `data/site.json` / builder in `scripts/build.py`**, not a hardcoded HTML string, if the new page/section needs new content fields — see the `site.json` map and Page builders tables above.
 6. **Run the checks locally before opening a PR** (all also run in CI, `.github/workflows/ci.yml`):
@@ -121,6 +155,19 @@ A checklist for adding a new page, section, or component without reintroducing t
    - `npm run test:a11y` — axe-core WCAG2A/AA
    - `npm run test:visual` — visual regression (currently non-blocking in CI until baseline screenshots exist; still worth running locally to see if your change moved anything)
 7. **If the change is visually intentional**, regenerate visual baselines (`npx playwright test tests/e2e/visual.spec.mjs --update-snapshots`, see the header comment in that file) and commit the updated `__snapshots__` images alongside the change, so the diff is reviewed once rather than failing silently later.
+
+## Playwright
+
+CI rebuilds with empty `SITE_BASE_PATH` before e2e so assets and Pagefind resolve at `/`. Config: [`playwright.config.mjs`](../playwright.config.mjs) — **desktop** and **mobile** projects; specs skip project-inappropriate cases (e.g. desktop layout tests on mobile, mobile back-button flow on desktop).
+
+| Spec | Coverage |
+|---|---|
+| `tests/e2e/usability.spec.mjs` | 28 cases × desktop/mobile (56 runs; 12 project-gated skips → **44 passed / 12 skipped**). Smoke, legacy redirect stubs, chrome, home IA guardrails, library shell, Pagefind, layout |
+| `tests/e2e/theme.spec.mjs` | Dark/light token paint without FOUC; `localStorage` theme persistence across reload; axe on themed routes |
+| `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/credentials/` (Pagefind `#search` excluded as third-party chrome) |
+| `tests/e2e/visual.spec.mjs` | Full-page screenshots for `/`, `/systems/`, `/notes/`, `/credentials/` — **non-blocking** in CI until `__snapshots__/` is committed |
+
+Redirect assertions use Playwright `baseURL`: home stubs must match the full origin + `/`; `/systems/` and `/notes/` destinations allow optional panel hashes because library JS may call `applyHash()` after navigation.
 
 ## Agent / contributor rules
 
@@ -136,5 +183,5 @@ A checklist for adding a new page, section, or component without reintroducing t
 - [redirects.md](redirects.md) — WP → static map
 - [cutover.md](cutover.md) — DNS operator gate
 - [diy-tracking.md](diy-tracking.md) — first-party beacon
-- [c2b-writing-inventory.md](c2b-writing-inventory.md) — deferred writing corpus
+- [c2b-writing-inventory.md](c2b-writing-inventory.md) — PUBLIC writing corpus and WP slug redirect map
 - [design-system.md](design-system.md) — visual / proof contract

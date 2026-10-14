@@ -1,13 +1,14 @@
-/* Entrance motion — keep minimal; honor reduced motion */
-@keyframes rise {
+/* Motion — three duration tokens; honor reduced motion */
+
+@keyframes map-panel-in {
   from {
     opacity: 0;
-    transform: translateY(0.4rem);
+    transform: translateX(0.45rem);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
@@ -22,5 +23,17 @@
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+
+  .library-slide,
+  .library-deck-js .library-slide.is-active,
+  .library-deck-js .library-slide.is-leaving,
+  .system-map-detail-panel,
+  .system-map-detail-panel.is-active,
+  .system-map-record-panel,
+  .system-map-record-panel.is-active {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }

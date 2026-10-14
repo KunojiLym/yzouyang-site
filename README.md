@@ -6,17 +6,17 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/about/`, `/portfolio/` (Work), `/perspectives/`, `/credentials/`. Contact lives on Home as `#contact` and in primary nav; `/contact/` redirects there.
+Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. Legacy stubs: `/about/`, `/contact/`, `/career-journey/` → home; `/portfolio/`, `/work/`, `/systems/catalogue/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/` (library JS may append a panel hash). Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
-**Writing** stays on Blog / Medium / LinkedIn until **C2b**. `/perspectives/` is a start-here index; About still shows curated external titles. Nav groups Blog/Medium/LinkedIn/GitHub under **Elsewhere**.
+**Writing** is on `/notes/` in **Reading mode** (long-form essays — see [design-system.md](docs/design-system.md#reading-mode-notes-only)). Header nav is **Systems · Notes · Credentials**. Blog / Medium / LinkedIn / GitHub live in the library-card footer.
 
 Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 
 ## Develop
 
-Python deps (currently just PyYAML, for `data/career-journey.yaml`) are managed with [uv](https://docs.astral.sh/uv/) — see `pyproject.toml`. Run `uv sync` once (creates `.venv/`) before any of the commands below.
+Python deps (PyYAML for optional draft preview merge via `PREVIEW_INCLUDE_DRAFTS` in `scripts/build.py`) are managed with [uv](https://docs.astral.sh/uv/) — see `pyproject.toml`. Run `uv sync` once (creates `.venv/`) before any of the commands below.
 
 ```bash
 uv sync
@@ -30,20 +30,26 @@ uv run python scripts/test_site_build.py
 npm install
 npx playwright install chromium
 npm run serve:dist -- 8765              # optional local static server for dist/
-npm run test:e2e
-npm run test:motion                     # career journey slide motion, records video
+npm run test:e2e                        # usability + theme (Playwright)
+npm run test:a11y                       # axe-core WCAG2A/AA on live routes
+# npm run test:visual                   # non-blocking until snapshots exist
 ```
+
+Playwright specs (see [docs/site-builder.md](docs/site-builder.md#playwright)):
+
+| Spec | Role |
+|---|---|
+| `tests/e2e/usability.spec.mjs` | Smoke, legacy redirects, chrome, home IA guardrails, library shell, Pagefind, layout |
+| `tests/e2e/theme.spec.mjs` | Dark/light FOUC-safe tokens, theme persistence, axe on themed routes |
+| `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/credentials/` |
+| `tests/e2e/visual.spec.mjs` | Screenshot baselines for live routes (CI non-blocking until `__snapshots__` exist) |
 
 The `serve:dist` server logs timestamped startup, listening, signal, close-start,
 close-complete, timeout, and bind-error events. Playwright e2e starts and stops
 the same Node server through global setup/teardown so lifecycle events are
 visible during normal test runs.
 
-`npm run test:e2e` includes the Career Journey motion check. That spec records
-a Playwright video artifact and fails if the deck no longer advances
-horizontally with active-slide animation.
-
-CI builds with `SITE_BASE_PATH=/yzouyang-site` for https://kunojilym.github.io/yzouyang-site/. Local preview defaults to root (`base_path` empty). Contract tests + Playwright usability e2e run on every PR.
+CI derives the Pages asset prefix from `deploy.preview_origin` while `deploy.preview_mode` is on (`/yzouyang-site` today). Local preview passes an empty `SITE_BASE_PATH` so it serves at `/`. Contract tests + Playwright usability e2e run on every PR.
 
 Optional repo secret **`NTFY_TOPIC_URL`** (full ntfy HTTPS URL; same topic as Alertmanager is fine): on `lint-build` or Pages `deploy` **failure**, CI POSTs the Actions run URL only. Unset = skip, job stays green. Never commit the URL.
 
@@ -51,8 +57,10 @@ Refresh export:
 
 ```bash
 # in personal-content
-python3 scripts/export_public.py yingzhao --check
+uv run --with pyyaml python scripts/export_public.py yingzhao --check
+uv run --with pyyaml python scripts/export_public.py yingzhao --vendor-assets ../yzouyang-site/assets/notes
 cp people/yingzhao/data/export_public.json ../yzouyang-site/data/export_public.json
+cd ../yzouyang-site && uv run python scripts/build.py && uv run python scripts/test_site_build.py
 ```
 
 `data/export_public.json` must include `_meta.schema_version == 1` and
@@ -74,9 +82,9 @@ Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hos
 ## Docs
 
 - [docs/site-builder.md](docs/site-builder.md) — build pipeline, config map, IA rules
-- [docs/design-system.md](docs/design-system.md) — senior enterprise briefing contract (tokens, proof hierarchy, components)
+- [docs/design-system.md](docs/design-system.md) — tokens, **Reading mode vs Catalogue mode**, proof hierarchy, components
 - [docs/preview-uat.md](docs/preview-uat.md) — offline preview + UAT branch publish
 - [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map
 - [docs/cutover.md](docs/cutover.md) — DNS operator gate
-- [docs/c2b-writing-inventory.md](docs/c2b-writing-inventory.md) — deferred writing corpus
+- [docs/c2b-writing-inventory.md](docs/c2b-writing-inventory.md) — PUBLIC writing corpus and WP slug redirect map

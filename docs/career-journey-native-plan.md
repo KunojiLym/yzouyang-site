@@ -1,5 +1,7 @@
 # Career Journey: native implementation plan
 
+> **Status (2026-09):** **Deferred.** `/career-journey/` currently **redirects to Home**; `data/career-journey.yaml` and `src/styles/career-journey.css` are retained source but are **not** read by `lint.py`, `build.py`, or `dist/styles.css` today. Implement this plan when the operator is ready to ship a standalone shareable deck — until then, treat this document as the spec only.
+
 Plan to replace the `/about/` Figma Deck embed (`about.career_journey` in
 `data/export_public.json`, rendered via `figma_embed_html()` in
 `scripts/build.py`) with a standalone, natively-built, independently
