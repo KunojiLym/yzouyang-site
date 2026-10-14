@@ -210,6 +210,158 @@ test.describe("home", () => {
     await expect(page.locator("[data-theme-toggle]").first()).toBeVisible();
   });
 
+  test("featured grid, one frame, and one primary action", async ({ page }) => {
+    test.skip(test.info().project.name === "mobile", "widths are set per case");
+    const widths = [375, 768, 1024, 1280, 1440];
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/", { waitUntil: "networkidle" });
+      await expect(page.locator(".home-scroll-hint")).toHaveCount(0);
+      await expect(page.locator(".entrance-action--primary")).toHaveCount(1);
+      await expect(page.locator(".entrance-action--secondary")).toHaveCount(1);
+      await expect(page.locator(".home-record-row")).toHaveCount(4);
+
+      const metrics = await page.evaluate(() => {
+        const contentLeft = (el) => {
+          const rect = el.getBoundingClientRect();
+          const cs = getComputedStyle(el);
+          return rect.left + parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth);
+        };
+        const hero = document.querySelector(".home-hero .entrance-copy");
+        const strip = document.querySelector(".home-record-strip");
+        const header = document.querySelector(".site-header");
+        const track = strip.querySelector(".home-record-strip-track");
+        const columns = getComputedStyle(track).gridTemplateColumns.split(" ").filter(Boolean).length;
+        const cards = [...document.querySelectorAll(".home-record-row")].map((el) => {
+          const rect = el.getBoundingClientRect();
+          return rect.left >= -1 && rect.right <= window.innerWidth + 1;
+        });
+        const ctaTops = [...document.querySelectorAll(".home-record-cta")].map(
+          (el) => el.getBoundingClientRect().top
+        );
+        const rowTops = [...document.querySelectorAll(".home-record-row")].map(
+          (el) => el.getBoundingClientRect().top
+        );
+        const ctaDeltaByRow = rowTops.map((top, index) => ({ top, cta: ctaTops[index] }));
+        const grouped = new Map();
+        for (const item of ctaDeltaByRow) {
+          const key = Math.round(item.top);
+          const list = grouped.get(key) || [];
+          list.push(item.cta);
+          grouped.set(key, list);
+        }
+        const ctaAligned = [...grouped.values()].every((tops) => {
+          const min = Math.min(...tops);
+          const max = Math.max(...tops);
+          return max - min <= 1;
+        });
+        const search = document.querySelector("#search .pagefind-ui__search-input");
+        const theme = document.querySelector("[data-theme-toggle]");
+        const menu = document.querySelector(".nav-menu > summary");
+        const reading = document.querySelector(".header-actions > [data-reading-size-toggle]");
+        const heightOf = (el) => (el ? el.getBoundingClientRect().height : 0);
+        const visibleSteps = [...document.querySelectorAll(".reading-size-step")]
+          .map((el) => el.getBoundingClientRect())
+          .filter((rect) => rect.width > 0 && rect.height > 0);
+        const proof = document.querySelector(".entrance-proof");
+        const proofCs = getComputedStyle(proof);
+        const probe = document.createElement("span");
+        probe.style.color = "var(--text-default)";
+        probe.style.borderTop = "1px solid var(--line-soft)";
+        document.body.appendChild(probe);
+        const probeCs = getComputedStyle(probe);
+        const textColor = probeCs.color;
+        const lineSoft = probeCs.borderTopColor;
+        probe.remove();
+        const primary = document.querySelector(".entrance-action--primary");
+        const secondary = document.querySelector(".entrance-action--secondary");
+        const order = [...hero.children].map((el) => el.className);
+        const ledeIndex = order.findIndex((name) => name.includes("lede"));
+        const proofIndex = order.findIndex((name) => name.includes("entrance-proof"));
+        const actionIndex = order.findIndex((name) => name.includes("entrance-actions"));
+        return {
+          pageOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+          stripScrollable: strip.scrollWidth > strip.clientWidth + 1,
+          cards,
+          columns,
+          heroX: contentLeft(hero),
+          stripX: contentLeft(strip),
+          headerX: contentLeft(header),
+          ctaAligned,
+          searchH: heightOf(search),
+          themeH: heightOf(theme),
+          menuH: heightOf(menu),
+          readingH: heightOf(reading),
+          themeBorder: getComputedStyle(theme).borderTopColor,
+          lineSoft,
+          stepMin: visibleSteps.reduce(
+            (min, rect) => Math.min(min, rect.width, rect.height),
+            Number.POSITIVE_INFINITY
+          ),
+          proofSize: parseFloat(proofCs.fontSize),
+          proofMatchesText: proofCs.color === textColor,
+          primaryH: heightOf(primary),
+          primaryBorderTop: parseFloat(getComputedStyle(primary).borderTopWidth),
+          secondaryBorderTop: parseFloat(getComputedStyle(secondary).borderTopWidth),
+          proofBeforeActions: ledeIndex < proofIndex && proofIndex < actionIndex,
+        };
+      });
+
+      expect(metrics.pageOverflow, `overflow @${width}`).toBe(false);
+      expect(metrics.stripScrollable, `strip scroll @${width}`).toBe(false);
+      expect(metrics.cards.every(Boolean), `cards in view @${width}`).toBe(true);
+      expect(Math.abs(metrics.heroX - metrics.stripX), `hero vs strip @${width}`).toBeLessThanOrEqual(1);
+      expect(Math.abs(metrics.heroX - metrics.headerX), `hero vs header @${width}`).toBeLessThanOrEqual(1);
+      expect(metrics.ctaAligned, `cta alignment @${width}`).toBe(true);
+      expect(metrics.proofBeforeActions, `proof order @${width}`).toBe(true);
+      expect(metrics.proofMatchesText, `proof colour @${width}`).toBe(true);
+      expect(metrics.themeBorder, `theme border @${width}`).toBe(metrics.lineSoft);
+      expect(metrics.primaryBorderTop, `primary border @${width}`).toBeGreaterThan(0);
+      expect(metrics.secondaryBorderTop, `secondary border @${width}`).toBe(0);
+      expect(metrics.primaryH, `primary height @${width}`).toBeGreaterThanOrEqual(39);
+      expect(metrics.primaryH, `primary height @${width}`).toBeLessThanOrEqual(41);
+
+      if (width < 640) {
+        expect(metrics.columns, `columns @${width}`).toBe(1);
+      } else if (width < 1152) {
+        expect(metrics.columns, `columns @${width}`).toBe(2);
+      } else {
+        expect(metrics.columns, `columns @${width}`).toBe(4);
+      }
+
+      if (width === 1280) {
+        expect(metrics.proofSize, "proof size @1280").toBeGreaterThanOrEqual(16.5);
+        expect(metrics.proofSize, "proof size @1280").toBeLessThanOrEqual(17.5);
+        expect(Math.abs(metrics.heroX - 24), "hero x @1280").toBeLessThanOrEqual(1);
+      }
+      if (width === 1440) {
+        expect(metrics.proofSize, "proof size @1440").toBeGreaterThanOrEqual(18.5);
+        expect(metrics.proofSize, "proof size @1440").toBeLessThanOrEqual(19.5);
+        expect(Math.abs(metrics.heroX - 104), "hero x @1440").toBeLessThanOrEqual(1);
+      }
+      if (width <= 768) {
+        expect(metrics.searchH, `search height @${width}`).toBeGreaterThanOrEqual(39);
+        expect(metrics.searchH, `search height @${width}`).toBeLessThanOrEqual(41);
+        expect(metrics.themeH, `theme height @${width}`).toBeGreaterThanOrEqual(39);
+        expect(metrics.themeH, `theme height @${width}`).toBeLessThanOrEqual(41);
+        expect(metrics.menuH, `menu height @${width}`).toBeGreaterThanOrEqual(39);
+        expect(metrics.menuH, `menu height @${width}`).toBeLessThanOrEqual(41);
+        const compact = [metrics.searchH, metrics.themeH, metrics.menuH];
+        expect(Math.max(...compact) - Math.min(...compact), `header controls @${width}`).toBeLessThanOrEqual(0.5);
+      } else {
+        const controls = [metrics.searchH, metrics.themeH];
+        if (metrics.readingH > 0) controls.push(metrics.readingH);
+        if (metrics.menuH > 0) controls.push(metrics.menuH);
+        const min = Math.min(...controls);
+        const max = Math.max(...controls);
+        expect(max - min, `header control height @${width} ${controls.join(",")}`).toBeLessThanOrEqual(0.5);
+      }
+      if (width >= 1024) {
+        expect(metrics.stepMin, `reading step @${width}`).toBeGreaterThanOrEqual(24);
+      }
+    }
+  });
+
   test("home omits the retired scroll-home chrome", async ({ page }) => {
     test.skip(test.info().project.name === "mobile", "desktop coverage enough");
     await page.goto("/");
@@ -466,6 +618,8 @@ test.describe("library boot CLS", () => {
   test("notes and deep links stay under 0.1", async ({ browser }) => {
     test.skip(test.info().project.name === "mobile", "viewports are set per case");
     const cases = [
+      { path: "/", width: 1280, height: 800 },
+      { path: "/", width: 375, height: 812 },
       { path: "/notes/", width: 1280, height: 800 },
       { path: "/notes/", width: 375, height: 812 },
       { path: "/notes/#NOTE-2026-005", width: 1280, height: 800 },

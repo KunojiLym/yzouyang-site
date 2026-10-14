@@ -45,6 +45,10 @@
   --code-text: var(--text-default);
   --max: 68rem;
   --max-longform: 80rem;
+  --frame-max: var(--max-longform);
+
+  /* Proof line: 17px at 1280, fluid 17–19px (19px at 1440). Not the body ramp. */
+  --text-proof: clamp(1.0625rem, 0.0625rem + 1.25vw, 1.1875rem);
   --gutter: clamp(1.25rem, 5vw, 1.5rem);
   --note-read-max: 34rem;
   --lh-display: 1.1;
@@ -183,10 +187,12 @@
 
 html[data-reading-size="large"] {
   --text-scale: 1.25;
+  --text-proof: calc(clamp(1.0625rem, 0.0625rem + 1.25vw, 1.1875rem) * 1.25);
 }
 
 html[data-reading-size="xlarge"] {
   --text-scale: 1.5;
+  --text-proof: calc(clamp(1.0625rem, 0.0625rem + 1.25vw, 1.1875rem) * 1.5);
 }
 
 /*

@@ -319,6 +319,11 @@
 }
 
 @media (width <= 48rem) {
+  .header-search #search .pagefind-ui__search-input {
+    height: var(--space-10);
+    min-height: var(--space-10);
+  }
+
   .header-search:not(:focus-within) #search .pagefind-ui__form::before {
     left: 50%;
     transform: translate(-50%, -50%);

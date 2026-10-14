@@ -1023,6 +1023,15 @@ def main() -> None:
         fail("the second SYS-01 angle must leave Home")
     if home.count('class="entrance-proof"') != 1:
         fail("home must carry exactly one quiet proof line")
+    proof_at = home.find('class="entrance-proof"')
+    actions_at = home.find('class="entrance-actions"')
+    lede_at = home.find('class="lede"')
+    if lede_at == -1 or proof_at < lede_at or actions_at < proof_at:
+        fail("proof line must sit under the lede and above the entrance actions")
+    if "home-scroll-hint" in home:
+        fail("home must not ship the scroll hint")
+    if 'class="home-record-strip" tabindex="0"' in home or 'home-record-strip" role="region"' in home:
+        fail("featured grid must not be a scrollable region")
     if "entrance-identity" not in home or "entrance-name" not in home or "entrance-role" not in home:
         fail("home missing identity line")
     if "home-record-employer" not in home:

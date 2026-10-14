@@ -1058,32 +1058,6 @@
     observer.observe(mount, { childList: true, subtree: true });
   }
 
-  function initHomePacing() {
-    const main = document.querySelector("main.home-route");
-    if (!main) return;
-    const sections = main.querySelectorAll(".home-snap-section");
-    if (!sections.length) return;
-
-    const reducedMotion =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const strip = main.querySelector(".home-record-strip");
-    if (!strip) return;
-    strip.addEventListener("keydown", (event) => {
-      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-      const cards = strip.querySelectorAll(".home-record-row");
-      if (!cards.length) return;
-      const gap = 16;
-      const step = cards[0].getBoundingClientRect().width + gap;
-      strip.scrollBy({
-        left: event.key === "ArrowRight" ? step : -step,
-        behavior: reducedMotion ? "auto" : "smooth",
-      });
-      event.preventDefault();
-    });
-  }
-
   function initChrome() {
     initThemeToggle();
     initReadingSizeToggle();
@@ -1091,7 +1065,6 @@
     initLibraryShell();
     initTocSpy();
     initSearchResultBadges();
-    initHomePacing();
   }
 
   if (document.readyState === "loading") {

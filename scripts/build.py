@@ -2317,8 +2317,7 @@ def _home_featured_records_html(site: dict, export: dict) -> str:
     return (
         '        <section class="home-featured-records" aria-labelledby="home-featured-heading">\n'
         '          <h2 id="home-featured-heading" class="home-section-label">Featured records</h2>\n'
-        '          <div class="home-record-strip" tabindex="0" role="region" '
-        'aria-label="Featured records">\n'
+        '          <div class="home-record-strip">\n'
         '            <div class="home-record-strip-track">\n'
         + "\n".join(rows)
         + "\n            </div>\n"
@@ -3157,13 +3156,6 @@ def _credentials_teaser_html(site: dict, export: dict) -> str:
     )
 
 
-def _home_scroll_hint_html() -> str:
-    return (
-        '        <p class="home-scroll-hint" aria-hidden="true">'
-        '<span class="home-scroll-hint-label"></span></p>\n'
-    )
-
-
 def build_home(site: dict, export: dict) -> str:
     person = site["person"]
     full_name = str(person.get("full_name") or "").strip()
@@ -3219,7 +3211,6 @@ def build_home(site: dict, export: dict) -> str:
     thesis = esc(str(person.get("headline") or "").strip())
     lede = esc(str(person.get("tagline") or "").strip())
     actions_html = _home_entrance_actions_html(site)
-    scroll_hint_html = _home_scroll_hint_html()
     featured_html = _home_featured_records_html(site, export)
     philosophy_html = _philosophy_block_html(_about_data(site, export), home=True)
     practice_html = _home_practice_areas_html(site, export)
@@ -3229,7 +3220,7 @@ def build_home(site: dict, export: dict) -> str:
       <div class="entrance-copy hero-copy home-snap-inner">
 {identity_html}        <h1 id="entrance-heading">{thesis}</h1>
         <p class="lede">{lede}</p>
-{actions_html}{proof_html}{scroll_hint_html}
+{proof_html}{actions_html}
       </div>
     </section>
     <section class="home-snap-section home-snap-proof" aria-labelledby="home-featured-heading">
