@@ -148,7 +148,7 @@ body:has(main.home-route) .site-header {
 
 .entrance-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-3) var(--space-5);
   margin: 0 0 var(--space-5);
@@ -174,14 +174,17 @@ body:has(main.home-route) .site-header {
 .entrance-action--secondary {
   color: var(--text-default);
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .entrance-action--primary {
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
+  flex: 0 0 auto;
   height: var(--space-10);
   padding: 0 var(--space-4);
+  white-space: nowrap;
   border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--line-strong));
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
@@ -201,6 +204,15 @@ body:has(main.home-route) .site-header {
 .entrance-action--primary:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Phones: stack the button and text link so a webfont swap cannot
+   collapse a wrapped row, and enlarged text does not overflow sideways. */
+@media (width < 40rem) {
+  .entrance-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .home-featured-records {
