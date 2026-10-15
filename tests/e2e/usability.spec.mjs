@@ -36,6 +36,14 @@ async function visibleLibraryPanelIds(page) {
   );
 }
 
+async function librarySplitGridColumnCount(page) {
+  return page.locator(".library-split").evaluate((el) => {
+    const columns = getComputedStyle(el).gridTemplateColumns.trim();
+    if (!columns || columns === "none") return 0;
+    return columns.split(/\s+/).length;
+  });
+}
+
 async function activeIndexRowInView(page) {
   return page.evaluate(() => {
     const body = document.querySelector(".library-index-body");
@@ -585,11 +593,56 @@ test.describe("layout", () => {
     await expect(page.locator(".home-entry-grid")).toHaveCount(0);
     await page.goto("/systems/#SYS-01", { waitUntil: "load" });
     await expect(page.locator('.library-panel[data-record="SYS-01"].is-active')).toBeVisible();
-    const columns = await page
-      .locator(".library-split")
-      .evaluate((el) => getComputedStyle(el).gridTemplateColumns);
-    expect(columns.split(" ").length).toBe(1);
+    expect(await librarySplitGridColumnCount(page)).toBe(1);
     await noHorizontalOverflow(page);
+  });
+
+  test("library routes use one layout across the 48rem/49rem seam", async ({ browser }) => {
+    test.skip(test.info().project.name === "mobile", "explicit viewports");
+    const libraryRoutes = [
+      "/notes/#NOTE-2026-005",
+      "/systems/#SYS-01",
+      "/credentials/#google-cloud",
+    ];
+    const stackedWidths = [775, 769, 783, 784];
+    for (const width of stackedWidths) {
+      const context = await browser.newContext({
+        viewport: { width, height: 900 },
+      });
+      await context.addInitScript(() => {
+        try {
+          localStorage.clear();
+        } catch {
+          /* ignore */
+        }
+      });
+      const page = await context.newPage();
+      for (const path of libraryRoutes) {
+        await page.goto(path, { waitUntil: "load" });
+        await page.waitForFunction(
+          () => !document.querySelector(".library-split")?.classList.contains("is-booting")
+        );
+        expect(await librarySplitGridColumnCount(page), `${path} @${width}px`).toBe(1);
+        await expect(page.locator(".library-panel.is-active")).toBeVisible();
+      }
+      await context.close();
+    }
+
+    const mobileContext = await browser.newContext({
+      viewport: { width: 768, height: 900 },
+    });
+    await mobileContext.addInitScript(() => {
+      try {
+        localStorage.clear();
+      } catch {
+        /* ignore */
+      }
+    });
+    const mobilePage = await mobileContext.newPage();
+    await mobilePage.goto("/notes/#NOTE-2026-005", { waitUntil: "load" });
+    await expect(mobilePage.locator(".library-split")).toHaveClass(/is-detail-open/);
+    await expect(mobilePage.locator(".library-index-list")).toBeHidden();
+    await mobileContext.close();
   });
 
   test("900px theme toggle sits beside Menu", async ({ page }) => {
@@ -652,6 +705,9 @@ test.describe("library boot CLS", () => {
       { path: "/notes/", width: 375, height: 812 },
       { path: "/notes/#NOTE-2026-005", width: 1280, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 1024, height: 800 },
+      { path: "/notes/#NOTE-2026-005", width: 775, height: 800 },
+      { path: "/notes/#NOTE-2026-005", width: 769, height: 800 },
+      { path: "/notes/#NOTE-2026-005", width: 784, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 375, height: 812 },
       { path: "/systems/#SYS-03", width: 1280, height: 800 },
       { path: "/systems/#SYS-03", width: 375, height: 812 },

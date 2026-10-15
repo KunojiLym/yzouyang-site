@@ -215,7 +215,7 @@ function yzLibraryHash() {
   var libraryBoot = "overview";
   var libraryHash = yzLibraryHash();
   try {
-    if (libraryHash || (window.matchMedia && window.matchMedia("(min-width: 49rem)").matches)) {
+    if (libraryHash || (window.matchMedia && window.matchMedia("(min-width: 48.0625rem)").matches)) {
       libraryBoot = "detail";
     }
   } catch (e2) {}
@@ -236,7 +236,7 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
     return;
   }
   var wide = false;
-  try { wide = window.matchMedia("(min-width: 49rem)").matches; } catch (e) {}
+  try { wide = window.matchMedia("(min-width: 48.0625rem)").matches; } catch (e) {}
   function findPanel(id) {
     if (!id) return null;
     for (var i = 0; i < panels.length; i++) {
