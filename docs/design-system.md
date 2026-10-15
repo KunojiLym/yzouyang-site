@@ -123,7 +123,7 @@ Figma writes some alphas as 8-digit hex. `tokens.css` stores the same tokens as 
 
 The Home primary (`.entrance-action--primary`) is an outlined primary with an 8% brass fill: 40px tall (`--space-10`), `radius-md`, weight 600.
 
-Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--frame-max` aliases `--max-longform` (Home hero, header, and featured grid share this frame); `--text-proof` fluid 17–19px (17px at 1280, 19px at 1440); `--header-offset` `4.75rem`; `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
+Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--frame-max` aliases `--max-longform` (Home hero, header, and featured grid share this frame); `--text-proof` fluid 17–19px (17px at 1280, 19px at 1440); `--header-offset` `4.75rem` (~76px scroll/anchor offset — not the header’s painted height; see [Header](#header)); `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
 
 **Reading tokens (Notes only):** `--note-read-max` `34rem` (prose measure); `--note-read-lead` `1.72`; `--text-dropcap` (fluid first-letter size); `--note-image-bg` (neutral mat behind inline figures / covers). Notes prose italics use the real Crimson Pro italic.
 
@@ -183,8 +183,6 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** — dark **~7.0:1** on `--bg-mid` panel; light **~4.7–4.9:1** on panel |
 | Meta/Map Node Label | `.map-node-label` | Source Sans 3 | `--text-xs` | 400 |
 | UI/Control | `.theme-toggle` | Source Sans 3 | `--text-sm` | 400 (label); icon-only below 48rem |
-
-**Chrome layout (not Figma textStyles):** **769–900px** matches Figma **Header · Viewport=Mid** (brand, **200px** search, theme, Menu; row hugs **~58.8px**). Code: `.header-search` search-first on the action row, fixed **`12.5rem` (200px)** slot and `#search` min-height = header control (`chrome.css`).
 
 Doc-only aliases retired: Wordmark → Display/Brand.
 
@@ -343,9 +341,6 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | Button | `.entrance-action--primary` (outlined primary; text links stay `.entrance-action--secondary`) |
 | Text Link | `.entrance-action--secondary`, body `a` |
 | Entrance Action (Primary) | `.entrance-action--primary` |
-| Header Desktop | `.site-header` + `.site-nav-desktop` |
-| Header · Viewport=Mid (769–900px) | `.site-header` + `.header-search` (200px slot) + `.theme-toggle` + `.nav-menu` (`chrome.css` `48rem < width <= 900px`) |
-| Header Compact | `.site-header` at `width <= 48rem` (icon theme, reading size in Menu) |
 | Nav Link | `.site-nav a` |
 | Nav Link Active | `.site-nav a[aria-current="page"]`, `.site-nav a[aria-current="location"]` |
 | Theme Toggle | `.theme-toggle` |
@@ -356,6 +351,18 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | Index Trigger | `.library-index-trigger` |
 | Entrance Atmosphere (optional) | `.entrance-atmosphere` / `.entrance-atmosphere--tokens` |
 
+#### Header
+
+[`variables.json`](figma/variables.json) carries tokens only — no component tree. Header variants are mapped here (markup from `scripts/build.py` `layout()`; breakpoints in `chrome.css`).
+
+**Scroll offset:** `--header-offset` (`4.75rem`) is used for `scroll-padding-top`, TOC spy, and in-view `scroll-margin-top` — it is **not** the sticky header’s rendered block height.
+
+| Variant | Width | Controls (DOM order, left → right) | Rendered height |
+|---|---|---|---|
+| **Compact** | `width <= 48rem` | **Brand** (`.brand`) · **Search** (icon slot, `--space-10`; expands on focus) · **Theme** (icon-only `.theme-toggle`) · **Menu** (`.nav-menu` — primary nav + **Text size** in the panel only) | Pending final measurement (figma bro) |
+| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **Search** (`#search` in fixed **`12.5rem` (200px)** `.header-search` slot) · **Text size** (`.reading-size-toggle`) · **Theme** · **Menu** | **~59px** (Figma **Header · Viewport=Mid** ~58.8px) |
+| **Desktop** | `width > 900px` | **Brand** · **Primary nav** (`.site-nav-desktop`: Systems · Notes · Credentials) · **Search** (`12.5rem`) · **Text size** · **Theme** (Menu hidden) | Pending final measurement (figma bro) |
+
 `.proof-strip` and `.connect-card` are not part of this contract. Nothing in `scripts/build.py`, `src/*.js`, or the page templates emits them.
 
 ---
@@ -364,6 +371,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 **Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
+- **Header · Viewport=Mid.** Figma lists brand, search, theme, and Menu only. Shipped chrome keeps **Text size** (`.reading-size-toggle`) on the header action row for `48rem < width <= 900px` (`chrome.css` hides it only at `width <= 48rem`).
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
