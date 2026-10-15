@@ -160,7 +160,7 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
 | Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
 | Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
-| Display/H2 Page | `main.page h2` | Crimson Pro | `--text-display-2` | 600, lh 1.2, −1% |
+| Display/H2 Page | `main.page h2`, `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.2, −1% |
 | Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
 | Display/Practice Title | `.home-practice-title` | Crimson Pro | `--text-sm` | 600 |
@@ -168,7 +168,7 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Heading/H3 | `main.page h3` | Source Sans 3 | `--text-lg` | 600 |
 | Label/Caps | `.record-id` | Source Sans 3 | `--text-xs` | 600, 8%, caps |
 | Label/Xs Caps | `.library-index-label` | Source Sans 3 | `--text-xs` | 400, 8%, caps |
-| Label/Xs Group Caps | `.library-index-group--depth-0 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 8%, caps, lh 1.35 |
+| Label/Xs Group Caps | `.library-index-group--depth-0` | Source Sans 3 | `--text-xs` | 600, 8%, caps, lh 1.35 |
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
@@ -359,9 +359,8 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`).
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
-- **Label/Xs Caps tracking.** Figma `textStyles` still records **6%** letter-spacing; shipped CSS (`.library-index-label`, `0.08em`) and this doc table use **8%**. figma bro should align the Figma style to 8% — CSS is not changed silently.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
