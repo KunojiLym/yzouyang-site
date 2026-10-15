@@ -936,7 +936,7 @@ main.page .library-panel--note .library-panel-title {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  line-height: 1.5;
+  line-height: var(--lh-blockquote);
   font-style: italic;
   color: var(--text-default);
 }
@@ -1281,8 +1281,28 @@ main.page .library-panel--note .library-panel-title {
     display: block;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-reading-context {
+  html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
+    .library-reading-context[hidden] {
     display: flex !important;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"]:has(
+      .library-panel--note.is-active
+    )
+    .library-reading-context:not([hidden]) {
+    display: flex !important;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting .library-index-header {
+    min-height: var(--library-index-control-size);
+    align-items: center;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting .library-index-controls {
+    min-height: var(--library-index-control-size);
+    align-items: center;
   }
 }
 
@@ -1291,25 +1311,6 @@ main.page .library-panel--note .library-panel-title {
   .library-index-drawer,
   .library-index-control {
     transition: none;
-  }
-}
-
-/* Mid header band (769–900px): reserve index chrome + notes reading bar before JS/fonts settle. */
-@media (width > 48rem) and (width <= 900px) {
-  .library-index-header {
-    min-height: var(--library-index-control-size);
-    align-items: center;
-  }
-
-  .library-index-controls {
-    min-height: var(--library-index-control-size);
-    align-items: center;
-  }
-
-  main.library-route:has(.library-panel--note) .library-reading-context[hidden] {
-    display: flex !important;
-    visibility: hidden;
-    pointer-events: none;
   }
 }
 

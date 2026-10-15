@@ -962,8 +962,9 @@ def assert_boot_cls_review_json() -> None:
                     fail(f"{name} row missing {key!r}")
     after = json.loads((review / "cls-after.json").read_text(encoding="utf-8"))
     widths = {int(row["width"]) for row in after}
-    if 900 not in widths:
-        fail("cls-after.json must include 900px width rows (mid header band)")
+    for required_width in (784, 800, 900):
+        if required_width not in widths:
+            fail(f"cls-after.json must include {required_width}px width rows")
     cls_values = [float(row["cls"]) for row in after]
     if not cls_values or all(value == 0 for value in cls_values):
         fail("cls-after.json looks like an empty CLS capture (all values zero)")

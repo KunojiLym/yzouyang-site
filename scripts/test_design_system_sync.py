@@ -44,6 +44,24 @@ ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 # Text styles skipped for CSS selector checks: figma style name -> reason.
 TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {}
 
+# Shipped CSS values enforced after Figma sync (style, selector, property, expected decl).
+SHIPPED_TEXT_STYLE_CSS_ASSERTIONS: tuple[tuple[str, str, str, str], ...] = (
+    ("Body/Large", ".entrance .lede", "line-height", "1.55"),
+    ("Body/Large Dek", ".library-panel--note .note-dek", "line-height", "1.45"),
+    (
+        "Body/Blockquote",
+        ".note-body.prose .note-blockquote p",
+        "line-height",
+        "var(--lh-blockquote)",
+    ),
+    (
+        "Display/H1",
+        ".library-panel--note .library-panel-title",
+        "letter-spacing",
+        "-0.025em",
+    ),
+)
+
 
 def _validate_allow_list_reasons() -> list[str]:
     errors: list[str] = []
@@ -583,6 +601,17 @@ def collect_figma_export_css_mismatches(
                     "italic",
                 )
             )
+    elif figma_style_name in ("Regular", "SemiBold", "Bold"):
+        if css_font_style in ("italic", "oblique"):
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "font-style",
+                    css_font_style,
+                    figma_style_name.lower(),
+                )
+            )
 
     size_token = str(row["size_token"])
     css_font_size = decls.get("font-size", "")
@@ -774,6 +803,55 @@ def collect_text_style_css_mismatches(
     return mismatches
 
 
+def _css_property_matches_expected(
+    property_name: str,
+    actual_raw: str,
+    expected_raw: str,
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> bool:
+    if property_name == "line-height":
+        actual_val = _parse_line_height_ratio(
+            _resolve_css_scalar(actual_raw, dark, light), dark, light
+        )
+        expected_val = _parse_line_height_ratio(
+            _resolve_css_scalar(expected_raw, dark, light), dark, light
+        )
+        if actual_val is None or expected_val is None:
+            return actual_raw.strip() == expected_raw.strip()
+        return abs(actual_val - expected_val) <= LINE_HEIGHT_TOLERANCE
+    if property_name == "letter-spacing":
+        actual_em = _parse_em(_resolve_css_scalar(actual_raw, dark, light))
+        expected_em = _parse_em(_resolve_css_scalar(expected_raw, dark, light))
+        if actual_em is None or expected_em is None:
+            return actual_raw.strip() == expected_raw.strip()
+        return abs(actual_em - expected_em) <= 0.0001
+    return actual_raw.strip() == expected_raw.strip()
+
+
+def validate_shipped_text_style_assertions(
+    styles_dir: Path,
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> list[str]:
+    errors: list[str] = []
+    css_rules = parse_stylesheet_selectors(styles_dir)
+    for style, selector, prop, expected in SHIPPED_TEXT_STYLE_CSS_ASSERTIONS:
+        decls = collect_selector_decls(selector, css_rules)
+        actual = decls.get(prop, "")
+        if not actual:
+            errors.append(
+                f"shipped text style assertion missing {prop}: {style} {selector}"
+            )
+            continue
+        if not _css_property_matches_expected(prop, actual, expected, dark, light):
+            errors.append(
+                f"shipped text style assertion failed: {style} {selector} {prop} "
+                f"={actual!r} expected {expected!r}"
+            )
+    return errors
+
+
 def validate_text_style_css_gaps(
     snapshot: dict,
     doc: str,
@@ -844,6 +922,7 @@ def validate_text_styles(
     errors.extend(
         validate_text_style_css_gaps(snapshot, doc, styles_dir, dark, light)
     )
+    errors.extend(validate_shipped_text_style_assertions(styles_dir, dark, light))
     return errors
 
 

@@ -115,7 +115,7 @@ def main() -> None:
     synthetic_gap = (
         gap_prefix
         + " shipped **9.99**; Figma **145%**. seeded test — "
-        + "[issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).\n"
+        + "[issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).\n"
     )
     doc_with_fake_gap = doc.replace(
         "**Open (not enforced by sync; Yingzhao decides):**",
@@ -158,16 +158,54 @@ def main() -> None:
         )
         lh_errors = sync_snapshot(SNAPSHOT, base_css, doc, styles_dir=styles_tmp)
     if not any(
-        "undocumented text style CSS mismatch" in item
+        "shipped text style assertion failed" in item
         and "Body/Large Dek" in item
         and "line-height" in item
         for item in lh_errors
     ):
         print(
-            "Body/Large Dek line-height mutation should fail export CSS validation",
+            "Body/Large Dek line-height mutation should fail shipped assertion",
             file=sys.stderr,
         )
         for item in lh_errors[:10]:
+            print(f"  {item}", file=sys.stderr)
+        raise SystemExit(1)
+
+    with tempfile.TemporaryDirectory() as tmp_lede:
+        styles_lede = Path(tmp_lede)
+        for sheet in STYLES_DIR.glob("*.css"):
+            shutil.copy(sheet, styles_lede / sheet.name)
+        home_path = styles_lede / "home.css"
+        home_path.write_text(
+            home_path.read_text(encoding="utf-8").replace(
+                ".entrance .lede {\n"
+                "  max-width: 38rem;\n"
+                "  color: var(--text-default);\n"
+                "  margin: 0 0 var(--space-4);\n"
+                "  font-size: var(--text-md);\n"
+                "  line-height: 1.55;",
+                ".entrance .lede {\n"
+                "  max-width: 38rem;\n"
+                "  color: var(--text-default);\n"
+                "  margin: 0 0 var(--space-4);\n"
+                "  font-size: var(--text-md);\n"
+                "  line-height: 1.9;",
+                1,
+            ),
+            encoding="utf-8",
+        )
+        lede_errors = sync_snapshot(SNAPSHOT, base_css, doc, styles_dir=styles_lede)
+    if not any(
+        "shipped text style assertion failed" in item
+        and "Body/Large" in item
+        and ".entrance .lede" in item
+        for item in lede_errors
+    ):
+        print(
+            "Body/Large lede line-height 1.9 should fail shipped assertion",
+            file=sys.stderr,
+        )
+        for item in lede_errors[:10]:
             print(f"  {item}", file=sys.stderr)
         raise SystemExit(1)
 

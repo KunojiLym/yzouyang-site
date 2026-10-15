@@ -153,7 +153,7 @@ Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens
 
 At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
 
-Figma text styles (27) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`.
+Figma text styles (27) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`. **Size / token** and **Weight / tracking** columns describe **shipped CSS** on the listed selectors (not a live Figma diff).
 
 | Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
@@ -178,7 +178,7 @@ Figma text styles (27) mapped to Layer C classes. Token columns reference `token
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
 | Body/Prose | `.note-body.prose` | Crimson Pro | `--text-md` | 400, lh 172% |
-| Body/Blockquote | `.note-body.prose .note-blockquote p` | Crimson Pro italic | `--text-lg` | 400, lh 1.5 |
+| Body/Blockquote | `.note-body.prose .note-blockquote p` | Crimson Pro italic | `--text-lg` | 400, lh `var(--lh-blockquote)` |
 | Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
 | Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
 | Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** — dark **~7.0:1** on `--bg-mid` panel; light **~4.7–4.9:1** on panel |
@@ -368,6 +368,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | **Compact** | **375–768px** (`<= 48rem`) | **Brand** · **40px Search** · **40px Theme** · **Menu** | **64px** — node `3:25` |
 | **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **200px Search** · **Clear** · **Text size** · **Theme** · **Menu** | **59.19px** — node `21:16` |
 | **Narrow desktop** | **901–1024px** | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (shown) · **Text size** · **Theme** | **59.19px** — node `32:292` |
+| **Desktop (unconfirmed)** | **1025–1279px** | Same control order as narrow desktop (shipped: `> 900px` nav + search row) | **Unconfirmed** — no Figma frame in set `3:2` |
 | **Desktop** | **1280px** (`width > 1024px` in code) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (hidden; unconfirmed at 1280) · **Text size** · **Theme** — no **Menu** | **61.39px** — node `3:3` |
 
 **Shipped chrome (for gap checks):** `.site-header` markup from `layout()` — **Brand** · `.site-nav-desktop` (Systems · Notes · Credentials when `> 900px`) · `.header-search` / `#search` (Pagefind **Clear** = `.pagefind-ui__search-clear` inside the search control) · `.reading-size-toggle` · `.theme-toggle` · `.nav-menu` (when `<= 900px`; **Text size** duplicate lives in the Menu panel at `<= 48rem` only).

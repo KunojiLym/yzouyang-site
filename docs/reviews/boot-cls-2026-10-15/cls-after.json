@@ -4,35 +4,35 @@
     "path": "/notes/#NOTE-2026-005",
     "width": 375,
     "theme": "dark",
-    "cls": 0.0037349548177083333
+    "cls": 0.006666008658854167
   },
   {
     "route": "notes",
     "path": "/notes/#NOTE-2026-005",
     "width": 375,
     "theme": "light",
-    "cls": 0.0037349548177083333
+    "cls": 0.002566142317708333
   },
   {
     "route": "notes",
     "path": "/notes/#NOTE-2026-005",
     "width": 768,
     "theme": "dark",
-    "cls": 0.02967418530782064
+    "cls": 0.038122212791442865
   },
   {
     "route": "notes",
     "path": "/notes/#NOTE-2026-005",
     "width": 768,
     "theme": "light",
-    "cls": 0.038122212791442865
+    "cls": 0.026903243509928385
   },
   {
     "route": "notes",
     "path": "/notes/#NOTE-2026-005",
     "width": 769,
     "theme": "dark",
-    "cls": 0.037779391324721634
+    "cls": 0.03896410789936199
   },
   {
     "route": "notes",
@@ -44,9 +44,37 @@
   {
     "route": "notes",
     "path": "/notes/#NOTE-2026-005",
+    "width": 784,
+    "theme": "dark",
+    "cls": 0.028709970404177294
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 784,
+    "theme": "light",
+    "cls": 0.03848290258913624
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 800,
+    "theme": "dark",
+    "cls": 0.028203045959472654
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 800,
+    "theme": "light",
+    "cls": 0.028211487304687498
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
     "width": 900,
     "theme": "dark",
-    "cls": 0.01675988811728395
+    "cls": 0.009932984157986111
   },
   {
     "route": "notes",
@@ -60,14 +88,14 @@
     "path": "/notes/#NOTE-2026-005",
     "width": 1024,
     "theme": "dark",
-    "cls": 0.007611385807394982
+    "cls": 0.013523474335670471
   },
   {
     "route": "notes",
     "path": "/notes/#NOTE-2026-005",
     "width": 1024,
     "theme": "light",
-    "cls": 0.013523474335670471
+    "cls": 0.007614386640489102
   },
   {
     "route": "notes",
@@ -88,7 +116,7 @@
     "path": "/systems/#SYS-03",
     "width": 375,
     "theme": "dark",
-    "cls": 0.021245655989583334
+    "cls": 0.022417676822916666
   },
   {
     "route": "systems",
@@ -109,7 +137,7 @@
     "path": "/systems/#SYS-03",
     "width": 768,
     "theme": "light",
-    "cls": 0.004401753234863281
+    "cls": 0.0033874913533528646
   },
   {
     "route": "systems",
@@ -128,16 +156,44 @@
   {
     "route": "systems",
     "path": "/systems/#SYS-03",
+    "width": 784,
+    "theme": "dark",
+    "cls": 0.029547695891711176
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 784,
+    "theme": "light",
+    "cls": 0.0034773979031309794
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 800,
+    "theme": "dark",
+    "cls": 0.031418495178222657
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 800,
+    "theme": "light",
+    "cls": 0.031423411743164056
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
     "width": 900,
     "theme": "dark",
-    "cls": 0.0073024582127700615
+    "cls": 0.008189155743634258
   },
   {
     "route": "systems",
     "path": "/systems/#SYS-03",
     "width": 900,
     "theme": "light",
-    "cls": 0.030687901548032408
+    "cls": 0.007306342906057098
   },
   {
     "route": "systems",
@@ -200,35 +256,63 @@
     "path": "/credentials/#google-cloud",
     "width": 769,
     "theme": "dark",
-    "cls": 0.00622280540119067
+    "cls": 0.03973026680220863
   },
   {
     "route": "credentials",
     "path": "/credentials/#google-cloud",
     "width": 769,
     "theme": "light",
-    "cls": 0.034628523339716756
+    "cls": 0.03488018467063556
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 784,
+    "theme": "dark",
+    "cls": 0.03464756790472537
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 784,
+    "theme": "light",
+    "cls": 0.007203272947973135
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 800,
+    "theme": "dark",
+    "cls": 0.00902427703857422
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 800,
+    "theme": "light",
+    "cls": 0.010020377807617189
   },
   {
     "route": "credentials",
     "path": "/credentials/#google-cloud",
     "width": 900,
     "theme": "dark",
-    "cls": 0.02786623174672068
+    "cls": 0.003252416883680555
   },
   {
     "route": "credentials",
     "path": "/credentials/#google-cloud",
     "width": 900,
     "theme": "light",
-    "cls": 0.002369604046103395
+    "cls": 0.028095846330054013
   },
   {
     "route": "credentials",
     "path": "/credentials/#google-cloud",
     "width": 1024,
     "theme": "dark",
-    "cls": 0.002889269720762968
+    "cls": 0.02467674681916833
   },
   {
     "route": "credentials",
