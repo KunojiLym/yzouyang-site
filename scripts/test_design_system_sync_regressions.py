@@ -263,8 +263,8 @@ def main() -> None:
     _assert_line_height_mismatch(
         h2_errors,
         style="Display/H2",
-        selector=".home-plate h2",
-        label="Display/H2 300% flags .home-plate h2",
+        selector="main.page h2",
+        label="Display/H2 300% flags main.page h2",
     )
 
     with tempfile.TemporaryDirectory() as tmp_nav:
