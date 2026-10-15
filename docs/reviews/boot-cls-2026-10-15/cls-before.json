@@ -1,0 +1,194 @@
+notes 769 dark 0.0895
+notes 769 light 0.0895
+notes 784 dark 0.0866
+notes 784 light 0.0866
+notes 800 dark 0.0869
+notes 800 light 0.0883
+notes 1024 dark 0.0121
+notes 1024 light 0.0121
+systems 769 dark 0.1343
+systems 769 light 0.0037
+systems 784 dark 0.0804
+systems 784 light 0.0640
+systems 800 dark 0.1361
+systems 800 light 0.0912
+systems 1024 dark 0.0038
+systems 1024 light 0.0240
+credentials 769 dark 0.1481
+credentials 769 light 0.1491
+credentials 784 dark 0.0940
+credentials 784 light 0.1491
+credentials 800 dark 0.0690
+credentials 800 light 0.1519
+credentials 1024 dark 0.0246
+credentials 1024 light 0.0246
+[
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 769,
+    "theme": "dark",
+    "cls": 0.08947150732866344
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 769,
+    "theme": "light",
+    "cls": 0.08949325711531819
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 784,
+    "theme": "dark",
+    "cls": 0.08663066421820192
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 784,
+    "theme": "light",
+    "cls": 0.08662358130630182
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 800,
+    "theme": "dark",
+    "cls": 0.08689562454223632
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 800,
+    "theme": "light",
+    "cls": 0.08825438452148437
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 1024,
+    "theme": "dark",
+    "cls": 0.012102268934249878
+  },
+  {
+    "route": "notes",
+    "path": "/notes/#NOTE-2026-005",
+    "width": 1024,
+    "theme": "light",
+    "cls": 0.012102268934249878
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 769,
+    "theme": "dark",
+    "cls": 0.13432487939008653
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 769,
+    "theme": "light",
+    "cls": 0.0037472891818717494
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 784,
+    "theme": "dark",
+    "cls": 0.08036580253133968
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 784,
+    "theme": "light",
+    "cls": 0.06400130001768774
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 800,
+    "theme": "dark",
+    "cls": 0.13612278894042967
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 800,
+    "theme": "light",
+    "cls": 0.09116988281249999
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 1024,
+    "theme": "dark",
+    "cls": 0.003793716933578253
+  },
+  {
+    "route": "systems",
+    "path": "/systems/#SYS-03",
+    "width": 1024,
+    "theme": "light",
+    "cls": 0.02395258912816644
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 769,
+    "theme": "dark",
+    "cls": 0.14807114346706357
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 769,
+    "theme": "light",
+    "cls": 0.14912874874913642
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 784,
+    "theme": "dark",
+    "cls": 0.09400501503457828
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 784,
+    "theme": "light",
+    "cls": 0.14911277739855708
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 800,
+    "theme": "dark",
+    "cls": 0.0689860189819336
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 800,
+    "theme": "light",
+    "cls": 0.15188709896850583
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 1024,
+    "theme": "dark",
+    "cls": 0.024646177273243666
+  },
+  {
+    "route": "credentials",
+    "path": "/credentials/#google-cloud",
+    "width": 1024,
+    "theme": "light",
+    "cls": 0.024649178106337787
+  }
+]

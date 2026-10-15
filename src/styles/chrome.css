@@ -79,6 +79,7 @@ html.library-deck-root {
 
 .header-search #search {
   width: 100%;
+  min-height: var(--header-control-height);
   margin: 0;
 }
 
@@ -88,6 +89,18 @@ html.library-deck-root {
     flex: 1 1 100%;
     width: 100%;
     max-width: none;
+  }
+}
+
+/* Narrow desktop (nav menu, not icon search): fixed slot after the <=900 rule so
+   Pagefind mount does not wrap the header or shrink the library grid (CLS 769–900px). */
+@media (width > 48rem) and (width <= 900px) {
+  .header-search {
+    order: 0;
+    flex: 0 0 12.5rem;
+    width: 12.5rem;
+    max-width: 12.5rem;
+    min-height: var(--header-control-height);
   }
 }
 

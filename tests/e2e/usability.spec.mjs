@@ -736,7 +736,15 @@ test.describe("library boot CLS", () => {
       { path: "/notes/#NOTE-2026-005", width: 784, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 375, height: 812 },
       { path: "/systems/#SYS-03", width: 1280, height: 800 },
+      { path: "/systems/#SYS-03", width: 1024, height: 800 },
+      { path: "/systems/#SYS-03", width: 800, height: 800 },
+      { path: "/systems/#SYS-03", width: 784, height: 800 },
+      { path: "/systems/#SYS-03", width: 769, height: 800 },
       { path: "/systems/#SYS-03", width: 375, height: 812 },
+      { path: "/credentials/#google-cloud", width: 1024, height: 800 },
+      { path: "/credentials/#google-cloud", width: 800, height: 800 },
+      { path: "/credentials/#google-cloud", width: 784, height: 800 },
+      { path: "/credentials/#google-cloud", width: 769, height: 800 },
     ];
     const scores = [];
     for (const item of cases) {
