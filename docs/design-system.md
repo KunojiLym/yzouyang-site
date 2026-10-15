@@ -167,7 +167,7 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Display/Dropcap | `.note-body.prose .note-dropcap` | Crimson Pro | `--text-dropcap` | 600 |
 | Heading/H3 | `main.page h3` | Source Sans 3 | `--text-lg` | 600 |
 | Label/Caps | `.record-id` | Source Sans 3 | `--text-xs` | 600, 8%, caps |
-| Label/Xs Caps | `.library-index-label` | Source Sans 3 | `--text-xs` | 400, 8%, caps |
+| Label/Xs Caps | `.library-strip-label`, `.related-paths-label` | Source Sans 3 | `--text-xs` | 400, 6%, caps |
 | Label/Xs Group Caps | `.library-index-group--depth-0` | Source Sans 3 | `--text-xs` | 600, 8%, caps, lh 1.35 |
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
@@ -359,13 +359,12 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`, except the single field gap below.
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
-- **Label/Xs Caps tracking.** Figma export records **6%** letter-spacing; shipped CSS (`.library-index-label`, `0.08em` / 8%) matches the typography table. figma bro should align the Figma style to 8%; re-export removes the gap and the sync allow-list for this field.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
-- **Unstyled in Figma textStyles (doc-only).** Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind`), fallback index (`.current-index .index-entry`), and monospace code (`.note-code`).
+- **Unstyled in Figma textStyles (doc-only).** Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind`), fallback index (`.current-index .index-entry`), monospace code (`.note-code`), and **`.library-index-label`** (400 / `0.08em` caps on the catalogue index header — not Label/Xs Caps or Label/Xs Group Caps).
 
 ---
 

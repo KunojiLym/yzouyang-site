@@ -95,7 +95,7 @@ DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
     "Label/Xs Caps": {
         "font_size": "font-size/text-xs",
         "font_weight": 400,
-        "letter_spacing_pct": 8,
+        "letter_spacing_pct": 6,
         "text_case": "UPPER",
     },
     "Label/Xs Group": {
@@ -189,12 +189,6 @@ DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
         "text_case": "ORIGINAL",
     },
 }
-
-# Documented in design-system.md Known Figma gaps — snapshot export vs shipped CSS.
-TEXT_STYLE_FIELD_DRIFT: dict[str, frozenset[str]] = {
-    "Label/Xs Caps": frozenset({"letter_spacing_pct"}),
-}
-
 
 def _block_after(text: str, marker: str) -> str:
     start = text.find(marker)
@@ -446,10 +440,7 @@ def validate_text_styles(snapshot: dict, doc: str) -> list[str]:
             continue
         if name not in doc:
             errors.append(f"text style {name} missing from design-system.md")
-        skip_fields = TEXT_STYLE_FIELD_DRIFT.get(name, frozenset())
         for detail in _style_matches_spec(style, spec):
-            if "letterSpacing" in detail and "letter_spacing_pct" in skip_fields:
-                continue
             errors.append(f"{name} vs doc/CSS spec: {detail}")
     return errors
 
