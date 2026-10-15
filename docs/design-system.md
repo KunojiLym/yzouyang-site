@@ -145,34 +145,37 @@ Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens
 
 At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
 
-| Style | Class | Face | Size | Weight |
+Figma text styles (19) mapped to Layer C classes. Token columns reference `tokens.css`.
+
+| Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
-| Display/Section | `.home-plate h2` | Crimson Pro | `--text-display-3` | 600 |
-| Display/Practice Title | `.home-practice-title` | Crimson Pro | `--text-sm` | 600 |
+| Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
+| Display/H2 | `.library-panel-header .library-panel-title` | Crimson Pro | `--text-display-3` | 600 |
+| Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −0.02em |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
-| Display/Panel Title | `.library-panel-title` | Crimson Pro | `--text-display-3` | 600 |
-| Display/Note Title | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
-| Display/Wordmark | `.brand` | Crimson Pro | `--text-xl` | 600 |
-| Body/Essay | `.note-body.prose` | Crimson Pro | `--text-md` | 400 |
-| Body/Pull Quote | `.note-blockquote` | Crimson Pro italic | `--text-lg` | 400 |
-| Body/Default | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Lede | `.entrance .lede` | Source Sans 3 | `--text-md` | 400 |
+| Display/Practice Title | `.home-practice-title` | Crimson Pro | `--text-sm` | 600 |
+| Heading/H3 | `main.page h3` | Source Sans 3 | `--text-lg` | 600 |
+| Label/Caps | `.record-id` | Source Sans 3 | `--text-xs` (13px) | 600, `0.08em`, caps |
+| Label/Xs Caps | `.library-index-label` | Source Sans 3 | `--text-xs` | 400, `0.08em`, caps |
+| Label/Xs Group | `.library-index-group--depth-0 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, `0.08em`, caps |
+| Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, `0.02em` |
+| Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400 |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
-| Body/Identity Name | `.entrance-name` | Source Sans 3 | `--text-md` | 600 |
-| Body/Identity Role | `.entrance-role` | Source Sans 3 | `--text-base` | 400 |
-| UI/Nav | `.site-nav` | Source Sans 3 | `--text-sm` | 400 |
-| UI/Catalogue ID | `.record-id` | Source Sans 3 | `--text-xs` | 600 |
-| UI/Primary Action | `.entrance-action--primary` | Source Sans 3 | `--text-sm` | 600 |
-| UI/Index Entry | `.current-index .index-entry` | Crimson Pro italic | `--text-sm` | 400 |
-| UI/Code | `.note-code` | `--font-mono` | inherited | 400 |
+| Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
+| Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
+| Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
+| Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
+| UI/Control | `.theme-toggle` | Source Sans 3 | `--text-sm` | 400 (label); icon-only below 48rem |
+
+Doc-only aliases retired in favour of the Figma names above: Wordmark → Display/Brand; section `h2` on Home plates → Display/H2 uses `.home-plate h2` with the same `--text-display-3` token as catalogue panel titles.
 
 | Use | Face |
 |---|---|
-| `.brand`, `.entrance h1`, section `h2` on Home, `.home-practice-title` | Crimson Pro (serif) |
-| `.library-panel--note .library-panel-title`, in-note section headings (`.note-section-heading--major`) | Crimson Pro (serif) |
+| Display/Hero, Display/H1–H2, Display/Brand, Display/Record Title, Display/Practice Title | Crimson Pro (serif) |
 | **Notes essay body** (`.note-body.prose` only) | Crimson Pro (serif) at `--text-md` — see [Reading mode](#reading-mode-notes-only) |
-| Body, nav, TOC, chips, record IDs, search, buttons, SYS beat copy | Source Sans 3 (sans) |
+| Label, body, meta, and UI styles in the table | Source Sans 3 (sans) |
 
 Catalogue IDs (`SYS-01`, `NOTE-2026-014`) use Source Sans 3 with slightly tracked caps — not monospace.
 
@@ -210,9 +213,9 @@ Publication dates in the Notes index and byline use **full calendar dates** when
 |---|---|
 | `640px` | Credentials featured grid becomes 2 columns (`library.css`, `width >= 640px`). Long-form `.case-beats` stacks at `width <= 640px` (`longform.css`). |
 | `40rem` | Entrance actions stack below 40rem. Featured records are 2 columns from 40rem (`home.css`). |
-| `48rem` | Compact header: icon search, icon theme, reading size inside Menu (`chrome.css`). Library master-detail (`library.css`). Systems split stacks (`home.css`). |
-| `49rem` | Library index collapses to a rail instead of hiding (`library.css`). |
-| `64rem` / `1024px` (`--bp-lg`) | Between 49rem and 64rem the library shell stacks the index above the pane. `tokens.css` still names this constant for the record impact grid; `home.css` has no `1024px` query. |
+| `<= 48rem` | Compact header: icon search, icon theme, reading size inside Menu (`chrome.css`). Library master-detail: index stacks above the pane (`library.css`). Systems split stacks (`home.css`). |
+| `> 48rem` | Library index can collapse to a rail instead of hiding (`library.css`). |
+| `64rem` / `1024px` (`--bp-lg`) | Between `> 48rem` and `<= 64rem` the library shell uses a stacked index row above the pane on narrow desktop/tablet. `tokens.css` still names this constant for the record impact grid; `home.css` has no `1024px` query. |
 | `72rem` | Featured records are 4 columns (`home.css`). |
 | `800px` (`--bp-sm`) | Entrance copy padding stack (`home.css`). Career-journey stack (`career-journey.css`). |
 | `900px` (`--bp-md`) | Primary nav collapses to Menu (`chrome.css`). Practice grid is 2 columns from 900px (`home.css`). Long-form sidebar stacks (`longform.css`). Search drawer spans the header (`search.css`). |
@@ -346,7 +349,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 - **Light glow.** The token is `rgb(196 154 90 / 16%)`. Figma `color/glow` is being set to 16% to match. If the file still says 10%, that lag stays here until the variable matches.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
-- This pass could not open the Figma file (the Figma connection was unauthorized), so no further Figma-only gaps are claimed.
+- **Text styles.** No Figma styles yet for Notes reading-mode essay (`.note-body.prose`), pull quotes (`.note-blockquote`), Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind` — same spec as Label/Caps but accent-coloured), fallback index (`.current-index .index-entry`), or monospace code (`.note-code`).
 
 ---
 
