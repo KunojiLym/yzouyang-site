@@ -158,8 +158,8 @@ Figma text styles (27) mapped to Layer C classes. Token columns reference `token
 | Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
-| Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
-| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2`, `main.page h2` | Crimson Pro | `--text-display-3` (`main.page h2`: `--text-display-2`) | 600, lh 1.2, 0% (`main.page h2`: −1%) |
+| Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600, −2.5% |
+| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
 | Display/H2 Page | `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.1, −1% |
 | Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
@@ -366,10 +366,12 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | Variant | Width | Controls (Figma order, left → right) | Rendered height |
 |---|---|---|---|
 | **Compact** | **375–768px** (`<= 48rem`) | **Brand** · **40px Search** · **40px Theme** · **Menu** | **64px** — node `3:25` |
-| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **200px Search** · **Clear** · **Text size** · **Theme** · **Menu** | **59.19px** — node `21:16` |
-| **Narrow desktop** | **901–1024px** | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (shown) · **Text size** · **Theme** | **59.19px** — node `32:292` |
-| **Desktop (unconfirmed)** | **1025–1279px** | Same control order as narrow desktop (shipped: `> 900px` nav + search row) | **Unconfirmed** — no Figma frame in set `3:2` |
-| **Desktop** | **≥1280px** (Figma frame at **1280** — node `3:3`) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (hidden; unconfirmed at 1280) · **Text size** · **Theme** — no **Menu** | **61.39px** — node `3:3` |
+| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** · **Menu** | **59.19px** — node `21:16` |
+| **Narrow desktop** | **901–1024px** | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** | **59.19px** — node `32:292` |
+| **Desktop** | **1025–1279px** (shipped chrome: **`width > 1024px`**; no dedicated frame in set `3:2`) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** — no **Menu** | **59.19px** — shipped chrome (Figma header variants confirm **Clear** behaviour) |
+| **Desktop** | **≥1280px** (Figma frame at **1280** — node `3:3`; shipped chrome breakpoint **`width > 1024px`**) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** — no **Menu** | **61.39px** — node `3:3` |
+
+**Clear (Figma + shipped):** Header variants that include **Clear** model it **hidden (`opacity: 0`)** while the Pagefind search field is empty and **visible once text is typed** (shipped: `.pagefind-ui__search-clear` inside `.header-search`).
 
 **Shipped chrome (for gap checks):** `.site-header` markup from `layout()` — **Brand** · `.site-nav-desktop` (Systems · Notes · Credentials when `> 900px`) · `.header-search` / `#search` (Pagefind **Clear** = `.pagefind-ui__search-clear` inside the search control) · `.reading-size-toggle` · `.theme-toggle` · `.nav-menu` (when `<= 900px`; **Text size** duplicate lives in the Menu panel at `<= 48rem` only).
 
@@ -383,9 +385,9 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 **Open (not enforced by sync; Yingzhao decides):**
 
+- **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** / **letter-spacing** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
 - **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
-- **Header · Clear @ 1280 (Desktop).** Figma **Desktop** (`3:3`) shows **Clear** **hidden** at 1280 (still **unconfirmed** with Visual Design). Shipped Pagefind can still show `.pagefind-ui__search-clear` whenever the search field has a value — not hidden by viewport.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).
 - **Header · Compact Text size.** Figma **Compact** (`3:25`) omits **Text size** from the header row; shipped chrome keeps **Text size** inside the **Menu** panel only (`<= 48rem`) — matches intent, different surface than a header control.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
