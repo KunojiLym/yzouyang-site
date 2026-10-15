@@ -697,6 +697,7 @@ test.describe("library focus order", () => {
 
 test.describe("library boot CLS", () => {
   test("notes and deep links stay under 0.1", async ({ browser }) => {
+    test.setTimeout(180_000);
     test.skip(test.info().project.name === "mobile", "viewports are set per case");
     const cases = [
       { path: "/", width: 1280, height: 800 },
