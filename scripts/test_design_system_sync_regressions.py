@@ -184,37 +184,6 @@ def main() -> None:
         label="Body/Large Dek",
     )
 
-    with tempfile.TemporaryDirectory() as tmp_lede:
-        styles_lede = Path(tmp_lede)
-        for sheet in STYLES_DIR.glob("*.css"):
-            shutil.copy(sheet, styles_lede / sheet.name)
-        home_path = styles_lede / "home.css"
-        home_path.write_text(
-            home_path.read_text(encoding="utf-8").replace(
-                ".entrance .lede {\n"
-                "  max-width: 38rem;\n"
-                "  color: var(--text-default);\n"
-                "  margin: 0 0 var(--space-4);\n"
-                "  font-size: var(--text-md);\n"
-                "  line-height: 1.55;",
-                ".entrance .lede {\n"
-                "  max-width: 38rem;\n"
-                "  color: var(--text-default);\n"
-                "  margin: 0 0 var(--space-4);\n"
-                "  font-size: var(--text-md);\n"
-                "  line-height: 1.9;",
-                1,
-            ),
-            encoding="utf-8",
-        )
-        lede_errors = sync_snapshot(SNAPSHOT, base_css, doc, styles_dir=styles_lede)
-    _assert_line_height_mismatch(
-        lede_errors,
-        style="Body/Large",
-        selector=".entrance .lede",
-        label="Body/Large lede 1.9",
-    )
-
     snapshot_mut = copy.deepcopy(snapshot)
     for style in snapshot_mut["textStyles"]:
         if style["name"] == "Label/Caps":
@@ -296,6 +265,24 @@ def main() -> None:
         style="Display/H2",
         selector=".home-plate h2",
         label="Display/H2 300% flags .home-plate h2",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_nav:
+        styles_nav = Path(tmp_nav)
+        for sheet in STYLES_DIR.glob("*.css"):
+            shutil.copy(sheet, styles_nav / sheet.name)
+        chrome_path = styles_nav / "chrome.css"
+        chrome_path.write_text(
+            chrome_path.read_text(encoding="utf-8")
+            + "\n.header-actions .site-nav a { line-height: 3; }\n",
+            encoding="utf-8",
+        )
+        nav_errors = sync_snapshot(SNAPSHOT, base_css, doc, styles_dir=styles_nav)
+    _assert_line_height_mismatch(
+        nav_errors,
+        style="Body/Small",
+        selector=".site-nav a",
+        label="header-actions .site-nav a line-height 3",
     )
 
     doc = DOC.read_text(encoding="utf-8")

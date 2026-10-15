@@ -181,6 +181,15 @@ CASE_BEAT_KEYS = (
     ("outcome", "Outcome"),
     ("evidence", "Evidence"),
 )
+JS_ROOT_CLASS_SCRIPT = '<script>document.documentElement.classList.add("js");</script>\n'
+_LIBRARY_SSR_FIRST_PANEL_VISIBLE = True
+
+
+def reset_library_ssr_boot_panel() -> None:
+    global _LIBRARY_SSR_FIRST_PANEL_VISIBLE
+    _LIBRARY_SSR_FIRST_PANEL_VISIBLE = True
+
+
 THEME_BOOT_SCRIPT = """<script>
 function yzLibraryHash() {
   try {
@@ -234,6 +243,30 @@ function yzLibraryRevealPanel(panelId) {
   document.documentElement.setAttribute("data-library-boot", libraryBoot);
   if (libraryHash) {
     document.documentElement.setAttribute("data-library-hash", libraryHash);
+    try {
+      if (window.matchMedia("(max-width: 48rem)").matches) {
+        document.documentElement.setAttribute("data-library-mobile-detail", "1");
+      }
+    } catch (e3) {}
+    var bootStyle = document.createElement("style");
+    bootStyle.id = "yz-library-hash-boot";
+    var hashCss = libraryHash.replace(/\\\\/g, "\\\\\\\\").replace(/"/g, '\\\\"');
+    bootStyle.textContent =
+      "html.js[data-library-hash]:not([data-library-panel-ready]) .library-panels > .library-panel{display:none!important}" +
+      'html.js[data-library-hash] .library-panels > .library-panel[data-panel-id="' +
+      hashCss +
+      '"]{display:block!important}' +
+      'html.js[data-library-hash] .library-panels > .library-panel[data-panel-id="' +
+      hashCss +
+      '"][hidden]{display:block!important}' +
+      'html.js[data-library-hash] .library-panels > .library-panel[data-record="' +
+      hashCss +
+      '"]{display:block!important}' +
+      'html.js[data-library-hash] .library-panels > .library-panel[data-record="' +
+      hashCss +
+      '"][hidden]{display:block!important}' +
+      "html.js[data-library-hash] .library-panels > .library-panel.is-active{display:block!important}";
+    document.head.appendChild(bootStyle);
   }
 })();
 </script>"""
@@ -283,9 +316,15 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
       split.classList.add("is-detail-open");
       var back = split.querySelector(".library-back");
       if (back) back.hidden = false;
+    } else if (
+      target.classList.contains("library-panel--note") &&
+      split.getAttribute("data-index-default") === "collapsed"
+    ) {
+      split.classList.add("is-index-collapsed", "is-index-unpinned");
     }
   }
   root.removeAttribute("data-library-hash");
+  root.removeAttribute("data-library-mobile-detail");
   root.setAttribute("data-library-panel-ready", "1");
 })();
 </script>
@@ -905,26 +944,24 @@ def library_section_panel(
 
 
 def append_library_panel(panels: list[str], panel_id: str, heading: str, body: str, **kwargs) -> None:
-    """All panels start hidden; LIBRARY_HASH_BOOT_SCRIPT + chrome.js pick the active one."""
-    kwargs.setdefault("hidden", True)
+    """First panel in index order is visible for no-JS; JS hides extras via html.js rules."""
+    global _LIBRARY_SSR_FIRST_PANEL_VISIBLE
+    if "hidden" not in kwargs:
+        kwargs["hidden"] = not _LIBRARY_SSR_FIRST_PANEL_VISIBLE
+        if not kwargs["hidden"]:
+            _LIBRARY_SSR_FIRST_PANEL_VISIBLE = False
     panels.append(library_panel_html(panel_id, heading, body, **kwargs))
 
 
 def append_library_section(
     panels: list[str], section_id: str, heading: str, inner_html: str, **kwargs
 ) -> None:
-    kwargs.setdefault("hidden", True)
+    global _LIBRARY_SSR_FIRST_PANEL_VISIBLE
+    if "hidden" not in kwargs:
+        kwargs["hidden"] = not _LIBRARY_SSR_FIRST_PANEL_VISIBLE
+        if not kwargs["hidden"]:
+            _LIBRARY_SSR_FIRST_PANEL_VISIBLE = False
     panels.append(library_section_panel(section_id, heading, inner_html, **kwargs))
-
-
-def prioritize_library_panel(panels: list[str], panel_id: str) -> None:
-    """Move a panel (and its inline reveal script) to the front for early hash boot."""
-    needle = f'data-panel-id="{panel_id}"'
-    for index, block in enumerate(panels):
-        if needle in block:
-            if index > 0:
-                panels.insert(0, panels.pop(index))
-            return
 
 
 def _library_strip_html(site: dict, *, active: str) -> str:
@@ -981,36 +1018,9 @@ def library_shell(
         if route_lede.strip()
         else ""
     )
-    notes_reading_context_reserve = ""
-    if index_default == "collapsed":
-        notes_reading_context_reserve = (
-            "@media (width > 48rem){"
-            "html[data-library-boot=detail] "
-            "#library-split[data-index-default=collapsed] .library-reading-context[hidden]{"
-            "display:flex!important;visibility:hidden;pointer-events:none;"
-            "}"
-            "}"
-        )
-    library_stack_critical = (
-        "      <style>"
-        "@media (width > 48rem) and (width <= 64rem){"
-        "#library-split.library-split[data-index-default=open]{"
-        "grid-template-columns:1fr;"
-        "grid-template-rows:38dvh minmax(0,1fr);"
-        "}"
-        "#library-split[data-index-default=open] .library-index{"
-        "max-height:38dvh;height:38dvh;min-height:0;overflow:hidden;box-sizing:border-box;"
-        "}"
-        "}"
-        f"{notes_reading_context_reserve}"
-        "</style>\n"
-    )
     split_classes = "library-split is-booting"
-    if index_default == "collapsed":
-        split_classes += " is-index-collapsed is-index-unpinned"
     return (
         f'    <div class="library-shell" id="library-shell">\n'
-        f"{library_stack_critical}"
         f'      <h1 class="visually-hidden">{esc(title)}</h1>\n'
         f"{lede_html}"
         f'      <div class="library-frame">\n'
@@ -1333,7 +1343,7 @@ def layout(
   <link rel="icon" href="{favicon_svg}" type="image/svg+xml" />
   <link rel="icon" href="{favicon_png}" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="{apple_icon}" />
-{THEME_BOOT_SCRIPT}
+{JS_ROOT_CLASS_SCRIPT}{THEME_BOOT_SCRIPT}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />{pf_css_tag}
@@ -3539,6 +3549,7 @@ def build_systems_catalogue(site: dict, export: dict) -> str:
 
 
 def build_portfolio(site: dict, export: dict) -> str:
+    reset_library_ssr_boot_panel()
     page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
     projects = [p for p in (export.get("projects") or []) if isinstance(p, dict)]
     copy_map = lookup_site(site, "project_copy", {})
@@ -3727,7 +3738,6 @@ def build_portfolio(site: dict, export: dict) -> str:
         toc.append({"id": "empty", "label": "Systems", "children": []})
 
     systems_lede = str(lookup_site(site, "systems_lede", "") or "").strip()
-    prioritize_library_panel(panels, "SYS-03")
     return library_shell(
         site=site,
         title="Systems",
@@ -3867,6 +3877,7 @@ def _certs_by_issuer_html(
 
 
 def build_credentials(site: dict, export: dict) -> str:
+    reset_library_ssr_boot_panel()
     page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
     lede = str(lookup_site(site, "credentials_verify.lede", "") or "").strip() or (
         page.get("lede") or "PUBLIC certifications and qualifications."
@@ -3985,7 +3996,6 @@ def build_credentials(site: dict, export: dict) -> str:
         )
         toc.append({"id": "empty", "label": cred_title, "children": []})
 
-    prioritize_library_panel(panels, "google-cloud")
     return library_shell(
         site=site,
         title=cred_title,
@@ -4216,6 +4226,7 @@ def build_perspectives(
     site: dict, export: dict, uncaptioned: list[dict] | None = None,
 ) -> str:
     """Notes library — NOTE-* entries grouped by category, ordered by date."""
+    reset_library_ssr_boot_panel()
     rows = _writing_rows(export)
     assigned = _unique_note_catalog_ids(rows)
 
@@ -4301,7 +4312,6 @@ def build_perspectives(
             )
         )
 
-    prioritize_library_panel(panels, "NOTE-2026-005")
     return library_shell(
         site=site,
         title="Notes",

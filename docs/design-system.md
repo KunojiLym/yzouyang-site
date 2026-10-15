@@ -387,6 +387,9 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 **Open (not enforced by sync; Yingzhao decides):**
 
 - **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** / **letter-spacing** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
+- **`.home-snap-proposition .lede` (Body/Large — open).** At **≥900px** the built home page computes **line-height 1.5** (`home.css`); Figma **Body/Large** is **155%**. No CSS change until **Yingzhao** decides. Sync skips **line-height** for `.home-snap-proposition .lede` (`TEXT_STYLE_OPEN_CSS_ITEMS`).
+- **`.entrance .lede` (Body/Large table alias — open).** Same as **`.home-snap-proposition .lede`**: Home proposition lede relaxes to line-height 1.5 at ≥900px (`home.css`); Figma Body/Large is 155%.
+- **`.home-plate h2` (Display/H2 — open).** home-plate sections are not on the shipped home route; line-height checked on library panel titles.
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
 - **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).

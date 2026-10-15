@@ -718,6 +718,34 @@ test.describe("library focus order", () => {
   });
 });
 
+test.describe("library without JavaScript", () => {
+  test("systems and notes render catalogue content", async ({ browser }) => {
+    test.skip(test.info().project.name === "mobile", "desktop library layout");
+    for (const path of ["/systems/", "/notes/", "/credentials/"]) {
+      const context = await browser.newContext({ javaScriptEnabled: false });
+      const page = await context.newPage();
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const panel = page.locator(".library-panel:not([hidden])").first();
+      await expect(panel).toBeVisible();
+      const text = await panel.locator(".library-panel-body").innerText();
+      expect(text.trim().length).toBeGreaterThan(20);
+      await context.close();
+    }
+  });
+
+  test("notes deep link renders without a blank pane", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/notes/#NOTE-2026-005", { waitUntil: "domcontentloaded" });
+    await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"]')).toBeVisible();
+    const text = await page
+      .locator('.library-panel[data-panel-id="NOTE-2026-005"] .library-panel-body')
+      .innerText();
+    expect(text.trim().length).toBeGreaterThan(40);
+    await context.close();
+  });
+});
+
 test.describe("library boot CLS", () => {
   test.describe.configure({ mode: "serial" });
 
@@ -743,7 +771,13 @@ test.describe("library boot CLS", () => {
       { path: "/systems/#SYS-03", width: 784, height: 800 },
       { path: "/systems/#SYS-03", width: 769, height: 800 },
       { path: "/systems/#SYS-03", width: 375, height: 812 },
+      { path: "/systems/#SYS-01", width: 800, height: 800 },
+      { path: "/systems/#SYS-01", width: 769, height: 800 },
       { path: "/credentials/#google-cloud", width: 1024, height: 800 },
+      { path: "/credentials/#additional-training-bootcamps", width: 800, height: 800 },
+      { path: "/credentials/#additional-training-bootcamps", width: 769, height: 800 },
+      { path: "/notes/#NOTE-2025-015", width: 800, height: 800 },
+      { path: "/notes/#NOTE-2025-015", width: 769, height: 800 },
       { path: "/credentials/#google-cloud", width: 900, height: 800 },
       { path: "/credentials/#google-cloud", width: 800, height: 800 },
       { path: "/credentials/#google-cloud", width: 784, height: 800 },

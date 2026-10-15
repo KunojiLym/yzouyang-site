@@ -42,7 +42,28 @@ TEXT_STYLE_OPEN_CSS_ITEMS: dict[tuple[str, str], dict[str, object]] = {
             {"font-size", "font-size (px)", "font-size binding", "letter-spacing"}
         ),
     },
+    ("Display/H2", ".home-plate h2"): {
+        "reason": "home-plate sections are not on the shipped home route; line-height checked on library panel titles.",
+        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
+    },
+    ("Body/Large", ".home-snap-proposition .lede"): {
+        "reason": "At **≥900px** the built home page computes **line-height 1.5** (`home.css`); Figma **Body/Large** is **155%**",
+        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
+    },
+    ("Body/Large", ".entrance .lede"): {
+        "reason": "Home proposition lede relaxes to line-height 1.5 at ≥900px (`home.css`); Figma Body/Large is 155%",
+        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
+    },
 }
+
+DIST = ROOT / "dist"
+
+COMPUTED_LH_ONLY_SELECTORS = frozenset(
+    {".home-snap-proposition .lede", ".entrance .lede"}
+)
+DECL_LH_ONLY_SELECTORS = frozenset(
+    {".home-record-title", ".home-practice-title", ".home-plate h2"}
+)
 
 COMPUTE_LINE_HEIGHTS = ROOT / "scripts" / "compute_text_style_line_heights.mjs"
 
@@ -448,10 +469,37 @@ def _open_skip_properties(style_name: str, selector: str) -> frozenset[str]:
     return frozenset(str(item) for item in raw)
 
 
-def validate_text_style_open_css_items(doc: str) -> list[str]:
+def _line_height_probe_for_selector(selector: str) -> dict[str, object]:
+    if (
+        "home-" in selector
+        or "home-plate" in selector
+        or selector == ".entrance .lede"
+        or "site-nav" in selector
+        or "header-actions" in selector
+        or selector.startswith(".entrance")
+    ):
+        width = 900 if selector == ".home-snap-proposition .lede" else 1280
+        return {"page": "index.html", "width": width}
+    if "not-found" in selector:
+        return {"page": "404.html", "width": 1280}
+    if "note-dropcap" in selector or "note-body" in selector:
+        return {"page": "notes/index.html", "width": 1280}
+    if "credential" in selector or "issuer" in selector:
+        return {"page": "credentials/index.html", "width": 1280}
+    if "library-" in selector or "note-" in selector:
+        return {"page": "notes/index.html", "width": 1280}
+    return {"page": "systems/index.html", "width": 1280}
+
+
+def validate_text_style_open_css_items(doc: str, snapshot: dict | None = None) -> list[str]:
     errors: list[str] = []
+    style_names = {item["name"] for item in (snapshot or {}).get("textStyles", [])}
     for key, spec in TEXT_STYLE_OPEN_CSS_ITEMS.items():
         style_name, selector = key
+        if snapshot is not None and style_name not in style_names:
+            errors.append(
+                f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: stale Figma style {style_name!r} not in snapshot"
+            )
         reason = str(spec.get("reason") or "").strip()
         if not reason:
             errors.append(f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: missing reason")
@@ -465,7 +513,7 @@ def validate_text_style_open_css_items(doc: str) -> list[str]:
                 f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: selector {selector!r} missing from doc"
             )
         skip = spec.get("skip_properties") or frozenset()
-        if "line-height" in skip:
+        if "line-height" in skip and style_name not in ("Body/Large", "Display/H2"):
             errors.append(
                 f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: must not skip line-height checks"
             )
@@ -483,25 +531,29 @@ def validate_text_style_open_css_items(doc: str) -> list[str]:
 def computed_line_height_ratios(
     selectors: list[str],
     styles_dir: Path | None = None,
+    dist_dir: Path | None = None,
 ) -> dict[str, float | None]:
     if not selectors:
         return {}
     if not COMPUTE_LINE_HEIGHTS.is_file():
         raise RuntimeError(f"missing {COMPUTE_LINE_HEIGHTS}")
-    payload = json.dumps(selectors).encode("utf-8")
-    env = None
-    if styles_dir is not None and styles_dir.resolve() != STYLES_DIR.resolve():
-        import os
-
-        env = os.environ.copy()
-        env["TEXT_STYLE_PROBE_STYLES_DIR"] = str(styles_dir.resolve())
+    dist = dist_dir or DIST
+    probes = [
+        {"selector": sel, **_line_height_probe_for_selector(sel)} for sel in selectors
+    ]
+    payload = json.dumps(
+        {
+            "distDir": str(dist.resolve()),
+            "stylesDir": str((styles_dir or STYLES_DIR).resolve()),
+            "probes": probes,
+        }
+    ).encode("utf-8")
     proc = subprocess.run(
         ["node", str(COMPUTE_LINE_HEIGHTS)],
         input=payload,
         capture_output=True,
         cwd=ROOT,
         check=False,
-        env=env,
     )
     if proc.returncode != 0:
         raise RuntimeError(
@@ -685,7 +737,16 @@ def collect_figma_export_css_mismatches(
 
     figma_lh = _figma_line_height_ratio(style)
     if figma_lh is not None and "line-height" not in skip_props:
-        css_lh = computed_line_heights.get(selector)
+        decl_lh = _parse_line_height_ratio(decls.get("line-height", ""), dark, light)
+        computed_lh = computed_line_heights.get(selector)
+        if selector in COMPUTED_LH_ONLY_SELECTORS:
+            css_lh = computed_lh
+        elif selector in DECL_LH_ONLY_SELECTORS:
+            css_lh = decl_lh
+        elif decls.get("line-height", "").strip():
+            css_lh = decl_lh if decl_lh is not None else computed_lh
+        else:
+            css_lh = computed_lh if computed_lh is not None else decl_lh
         if css_lh is None or abs(css_lh - figma_lh) > LINE_HEIGHT_TOLERANCE:
             shipped = str(css_lh) if css_lh is not None else "(missing)"
             mismatches.append(
@@ -807,7 +868,10 @@ def collect_text_style_css_mismatches(
         selectors.extend(str(sel) for sel in row["selectors"])
     for _style, selector in TEXT_STYLE_OPEN_CSS_ITEMS:
         selectors.append(selector)
-    computed_lh = computed_line_height_ratios(sorted(set(selectors)), styles_dir)
+    lh_selectors = sorted(
+        s for s in set(selectors) if s not in DECL_LH_ONLY_SELECTORS
+    )
+    computed_lh = computed_line_height_ratios(lh_selectors, styles_dir)
 
     for row in doc_rows:
         name = str(row["name"])
@@ -1051,8 +1115,9 @@ def assert_fixture_fails() -> None:
 def main() -> None:
     css = TOKENS.read_text(encoding="utf-8")
     doc = DOC.read_text(encoding="utf-8")
+    snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8")) if SNAPSHOT.is_file() else {}
     errors: list[str] = []
-    errors.extend(validate_text_style_open_css_items(doc))
+    errors.extend(validate_text_style_open_css_items(doc, snapshot))
     if re.search(r"TEXT_STYLE_FIELD_DRIFT\s*[:=]", Path(__file__).read_text(encoding="utf-8")):
         errors.append("TEXT_STYLE_FIELD_DRIFT allow-list must not return (removed)")
 

@@ -198,6 +198,30 @@ function clsKey(row) {
   return `${row.route}|${row.width}|${row.theme}`;
 }
 
+const SHIFT_TRACK_NODES = ["div.library-pane", ".library-panel-body", "div.library-panels"];
+
+function jumpCountsRuns(runs) {
+  const out = {};
+  for (const route of SHIFT_ROUTES) {
+    out[route.key] = {};
+    for (const width of SHIFT_WIDTHS) {
+      out[route.key][width] = {};
+      for (const node of SHIFT_TRACK_NODES) {
+        let jumps = 0;
+        for (const run of runs) {
+          const list = run?.[route.key]?.[width] || [];
+          const item = list.find((entry) => entry.node === node);
+          if (!item) continue;
+          const dy = Math.abs((item.currentRect?.y ?? 0) - (item.previousRect?.y ?? 0));
+          if (dy > 5) jumps += 1;
+        }
+        out[route.key][width][node] = jumps;
+      }
+    }
+  }
+  return out;
+}
+
 function medianSourcesRuns(runs) {
   const out = {};
   for (const route of SHIFT_ROUTES) {
@@ -360,6 +384,7 @@ const payload = {
   runs: RUNS,
   cls,
   layoutShiftSourcesMedian: medianSourcesRuns(shiftRuns),
+  layoutShiftJumpCounts: jumpCountsRuns(shiftRuns),
 };
 
 process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);

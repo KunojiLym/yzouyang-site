@@ -845,6 +845,8 @@ def assert_library_boot_panel() -> None:
         fail("theme boot and the pre-paint hash script must both call the shared helper")
     if "function yzLibraryRevealPanel" not in boot:
         fail("theme boot must define yzLibraryRevealPanel for per-panel hash reveal")
+    if 'classList.add("js")' not in boot and "JS_ROOT_CLASS_SCRIPT" not in boot:
+        fail("page shell must add html.js before paint for no-JS panel fallback")
     panel_fn = boot.split("def library_panel_html", 1)[1].split("\ndef ", 1)[0]
     if re.search(r'\sid="\{esc\(panel_id\)\}"', panel_fn):
         fail("library panels must not carry the record id")
@@ -861,9 +863,9 @@ def assert_library_boot_panel() -> None:
         )
         if first is None:
             fail(f"{rel} missing a library panel")
-        if not first.group(1):
+        if first.group(1):
             fail(
-                f"{rel} first panel must be hidden in SSR; hash boot picks the active panel before paint"
+                f"{rel} first panel must be visible in SSR for no-JS; html.js hides extras after boot"
             )
 
 
@@ -983,6 +985,9 @@ def assert_boot_cls_review_json() -> None:
         shifts = after_payload.get("layoutShiftSourcesMedian")
         if not isinstance(shifts, dict):
             fail("cls-after.json missing layoutShiftSourcesMedian object")
+        jumps = after_payload.get("layoutShiftJumpCounts")
+        if not isinstance(jumps, dict):
+            fail("cls-after.json missing layoutShiftJumpCounts object")
         for width in (769, 784, 800, 900, 1024):
             for route in ("notes", "systems", "credentials"):
                 route_block = shifts.get(route, {})

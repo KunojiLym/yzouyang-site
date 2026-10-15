@@ -1,88 +1,147 @@
 #!/usr/bin/env node
 /**
- * Computed line-height ratios for design-system text-style selectors (Playwright).
- * Stdin: JSON array of CSS selectors. Stdout: JSON object selector -> ratio | null.
+ * Computed line-height ratios from built dist pages (Playwright).
+ * Stdin: JSON { distDir?, stylesDir?, probes: Array<{ page, selector, width? }> }
+ *        or legacy JSON array of selector strings (uses default probe map).
+ * Stdout: JSON object selector -> ratio | null.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const STYLES_DIR = process.env.TEXT_STYLE_PROBE_STYLES_DIR
-  ? process.env.TEXT_STYLE_PROBE_STYLES_DIR
-  : join(ROOT, "src/styles");
-const STYLE_SHEETS = [
-  "tokens.css",
-  "base.css",
-  "chrome.css",
-  "components.css",
-  "home.css",
-  "library.css",
-  "longform.css",
-  "search.css",
-];
+const DEFAULT_DIST = join(ROOT, "dist");
+const DEFAULT_STYLES = join(ROOT, "src/styles");
 
-const selectors = JSON.parse(readFileSync(0, "utf8"));
+function listStylesheets(stylesDir) {
+  return readdirSync(stylesDir)
+    .filter((name) => name.endsWith(".css"))
+    .sort()
+    .map((name) => join(stylesDir, name));
+}
 
-const probeHtml = `<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="utf-8" /></head><body>
-<header class="site-header"><button type="button" class="theme-toggle">Theme</button></header>
-<nav class="site-nav"><a href="/systems/">Systems</a></nav>
-<p class="record-id">NOTE-2026-001</p>
-<p class="credential-card-meta">Meta</p>
-<p class="home-record-title">Record</p>
-<p class="home-practice-title">Practice</p>
-<main class="page"><div class="entrance"><h1>Probe h1</h1><p class="lede">Probe lede</p></div>
-<div class="home-plate"><h2>Probe plate</h2></div><h2>Probe page h2</h2><h3>Probe h3</h3></main>
-<article class="not-found"><h1>404</h1></article>
-<div class="library-panel-header"><h2 class="library-panel-title">Probe</h2></div>
-<div class="library-panel--note"><p class="note-dek">Probe dek</p><h2 class="library-panel-title">Note title</h2></div>
-<div class="library-index-group--depth-0"><span class="library-index-group-label">G0</span></div>
-<div class="library-index-group--depth-1"><span class="library-index-group-label">G1</span></div>
-<div class="library-index-group--depth-2"><span class="library-index-group-label">G2</span></div>
-<div class="note-body prose"><p class="note-dropcap">Dropcap paragraph text.</p>
-<blockquote class="note-blockquote"><p>Probe quote</p></blockquote></div>
-</body></html>`;
+function defaultProbeForSelector(selector) {
+  if (
+    selector.includes("home-") ||
+    selector.includes("home-plate") ||
+    selector === ".entrance .lede" ||
+    selector.startsWith(".entrance") ||
+    selector.includes("site-nav") ||
+    selector.includes("header-actions")
+  ) {
+    const width = selector === ".home-snap-proposition .lede" ? 900 : 1280;
+    return { page: "index.html", width };
+  }
+  if (selector.includes("not-found")) {
+    return { page: "404.html", width: 1280 };
+  }
+  if (selector.includes("note-dropcap") || selector.includes("note-body")) {
+    return { page: "notes/index.html", width: 1280 };
+  }
+  if (selector.includes("credential") || selector.includes("issuer")) {
+    return { page: "credentials/index.html", width: 1280 };
+  }
+  if (selector.includes("library-") || selector.includes("note-")) {
+    return { page: "notes/index.html", width: 1280 };
+  }
+  return { page: "systems/index.html", width: 1280 };
+}
+
+function parseInput(raw) {
+  const parsed = JSON.parse(raw);
+  if (Array.isArray(parsed)) {
+    return {
+      distDir: process.env.TEXT_STYLE_PROBE_DIST || DEFAULT_DIST,
+      stylesDir: process.env.TEXT_STYLE_PROBE_STYLES_DIR || DEFAULT_STYLES,
+      overrideStyles: Boolean(process.env.TEXT_STYLE_PROBE_STYLES_DIR),
+      probes: parsed.map((selector) => ({
+        selector,
+        ...defaultProbeForSelector(selector),
+      })),
+    };
+  }
+  const stylesDir = parsed.stylesDir || process.env.TEXT_STYLE_PROBE_STYLES_DIR || DEFAULT_STYLES;
+  return {
+    distDir: parsed.distDir || process.env.TEXT_STYLE_PROBE_DIST || DEFAULT_DIST,
+    stylesDir,
+    overrideStyles: Boolean(parsed.overrideStyles ?? process.env.TEXT_STYLE_PROBE_STYLES_DIR),
+    probes: parsed.probes || [],
+  };
+}
+
+function localizeDistHtml(html, distDir) {
+  const assetsRoot = join(distDir, "assets").replace(/\\/g, "/");
+  return html
+    .replace(/href="\//g, `href="file://${distDir.replace(/\\/g, "/")}/`)
+    .replace(/src="\//g, `src="file://${distDir.replace(/\\/g, "/")}/`)
+    .replaceAll(`file://${distDir.replace(/\\/g, "/")}/assets/`, `file://${assetsRoot}/`);
+}
+
+const input = parseInput(readFileSync(0, "utf8"));
+const styleFiles = listStylesheets(input.stylesDir);
+const useBundledCss = !input.overrideStyles;
 
 const browser = await chromium.launch();
-const page = await browser.newPage();
-await page.setContent(probeHtml, { waitUntil: "domcontentloaded" });
-for (const name of STYLE_SHEETS) {
-  const css = readFileSync(join(STYLES_DIR, name), "utf8");
-  await page.addStyleTag({ content: css });
-}
-await page.evaluate(() => document.fonts.ready);
+const ratios = {};
 
-const ratios = await page.evaluate((sels) => {
-  const out = {};
-  for (const sel of sels) {
+for (const probe of input.probes) {
+  const selector = probe.selector;
+  if (!selector || ratios[selector] !== undefined) {
+    continue;
+  }
+  const pagePath = join(input.distDir, probe.page);
+  const width = probe.width ?? 1280;
+  const page = await browser.newPage({ viewport: { width, height: 800 } });
+  let html = readFileSync(pagePath, "utf8");
+  html = localizeDistHtml(html, input.distDir);
+  await page.setContent(html, { waitUntil: "domcontentloaded" });
+  if (useBundledCss) {
+    const bundle = join(input.distDir, "styles.css");
+    const css = readFileSync(bundle, "utf8");
+    await page.addStyleTag({ content: css });
+  } else {
+    for (const cssPath of styleFiles) {
+      const css = readFileSync(cssPath, "utf8");
+      await page.addStyleTag({ content: css });
+    }
+  }
+  await page.evaluate(() => document.fonts.ready);
+
+  const ratio = await page.evaluate((sel) => {
     let style = null;
     if (sel === ".note-body.prose .note-dropcap") {
-      const el = document.querySelector(".note-body.prose p.note-dropcap");
+      const el = document.querySelector(".note-body.prose p.note-dropcap")
+        || document.querySelector(".note-body.prose > p:first-of-type");
       if (el) style = getComputedStyle(el, "::first-letter");
+    } else if (sel === ".entrance .lede") {
+      const el =
+        document.querySelector(".home-snap-proposition .lede")
+        || document.querySelector(".entrance .lede");
+      if (el) style = getComputedStyle(el);
+    } else if (sel === ".library-index-group--depth-2 > .library-index-group-label") {
+      const el =
+        document.querySelector(".library-index-group--depth-2 > .library-index-group-label")
+        || document.querySelector(".library-index-group--depth-1 > .library-index-group-label");
+      if (el) style = getComputedStyle(el);
     } else {
       const el = document.querySelector(sel);
       if (el) style = getComputedStyle(el);
     }
-    if (!style) {
-      out[sel] = null;
-      continue;
-    }
+    if (!style) return null;
     const fontSize = Number.parseFloat(style.fontSize);
     const lineHeight = style.lineHeight;
-    if (!Number.isFinite(fontSize) || fontSize <= 0) {
-      out[sel] = null;
-      continue;
-    }
+    if (!Number.isFinite(fontSize) || fontSize <= 0) return null;
     if (lineHeight.endsWith("px")) {
-      out[sel] = Number.parseFloat(lineHeight) / fontSize;
-    } else {
-      const parsed = Number.parseFloat(lineHeight);
-      out[sel] = Number.isFinite(parsed) ? parsed : null;
+      return Number.parseFloat(lineHeight) / fontSize;
     }
-  }
-  return out;
-}, selectors);
+    const parsed = Number.parseFloat(lineHeight);
+    return Number.isFinite(parsed) ? parsed : null;
+  }, selector);
+
+  ratios[selector] = ratio;
+  await page.close();
+}
 
 await browser.close();
 process.stdout.write(`${JSON.stringify(ratios)}\n`);

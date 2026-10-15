@@ -42,12 +42,29 @@ md += `Tables below are generated from \`cls-before.json\` and \`cls-after.json\
 md += `## What changed\n\n`;
 md += `- **Header (769–900px):** fixed \`12.5rem\` (200px) \`.header-search\` slot + \`#search\` min-height so Pagefind mount does not wrap the action row or shrink the library grid (\`chrome.css\`, pre-fix baseline \`862e9d8\`).\n`;
 md += `- **Library strip + footer:** \`--library-strip-min-height\` and \`--library-page-footer-min-height\` on \`.library-strip\` / \`.library-page-footer\` so strip and footer block size is stable before paint (no \`max-height\` reserve on \`.library-frame\` — that double-counted and left a ~52px gap under the footer).\n`;
-md += `- **Boot reading context:** note-panel boot reserve + \`syncReadingContext()\` before \`is-booting\` is cleared; \`is-reading-context-visible\` only shows the bar when it is not \`[hidden]\`.\n\n`;
+md += `- **Boot reading context:** note-panel boot reserve + \`syncReadingContext()\` before \`is-booting\` is cleared; \`is-reading-context-visible\` only shows the bar when it is not \`[hidden]\`.\n`;
+const contextPath = join(dir, "CONTEXT.md");
+let contextText = "";
+try {
+  contextText = readFileSync(contextPath, "utf8");
+} catch {
+  contextText = "";
+}
+if (contextText.trim()) {
+  for (const line of contextText.split("\n")) {
+    const trimmed = line.replace(/^#\s+.*$/, "").trim();
+    if (trimmed.startsWith("- **")) {
+      md += `${trimmed}\n`;
+    }
+  }
+}
+md += `\n`;
 md += `Playwright gate (\`library boot CLS\`): deep links @ **375**, **768**, **769**, **784**, **800**, **900**, **1024**, and **1280** — all **< 0.1** in \`cls-after.json\` (After column below is sourced only from that file).\n\n`;
 
 const sources = afterPayload.layoutShiftSourcesMedian;
-if (sources) {
-  md += `**Layout-shift sources (median of **${afterPayload.runs ?? "≥3"}** runs, dark, 769–1024px):** see \`layoutShiftSourcesMedian\` in \`cls-after.json\` (node, \`previousRect\`, \`currentRect\`, \`value\`).\n\n`;
+const jumps = afterPayload.layoutShiftJumpCounts;
+if (sources || jumps) {
+  md += `**Layout-shift sources (median of **${afterPayload.runs ?? "≥3"}** runs, dark, 769–1024px):** see \`layoutShiftSourcesMedian\` and \`layoutShiftJumpCounts\` in \`cls-after.json\`.\n\n`;
 }
 
 for (const theme of themes) {

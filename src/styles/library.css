@@ -793,7 +793,16 @@ body:has(main.library-route) {
   animation: none !important;
 }
 
-.library-panel[hidden] {
+html:not(.js) .library-panel[hidden],
+html:not(.js) .library-overview[hidden] {
+  display: block !important;
+}
+
+html:not(.js) .library-panel:not([hidden]) {
+  display: block;
+}
+
+html.js .library-panel[hidden] {
   display: none !important;
 }
 
@@ -810,12 +819,27 @@ body:has(main.library-route) {
 /* Hash deep links, only until the inline script clears data-library-hash.
    Panels are chosen by data-panel-id. Record ids on the article would
    steal the first Tab and scroll the record under the reading bar. */
-html[data-library-hash] .library-panels > .library-panel:not(.is-active) {
+html.js[data-library-hash] .library-panels > .library-panel:not(.is-active) {
   display: none !important;
 }
 
-html[data-library-hash] .library-panels > .library-panel.is-active {
+html.js[data-library-hash] .library-panels > .library-panel.is-active {
   display: block !important;
+}
+
+html.js[data-library-hash]:not([data-library-panel-ready])
+  .library-panels
+  > .library-panel:first-child:not([hidden]) {
+  display: block !important;
+}
+
+/* Hash deep links: lay out panels before reveal (opacity avoids a visible wrong-first-panel flash). */
+html.js[data-library-hash]:not([data-library-panel-ready]) .library-panels {
+  opacity: 0;
+}
+
+html.js[data-library-panel-ready] .library-panels {
+  opacity: 1;
 }
 
 .library-panel-header {
@@ -1257,49 +1281,8 @@ main.page .library-panel--note .library-panel-title {
 }
 
 @media (width > 48rem) {
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {
-    grid-template-columns: var(--library-rail-width) minmax(0, 1fr);
-    position: relative;
-    overflow: visible;
-  }
-
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index {
-    width: var(--library-rail-width);
-    overflow: visible;
-    z-index: 20;
-  }
-
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index-rail {
-    display: flex;
-  }
-
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index-drawer {
-    position: absolute;
-    left: var(--library-rail-width);
-    top: 0;
-    bottom: 0;
-    width: var(--library-overlay-width);
-    max-width: calc(100% - var(--library-rail-width));
-    flex: none;
-    transform: scaleX(0);
-    opacity: 0;
-    visibility: hidden;
-  }
-
   html[data-library-boot="detail"] .library-panels > .library-panel:first-child:not([hidden]) {
     display: block;
-  }
-
-  html[data-library-boot="detail"] .library-split[data-index-default="collapsed"]
-    .library-reading-context[hidden] {
-    display: flex !important;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  html[data-library-boot="detail"] .library-split[data-index-default="collapsed"]
-    .library-reading-context:not([hidden]) {
-    display: flex !important;
   }
 
   html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
@@ -1319,13 +1302,71 @@ main.page .library-panel--note .library-panel-title {
   display: flex;
 }
 
-/* Notes: reserve reading-context slot while [hidden] (collapsed / unpinned index). */
+/* Notes: reserve `.library-reading-context` slot while collapsed index + [hidden] (design-system). */
+html.js[data-library-boot="detail"]
+  main.library-route[aria-label="Notes"]
+  .library-split.is-booting:is(.is-index-collapsed, .is-detail-open, [data-index-default="collapsed"])
+  .library-reading-context[hidden] {
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Notes index: expanded in SSR; only JS may collapse during hash boot (html.js). */
 @media (width > 48rem) {
-  html[data-library-boot="detail"] .library-split[data-index-default="collapsed"]
-    .library-reading-context[hidden] {
-    display: flex !important;
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"] {
+    grid-template-columns: var(--library-rail-width) minmax(0, 1fr);
+    position: relative;
+    overflow: visible;
+  }
+
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index {
+    width: var(--library-rail-width);
+    overflow: visible;
+    z-index: 20;
+  }
+
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index-rail {
+    display: flex;
+  }
+
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index-drawer {
+    position: absolute;
+    left: var(--library-rail-width);
+    top: 0;
+    bottom: 0;
+    width: var(--library-overlay-width);
+    max-width: calc(100% - var(--library-rail-width));
+    flex: none;
+    transform: scaleX(0);
+    opacity: 0;
     visibility: hidden;
     pointer-events: none;
+  }
+}
+
+/* Notes index: expanded in SSR; only JS may collapse (html.js). */
+html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
+  transform: scaleX(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@media (width <= 64rem) and (width > 48rem) {
+  html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
+    transform: scaleY(1);
   }
 }
 
@@ -1339,18 +1380,6 @@ main.page .library-panel--note .library-panel-title {
 
 /* Narrow desktop / tablet: stack index above pane — vertical fold */
 @media (width <= 64rem) and (width > 48rem) {
-  .library-split[data-index-default="open"]:not(.is-index-collapsed) {
-    grid-template-rows: 38dvh minmax(0, 1fr);
-  }
-
-  .library-split[data-index-default="open"]:not(.is-index-collapsed) .library-index {
-    max-height: 38dvh;
-    height: 38dvh;
-    min-height: 0;
-    overflow: hidden;
-    box-sizing: border-box;
-  }
-
   .library-split {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 0.38fr) minmax(0, 0.62fr);
@@ -1359,7 +1388,9 @@ main.page .library-panel--note .library-panel-title {
   /* Side-by-side rail columns from (width > 48rem) must not stack with these rows. */
   .library-split.is-index-collapsed,
   .library-split.is-index-unpinned,
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"] {
     grid-template-columns: 1fr;
     grid-template-rows: var(--library-rail-width) minmax(0, 1fr);
   }
@@ -1377,6 +1408,13 @@ main.page .library-panel--note .library-panel-title {
     transform: scaleY(0);
   }
 
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"]:not(.is-index-overlay-open)
+    .library-index-drawer {
+    transform: scaleY(0);
+  }
+
   .library-split.is-index-collapsed {
     grid-template-rows: var(--library-rail-width) minmax(0, 1fr);
   }
@@ -1388,6 +1426,14 @@ main.page .library-panel--note .library-panel-title {
   }
 
   .library-split.is-index-collapsed .library-index {
+    max-height: var(--library-rail-width);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index {
     max-height: var(--library-rail-width);
     border-bottom: 1px solid var(--line-soft);
   }
@@ -1462,15 +1508,27 @@ main.page .library-panel--note .library-panel-title {
     display: inline-flex;
   }
 
-  html[data-library-hash] .library-split.is-booting .library-index {
+  html.js[data-library-hash] .library-split.is-booting .library-index {
     display: none;
   }
 
-  html[data-library-hash] .library-split.is-booting .library-back {
+  html.js[data-library-mobile-detail] #library-split.is-booting .library-pane {
+    height: 100%;
+  }
+
+  html.js[data-library-boot="detail"]
+    main.library-route[aria-label="Notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index-drawer {
+    display: none;
+  }
+
+  html.js[data-library-hash] .library-split.is-booting .library-back {
     display: inline-flex !important;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open .library-reading-context {
+  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open
+    .library-reading-context:not([hidden]) {
     display: flex !important;
   }
 }
