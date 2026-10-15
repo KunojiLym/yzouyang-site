@@ -31,8 +31,9 @@ ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 # Text styles skipped for CSS selector checks: figma style name -> reason.
 TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {
     "Body/Large": (
-        "Figma Body/Large binds to `--text-lg`; shipped `.entrance .lede` uses `--text-md`. "
-        "Yingzhao decision pending — https://github.com/KunojiLym/yzouyang-site/issues/32"
+        "Figma Body/Large binds to `--text-lg` / 150% lh; shipped `.entrance .lede` uses "
+        "`--text-md` and `.note-dek` uses lh 1.45. Yingzhao decision pending — "
+        "https://github.com/KunojiLym/yzouyang-site/issues/32"
     ),
 }
 
