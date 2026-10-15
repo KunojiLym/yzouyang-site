@@ -79,6 +79,13 @@ jobs:
       - name: Token drift check
         run: uv run python scripts/check_token_drift.py
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Node deps (Playwright for design-system line-height probe)
+        run: npm install
+
       - name: Design system sync
         run: uv run python scripts/test_design_system_sync.py
 
@@ -91,14 +98,8 @@ jobs:
       - name: DIY collect contract
         run: uv run python scripts/test_diy_collect.py
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
       - name: Frontend lint (Stylelint)
-        run: |
-          npm install
-          npm run lint:css
+        run: npm run lint:css
 
       # Asset prefix comes from deploy.preview_origin while preview_mode is on,
       # and from public_origin after that one flag is turned off. Do not set
