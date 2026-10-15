@@ -45,6 +45,11 @@ TEXT_STYLE_OPEN_CSS_ITEMS: dict[tuple[str, str], dict[str, object]] = {
     },
 }
 
+# Typography-table selectors with one documented export mismatch (Known Figma gaps).
+# Unlike TEXT_STYLE_OPEN_CSS_ITEMS skip_properties, the selector still runs the full
+# Figma export compare; only the named gap_property may diverge.
+TEXT_STYLE_OPEN_MAPPING_GAPS: dict[tuple[str, str], dict[str, object]] = {}
+
 DIST = ROOT / "dist"
 
 COMPUTED_LH_ONLY_SELECTORS = frozenset(
@@ -458,6 +463,29 @@ def _open_skip_properties(style_name: str, selector: str) -> frozenset[str]:
     return frozenset(str(item) for item in raw)
 
 
+def _open_mapping_gap_property(style_name: str, selector: str) -> str | None:
+    spec = TEXT_STYLE_OPEN_MAPPING_GAPS.get((style_name, selector))
+    if not spec:
+        return None
+    gap = str(spec.get("gap_property") or "").strip()
+    return gap or None
+
+
+def _filter_mapping_gap_mismatches(
+    style_name: str,
+    selector: str,
+    mismatches: list[TextStyleCssMismatch],
+) -> list[TextStyleCssMismatch]:
+    gap_property = _open_mapping_gap_property(style_name, selector)
+    if not gap_property:
+        return mismatches
+    return [
+        item
+        for item in mismatches
+        if not _mismatch_covers_skip(item, gap_property)
+    ]
+
+
 def _line_height_probe_for_selector(selector: str) -> dict[str, object]:
     if (
         "home-" in selector
@@ -516,6 +544,46 @@ def validate_text_style_open_css_items(doc: str, snapshot: dict | None = None) -
             errors.append(
                 f"TEXT_STYLE_OPEN_CSS_ITEMS{(style_name, selector)!r}: "
                 f"missing from Known Figma gaps open list"
+            )
+    return errors
+
+
+def validate_text_style_open_mapping_gaps(doc: str, snapshot: dict | None = None) -> list[str]:
+    errors: list[str] = []
+    style_names = {item["name"] for item in (snapshot or {}).get("textStyles", [])}
+    open_section = doc.split("**Open (not enforced by sync; Yingzhao decides):**", 1)
+    open_text = open_section[1] if len(open_section) > 1 else ""
+    table = parse_text_style_table(doc)
+    for key, spec in TEXT_STYLE_OPEN_MAPPING_GAPS.items():
+        style_name, selector = key
+        if snapshot is not None and style_name not in style_names:
+            errors.append(
+                f"TEXT_STYLE_OPEN_MAPPING_GAPS{key!r}: stale Figma style {style_name!r} not in snapshot"
+            )
+        reason = str(spec.get("reason") or "").strip()
+        if not reason:
+            errors.append(f"TEXT_STYLE_OPEN_MAPPING_GAPS{key!r}: missing reason")
+            continue
+        gap_property = str(spec.get("gap_property") or "").strip()
+        if not gap_property:
+            errors.append(f"TEXT_STYLE_OPEN_MAPPING_GAPS{key!r}: missing gap_property")
+            continue
+        if reason not in doc:
+            errors.append(
+                f"TEXT_STYLE_OPEN_MAPPING_GAPS{key!r}: reason not found in design-system.md"
+            )
+        if f"`{selector}`" not in doc:
+            errors.append(
+                f"TEXT_STYLE_OPEN_MAPPING_GAPS{key!r}: selector {selector!r} missing from doc"
+            )
+        if f"`{selector}`" not in open_text:
+            errors.append(
+                f"TEXT_STYLE_OPEN_MAPPING_GAPS{key!r}: missing from Known Figma gaps open list"
+            )
+        row = next((item for item in table if item["name"] == style_name), None)
+        if row is None or selector not in row["selectors"]:
+            errors.append(
+                f"TEXT_STYLE_OPEN_MAPPING_GAPS{key!r}: selector missing from typography table row"
             )
     return errors
 
@@ -585,6 +653,58 @@ def validate_stale_open_css_skips(
                     f"TEXT_STYLE_OPEN_CSS_ITEMS{(style_name, selector)!r}: "
                     f"stale skip for {skip_token!r} (shipped CSS already matches Figma)"
                 )
+    return errors
+
+
+def validate_stale_open_mapping_gaps(
+    snapshot: dict,
+    doc: str,
+    styles_dir: Path,
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> list[str]:
+    if not TEXT_STYLE_OPEN_MAPPING_GAPS:
+        return []
+    doc_rows = parse_text_style_table(doc)
+    by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
+    css_rules = parse_stylesheet_selectors(styles_dir)
+    selectors: list[str] = []
+    for row in doc_rows:
+        selectors.extend(str(sel) for sel in row["selectors"])
+    for _style, selector in TEXT_STYLE_OPEN_MAPPING_GAPS:
+        selectors.append(selector)
+    computed_lh = computed_line_height_ratios(
+        sorted(s for s in set(selectors) if s not in DECL_LH_ONLY_SELECTORS),
+        styles_dir,
+    )
+    errors: list[str] = []
+    for (style_name, selector), spec in TEXT_STYLE_OPEN_MAPPING_GAPS.items():
+        gap_property = str(spec.get("gap_property") or "").strip()
+        if not gap_property:
+            continue
+        style = by_name.get(style_name)
+        row = next((item for item in doc_rows if item["name"] == style_name), None)
+        if style is None or row is None:
+            continue
+        decls = collect_selector_decls(selector, css_rules)
+        if not decls:
+            continue
+        raw = collect_figma_export_css_mismatches(
+            style,
+            row,
+            selector,
+            decls,
+            dark,
+            light,
+            css_rules,
+            computed_lh,
+            skip_props_override=frozenset(),
+        )
+        if not any(_mismatch_covers_skip(item, gap_property) for item in raw):
+            errors.append(
+                f"TEXT_STYLE_OPEN_MAPPING_GAPS{(style_name, selector)!r}: "
+                f"stale gap for {gap_property!r} (shipped CSS already matches Figma)"
+            )
     return errors
 
 
@@ -938,6 +1058,8 @@ def collect_text_style_css_mismatches(
         selectors.extend(str(sel) for sel in row["selectors"])
     for _style, selector in TEXT_STYLE_OPEN_CSS_ITEMS:
         selectors.append(selector)
+    for _style, selector in TEXT_STYLE_OPEN_MAPPING_GAPS:
+        selectors.append(selector)
     lh_selectors = sorted(
         s for s in set(selectors) if s not in DECL_LH_ONLY_SELECTORS
     )
@@ -962,15 +1084,19 @@ def collect_text_style_css_mismatches(
                 )
                 continue
             mismatches.extend(
-                collect_figma_export_css_mismatches(
-                    style,
-                    row,
+                _filter_mapping_gap_mismatches(
+                    name,
                     selector,
-                    decls,
-                    dark,
-                    light,
-                    css_rules,
-                    computed_lh,
+                    collect_figma_export_css_mismatches(
+                        style,
+                        row,
+                        selector,
+                        decls,
+                        dark,
+                        light,
+                        css_rules,
+                        computed_lh,
+                    ),
                 )
             )
 
@@ -1188,8 +1314,10 @@ def main() -> None:
     snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8")) if SNAPSHOT.is_file() else {}
     errors: list[str] = []
     errors.extend(validate_text_style_open_css_items(doc, snapshot))
+    errors.extend(validate_text_style_open_mapping_gaps(doc, snapshot))
     dark, light = theme_maps(css)
     errors.extend(validate_stale_open_css_skips(snapshot, doc, STYLES_DIR, dark, light))
+    errors.extend(validate_stale_open_mapping_gaps(snapshot, doc, STYLES_DIR, dark, light))
     if re.search(r"TEXT_STYLE_FIELD_DRIFT\s*[:=]", Path(__file__).read_text(encoding="utf-8")):
         errors.append("TEXT_STYLE_FIELD_DRIFT allow-list must not return (removed)")
 

@@ -24,7 +24,13 @@ from test_design_system_sync import (  # noqa: E402
     sync_snapshot,
     theme_maps,
     validate_stale_open_css_skips,
+    validate_stale_open_mapping_gaps,
     validate_text_style_open_css_items,
+    validate_text_style_open_mapping_gaps,
+)
+
+MAPPING_GAP_PROBE_REASON = (
+    "Probe: TEXT_STYLE_OPEN_MAPPING_GAPS allows only its documented gap_property mismatch."
 )
 
 LIGHT_DECL_MUTATIONS: list[tuple[str, str, str, list[str]]] = [
@@ -333,6 +339,77 @@ def main() -> None:
         label="header-actions .site-nav a line-height 3",
     )
 
+    doc_for_gap = doc.replace(
+        "**Open (not enforced by sync; Yingzhao decides):**",
+        "**Open (not enforced by sync; Yingzhao decides):**\n\n- "
+        + MAPPING_GAP_PROBE_REASON
+        + " (`Display/H2` · `.home-plate h2`, gap_property `line-height`).\n",
+        1,
+    )
+    gap_spec = {
+        ("Display/H2", ".home-plate h2"): {
+            "reason": MAPPING_GAP_PROBE_REASON,
+            "gap_property": "line-height",
+        },
+    }
+    original_gaps = sync_mod.TEXT_STYLE_OPEN_MAPPING_GAPS
+    sync_mod.TEXT_STYLE_OPEN_MAPPING_GAPS = gap_spec
+    try:
+        gap_doc_errors = validate_text_style_open_mapping_gaps(doc_for_gap, snapshot)
+        if gap_doc_errors:
+            print("mapping gap probe doc validation should pass", file=sys.stderr)
+            for item in gap_doc_errors[:8]:
+                print(f"  {item}", file=sys.stderr)
+            raise SystemExit(1)
+        stale_gap_errors = validate_stale_open_mapping_gaps(
+            snapshot, doc_for_gap, STYLES_DIR, dark, light
+        )
+        if not any("stale gap" in item and "line-height" in item for item in stale_gap_errors):
+            print(
+                "aligned .home-plate h2 line-height should be a stale mapping gap",
+                file=sys.stderr,
+            )
+            for item in stale_gap_errors[:8]:
+                print(f"  {item}", file=sys.stderr)
+            raise SystemExit(1)
+
+        with tempfile.TemporaryDirectory() as tmp_plate:
+            styles_plate = Path(tmp_plate)
+            for sheet in STYLES_DIR.glob("*.css"):
+                shutil.copy(sheet, styles_plate / sheet.name)
+            home_path = styles_plate / "home.css"
+            home_text = home_path.read_text(encoding="utf-8")
+            home_path.write_text(
+                home_text.replace(
+                    ".home-plate h2 {\n"
+                    "  margin: 0 0 var(--space-5);\n"
+                    "  font-family: var(--font-display);",
+                    ".home-plate h2 {\n"
+                    "  margin: 0 0 var(--space-5);\n"
+                    "  font-family: Times, serif;",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            drift_errors = collect_text_style_css_mismatches(
+                snapshot, doc_for_gap, styles_plate, dark, light
+            )
+        if not any(
+            item.style == "Display/H2"
+            and item.selector == ".home-plate h2"
+            and item.property == "font-family"
+            for item in drift_errors
+        ):
+            print(
+                "non-gap property drift on gapped selector should still fail sync",
+                file=sys.stderr,
+            )
+            for item in drift_errors[:12]:
+                print(f"  {item}", file=sys.stderr)
+            raise SystemExit(1)
+    finally:
+        sync_mod.TEXT_STYLE_OPEN_MAPPING_GAPS = original_gaps
+
     doc = DOC.read_text(encoding="utf-8")
     if LABEL_CAPS_ROW not in doc:
         print("missing Label/Caps row in design-system.md", file=sys.stderr)
@@ -346,7 +423,8 @@ def main() -> None:
         raise SystemExit(1)
 
     print(
-        f"test_design_system_sync_regressions ok ({len(REGRESSIONS)} token cases + Label/Caps doc)"
+        "test_design_system_sync_regressions ok "
+        f"({len(REGRESSIONS)} token cases + Label/Caps doc + mapping gaps)"
     )
 
 
