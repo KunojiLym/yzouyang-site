@@ -1369,8 +1369,8 @@ def main() -> None:
         fail("styles.css must reference --glow on the body wash and both entrance atmospheres")
     if "rgb(212 163 92 / 12%)" not in css:
         fail("styles.css dark glow token must use amber pool (12%)")
-    if "rgb(196 154 90 / 16%)" not in css:
-        fail("styles.css light glow must be accent at 16%")
+    if "color-mix(in srgb, var(--accent) 16%, transparent)" not in css:
+        fail("styles.css light glow must be accent at 16% (color-mix)")
     if "rgb(212 163 92 / 10%)" in css:
         fail("styles.css light glow must not stay at 10%")
     if "--accent-link" not in css:
