@@ -562,15 +562,19 @@ body:has(main.home-route) .site-header {
 [data-theme="light"] .entrance-atmosphere--tokens .entrance-scrim {
   background: linear-gradient(
     165deg,
-    rgb(245 239 228 / 88%) 0%,
-    rgb(232 223 208 / 50%) 48%,
-    rgb(232 223 208 / 12%) 100%
+    color-mix(in srgb, var(--bg-elevated) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg-deep) 50%, transparent) 48%,
+    color-mix(in srgb, var(--bg-deep) 12%, transparent) 100%
   );
 }
 
 [data-theme="light"] .entrance-vignette,
 [data-theme="light"] .entrance-atmosphere--tokens .entrance-vignette {
-  background: linear-gradient(to bottom, transparent, rgb(232 223 208 / 82%));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--bg-deep) 82%, transparent)
+  );
   opacity: 1;
 }
 
@@ -599,7 +603,11 @@ body:has(main.home-route) .site-header {
   position: absolute;
   inset: auto 0 0;
   height: 8rem;
-  background: linear-gradient(to bottom, transparent, rgb(10 11 10 / 90%));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--bg-deep) 90%, transparent)
+  );
   pointer-events: none;
 }
 
@@ -686,7 +694,7 @@ main.page .entrance h1 {
   max-width: 38rem;
   color: var(--text-default);
   margin: 0 0 var(--space-4);
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
   line-height: 1.55;
 }
 
@@ -820,17 +828,6 @@ main.page .entrance h1 {
 
 .profile-connect-about .profile-portrait {
   margin: 0 0 var(--space-4);
-}
-
-.profile-connect-aside h3 {
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-}
-
-.profile-connect-aside .record-context {
-  max-width: none;
-  margin-bottom: var(--space-4);
 }
 
 .credentials-section {
@@ -1240,14 +1237,6 @@ main.page .entrance h1 {
 .reading-index a:hover {
   color: var(--accent-hover);
   text-decoration: underline;
-}
-
-.contact-section {
-  padding-bottom: var(--space-12);
-}
-
-.contact-section .record-context {
-  max-width: 36rem;
 }
 
 @media (width <= 800px) {

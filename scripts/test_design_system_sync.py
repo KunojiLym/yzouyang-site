@@ -8,8 +8,11 @@ import re
 import sys
 from pathlib import Path
 
+from design_system_color import colors_equivalent, computed_color_hex8
+
 ROOT = Path(__file__).resolve().parents[1]
 TOKENS = ROOT / "src" / "styles" / "tokens.css"
+STYLES_DIR = ROOT / "src" / "styles"
 CHROME = ROOT / "src" / "styles" / "chrome.css"
 DOC = ROOT / "docs" / "design-system.md"
 SNAPSHOT = ROOT / "docs" / "figma" / "variables.json"
@@ -18,177 +21,18 @@ VIOLATION_FIXTURE = ROOT / "scripts" / "fixtures" / "design_system_snapshot_viol
 FIGMA_URL = "https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ"
 BLOCK_RE = re.compile(r"\{([^{}]*)\}", re.S)
 DECL_RE = re.compile(r"(--[a-z0-9-]+)\s*:\s*([^;]+);", re.I)
+CSS_PROP_RE = re.compile(r"([a-z][a-z0-9-]*)\s*:\s*([^;]+);", re.I)
 HEX_DECL_RE = re.compile(r"--[a-z0-9-]+\s*:\s*(#[0-9a-fA-F]{3,8})\b")
 PX_TOLERANCE = 1.25
+TEXT_STYLE_TABLE_HEADER = "| Figma style | Class | Face | Size / token | Weight / tracking |"
+# Intentional Figma vs CSS selector gaps: (figma style, selector) -> reason.
+ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 
-COLOR_MIX_TOKENS = frozenset(
-    {
-        "--line-soft",
-        "--line-strong",
-        "--accent-cta-bg",
-        "--accent-cta-border",
-    }
-)
+# Text styles skipped for CSS selector checks: figma style name -> reason.
+TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {}
 
-# CSS / design-system.md — must match Figma snapshot textStyles.
-DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
-    "Display/Hero": {
-        "font_size": "font-size/text-display-hero/max",
-        "font_weight": 600,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Display/H1": {
-        "font_size": "font-size/text-display-1/max",
-        "font_weight": 600,
-        "letter_spacing_pct": -2,
-        "text_case": "ORIGINAL",
-    },
-    "Display/H2": {
-        "font_size": "font-size/text-display-3/max",
-        "font_weight": 600,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Display/H2 Page": {
-        "font_size": "font-size/text-display-2/max",
-        "font_weight": 600,
-        "letter_spacing_pct": -1,
-        "text_case": "ORIGINAL",
-    },
-    "Display/Brand": {
-        "font_size": "font-size/text-xl",
-        "font_weight": 600,
-        "letter_spacing_pct": -2,
-        "text_case": "ORIGINAL",
-    },
-    "Display/Record Title": {
-        "font_size": "font-size/text-md",
-        "font_weight": 600,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Display/Practice Title": {
-        "font_size": "font-size/text-sm",
-        "font_weight": 600,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Display/Dropcap": {
-        "font_size": "font-size/text-dropcap/max",
-        "font_weight": 600,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Heading/H3": {
-        "font_size": "font-size/text-lg",
-        "font_weight": 600,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Label/Caps": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 600,
-        "letter_spacing_pct": 8,
-        "text_case": "UPPER",
-    },
-    "Label/Xs Caps": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 400,
-        "letter_spacing_pct": 6,
-        "text_case": "UPPER",
-    },
-    "Label/Xs Group": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 600,
-        "letter_spacing_pct": 2,
-        "text_case": "ORIGINAL",
-    },
-    "Label/Xs Group Caps": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 600,
-        "letter_spacing_pct": 8,
-        "text_case": "UPPER",
-    },
-    "Label/Xs Group Light": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 400,
-        "letter_spacing_pct": 2,
-        "text_case": "ORIGINAL",
-    },
-    "Body/Base": {
-        "font_size": "font-size/text-base",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Body/Large": {
-        "font_size": "font-size/text-lg",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Body/Proof": {
-        "font_size": "font-size/text-proof/max",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Body/Small": {
-        "font_size": "font-size/text-sm",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Body/Small Strong": {
-        "font_size": "font-size/text-sm",
-        "font_weight": 600,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Body/Prose": {
-        "font_size": "font-size/text-md",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Body/Blockquote": {
-        "font_size": "font-size/text-lg",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Meta/Small": {
-        "font_size": "font-size/text-sm",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Meta/Xs": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "Meta/Record Domains": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 400,
-        "letter_spacing_pct": 4,
-        "text_case": "ORIGINAL",
-    },
-    "Meta/Map Node Label": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-    "UI/Control": {
-        "font_size": "font-size/text-sm",
-        "font_weight": 400,
-        "letter_spacing_pct": 0,
-        "text_case": "ORIGINAL",
-    },
-}
+SYNC_COLLECTIONS = frozenset({"Color", "Type", "Spacing", "Radius", "Motion"})
+
 
 def _block_after(text: str, marker: str) -> str:
     start = text.find(marker)
@@ -204,6 +48,13 @@ def parse_declarations(block: str) -> dict[str, str]:
     return {
         match.group(1): match.group(2).strip()
         for match in DECL_RE.finditer(block)
+    }
+
+
+def parse_css_properties(block: str) -> dict[str, str]:
+    return {
+        match.group(1).lower(): match.group(2).strip()
+        for match in CSS_PROP_RE.finditer(block)
     }
 
 
@@ -227,61 +78,33 @@ def resolve_css_token(
     theme: str,
     depth: int = 0,
 ) -> str | None:
-    if depth > 8:
+    if depth > 16:
         return None
     block = merged_theme(dark, light, theme)
     value = block.get(token)
     if value is None:
         return None
-    if value.startswith("var("):
-        return resolve_css_token(value[4:-1].strip(), dark, light, theme, depth + 1)
-    return value
+    trimmed = value.strip()
+    if trimmed.startswith("var("):
+        inner = trimmed[4:-1].strip()
+        return resolve_css_token(inner, dark, light, theme, depth + 1)
+    return trimmed
 
 
-def _hex_channels(hex_color: str) -> tuple[int, int, int, float]:
-    value = hex_color.lstrip("#").lower()
-    if len(value) == 6:
-        value += "ff"
-    if len(value) != 8:
-        raise ValueError(hex_color)
-    r = int(value[0:2], 16)
-    g = int(value[2:4], 16)
-    b = int(value[4:6], 16)
-    a = int(value[6:8], 16) / 255.0
-    return r, g, b, a
+def make_color_resolver(
+    dark: dict[str, str],
+    light: dict[str, str],
+    theme: str,
+    chrome: dict[str, str],
+) -> callable:
+    block = merged_theme(dark, light, theme)
 
+    def resolver(token: str) -> str | None:
+        if token in chrome:
+            return chrome[token]
+        return block.get(token)
 
-def _parse_rgb_percent(value: str) -> tuple[int, int, int, float] | None:
-    match = re.fullmatch(
-        r"rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*/\s*([\d.]+)%\s*\)",
-        value.strip(),
-        re.I,
-    )
-    if not match:
-        return None
-    return (
-        int(match.group(1)),
-        int(match.group(2)),
-        int(match.group(3)),
-        float(match.group(4)) / 100.0,
-    )
-
-
-def colors_equivalent(figma: str, css_value: str) -> bool:
-    fig = figma.strip().lower()
-    css = css_value.strip().lower()
-    if fig == css:
-        return True
-    if fig.startswith("#"):
-        fr, fg, fb, fa = _hex_channels(fig)
-        parsed = _parse_rgb_percent(css)
-        if parsed:
-            cr, cg, cb, ca = parsed
-            return (fr, fg, fb) == (cr, cg, cb) and abs(fa - ca) < 0.025
-        hex6 = re.fullmatch(r"#([0-9a-f]{6})\b", css)
-        if hex6 and len(fig) >= 7:
-            return fig[:7] == f"#{hex6.group(1)}"
-    return False
+    return resolver
 
 
 def scaled_rem_px(css_value: str) -> float | None:
@@ -353,7 +176,15 @@ def css_token_from_web(web: str | None) -> str | None:
     return None
 
 
-SYNC_COLLECTIONS = frozenset({"Color", "Type", "Spacing", "Radius", "Motion"})
+def css_token_for_variable(var: dict) -> str | None:
+    token = css_token_from_web(var.get("web"))
+    if token:
+        return token
+    web = (var.get("web") or "").strip()
+    name = var.get("name") or ""
+    if name.startswith("color/") and web.startswith("color-mix"):
+        return "--" + name.removeprefix("color/").replace("/", "-")
+    return None
 
 
 def figma_modes(collection: dict) -> list[tuple[str, str]]:
@@ -380,29 +211,153 @@ def normalize_font_stack(value: str) -> str:
     return re.sub(r'"', "", value.lower().replace(" ", ""))
 
 
-def color_mix_matches(
-    token: str, snapshot_hex: str, css_value: str, theme: str = "dark"
-) -> bool:
-    snap = snapshot_hex.strip().lower()
-    css = css_value.lower().replace(" ", "")
-    if token == "--line-soft":
-        expected = "#4a5c4e24" if theme == "dark" else "#4a5c4e1f"
-        pct = "14%" if theme == "dark" else "12%"
-        return snap == expected and "var(--rail-green)" in css and pct in css
-    if token == "--line-strong":
-        expected = "#4a5c4e47" if theme == "dark" else "#4a5c4e38"
-        pct = "28%" if theme == "dark" else "22%"
-        return snap == expected and "var(--rail-green)" in css and pct in css
-    if token == "--accent-cta-bg":
-        return snap == "#c49a5a14" and "var(--accent)" in css and "8%" in css
-    if token == "--accent-cta-border":
-        return (
-            snap == "#ad8e58ac"
-            and "55%" in css
-            and "var(--accent)" in css
-            and "var(--line-strong)" in css
-        )
-    return False
+SELECTOR_ALIASES: dict[str, str] = {
+    ".note-body.prose .note-dropcap": ".note-body.prose > p:first-of-type::first-letter",
+    ".library-index-group--depth-0": ".library-index-group--depth-0 > .library-index-group-label",
+}
+
+
+def parse_weight_column(cell: str) -> dict[str, object]:
+    normalized = cell.replace("−", "-").replace("–", "-")
+    normalized = re.sub(r"lh\s*[\d.]+\s*%?", "", normalized, flags=re.I)
+    spec: dict[str, object] = {}
+    weight_match = re.search(r"\b(\d{3})\b", normalized)
+    if weight_match:
+        spec["font_weight"] = int(weight_match.group(1))
+    ls_match = re.search(r"(-?\d+(?:\.\d+)?)\s*%", normalized)
+    if ls_match:
+        spec["letter_spacing_pct"] = float(ls_match.group(1))
+    if re.search(r"\bcaps\b", normalized, re.I):
+        spec["text_case"] = "UPPER"
+    lh_match = re.search(r"\blh\s*([\d.]+)", normalized, re.I)
+    if lh_match:
+        spec["line_height"] = float(lh_match.group(1))
+    return spec
+
+
+def parse_text_style_table(doc: str) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    start = doc.find(TEXT_STYLE_TABLE_HEADER)
+    if start < 0:
+        raise ValueError("missing Figma text style table in design-system.md")
+    for line in doc[start:].splitlines()[1:]:
+        if not line.strip().startswith("|"):
+            break
+        if re.match(r"^\|\s*-+\s*\|", line):
+            continue
+        cells = [part.strip() for part in line.split("|")[1:-1]]
+        if len(cells) < 5:
+            continue
+        figma_name, class_cell, _face, size_cell, weight_cell = cells[:5]
+        selectors = re.findall(r"`([^`]+)`", class_cell)
+        if not selectors:
+            selectors = [part.strip() for part in class_cell.split(",") if part.strip()]
+        token_match = re.search(r"(--text-[\w-]+)", size_cell)
+        if not token_match:
+            raise ValueError(f"text style {figma_name}: missing size token in doc row")
+        row: dict[str, object] = {
+            "name": figma_name.strip(),
+            "selectors": selectors,
+            "size_token": token_match.group(1),
+        }
+        row.update(parse_weight_column(weight_cell))
+        rows.append(row)
+    if not rows:
+        raise ValueError("empty Figma text style table")
+    return rows
+
+
+def _strip_css_comments(css: str) -> str:
+    return re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+
+
+def _collect_css_rules(css: str, rules: dict[str, dict[str, str]]) -> None:
+    css = css.strip()
+    pos = 0
+    while pos < len(css):
+        while pos < len(css) and css[pos].isspace():
+            pos += 1
+        if pos >= len(css):
+            break
+        brace = css.find("{", pos)
+        if brace < 0:
+            break
+        prelude = css[pos:brace].strip()
+        depth = 1
+        j = brace + 1
+        while j < len(css) and depth:
+            if css[j] == "{":
+                depth += 1
+            elif css[j] == "}":
+                depth -= 1
+            j += 1
+        body = css[brace + 1 : j - 1]
+        if prelude.startswith("@"):
+            _collect_css_rules(body, rules)
+        else:
+            decls = parse_css_properties(body)
+            if decls:
+                for sel in prelude.split(","):
+                    sel = sel.strip()
+                    if sel:
+                        merged = dict(rules.get(sel, {}))
+                        merged.update(decls)
+                        rules[sel] = merged
+        pos = j
+
+
+def parse_stylesheet_selectors(styles_dir: Path) -> dict[str, dict[str, str]]:
+    rules: dict[str, dict[str, str]] = {}
+    for path in sorted(styles_dir.glob("*.css")):
+        text = _strip_css_comments(path.read_text(encoding="utf-8"))
+        _collect_css_rules(text, rules)
+    return rules
+
+
+def _rule_matches_doc_selector(doc_selector: str, rule_selector: str) -> bool:
+    doc_sel = doc_selector.strip()
+    rule_sel = rule_selector.strip()
+    if doc_sel == rule_sel:
+        return True
+    if " " in doc_sel or ">" in doc_sel:
+        if rule_sel == doc_sel:
+            return True
+        if rule_sel.endswith(doc_sel):
+            prefix = rule_sel[: -len(doc_sel)]
+            return not prefix or prefix[-1] in " >+~,"
+        return rule_sel.startswith(f"{doc_sel} ") or rule_sel.startswith(f"{doc_sel}>")
+    if rule_sel == doc_sel:
+        return True
+    if rule_sel.startswith(f"{doc_sel} ") or rule_sel.startswith(f"{doc_sel}>"):
+        return True
+    return rule_sel.endswith(f" {doc_sel}") and len(rule_sel) > len(doc_sel)
+
+
+def collect_selector_decls(
+    selector: str,
+    rules: dict[str, dict[str, str]],
+) -> dict[str, str]:
+    resolved = SELECTOR_ALIASES.get(selector, selector)
+    merged: dict[str, str] = {}
+    for rule_sel, decls in sorted(rules.items(), key=lambda item: len(item[0])):
+        parts = [part.strip() for part in rule_sel.split(",") if part.strip()]
+        for part in parts:
+            if "::" in part and part != resolved:
+                continue
+            if not _rule_matches_doc_selector(resolved, part):
+                continue
+            if part.startswith(f"{resolved} ") or part.startswith(f"{resolved}>"):
+                continue
+            merged.update(decls)
+            break
+    if resolved.endswith(".library-index-group-label"):
+        merged = {**rules.get(".library-index-group-label", {}), **merged}
+    if selector.endswith(" a"):
+        parent = selector.rsplit(" ", 1)[0]
+        parent_decls = collect_selector_decls(parent, rules)
+        for key, value in parent_decls.items():
+            merged.setdefault(key, value)
+    return merged
 
 
 def _style_letter_spacing_pct(style: dict) -> float | None:
@@ -412,36 +367,143 @@ def _style_letter_spacing_pct(style: dict) -> float | None:
     return None
 
 
-def _style_matches_spec(style: dict, spec: dict[str, object]) -> list[str]:
+def _expected_bound_font_size(size_token: str) -> set[str]:
+    base = size_token.removeprefix("--")
+    return {
+        f"font-size/{base}",
+        f"font-size/{base}/max",
+    }
+
+
+def _figma_style_matches_doc_fixed(style: dict, row: dict[str, object]) -> list[str]:
     errors: list[str] = []
+    name = str(row["name"])
     bound = (style.get("boundVariables") or {}).get("fontSize")
-    expected_fs = spec.get("font_size")
-    if expected_fs and bound != expected_fs:
-        errors.append(f"fontSize {bound!r} != {expected_fs!r}")
-    if "font_weight" in spec and style.get("fontWeight") != spec["font_weight"]:
-        errors.append(f"fontWeight {style.get('fontWeight')} != {spec['font_weight']}")
-    if "letter_spacing_pct" in spec:
+    size_token = str(row["size_token"])
+    allowed = _expected_bound_font_size(size_token)
+    if bound and bound not in allowed:
+        errors.append(f"fontSize {bound!r} not in {sorted(allowed)!r}")
+    if "font_weight" in row and style.get("fontWeight") != row["font_weight"]:
+        errors.append(f"fontWeight {style.get('fontWeight')} != {row['font_weight']}")
+    if "letter_spacing_pct" in row:
         actual = _style_letter_spacing_pct(style)
-        expected = spec["letter_spacing_pct"]
+        expected = row["letter_spacing_pct"]
         if actual is None or abs(actual - float(expected)) > 0.01:
             errors.append(f"letterSpacing {actual} != {expected}")
-    if "text_case" in spec and style.get("textCase") != spec["text_case"]:
-        errors.append(f"textCase {style.get('textCase')} != {spec['text_case']}")
+    if "text_case" in row and style.get("textCase") != row["text_case"]:
+        errors.append(f"textCase {style.get('textCase')} != {row['text_case']}")
+    return [f"{name} vs doc table: {detail}" for detail in errors]
+
+
+def _parse_em(value: str) -> float | None:
+    match = re.fullmatch(r"(-?[\d.]+)em", value.strip())
+    if match:
+        return float(match.group(1))
+    return None
+
+
+def _css_matches_row(
+    selector: str,
+    row: dict[str, object],
+    rules: dict[str, dict[str, str]],
+    used_mismatches: set[tuple[str, str]],
+) -> list[str]:
+    name = str(row["name"])
+    gap_key = name
+    if gap_key in TEXT_STYLE_FIGMA_CSS_GAPS:
+        return []
+    mismatch_key = (name, selector)
+    if mismatch_key in ALLOWED_FIGMA_CSS_MISMATCHES:
+        used_mismatches.add(mismatch_key)
+        return []
+
+    decls = collect_selector_decls(selector, rules)
+    if not decls:
+        return [f"{name} CSS: selector {selector!r} not found in src/styles"]
+
+    errors: list[str] = []
+    size_token = str(row["size_token"])
+    font_size = decls.get("font-size", "")
+    if size_token not in font_size:
+        errors.append(
+            f"{name} {selector}: font-size {font_size!r} missing token {size_token}"
+        )
+
+    if "font_weight" in row:
+        fw = decls.get("font-weight", "")
+        expected_fw = int(row["font_weight"])
+        if not fw.strip():
+            if expected_fw != 400:
+                errors.append(
+                    f"{name} {selector}: font-weight missing, expected {expected_fw}"
+                )
+        elif str(expected_fw) != fw.strip():
+            errors.append(
+                f"{name} {selector}: font-weight {fw!r} != {expected_fw}"
+            )
+
+    if "letter_spacing_pct" in row:
+        expected_em = float(row["letter_spacing_pct"]) / 100.0
+        ls = decls.get("letter-spacing", "")
+        parsed = _parse_em(ls)
+        if parsed is None:
+            if abs(expected_em) > 0.0001:
+                errors.append(
+                    f"{name} {selector}: letter-spacing missing, expected {expected_em}em"
+                )
+        elif abs(parsed - expected_em) > 0.0001:
+            errors.append(
+                f"{name} {selector}: letter-spacing {ls!r} != {expected_em}em"
+            )
+
+    if row.get("text_case") == "UPPER":
+        tt = decls.get("text-transform", "")
+        if tt.lower() != "uppercase":
+            errors.append(
+                f"{name} {selector}: text-transform {tt!r} != uppercase"
+            )
+
     return errors
 
 
-def validate_text_styles(snapshot: dict, doc: str) -> list[str]:
+def validate_text_styles(
+    snapshot: dict,
+    doc: str,
+    styles_dir: Path,
+) -> list[str]:
     errors: list[str] = []
+    doc_rows = parse_text_style_table(doc)
     by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
-    for name, spec in DOC_TEXT_STYLE_SPEC.items():
+    css_rules = parse_stylesheet_selectors(styles_dir)
+    used_mismatches: set[tuple[str, str]] = set()
+    used_gaps: set[str] = set()
+
+    for row in doc_rows:
+        name = str(row["name"])
         style = by_name.get(name)
         if style is None:
             errors.append(f"text style {name} missing from snapshot")
             continue
-        if name not in doc:
-            errors.append(f"text style {name} missing from design-system.md")
-        for detail in _style_matches_spec(style, spec):
-            errors.append(f"{name} vs doc/CSS spec: {detail}")
+        errors.extend(_figma_style_matches_doc_fixed(style, row))
+        if name in TEXT_STYLE_FIGMA_CSS_GAPS:
+            used_gaps.add(name)
+            continue
+        for selector in row["selectors"]:
+            errors.extend(
+                _css_matches_row(selector, row, css_rules, used_mismatches)
+            )
+
+    unused_mismatch = set(ALLOWED_FIGMA_CSS_MISMATCHES.keys()) - used_mismatches
+    if unused_mismatch:
+        errors.append(
+            "unused ALLOWED_FIGMA_CSS_MISMATCHES entries: "
+            + ", ".join(f"{k[0]}/{k[1]}" for k in sorted(unused_mismatch))
+        )
+    unused_gaps = set(TEXT_STYLE_FIGMA_CSS_GAPS.keys()) - used_gaps
+    if unused_gaps:
+        errors.append(
+            "unused TEXT_STYLE_FIGMA_CSS_GAPS entries: " + ", ".join(sorted(unused_gaps))
+        )
     return errors
 
 
@@ -463,25 +525,13 @@ def value_matches(
     if css_value is None:
         return False
 
-    if css_token == "--code-border":
-        line_token = "--line-strong" if theme == "dark" else "--line-soft"
-        line_css = resolve_css_token(line_token, dark, light, theme)
-        if isinstance(figma_value, str) and line_css:
-            if colors_equivalent(figma_value, line_css):
-                return True
-            if line_token in COLOR_MIX_TOKENS and "color-mix" in line_css:
-                return color_mix_matches(line_token, figma_value, line_css, theme)
-
     if isinstance(figma_value, str) and figma_value.startswith("#"):
-        if colors_equivalent(figma_value, css_value):
-            return True
-        if css_token in COLOR_MIX_TOKENS and "color-mix" in css_value:
-            return color_mix_matches(css_token, figma_value, css_value, theme)
-        if css_value.startswith("var("):
-            inner = css_token_from_web(css_value)
-            if inner in COLOR_MIX_TOKENS:
-                return True
-        return False
+        resolver = make_color_resolver(dark, light, theme, chrome)
+        try:
+            computed = computed_color_hex8(css_value, resolver)
+        except ValueError:
+            return False
+        return colors_equivalent(figma_value, computed)
 
     if figma_name.endswith("/min") and "clamp(" in css_value:
         px = clamp_min_px(css_value)
@@ -515,7 +565,7 @@ def iter_snapshot_bindings(snapshot: dict) -> list[tuple[str, str, str, object]]
     rows: list[tuple[str, str, str, object]] = []
     for collection in snapshot.get("collections", []):
         for var in collection.get("variables", []):
-            token = css_token_from_web(var.get("web"))
+            token = css_token_for_variable(var)
             if not token:
                 continue
             for css_mode, figma_mode in figma_modes(collection):
@@ -530,7 +580,7 @@ def sync_snapshot(
     snapshot_path: Path,
     css: str,
     doc: str,
-) -> tuple[list[str], list[str]]:
+) -> list[str]:
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
     dark, light = theme_maps(css)
     chrome = parse_declarations(CHROME.read_text(encoding="utf-8"))
@@ -546,7 +596,7 @@ def sync_snapshot(
                 f"{figma_name} [{css_mode}] snapshot {resolved!r} "
                 f"≠ tokens.css {token} ({css_show!r})"
             )
-    errors.extend(validate_text_styles(snapshot, doc))
+    errors.extend(validate_text_styles(snapshot, doc, STYLES_DIR))
 
     return errors
 
@@ -573,6 +623,12 @@ def assert_fixture_fails() -> None:
     errors = sync_snapshot(VIOLATION_FIXTURE, css, doc)
     if not errors:
         raise SystemExit("design_system_snapshot_violation fixture should fail sync")
+    joined = "\n".join(errors)
+    if "color/bg-deep" not in joined or "#000000" not in joined:
+        raise SystemExit(
+            "fixture should fail on color/bg-deep drift (#000000); got: "
+            + "; ".join(errors[:5])
+        )
 
 
 def main() -> None:

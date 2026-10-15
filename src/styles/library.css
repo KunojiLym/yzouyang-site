@@ -719,6 +719,7 @@ body:has(main.library-route) {
 
 .library-panel--note .library-panel-title {
   font-size: var(--text-display-1);
+  font-weight: 600;
   line-height: var(--lh-heading);
   letter-spacing: -0.025em;
 }
@@ -926,6 +927,11 @@ main.page .library-panel--note .library-panel-title {
   padding: var(--space-4) var(--space-5);
   border-left: 3px solid var(--accent);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-default);
 }
 
 .note-body.prose .note-blockquote p {

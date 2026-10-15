@@ -1,0 +1,4 @@
+/* regression: universal selector must not be treated as a block comment */
+* {
+  outline-color: rgb(196 154 90 / 12%);
+}
