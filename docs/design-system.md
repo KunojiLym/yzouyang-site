@@ -4,7 +4,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 ## Source of truth
 
-The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
+The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 10:29 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
 
 **Review on change.** Any PR that changes `tokens.css`, a component class in Layer C, a breakpoint or a page rule must (i) match the Figma snapshot and a Figma variable, style or component (or link the Figma change), and (ii) update this doc and `docs/figma/variables.json` in the same PR when design values change. If the code is right and Figma lags, file it for figma bro and record it under [Known Figma gaps](#known-figma-gaps) rather than diverging silently. A drift review runs whenever the snapshot, Figma or `tokens.css` changes.
 
@@ -12,7 +12,7 @@ The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source
 
 Figma remains the authoritative design file; **`docs/figma/variables.json`** is the repo’s machine-readable copy for automation. Someone with Figma access (figma bro or the Site Critic lane) refreshes that snapshot whenever variables or text styles change in the file.
 
-**Cursor agents and CI cannot call the Figma MCP** and must never guess values from memory. They work only from `docs/figma/variables.json`, this document, and `tokens.css`. Null entries in the snapshot mean “not exported yet” — not a license to invent light/dark pairs.
+**Cursor agents and CI cannot call the Figma MCP** and must never guess values from memory. They work only from `docs/figma/variables.json`, this document, and `tokens.css`.
 
 A PR that changes design tokens, text styles, or other values covered by the snapshot **without** updating `docs/figma/variables.json` must call that out explicitly in the PR body so reviewers can reconcile before merge.
 
@@ -153,31 +153,36 @@ Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens
 
 At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
 
-Figma text styles (19) mapped to Layer C classes. Token columns reference `tokens.css`.
+Figma text styles (24) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`.
 
 | Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
 | Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
-| Display/H2 | `.library-panel-header .library-panel-title` | Crimson Pro | `--text-display-3` | 600 |
-| Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −0.02em |
+| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600 |
+| Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
 | Display/Practice Title | `.home-practice-title` | Crimson Pro | `--text-sm` | 600 |
+| Display/Dropcap | `.note-body.prose .note-dropcap` | Crimson Pro | `--text-dropcap` | 600 |
 | Heading/H3 | `main.page h3` | Source Sans 3 | `--text-lg` | 600 |
-| Label/Caps | `.record-id` | Source Sans 3 | `--text-xs` (13px) | 600, `0.08em`, caps |
-| Label/Xs Caps | `.library-index-label` | Source Sans 3 | `--text-xs` | 400, `0.08em`, caps |
-| Label/Xs Group | `.library-index-group--depth-0 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, `0.08em`, caps |
-| Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, `0.02em` |
+| Label/Caps | `.record-id` | Source Sans 3 | `--text-xs` | 600, 8%, caps |
+| Label/Xs Caps | `.library-index-label` | Source Sans 3 | `--text-xs` | 400, 8%, caps |
+| Label/Xs Group | `.library-index-group--depth-0 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 8%, caps |
+| Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400 |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-lg` | 400 |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
+| Body/Prose | `.note-body.prose` | Crimson Pro | `--text-md` | 400, lh 172% |
+| Body/Blockquote | `.note-body.prose .note-blockquote` | Crimson Pro italic | `--text-lg` | 400 |
 | Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
 | Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
+| Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **uses `var(--text-muted)` in CSS (B1); see gaps** |
+| Meta/Map Node Label | `.map-node-label` | Source Sans 3 | `--text-xs` | 400 |
 | UI/Control | `.theme-toggle` | Source Sans 3 | `--text-sm` | 400 (label); icon-only below 48rem |
 
-Doc-only aliases retired in favour of the Figma names above: Wordmark → Display/Brand; section `h2` on Home plates → Display/H2 uses `.home-plate h2` with the same `--text-display-3` token as catalogue panel titles.
+Doc-only aliases retired: Wordmark → Display/Brand.
 
 | Use | Face |
 |---|---|
@@ -352,11 +357,13 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-- **C8.** Add `color/rail-green`. CSS now has `--rail-green: #4a5c4e` (same RGB as the `--line-*` mixes). Figma does not have that variable yet — file it for figma bro.
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 10:29 SGT):** No open mismatches besides the allow-listed pair below — all other variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation.
+
+- **Record domains colour (B1).** Figma still carries `color/record-domains` as its own variable (alias of `color/text-muted` in the latest export). Production CSS maps `.record-domains` to `var(--text-muted)` for AA contrast — no separate token. figma bro should drop the duplicate variable; sync allow-lists `color/record-domains` until then.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
-- **Text styles.** No Figma styles yet for Notes reading-mode essay (`.note-body.prose`), pull quotes (`.note-blockquote`), Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind` — same spec as Label/Caps but accent-coloured), fallback index (`.current-index .index-entry`), or monospace code (`.note-code`).
+- **Unstyled in Figma textStyles (doc-only).** Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind`), fallback index (`.current-index .index-entry`), and monospace code (`.note-code`).
 
 ---
 

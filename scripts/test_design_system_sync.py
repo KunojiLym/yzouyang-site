@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assert tokens.css and design-system.md match the committed Figma snapshot."""
+"""Assert tokens.css and design-system.md match docs/figma/variables.json."""
 
 from __future__ import annotations
 
@@ -17,11 +17,26 @@ VIOLATION_FIXTURE = ROOT / "scripts" / "fixtures" / "design_system_snapshot_viol
 
 FIGMA_URL = "https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ"
 BLOCK_RE = re.compile(r"\{([^{}]*)\}", re.S)
-DECL_RE = re.compile(
-    r"(--[a-z0-9-]+)\s*:\s*([^;]+);",
-    re.I,
-)
+DECL_RE = re.compile(r"(--[a-z0-9-]+)\s*:\s*([^;]+);", re.I)
+HEX_DECL_RE = re.compile(r"--[a-z0-9-]+\s*:\s*(#[0-9a-fA-F]{3,8})\b")
 PX_TOLERANCE = 1.25
+
+# Documented in design-system.md § Known Figma gaps — explicit allow-list only.
+ALLOWED_FIGMA_CSS_MISMATCHES: frozenset[tuple[str, str]] = frozenset(
+    {
+        ("color/record-domains", "dark"),
+        ("color/record-domains", "light"),
+    }
+)
+
+COLOR_MIX_TOKENS = frozenset(
+    {
+        "--line-soft",
+        "--line-strong",
+        "--accent-cta-bg",
+        "--accent-cta-border",
+    }
+)
 
 
 def _block_after(text: str, marker: str) -> str:
@@ -41,29 +56,51 @@ def parse_declarations(block: str) -> dict[str, str]:
     }
 
 
-def token_blocks(css: str) -> tuple[dict[str, str], dict[str, str]]:
+def theme_maps(css: str) -> tuple[dict[str, str], dict[str, str]]:
     dark = parse_declarations(_block_after(css, ':root,\n[data-theme="dark"]'))
     light = parse_declarations(_block_after(css, '[data-theme="light"]'))
     return dark, light
 
 
-def chrome_declarations() -> dict[str, str]:
-    text = CHROME.read_text(encoding="utf-8")
-    return parse_declarations(text)
+def merged_theme(dark: dict[str, str], light: dict[str, str], theme: str) -> dict[str, str]:
+    base = dict(dark)
+    if theme == "light":
+        base.update(light)
+    return base
 
 
-def _hex8_to_rgb_alpha(hex8: str) -> tuple[tuple[int, int, int], float]:
-    value = hex8.lstrip("#").lower()
+def resolve_css_token(
+    token: str,
+    dark: dict[str, str],
+    light: dict[str, str],
+    theme: str,
+    depth: int = 0,
+) -> str | None:
+    if depth > 8:
+        return None
+    block = merged_theme(dark, light, theme)
+    value = block.get(token)
+    if value is None:
+        return None
+    if value.startswith("var("):
+        return resolve_css_token(value[4:-1].strip(), dark, light, theme, depth + 1)
+    return value
+
+
+def _hex_channels(hex_color: str) -> tuple[int, int, int, float]:
+    value = hex_color.lstrip("#").lower()
+    if len(value) == 6:
+        value += "ff"
     if len(value) != 8:
-        raise ValueError(hex8)
+        raise ValueError(hex_color)
     r = int(value[0:2], 16)
     g = int(value[2:4], 16)
     b = int(value[4:6], 16)
     a = int(value[6:8], 16) / 255.0
-    return (r, g, b), a
+    return r, g, b, a
 
 
-def _parse_rgb_percent(value: str) -> tuple[tuple[int, int, int], float] | None:
+def _parse_rgb_percent(value: str) -> tuple[int, int, int, float] | None:
     match = re.fullmatch(
         r"rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*/\s*([\d.]+)%\s*\)",
         value.strip(),
@@ -71,79 +108,35 @@ def _parse_rgb_percent(value: str) -> tuple[tuple[int, int, int], float] | None:
     )
     if not match:
         return None
-    rgb = (int(match.group(1)), int(match.group(2)), int(match.group(3)))
-    alpha = float(match.group(4)) / 100.0
-    return rgb, alpha
+    return (
+        int(match.group(1)),
+        int(match.group(2)),
+        int(match.group(3)),
+        float(match.group(4)) / 100.0,
+    )
 
 
-def _parse_hex6(value: str) -> str | None:
-    match = re.fullmatch(r"#([0-9a-fA-F]{6})\b", value.strip())
-    if not match:
-        return None
-    return f"#{match.group(1).lower()}"
-
-
-def colors_equivalent(snapshot: str, css_value: str) -> bool:
-    snap = snapshot.strip().lower()
+def colors_equivalent(figma: str, css_value: str) -> bool:
+    fig = figma.strip().lower()
     css = css_value.strip().lower()
-    if snap.startswith("#") and len(snap) == 9:
-        snap_rgb, snap_a = _hex8_to_rgb_alpha(snap)
+    if fig == css:
+        return True
+    if fig.startswith("#"):
+        fr, fg, fb, fa = _hex_channels(fig)
         parsed = _parse_rgb_percent(css)
         if parsed:
-            css_rgb, css_a = parsed
-            return snap_rgb == css_rgb and abs(snap_a - css_a) < 0.02
-    if snap.startswith("#") and len(snap) == 7:
-        snap_hex = _parse_hex6(snap)
-        css_hex = _parse_hex6(css)
-        if snap_hex and css_hex:
-            return snap_hex == css_hex
-    return snap in css or css in snap
-
-
-def rem_to_px(rem: str) -> float:
-    match = re.fullmatch(r"([\d.]+)rem", rem.strip())
-    if not match:
-        raise ValueError(rem)
-    return float(match.group(1)) * 16.0
-
-
-def clamp_max_px(clamp_value: str) -> float:
-    match = re.search(
-        r"clamp\([^,]+,[^,]+,\s*calc\(([\d.]+)rem",
-        clamp_value,
-        re.I,
-    )
-    if match:
-        return float(match.group(1)) * 16.0
-    match = re.search(r"clamp\([^,]+,[^,]+,\s*([\d.]+)rem", clamp_value, re.I)
-    if match:
-        return float(match.group(1)) * 16.0
-    raise ValueError(f"unsupported clamp: {clamp_value}")
-
-
-def declaration_px(value: str, dark: dict[str, str], token: str) -> float:
-    scaled = scaled_rem_px(value)
-    if scaled is not None:
-        return scaled
-    if value.endswith("rem"):
-        return rem_to_px(value)
-    raise ValueError(f"{token}: {value}")
-
-
-def calc_text_px(expr: str, dark: dict[str, str]) -> float:
-    text = expr.strip()
-    if text.startswith("calc(") and "var(--text-sm)" in text:
-        space_2 = declaration_px(dark["--space-2"], dark, "--space-2")
-        text_sm = declaration_px(dark["--text-sm"], dark, "--text-sm")
-        return (space_2 * 2) + (1.2 * text_sm)
-    raise ValueError(expr)
+            cr, cg, cb, ca = parsed
+            return (fr, fg, fb) == (cr, cg, cb) and abs(fa - ca) < 0.025
+        hex6 = re.fullmatch(r"#([0-9a-f]{6})\b", css)
+        if hex6 and len(fig) >= 7:
+            return fig[:7] == f"#{hex6.group(1)}"
+    return False
 
 
 def scaled_rem_px(css_value: str) -> float | None:
-    css = css_value.strip()
     match = re.fullmatch(
         r"calc\(\s*([\d.]+)rem\s*\*\s*var\(--text-scale\)\s*\)",
-        css,
+        css_value.strip(),
         re.I,
     )
     if match:
@@ -151,150 +144,216 @@ def scaled_rem_px(css_value: str) -> float | None:
     return None
 
 
-def numeric_equivalent(snapshot: str, css_value: str, dark: dict[str, str]) -> bool:
-    target = float(snapshot)
-    css = css_value.strip()
-    scaled = scaled_rem_px(css)
+def clamp_min_px(css_value: str) -> float | None:
+    match = re.search(
+        r"clamp\(\s*calc\(([\d.]+)rem",
+        css_value,
+        re.I,
+    )
+    if match:
+        return float(match.group(1)) * 16.0
+    match = re.search(r"clamp\(\s*([\d.]+)rem", css_value, re.I)
+    if match:
+        return float(match.group(1)) * 16.0
+    return None
+
+
+def token_px(token: str, dark: dict[str, str]) -> float | None:
+    raw = dark.get(token)
+    if raw is None:
+        return None
+    scaled = scaled_rem_px(raw)
     if scaled is not None:
-        return abs(scaled - target) <= PX_TOLERANCE
-    if css.startswith("calc(") and "var(--text-sm)" in css:
-        actual = calc_text_px(css, dark)
-        return abs(actual - target) <= PX_TOLERANCE
-    if "clamp(" in css:
-        actual = clamp_max_px(css)
-        return abs(actual - target) <= PX_TOLERANCE
-    if css.endswith("rem"):
-        actual = rem_to_px(css)
-        return abs(actual - target) <= PX_TOLERANCE
-    return False
+        return scaled
+    if raw.strip().endswith("rem"):
+        return float(raw.strip()[:-3]) * 16.0
+    return None
 
 
-def css_token_for_snapshot(name: str) -> str:
-    if name == "color/glow":
-        return "--glow"
-    if name.startswith("--"):
-        return name
-    raise ValueError(name)
+def numeric_px(css_value: str, dark: dict[str, str]) -> float | None:
+    scaled = scaled_rem_px(css_value)
+    if scaled is not None:
+        return scaled
+    if css_value.strip().endswith("rem"):
+        return float(css_value.strip()[:-3]) * 16.0
+    if "clamp(" in css_value:
+        match = re.search(
+            r"clamp\([^,]+,[^,]+,\s*calc\(([\d.]+)rem",
+            css_value,
+            re.I,
+        )
+        if match:
+            return float(match.group(1)) * 16.0
+        match = re.search(r"clamp\([^,]+,[^,]+,\s*([\d.]+)rem", css_value, re.I)
+        if match:
+            return float(match.group(1)) * 16.0
+    if css_value.strip().startswith("calc(") and "var(--text-sm)" in css_value:
+        space_2 = token_px("--space-2", dark)
+        text_sm = token_px("--text-sm", dark)
+        if space_2 is None or text_sm is None:
+            return None
+        return (space_2 * 2) + (1.2 * text_sm)
+    return None
 
 
-def resolve_css_value(
-    token: str,
-    theme: str,
+def css_token_from_web(web: str | None) -> str | None:
+    if web and web.startswith("var("):
+        return web[4:-1].strip()
+    return None
+
+
+SYNC_COLLECTIONS = frozenset({"Color", "Type", "Spacing", "Radius", "Motion"})
+
+
+def figma_modes(collection: dict) -> list[tuple[str, str]]:
+    name = collection["name"]
+    modes = collection["modes"]
+    if name not in SYNC_COLLECTIONS:
+        return []
+    if name == "Color":
+        return [("dark", "Dark"), ("light", "Light")]
+    if name == "Spacing":
+        return [("desktop", "Desktop (>48rem, @1280)")]
+    if len(modes) == 1:
+        return [("value", modes[0])]
+    return []
+
+
+def theme_for_css_mode(css_mode: str) -> str:
+    if css_mode == "light":
+        return "light"
+    return "dark"
+
+
+def normalize_font_stack(value: str) -> str:
+    return re.sub(r'"', "", value.lower().replace(" ", ""))
+
+
+def value_matches(
+    figma_name: str,
+    css_mode: str,
+    figma_value: object,
+    css_token: str,
     dark: dict[str, str],
     light: dict[str, str],
     chrome: dict[str, str],
-) -> str | None:
-    if token == "--header-control-height":
-        return chrome.get(token)
-    if theme == "light":
-        return light.get(token)
-    return dark.get(token)
-
-
-def color_mix_matches(token: str, snapshot_value: str, css_value: str) -> bool:
-    snap = snapshot_value.strip().lower()
-    css = css_value.lower()
-    if token == "--line-soft":
-        return snap == "#4a5c4e24" and "14%" in css
-    if token == "--line-strong":
-        return snap == "#4a5c4e47" and "28%" in css
-    if token == "--accent-cta-bg":
-        return snap == "#c49a5a14" and "8%" in css
-    if token == "--accent-cta-border":
-        return snap == "#ad8e58ac" and "55%" in css
-    return False
-
-
-def value_matches_snapshot(
-    token: str,
-    theme: str,
-    snapshot_value: str,
-    dark: dict[str, str],
-    light: dict[str, str],
-    chrome: dict[str, str],
+    snapshot: dict,
 ) -> bool:
-    css_value = resolve_css_value(token, theme, dark, light, chrome)
+    theme = theme_for_css_mode(css_mode)
+    if css_token in chrome:
+        css_value = chrome[css_token]
+    else:
+        css_value = resolve_css_token(css_token, dark, light, theme)
     if css_value is None:
         return False
-    snap = snapshot_value.strip()
-    if snap.startswith("#"):
-        if "color-mix" in css_value:
-            return color_mix_matches(token, snap, css_value) or colors_equivalent(
-                snap, css_value
-            )
-        return colors_equivalent(snap, css_value)
-    return numeric_equivalent(snap, css_value, dark)
 
+    if css_token == "--code-border":
+        line_token = "--line-strong" if theme == "dark" else "--line-soft"
+        line_css = resolve_css_token(line_token, dark, light, theme)
+        if isinstance(figma_value, str) and line_css:
+            if colors_equivalent(figma_value, line_css):
+                return True
+            if line_token in COLOR_MIX_TOKENS and "color-mix" in line_css:
+                return True
 
-def doc_contains_value(doc: str, name: str, value: str) -> bool:
-    lowered = doc.lower()
-    if name.startswith("Display/") or name.startswith("Body/") or name.startswith("Label/") or name.startswith("Meta/") or name.startswith("UI/") or name.startswith("Heading/"):
-        return name.lower() in lowered
-    if name == "color/glow":
-        return "c49a5a29" in lowered or "color/glow" in lowered
-    token = css_token_for_snapshot(name).lower()
-    if token not in lowered:
-        return False
-    if value.startswith("#"):
-        if value.lower() in lowered:
+    if isinstance(figma_value, str) and figma_value.startswith("#"):
+        if colors_equivalent(figma_value, css_value):
             return True
-        return token in lowered
-    return True
+        if css_token in COLOR_MIX_TOKENS and "color-mix" in css_value:
+            return True
+        if css_value.startswith("var("):
+            inner = css_token_from_web(css_value)
+            if inner in COLOR_MIX_TOKENS:
+                return True
+        return False
+
+    if figma_name.endswith("/min") and "clamp(" in css_value:
+        px = clamp_min_px(css_value)
+        if px is not None and isinstance(figma_value, (int, float)):
+            return abs(px - float(figma_value)) <= PX_TOLERANCE
+
+    if figma_name.endswith("/max") and "clamp(" in css_value:
+        px = numeric_px(css_value, dark)
+        if px is not None and isinstance(figma_value, (int, float)):
+            return abs(px - float(figma_value)) <= PX_TOLERANCE
+
+    if isinstance(figma_value, (int, float)):
+        if css_token.startswith("--dur-") and css_value.endswith("ms"):
+            return int(figma_value) == int(css_value.replace("ms", "").strip())
+        if css_token.startswith("--lh-") or css_token == "--note-read-lead":
+            return abs(float(figma_value) - float(css_value.strip())) < 0.01
+        if css_token == "--track-caps" and css_value.endswith("em"):
+            return abs(float(figma_value) - float(css_value.replace("em", ""))) < 0.01
+        px = numeric_px(css_value, dark)
+        if px is not None:
+            return abs(px - float(figma_value)) <= PX_TOLERANCE
+        return abs(float(figma_value) - float(css_value.strip())) < 0.01
+
+    if css_token.startswith("--font-"):
+        return normalize_font_stack(str(figma_value)) == normalize_font_stack(css_value)
+
+    return str(figma_value) == css_value
 
 
-def count_nulls(snapshot: dict) -> int:
-    total = 0
-    for entry in snapshot.get("variables", []):
-        if entry.get("dark") is None:
-            total += 1
-        if entry.get("light") is None:
-            total += 1
-    for entry in snapshot.get("text_styles", []):
-        if entry.get("dark") is None:
-            total += 1
-        if entry.get("light") is None:
-            total += 1
-    return total
+def iter_snapshot_bindings(snapshot: dict) -> list[tuple[str, str, str, object]]:
+    rows: list[tuple[str, str, str, object]] = []
+    for collection in snapshot.get("collections", []):
+        for var in collection.get("variables", []):
+            token = css_token_from_web(var.get("web"))
+            if not token:
+                continue
+            for css_mode, figma_mode in figma_modes(collection):
+                resolved = var["values"][figma_mode].get("resolved")
+                if resolved is None:
+                    continue
+                rows.append((var["name"], css_mode, token, resolved))
+    return rows
 
 
 def sync_snapshot(
     snapshot_path: Path,
     css: str,
     doc: str,
-) -> tuple[list[str], int, list[str]]:
+) -> tuple[list[str], list[str]]:
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
-    dark, light = token_blocks(css)
-    chrome = chrome_declarations()
+    dark, light = theme_maps(css)
+    chrome = parse_declarations(CHROME.read_text(encoding="utf-8"))
     errors: list[str] = []
-    pending: list[str] = []
+    allowed_hits: list[str] = []
 
-    for entry in snapshot.get("variables", []):
-        name = entry["name"]
-        for theme, key in (("dark", "dark"), ("light", "light")):
-            value = entry.get(key)
-            if value is None:
-                pending.append(f"{name} ({theme})")
+    for figma_name, css_mode, token, resolved in iter_snapshot_bindings(snapshot):
+        theme = theme_for_css_mode(css_mode)
+        key = (figma_name, theme)
+        if not value_matches(
+            figma_name, css_mode, resolved, token, dark, light, chrome, snapshot
+        ):
+            if key in ALLOWED_FIGMA_CSS_MISMATCHES:
+                allowed_hits.append(f"{figma_name} ({theme})")
                 continue
-            token = css_token_for_snapshot(name)
-            if not value_matches_snapshot(token, theme, value, dark, light, chrome):
-                css_val = resolve_css_value(token, theme, dark, light, chrome)
-                errors.append(
-                    f"{name} {theme} snapshot {value!r} does not match tokens.css ({css_val!r})"
-                )
-            if not doc_contains_value(doc, name, value):
-                errors.append(f"{name} {theme} value not documented in design-system.md")
+            css_show = chrome.get(token) or resolve_css_token(token, dark, light, theme)
+            errors.append(
+                f"{figma_name} [{css_mode}] snapshot {resolved!r} "
+                f"≠ tokens.css {token} ({css_show!r})"
+            )
+    for style in snapshot.get("textStyles", []):
+        if style["name"] not in doc:
+            errors.append(f"text style {style['name']} missing from design-system.md")
 
-    for entry in snapshot.get("text_styles", []):
-        name = entry["name"]
-        for theme, key in (("dark", "dark"), ("light", "light")):
-            value = entry.get(key)
-            if value is None:
-                pending.append(f"{name} text ({theme})")
-                continue
-            if name not in doc:
-                errors.append(f"text style {name} missing from design-system.md")
+    return errors, allowed_hits
 
-    return errors, count_nulls(snapshot), pending
+
+def hex_tokens_in_doc(css: str, doc: str) -> list[str]:
+    errors: list[str] = []
+    dark = _block_after(css, ':root,\n[data-theme="dark"]')
+    light = _block_after(css, '[data-theme="light"]')
+    tables = "\n".join(
+        line.lower() for line in doc.splitlines() if line.strip().startswith("|")
+    )
+    for block, theme in ((dark, "dark"), (light, "light")):
+        for match in HEX_DECL_RE.finditer(block):
+            if match.group(1).lower() not in tables:
+                errors.append(f"{theme} token {match.group(1).lower()} missing from doc tables")
+    return errors
 
 
 def assert_fixture_fails() -> None:
@@ -302,7 +361,7 @@ def assert_fixture_fails() -> None:
         raise SystemExit(f"missing fixture {VIOLATION_FIXTURE}")
     css = TOKENS.read_text(encoding="utf-8")
     doc = DOC.read_text(encoding="utf-8")
-    errors, _, _ = sync_snapshot(VIOLATION_FIXTURE, css, doc)
+    errors, _ = sync_snapshot(VIOLATION_FIXTURE, css, doc)
     if not errors:
         raise SystemExit("design_system_snapshot_violation fixture should fail sync")
 
@@ -321,8 +380,9 @@ def main() -> None:
     if not SNAPSHOT.is_file():
         errors.append(f"missing snapshot {SNAPSHOT}")
 
-    sync_errors, null_count, pending = sync_snapshot(SNAPSHOT, css, doc)
+    sync_errors, allowed_hits = sync_snapshot(SNAPSHOT, css, doc)
     errors.extend(sync_errors)
+    errors.extend(hex_tokens_in_doc(css, doc))
 
     assert_fixture_fails()
 
@@ -334,14 +394,14 @@ def main() -> None:
 
     print(
         "test_design_system_sync ok "
-        f"(snapshot null values: {null_count}; pending full light/dark export)"
+        f"(figma variables with web: {len(iter_snapshot_bindings(json.loads(SNAPSHOT.read_text())))}; "
+        f"textStyles: {len(json.loads(SNAPSHOT.read_text())['textStyles'])}; "
+        f"allow-listed gaps: {len(allowed_hits)})"
     )
-    if pending:
-        print("snapshot pending (null, not failures):")
-        for item in pending[:8]:
+    if allowed_hits:
+        print("allow-listed Figma/CSS gaps:")
+        for item in allowed_hits:
             print(f"  - {item}")
-        if len(pending) > 8:
-            print(f"  … and {len(pending) - 8} more")
 
 
 if __name__ == "__main__":

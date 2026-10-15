@@ -1,10 +1,25 @@
 {
-  "figma_file_id": "xr2asASU4M8amldS2Lm0hQ",
-  "pulled": "2026-10-15",
-  "source": "fixture — intentional drift for sync test",
-  "pending": "full light/dark export from figma bro",
-  "variables": [
-    { "name": "--bg-deep", "dark": "#000000", "light": null }
+  "fileKey": "xr2asASU4M8amldS2Lm0hQ",
+  "fileUrl": "https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ",
+  "exportedAt": "fixture",
+  "source": "intentional drift for sync test",
+  "counts": { "variables": 1, "textStyles": 0 },
+  "collections": [
+    {
+      "name": "Color",
+      "modes": ["Dark", "Light"],
+      "variables": [
+        {
+          "name": "color/bg-deep",
+          "type": "COLOR",
+          "web": "var(--bg-deep)",
+          "values": {
+            "Dark": { "resolved": "#000000" },
+            "Light": { "resolved": "#e8dfd0" }
+          }
+        }
+      ]
+    }
   ],
-  "text_styles": []
+  "textStyles": []
 }
