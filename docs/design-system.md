@@ -369,7 +369,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **200px Search** · **Clear** · **Text size** · **Theme** · **Menu** | **59.19px** — node `21:16` |
 | **Narrow desktop** | **901–1024px** | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (shown) · **Text size** · **Theme** | **59.19px** — node `32:292` |
 | **Desktop (unconfirmed)** | **1025–1279px** | Same control order as narrow desktop (shipped: `> 900px` nav + search row) | **Unconfirmed** — no Figma frame in set `3:2` |
-| **Desktop** | **1280px** (`width > 1024px` in code) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (hidden; unconfirmed at 1280) · **Text size** · **Theme** — no **Menu** | **61.39px** — node `3:3` |
+| **Desktop** | **≥1280px** (Figma frame at **1280** — node `3:3`) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (hidden; unconfirmed at 1280) · **Text size** · **Theme** — no **Menu** | **61.39px** — node `3:3` |
 
 **Shipped chrome (for gap checks):** `.site-header` markup from `layout()` — **Brand** · `.site-nav-desktop` (Systems · Notes · Credentials when `> 900px`) · `.header-search` / `#search` (Pagefind **Clear** = `.pagefind-ui__search-clear` inside the search control) · `.reading-size-toggle` · `.theme-toggle` · `.nav-menu` (when `<= 900px`; **Text size** duplicate lives in the Menu panel at `<= 48rem` only).
 
