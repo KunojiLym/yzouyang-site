@@ -29,15 +29,7 @@ TEXT_STYLE_TABLE_HEADER = "| Figma style | Class | Face | Size / token | Weight 
 ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 
 # Text styles skipped for CSS selector checks: figma style name -> reason.
-TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {
-    "Body/Large": (
-        "Yingzhao decided 2026-10-15: shipped wins (lede `--text-md` lh 1.45; "
-        "`.note-dek` `--text-lg` lh 1.45 not Figma 150%); CSS unchanged. figma bro "
-        "updates Figma after Yingzhao direct confirmation. When inbox/figma-vars-full.json "
-        "lands, refresh variables.json verbatim and remove gap — "
-        "https://github.com/KunojiLym/yzouyang-site/issues/32"
-    ),
-}
+TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {}
 
 
 def _validate_allow_list_reasons() -> list[str]:

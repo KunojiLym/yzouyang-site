@@ -4,7 +4,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 ## Source of truth
 
-The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 11:20 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
+The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 13:40 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
 
 **Review on change.** Any PR that changes `tokens.css`, a component class in Layer C, a breakpoint or a page rule must (i) match the Figma snapshot and a Figma variable, style or component (or link the Figma change), and (ii) update this doc and `docs/figma/variables.json` in the same PR when design values change. If the code is right and Figma lags, file it for figma bro and record it under [Known Figma gaps](#known-figma-gaps) rather than diverging silently. A drift review runs whenever the snapshot, Figma or `tokens.css` changes.
 
@@ -15,8 +15,6 @@ Figma remains the authoritative design file; **`docs/figma/variables.json`** is 
 **Cursor agents and CI cannot call the Figma MCP** and must never guess values from memory. They work only from `docs/figma/variables.json`, this document, and `tokens.css`.
 
 A PR that changes design tokens, text styles, or other values covered by the snapshot **without** updating `docs/figma/variables.json` must call that out explicitly in the PR body so reviewers can reconcile before merge.
-
-**Body/Large (Figma catch-up):** **Yingzhao decided 2026-10-15** that shipped CSS wins — **`--text-md`** with **line-height 1.45** on Home lede (`.entrance .lede`); note dek (`.note-dek`) stays **`--text-lg`** at **lh 1.45** (not Figma **150%**). No site CSS change. **figma bro** will update Figma **Body/Large** after **Yingzhao’s direct confirmation** (figma bro is not changing the file until then). Until the snapshot matches, track under [Known Figma gaps](#known-figma-gaps) ([#32](https://github.com/KunojiLym/yzouyang-site/issues/32)). When figma bro’s re-export lands as **`inbox/figma-vars-full.json`**, replace [`docs/figma/variables.json`](figma/variables.json) with that file **verbatim**, remove the Body/Large gap (doc + `TEXT_STYLE_FIGMA_CSS_GAPS` in `scripts/test_design_system_sync.py`), refresh the snapshot date in this doc, and close #32.
 
 **Governing sentence:** Design the site like a carefully maintained personal systems library: warm, cinematic, and catalogued — a scholar-engineer’s archive of systems, notes, and experiments, not a boardroom slide, a cyberpunk demo, or a steampunk toy.
 
@@ -174,7 +172,7 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` (shipped) | 400 |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 145% |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
@@ -379,9 +377,8 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 13:40 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
-- **Body/Large (Figma vs shipped).** **Yingzhao decided 2026-10-15:** shipped site wins — Home lede **`--text-md`** / **lh 1.45**; **`.note-dek`** uses **`--text-lg`** / **lh 1.45** (not Figma **150%**). CSS unchanged. Figma **Body/Large** still shows `--text-lg` / **150%** until **figma bro** updates the file (**after Yingzhao’s direct confirmation**). Typography table documents shipped CSS only. **Close this gap** when `inbox/figma-vars-full.json` arrives: copy verbatim into `docs/figma/variables.json`, drop this bullet and `TEXT_STYLE_FIGMA_CSS_GAPS["Body/Large"]`, then close [issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).
 - **Header · Clear @ 1280 (Desktop).** Figma **Desktop** (`3:3`) shows **Clear** **hidden** at 1280 (still **unconfirmed** with Visual Design). Shipped Pagefind can still show `.pagefind-ui__search-clear` whenever the search field has a value — not hidden by viewport.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).
 - **Header · Compact Text size.** Figma **Compact** (`3:25`) omits **Text size** from the header row; shipped chrome keeps **Text size** inside the **Menu** panel only (`<= 48rem`) — matches intent, different surface than a header control.
