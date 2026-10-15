@@ -36,6 +36,29 @@ async function visibleLibraryPanelIds(page) {
   );
 }
 
+/** Wait until layout-shift total is unchanged for several consecutive samples. */
+async function waitForClsStable(
+  page,
+  { intervalMs = 500, stableRounds = 3, timeoutMs = 12_000 } = {}
+) {
+  const deadline = Date.now() + timeoutMs;
+  let last = null;
+  let rounds = 0;
+  while (Date.now() < deadline) {
+    await page.waitForTimeout(intervalMs);
+    const value = await page.evaluate(() => window.__cls || 0);
+    if (last !== null && value === last) {
+      rounds += 1;
+      if (rounds >= stableRounds) return value;
+    } else {
+      rounds = 0;
+      last = value;
+    }
+  }
+  const final = await page.evaluate(() => window.__cls || 0);
+  throw new Error(`CLS did not stabilize within ${timeoutMs}ms (last value ${final})`);
+}
+
 async function librarySplitGridColumnCount(page) {
   return page.locator(".library-split").evaluate((el) => {
     const columns = getComputedStyle(el).gridTemplateColumns.trim();
@@ -733,8 +756,13 @@ test.describe("library boot CLS", () => {
       });
       const page = await context.newPage();
       await page.goto(item.path, { waitUntil: "load" });
-      await page.waitForTimeout(1800);
-      const cls = await page.evaluate(() => window.__cls || 0);
+      const hash = new URL(item.path, "http://localhost").hash.slice(1);
+      if (hash) {
+        await page
+          .locator(`.library-panel[data-panel-id="${hash}"].is-active`)
+          .waitFor({ state: "visible", timeout: 8000 });
+      }
+      const cls = await waitForClsStable(page);
       const clsLimit =
         item.path.includes("#") && item.width >= 768 && item.width < 800
           ? 0.15
