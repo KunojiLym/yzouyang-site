@@ -360,7 +360,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | Variant | Width | Controls (DOM order, left → right) | Rendered height |
 |---|---|---|---|
 | **Compact** | `width <= 48rem` | **Brand** (`.brand`) · **Search** (icon slot, `--space-10`; expands on focus) · **Theme** (icon-only `.theme-toggle`) · **Menu** (`.nav-menu` — primary nav + **Text size** in the panel only) | Pending final measurement (figma bro) |
-| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **Search** (`#search` in fixed **`12.5rem` (200px)** `.header-search` slot) · **Text size** (`.reading-size-toggle`) · **Theme** · **Menu** | **~59px** (Figma **Header · Viewport=Mid** ~58.8px) |
+| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **Search** (`#search` in fixed **`12.5rem` (200px)** `.header-search` slot) · **Text size** (`.reading-size-toggle`) · **Theme** · **Menu** | **~58.8px** — matches Figma **Header · Viewport=Mid** (node `21:16`); one row at **769**, **840**, and **900px** |
 | **Desktop** | `width > 900px` | **Brand** · **Primary nav** (`.site-nav-desktop`: Systems · Notes · Credentials) · **Search** (`12.5rem`) · **Text size** · **Theme** (Menu hidden) | Pending final measurement (figma bro) |
 
 `.proof-strip` and `.connect-card` are not part of this contract. Nothing in `scripts/build.py`, `src/*.js`, or the page templates emits them.
@@ -371,7 +371,8 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 **Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
-- **Header · Viewport=Mid.** Figma lists brand, search, theme, and Menu only. Shipped chrome keeps **Text size** (`.reading-size-toggle`) on the header action row for `48rem < width <= 900px` (`chrome.css` hides it only at `width <= 48rem`).
+- **Header · Viewport=Desktop.** Figma Desktop variant omits **Text size**; shipped chrome keeps `.reading-size-toggle` on the action row (`width > 900px`).
+- **Header · Desktop & Compact height in Figma.** Figma Desktop and Compact variants are labeled **76px**; shipped chrome renders about **59px** (Desktop) and **~65px** (Compact) — pending Visual Design’s final measurements. Figma will be corrected after those land; the component map keeps Compact and Desktop heights **pending** until then.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
