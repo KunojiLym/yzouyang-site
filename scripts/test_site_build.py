@@ -1367,12 +1367,14 @@ def main() -> None:
         fail("styles.css missing semantic tokens (--bg-elevated / --focus-ring)")
     if "--text-default" not in css:
         fail("styles.css missing --text-default")
-    if css.count("var(--glow)") != 2:
-        fail("styles.css must reference --glow on the body wash and the dark entrance atmosphere")
+    if css.count("var(--glow)") != 3:
+        fail("styles.css must reference --glow on the body wash and both entrance atmospheres")
     if "rgb(212 163 92 / 12%)" not in css:
         fail("styles.css dark glow token must use amber pool (12%)")
-    if "rgb(212 163 92 / 10%)" not in css:
-        fail("styles.css light glow must use soft amber wash (10%)")
+    if "rgb(196 154 90 / 16%)" not in css:
+        fail("styles.css light glow must be accent at 16%")
+    if "rgb(212 163 92 / 10%)" in css:
+        fail("styles.css light glow must not stay at 10%")
     if "--accent-link" not in css:
         fail("styles.css missing --accent-link for light body links")
     if "--text-scale" not in css:

@@ -166,7 +166,7 @@
   --success: #3d6b4d;
   --warning: #8a6a2a;
   --danger: #9a4a3a;
-  --glow: rgb(212 163 92 / 10%);
+  --glow: rgb(196 154 90 / 16%);
   --bg-gradient-mid: #e2d8c8;
   --bg-gradient-end: #ddd2c0;
   --code-bg: var(--bg-mid);

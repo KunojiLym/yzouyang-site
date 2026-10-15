@@ -76,7 +76,7 @@ Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underl
 | `--success` | Positive status | `#3d6b4d` |
 | `--warning` | Caution status | `#8a6a2a` |
 | `--danger` | Destructive status | `#9a4a3a` |
-| `--glow` | Light glow is 16% `--accent` on the Entrance (Yingzhao, 2026-10-15). The body-wash token is still `rgb(212 163 92 / 10%)`. | 16% |
+| `--glow` | Light glow is 16% accent on the Entrance and the body wash (Yingzhao, 2026-10-15) | `rgb(196 154 90 / 16%)` |
 | `--bg-gradient-mid` | Body gradient stop | `#e2d8c8` |
 | `--bg-gradient-end` | Body gradient end | `#ddd2c0` |
 | `--photo-ink` | Atmosphere ink | `#e8dfd0` |
@@ -343,7 +343,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 - **C8.** Add `color/rail-green`. CSS now has `--rail-green: #4a5c4e` (same RGB as the `--line-*` mixes). Figma does not have that variable yet — file it for figma bro.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
-- **Light glow.** Decided at 16% (Yingzhao, 2026-10-15). The Entrance uses that 16% `--accent` mix. Figma is being updated to match. If the file still says 10%, that lag stays here until the variable matches.
+- **Light glow.** The token is `rgb(196 154 90 / 16%)`. Figma `color/glow` is being set to 16% to match. If the file still says 10%, that lag stays here until the variable matches.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
 - This pass could not open the Figma file (the Figma connection was unauthorized), so no further Figma-only gaps are claimed.
