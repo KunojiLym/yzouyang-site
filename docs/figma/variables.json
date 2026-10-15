@@ -64,7 +64,7 @@
     "lineHeight PERCENT 172 = 1.72",
     "13:12 SGT re-pull after header variant update: variables and text styles re-read from Figma, no value changes vs 12:24 (106 vars / 26 styles).",
     "13:40 SGT: Body/Large changed to font-size/text-md (19px), line height 145% (main .note-dek), Source Sans 3 Regular; approved by Yingzhao. Entry edited in place; other values unchanged.",
-    "14:05 SGT: issue #33 code-wins pass (Yingzhao approved). Edited in place: Display/Hero lh 108, Display/H1 ls -2.5%, Display/H2 Page lh 110, Label/Caps lh 160, Body/Large lh 155, Body/Small lh 160, Meta/Small lh 145; added Body/Large Dek (text-lg 20, lh 145). Display/H2 unchanged (computed 120%)."
+    "14:05 SGT: issue #34 code-wins pass (Yingzhao approved). Edited in place: Display/Hero lh 108, Display/H1 ls -2.5%, Display/H2 Page lh 110, Label/Caps lh 160, Body/Large lh 155, Body/Small lh 160, Meta/Small lh 145; added Body/Large Dek (text-lg 20, lh 145). Display/H2 unchanged (computed 120%)."
   ],
   "collections": [
     {
