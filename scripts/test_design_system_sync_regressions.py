@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import re
 import shutil
@@ -86,6 +87,26 @@ def _assert_expected_errors(label: str, errors: list[str], needles: list[str]) -
         raise SystemExit(1)
 
 
+def _assert_line_height_mismatch(
+    errors: list[str],
+    *,
+    style: str,
+    selector: str,
+    label: str,
+) -> None:
+    if not any(
+        "text style CSS mismatch" in item
+        and style in item
+        and selector in item
+        and "line-height" in item
+        for item in errors
+    ):
+        print(f"{label}: expected line-height export mismatch", file=sys.stderr)
+        for item in errors[:10]:
+            print(f"  {item}", file=sys.stderr)
+        raise SystemExit(1)
+
+
 def main() -> None:
     base_css = TOKENS.read_text(encoding="utf-8")
     doc = DOC.read_text(encoding="utf-8")
@@ -108,29 +129,6 @@ def main() -> None:
                 file=sys.stderr,
             )
             raise SystemExit(1)
-
-    gap_prefix = (
-        "- **Text style CSS · Body/Large Dek · `.library-panel--note .note-dek` · line-height:**"
-    )
-    synthetic_gap = (
-        gap_prefix
-        + " shipped **9.99**; Figma **145%**. seeded test — "
-        + "[issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).\n"
-    )
-    doc_with_fake_gap = doc.replace(
-        "**Open (not enforced by sync; Yingzhao decides):**",
-        synthetic_gap + "**Open (not enforced by sync; Yingzhao decides):**",
-        1,
-    )
-    gap_errors = sync_snapshot(SNAPSHOT, base_css, doc_with_fake_gap)
-    if not any("stale text style CSS gap" in item for item in gap_errors):
-        print(
-            "stale text style CSS gap bullet should fail when Body/Large Dek matches CSS",
-            file=sys.stderr,
-        )
-        for item in gap_errors[:10]:
-            print(f"  {item}", file=sys.stderr)
-        raise SystemExit(1)
 
     with tempfile.TemporaryDirectory() as tmp:
         styles_tmp = Path(tmp)
@@ -157,19 +155,12 @@ def main() -> None:
             encoding="utf-8",
         )
         lh_errors = sync_snapshot(SNAPSHOT, base_css, doc, styles_dir=styles_tmp)
-    if not any(
-        "shipped text style assertion failed" in item
-        and "Body/Large Dek" in item
-        and "line-height" in item
-        for item in lh_errors
-    ):
-        print(
-            "Body/Large Dek line-height mutation should fail shipped assertion",
-            file=sys.stderr,
-        )
-        for item in lh_errors[:10]:
-            print(f"  {item}", file=sys.stderr)
-        raise SystemExit(1)
+    _assert_line_height_mismatch(
+        lh_errors,
+        style="Body/Large Dek",
+        selector=".library-panel--note .note-dek",
+        label="Body/Large Dek",
+    )
 
     with tempfile.TemporaryDirectory() as tmp_lede:
         styles_lede = Path(tmp_lede)
@@ -195,19 +186,38 @@ def main() -> None:
             encoding="utf-8",
         )
         lede_errors = sync_snapshot(SNAPSHOT, base_css, doc, styles_dir=styles_lede)
-    if not any(
-        "shipped text style assertion failed" in item
-        and "Body/Large" in item
-        and ".entrance .lede" in item
-        for item in lede_errors
-    ):
-        print(
-            "Body/Large lede line-height 1.9 should fail shipped assertion",
-            file=sys.stderr,
-        )
-        for item in lede_errors[:10]:
-            print(f"  {item}", file=sys.stderr)
-        raise SystemExit(1)
+    _assert_line_height_mismatch(
+        lede_errors,
+        style="Body/Large",
+        selector=".entrance .lede",
+        label="Body/Large lede 1.9",
+    )
+
+    snapshot_mut = copy.deepcopy(snapshot)
+    for style in snapshot_mut["textStyles"]:
+        if style["name"] == "Label/Caps":
+            style["lineHeight"] = {"unit": "PERCENT", "value": 300}
+        if style["name"] == "Body/Small":
+            style["lineHeight"] = {"unit": "PERCENT", "value": 300}
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
+        json.dump(snapshot_mut, handle)
+        mut_path = Path(handle.name)
+    try:
+        snap_errors = sync_snapshot(mut_path, base_css, doc)
+    finally:
+        mut_path.unlink(missing_ok=True)
+    _assert_line_height_mismatch(
+        snap_errors,
+        style="Label/Caps",
+        selector=".record-id",
+        label="Label/Caps snapshot lh 300%",
+    )
+    _assert_line_height_mismatch(
+        snap_errors,
+        style="Body/Small",
+        selector=".site-nav a",
+        label="Body/Small snapshot lh 300%",
+    )
 
     for label, pattern, repl, needles in REGRESSIONS:
         mutated = _apply_mutation(base_css, pattern, repl)

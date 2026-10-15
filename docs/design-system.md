@@ -159,7 +159,7 @@ Figma text styles (27) mapped to Layer C classes. Token columns reference `token
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
 | Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
-| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
+| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2`, `main.page h2` | Crimson Pro | `--text-display-3` (`main.page h2`: `--text-display-2`) | 600, lh 1.2, 0% (`main.page h2`: −1%) |
 | Display/H2 Page | `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.1, −1% |
 | Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
@@ -379,14 +379,12 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 14:05 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **27** `textStyles` match the typography table and `test_design_system_sync.py`. Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (explicit `line-height` only when set on the selector).
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 14:05 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **27** `textStyles` match the typography table and `test_design_system_sync.py`. Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (line-height includes inherited `body` rhythm when a selector omits it).
 
 **Open (not enforced by sync; Yingzhao decides):**
 
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
 - **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
-- **`main.page h2`.** Shipped **`--text-display-2`** / **`var(--lh-heading)` (1.2)** in `components.css`; not mapped to a dedicated Figma text style row (404 title uses **Display/H2 Page** on `.not-found h1` only).
-
 - **Header · Clear @ 1280 (Desktop).** Figma **Desktop** (`3:3`) shows **Clear** **hidden** at 1280 (still **unconfirmed** with Visual Design). Shipped Pagefind can still show `.pagefind-ui__search-clear` whenever the search field has a value — not hidden by viewport.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).
 - **Header · Compact Text size.** Figma **Compact** (`3:25`) omits **Text size** from the header row; shipped chrome keeps **Text size** inside the **Menu** panel only (`<= 48rem`) — matches intent, different surface than a header control.

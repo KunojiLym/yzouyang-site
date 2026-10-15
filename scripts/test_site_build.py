@@ -940,6 +940,24 @@ def assert_unique_ids() -> None:
                 fail(f"{rel} library panel still has an id")
 
 
+def _boot_cls_rows(payload: object, name: str) -> list[dict]:
+    if isinstance(payload, list):
+        rows = payload
+    elif isinstance(payload, dict) and isinstance(payload.get("cls"), list):
+        rows = payload["cls"]
+    else:
+        fail(f"{name} must be a JSON array or object with a cls array")
+    if not rows:
+        fail(f"{name} must be a non-empty CLS matrix")
+    for row in rows:
+        if not isinstance(row, dict):
+            fail(f"{name} rows must be objects")
+        for key in ("route", "path", "width", "theme", "cls"):
+            if key not in row:
+                fail(f"{name} row missing {key!r}")
+    return rows
+
+
 def assert_boot_cls_review_json() -> None:
     review = ROOT / "docs" / "reviews" / "boot-cls-2026-10-15"
     for name in ("cls-before.json", "cls-after.json"):
@@ -947,20 +965,28 @@ def assert_boot_cls_review_json() -> None:
         if not path.is_file():
             fail(f"missing {path.relative_to(ROOT)}")
         raw = path.read_text(encoding="utf-8")
-        if not raw.lstrip().startswith("["):
+        if not raw.lstrip().startswith(("[", "{")):
             fail(
                 f"{name} must be JSON only (stderr belongs on measure_boot_cls_matrix stderr, not in the file)"
             )
-        rows = json.loads(raw)
-        if not isinstance(rows, list) or not rows:
-            fail(f"{name} must be a non-empty JSON array")
-        for row in rows:
-            if not isinstance(row, dict):
-                fail(f"{name} rows must be objects")
-            for key in ("route", "path", "width", "theme", "cls"):
-                if key not in row:
-                    fail(f"{name} row missing {key!r}")
-    after = json.loads((review / "cls-after.json").read_text(encoding="utf-8"))
+        _boot_cls_rows(json.loads(raw), name)
+    after_payload = json.loads((review / "cls-after.json").read_text(encoding="utf-8"))
+    after = _boot_cls_rows(after_payload, "cls-after.json")
+    if isinstance(after_payload, dict):
+        runs = after_payload.get("runs")
+        if not isinstance(runs, int) or runs < 3:
+            fail("cls-after.json must record median of at least 3 runs (runs >= 3)")
+        shifts = after_payload.get("elementShiftMedian")
+        if not isinstance(shifts, dict):
+            fail("cls-after.json missing elementShiftMedian object")
+        for width in (769, 784, 800, 900, 1024):
+            for route in ("notes", "systems"):
+                route_block = shifts.get(route, {})
+                block = route_block.get(width)
+                if block is None:
+                    block = route_block.get(str(width))
+                if not isinstance(block, dict):
+                    fail(f"cls-after.json missing elementShiftMedian[{route}][{width}]")
     widths = {int(row["width"]) for row in after}
     for required_width in (784, 800, 900):
         if required_width not in widths:

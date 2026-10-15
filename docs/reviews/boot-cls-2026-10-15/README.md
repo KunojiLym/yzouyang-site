@@ -9,23 +9,23 @@ Measured with `scripts/measure_boot_cls_matrix.mjs` against local `dist` (same f
 
 Playwright gate (`library boot CLS`): deep links @ **375**, **768**, **769**, **784**, **800**, **900**, **1024**, and **1280** — all **< 0.1** in `cls-after.json`.
 
-**Pane shift (Visual Design):** Removing `.library-frame` `max-height` reserve fixes the ~52px empty band under the footer and the ~19px Credentials pane jump from double-counting strip/footer. Index-control and notes reading-context **boot-only** reserves (scoped to `.library-panel--note.is-active`, not all mid-band widths) replace the round-4 regression that forced `display:flex` on `[hidden]` reading context for every notes route.
+**Boot layout shifts:** `elementShiftMedian` in `cls-after.json` is the median of **3** Playwright runs (dark theme) at **769–1024px** for `div.library-pane`, `.library-panel-body`, and `.library-index-control`. Reading-context **boot-only** flex reserve applies to every library deep link during `.is-booting`, not only notes.
 
 ## dark
 
 | Route | 375 | 768 | 769 | 784 | 800 | 900 | 1024 | 1280 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| notes | 0.007 | 0.038 | 0.089 → **0.039** | 0.087 → **0.029** | 0.087 → **0.028** | 0.010 | 0.012 → **0.014** | 0.005 |
-| systems | 0.022 | 0.003 | 0.134 → **0.030** | 0.080 → **0.030** | 0.136 → **0.031** | 0.008 | 0.004 → **0.024** | 0.002 |
-| credentials | 0.010 | 0.010 | 0.148 → **0.040** | 0.094 → **0.035** | 0.069 → **0.009** | 0.003 | 0.025 → **0.025** | 0.005 |
+| notes | 0.004 | 0.029 | 0.089 → **0.039** | 0.087 → **0.029** | 0.087 → **0.038** | 0.010 | 0.012 → **0.008** | 0.009 |
+| systems | 0.021 | 0.003 | 0.134 → **0.046** | 0.080 → **0.045** | 0.136 → **0.048** | 0.045 | 0.004 → **0.037** | 0.014 |
+| credentials | 0.009 | 0.010 | 0.148 → **0.052** | 0.094 → **0.052** | 0.069 → **0.027** | 0.044 | 0.025 → **0.016** | 0.017 |
 
 ## light
 
 | Route | 375 | 768 | 769 | 784 | 800 | 900 | 1024 | 1280 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| notes | 0.003 | 0.027 | 0.089 → **0.029** | 0.087 → **0.038** | 0.088 → **0.028** | 0.010 | 0.012 → **0.008** | 0.005 |
-| systems | 0.022 | 0.003 | 0.004 → **0.030** | 0.064 → **0.003** | 0.091 → **0.031** | 0.007 | 0.024 → **0.024** | 0.002 |
-| credentials | 0.009 | 0.010 | 0.149 → **0.035** | 0.149 → **0.007** | 0.152 → **0.010** | 0.028 | 0.025 → **0.025** | 0.005 |
+| notes | 0.003 | 0.029 | 0.089 → **0.029** | 0.087 → **0.038** | 0.088 → **0.028** | 0.011 | 0.012 → **0.008** | 0.005 |
+| systems | 0.021 | 0.003 | 0.004 → **0.046** | 0.064 → **0.046** | 0.091 → **0.048** | 0.023 | 0.024 → **0.016** | 0.014 |
+| credentials | 0.009 | 0.010 | 0.149 → **0.024** | 0.149 → **0.052** | 0.152 → **0.055** | 0.019 | 0.025 → **0.039** | 0.017 |
 
 ## Screenshots @ 784px (`/systems/#SYS-03`)
 

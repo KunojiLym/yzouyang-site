@@ -12,6 +12,12 @@ function loadJson(name) {
   return JSON.parse(readFileSync(join(dir, name), "utf8"));
 }
 
+function clsRows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.cls)) return payload.cls;
+  throw new Error("expected array or { cls: [] }");
+}
+
 function key(row) {
   return `${row.route}|${row.width}|${row.theme}`;
 }
@@ -20,8 +26,9 @@ function fmt(n) {
   return typeof n === "number" ? n.toFixed(3) : "—";
 }
 
-const before = loadJson("cls-before.json");
-const after = loadJson("cls-after.json");
+const before = clsRows(loadJson("cls-before.json"));
+const afterPayload = loadJson("cls-after.json");
+const after = clsRows(afterPayload);
 const mapB = new Map(before.map((r) => [key(r), r.cls]));
 const mapA = new Map(after.map((r) => [key(r), r.cls]));
 
@@ -36,7 +43,7 @@ md += `## What changed\n\n`;
 md += `- **Header (769–900px):** fixed \`12.5rem\` (200px) \`.header-search\` slot + \`#search\` min-height so Pagefind mount does not wrap the action row or shrink the library grid (\`chrome.css\`, pre-fix baseline \`862e9d8\`).\n`;
 md += `- **Library strip + footer:** \`--library-strip-min-height\` and \`--library-page-footer-min-height\` on \`.library-strip\` / \`.library-page-footer\` so strip and footer block size is stable before paint (no \`max-height\` reserve on \`.library-frame\` — that double-counted and left a ~52px gap under the footer).\n\n`;
 md += `Playwright gate (\`library boot CLS\`): deep links @ **375**, **768**, **769**, **784**, **800**, **900**, **1024**, and **1280** — all **< 0.1** in \`cls-after.json\`.\n\n`;
-md += `**Pane shift (Visual Design):** Removing \`.library-frame\` \`max-height\` reserve fixes the ~52px empty band under the footer and the ~19px Credentials pane jump from double-counting strip/footer. Index-control and notes reading-context **boot-only** reserves (scoped to \`.library-panel--note.is-active\`, not all mid-band widths) replace the round-4 regression that forced \`display:flex\` on \`[hidden]\` reading context for every notes route.\n\n`;
+md += `**Boot layout shifts:** \`elementShiftMedian\` in \`cls-after.json\` is the median of **${afterPayload.runs ?? "≥3"}** Playwright runs (dark theme) at **769–1024px** for \`div.library-pane\`, \`.library-panel-body\`, and \`.library-index-control\`. Reading-context **boot-only** flex reserve applies to every library deep link during \`.is-booting\`, not only notes.\n\n`;
 
 for (const theme of themes) {
   md += `## ${theme}\n\n`;
