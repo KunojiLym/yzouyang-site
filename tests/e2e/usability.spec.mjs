@@ -707,6 +707,55 @@ test.describe("library focus order", () => {
     }
   });
 
+  test("library DOM order: index before pane before footer", async ({ page }) => {
+    const viewports = [
+      { width: 1280, height: 800 },
+      { width: 800, height: 600 },
+      { width: 375, height: 812 },
+    ];
+    const routes = [
+      { label: "systems-overview", path: "/systems/" },
+      { label: "systems-deep", path: "/systems/#verify" },
+      { label: "credentials-deep", path: "/credentials/#google-cloud" },
+      { label: "notes-deep", path: "/notes/#NOTE-2026-005" },
+    ];
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      for (const route of routes) {
+        await page.goto(route.path, { waitUntil: "load" });
+        await page.waitForFunction(
+          () => !document.querySelector("#library-split")?.classList.contains("is-booting")
+        );
+        const order = await page.evaluate(() => {
+          const index = document.querySelector(".library-index");
+          const pane = document.querySelector(".library-pane");
+          const footer = document.querySelector("footer.library-page-footer");
+          if (!index || !pane || !footer) {
+            return {
+              ok: false,
+              missing: {
+                index: !index,
+                pane: !pane,
+                footer: !footer,
+              },
+            };
+          }
+          const nodes = [index, pane, footer];
+          for (let i = 0; i < nodes.length - 1; i += 1) {
+            const relation = nodes[i].compareDocumentPosition(nodes[i + 1]);
+            if ((relation & Node.DOCUMENT_POSITION_FOLLOWING) === 0) {
+              return { ok: false, relation };
+            }
+          }
+          return { ok: true };
+        });
+        expect(order.ok, `${route.label} @ ${viewport.width}px ${JSON.stringify(order)}`).toBe(
+          true
+        );
+      }
+    }
+  });
+
   test("legacy note section hash opens the note that contains it", async ({ page }) => {
     const hash = "2-i-setting-up-databricks-free-edition-account";
     await page.goto(`/notes/#${hash}`, { waitUntil: "load" });
@@ -718,7 +767,37 @@ test.describe("library focus order", () => {
   });
 });
 
+test.describe("library without JavaScript", () => {
+  test("systems and notes render catalogue content", async ({ browser }) => {
+    test.skip(test.info().project.name === "mobile", "desktop library layout");
+    for (const path of ["/systems/", "/notes/", "/credentials/"]) {
+      const context = await browser.newContext({ javaScriptEnabled: false });
+      const page = await context.newPage();
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const panel = page.locator(".library-panel:not([hidden])").first();
+      await expect(panel).toBeVisible();
+      const text = await panel.locator(".library-panel-body").innerText();
+      expect(text.trim().length).toBeGreaterThan(20);
+      await context.close();
+    }
+  });
+
+  test("notes deep link renders without a blank pane", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/notes/#NOTE-2026-005", { waitUntil: "domcontentloaded" });
+    await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"]')).toBeVisible();
+    const text = await page
+      .locator('.library-panel[data-panel-id="NOTE-2026-005"] .library-panel-body')
+      .innerText();
+    expect(text.trim().length).toBeGreaterThan(40);
+    await context.close();
+  });
+});
+
 test.describe("library boot CLS", () => {
+  test.describe.configure({ mode: "serial" });
+
   test("notes and deep links stay under 0.1", async ({ browser }) => {
     test.setTimeout(180_000);
     test.skip(test.info().project.name === "mobile", "viewports are set per case");
@@ -731,10 +810,27 @@ test.describe("library boot CLS", () => {
       { path: "/notes/#NOTE-2026-005", width: 1024, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 775, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 769, height: 800 },
+      { path: "/notes/#NOTE-2026-005", width: 900, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 784, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 375, height: 812 },
       { path: "/systems/#SYS-03", width: 1280, height: 800 },
+      { path: "/systems/#SYS-03", width: 1024, height: 800 },
+      { path: "/systems/#SYS-03", width: 900, height: 800 },
+      { path: "/systems/#SYS-03", width: 800, height: 800 },
+      { path: "/systems/#SYS-03", width: 784, height: 800 },
+      { path: "/systems/#SYS-03", width: 769, height: 800 },
       { path: "/systems/#SYS-03", width: 375, height: 812 },
+      { path: "/systems/#SYS-01", width: 800, height: 800 },
+      { path: "/systems/#SYS-01", width: 769, height: 800 },
+      { path: "/credentials/#google-cloud", width: 1024, height: 800 },
+      { path: "/credentials/#additional-training-bootcamps", width: 800, height: 800 },
+      { path: "/credentials/#additional-training-bootcamps", width: 769, height: 800 },
+      { path: "/notes/#NOTE-2025-015", width: 800, height: 800 },
+      { path: "/notes/#NOTE-2025-015", width: 769, height: 800 },
+      { path: "/credentials/#google-cloud", width: 900, height: 800 },
+      { path: "/credentials/#google-cloud", width: 800, height: 800 },
+      { path: "/credentials/#google-cloud", width: 784, height: 800 },
+      { path: "/credentials/#google-cloud", width: 769, height: 800 },
     ];
     const scores = [];
     for (const item of cases) {
@@ -762,13 +858,10 @@ test.describe("library boot CLS", () => {
           .locator(`.library-panel[data-panel-id="${hash}"].is-active`)
           .waitFor({ state: "visible", timeout: 8000 });
       }
+      await page.evaluate(() => document.fonts.ready);
       const cls = await waitForClsStable(page);
-      const clsLimit =
-        item.path.includes("#") && item.width >= 768 && item.width < 800
-          ? 0.15
-          : 0.1;
       scores.push(`${item.path} @${item.width} ${cls.toFixed(3)}`);
-      expect(cls, `${item.path} @${item.width}`).toBeLessThan(clsLimit);
+      expect(cls, `${item.path} @${item.width}`).toBeLessThan(0.1);
       await context.close();
     }
     console.log(scores.join("\n"));

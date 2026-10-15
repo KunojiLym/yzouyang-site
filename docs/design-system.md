@@ -4,7 +4,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 ## Source of truth
 
-The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 10:29 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
+The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 14:05 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
 
 **Review on change.** Any PR that changes `tokens.css`, a component class in Layer C, a breakpoint or a page rule must (i) match the Figma snapshot and a Figma variable, style or component (or link the Figma change), and (ii) update this doc and `docs/figma/variables.json` in the same PR when design values change. If the code is right and Figma lags, file it for figma bro and record it under [Known Figma gaps](#known-figma-gaps) rather than diverging silently. A drift review runs whenever the snapshot, Figma or `tokens.css` changes.
 
@@ -15,6 +15,8 @@ Figma remains the authoritative design file; **`docs/figma/variables.json`** is 
 **Cursor agents and CI cannot call the Figma MCP** and must never guess values from memory. They work only from `docs/figma/variables.json`, this document, and `tokens.css`.
 
 A PR that changes design tokens, text styles, or other values covered by the snapshot **without** updating `docs/figma/variables.json` must call that out explicitly in the PR body so reviewers can reconcile before merge.
+
+The **14:05 SGT** export changelog inside `variables.json` still says GitHub issue **#33**; that pull was **#34** (code-wins pass). Do not hand-edit `variables.json` — fix the issue number on the next verbatim re-export from `inbox/figma-vars-full.json`.
 
 **Governing sentence:** Design the site like a carefully maintained personal systems library: warm, cinematic, and catalogued — a scholar-engineer’s archive of systems, notes, and experiments, not a boardroom slide, a cyberpunk demo, or a steampunk toy.
 
@@ -123,7 +125,7 @@ Figma writes some alphas as 8-digit hex. `tokens.css` stores the same tokens as 
 
 The Home primary (`.entrance-action--primary`) is an outlined primary with an 8% brass fill: 40px tall (`--space-10`), `radius-md`, weight 600.
 
-Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--frame-max` aliases `--max-longform` (Home hero, header, and featured grid share this frame); `--text-proof` fluid 17–19px (17px at 1280, 19px at 1440); `--header-offset` `4.75rem`; `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
+Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--frame-max` aliases `--max-longform` (Home hero, header, and featured grid share this frame); `--text-proof` fluid 17–19px (17px at 1280, 19px at 1440); `--header-offset` `4.75rem` (~76px scroll/anchor offset — not the header’s painted height; see [Header](#header)); `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
 
 **Reading tokens (Notes only):** `--note-read-max` `34rem` (prose measure); `--note-read-lead` `1.72`; `--text-dropcap` (fluid first-letter size); `--note-image-bg` (neutral mat behind inline figures / covers). Notes prose italics use the real Crimson Pro italic.
 
@@ -153,32 +155,36 @@ Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens
 
 At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
 
-Figma text styles (24) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`.
+Figma text styles (28) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`. **Size / token** and **Weight / tracking** columns describe **shipped CSS** on the listed selectors (not a live Figma diff).
 
 | Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
-| Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
-| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600 |
+| Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600, −2.5% |
+| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
+| Display/H2 Page | `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.1, −1% |
 | Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
 | Display/Practice Title | `.home-practice-title` | Crimson Pro | `--text-sm` | 600 |
 | Display/Dropcap | `.note-body.prose .note-dropcap` | Crimson Pro | `--text-dropcap` | 600 |
 | Heading/H3 | `main.page h3` | Source Sans 3 | `--text-lg` | 600 |
 | Label/Caps | `.record-id` | Source Sans 3 | `--text-xs` | 600, 8%, caps |
-| Label/Xs Caps | `.library-index-label` | Source Sans 3 | `--text-xs` | 400, 8%, caps |
-| Label/Xs Group | `.library-index-group--depth-0 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 8%, caps |
+| Label/Xs Caps | `.library-strip-label`, `.related-paths-label` | Source Sans 3 | `--text-xs` | 400, 6%, caps |
+| Label/Xs Group Caps | `.library-index-group--depth-0 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 8%, caps, lh 1.35 |
+| Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-lg` | 400 |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% |
+| Body/Large Hero | `.home-snap-proposition .lede` | Source Sans 3 | `--text-md` | 400, lh 150% at ≥900px (`home.css`) — **computed font-size ~20.19px at 1280** while Figma **text-md** pins **19px** (token fluidity); note only, no CSS change |
+| Body/Large Dek | `.library-panel--note .note-dek` | Source Sans 3 | `--text-lg` | 400, lh 145% — **matches shipped note dek sizing; not a visual change** |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
 | Body/Prose | `.note-body.prose` | Crimson Pro | `--text-md` | 400, lh 172% |
-| Body/Blockquote | `.note-body.prose .note-blockquote` | Crimson Pro italic | `--text-lg` | 400 |
+| Body/Blockquote | `.note-body.prose .note-blockquote p` | Crimson Pro italic | `--text-lg` | 400, lh `var(--lh-blockquote)` |
 | Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
 | Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
-| Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **uses `var(--text-muted)` in CSS (B1); see gaps** |
+| Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** — dark **~7.0:1** on `--bg-mid` panel; light **~4.7–4.9:1** on panel |
 | Meta/Map Node Label | `.map-node-label` | Source Sans 3 | `--text-xs` | 400 |
 | UI/Control | `.theme-toggle` | Source Sans 3 | `--text-sm` | 400 (label); icon-only below 48rem |
 
@@ -186,7 +192,7 @@ Doc-only aliases retired: Wordmark → Display/Brand.
 
 | Use | Face |
 |---|---|
-| Display/Hero, Display/H1–H2, Display/Brand, Display/Record Title, Display/Practice Title | Crimson Pro (serif) |
+| Display/Hero, Display/H1–H2, Display/H2 Page, Display/Brand, Display/Record Title, Display/Practice Title | Crimson Pro (serif) |
 | **Notes essay body** (`.note-body.prose` only) | Crimson Pro (serif) at `--text-md` — see [Reading mode](#reading-mode-notes-only) |
 | Label, body, meta, and UI styles in the table | Source Sans 3 (sans) |
 
@@ -214,6 +220,9 @@ Publication dates in the Notes index and byline use **full calendar dates** when
 | `--space-10` | 2.5rem (40px) |
 | `--space-11` | 3rem |
 | `--space-12` | 4rem |
+| `--library-strip-min-height` | 3.2rem — catalogue strip (`.library-strip`) min block size before paint |
+| `--library-page-footer-min-height` | 4.9rem — library shell footer (`.library-page-footer`) min block size before paint |
+| `--library-index-control-size` | 2rem — pin/hide/rail index controls (`.library-index-control`) |
 | `--radius-sm` | 0.15rem |
 | `--radius-md` | 0.2rem |
 | `--radius-lg` | 0.25rem |
@@ -268,6 +277,18 @@ Inner pages:
 
 **Still banned:** boardroom outcome strip; metric counters or big-number tiles; a metrics hero; more than one proof line; unit-less percentages.
 
+### Library boot layout reserves
+
+While `#library-split` carries `.is-booting`, CSS reserves block size so late-parsed shell chrome does not shrink the pane (DOM order: lede → frame → split → strip → page footer; no flex `order` hacks).
+
+| Mechanism | Routes | Purpose |
+|---|---|---|
+| `.library-frame` **grid** row `var(--library-strip-min-height)` | Systems, Notes, Credentials at **>48rem** (when `.library-strip` exists) | Strip row reserved before `.library-strip` parses (omitted at ≤48rem to avoid mobile deep-link CLS regression) |
+| `.library-shell::after` placeholder | Library routes at **>48rem** until `.library-page-footer` parses | Footer slot = `--library-page-footer-min-height` + `--space-3` (omitted at ≤48rem — same reason) |
+| `.library-reading-context[hidden]` flex reserve | **Notes** (`data-library-route="notes"`): collapsed index, hash/detail boot, and mobile catalogue **overview** at **≤48rem** (`is-detail-open`) — not Systems/Credentials catalogue panes | Reading-context bar slot while `[hidden]` during boot (target for remaining ~36px `.library-panels` shift when the bar appears above the scrollport) |
+
+Tokens: `--library-strip-min-height`, `--library-page-footer-min-height`, `--library-index-control-size`. Route hook: `data-library-route` on `<main class="library-route">` (`notes` \| `systems` \| `credentials`) — not `aria-label`.
+
 ### Library scanning (Catalogue mode)
 
 **Catalogue mode** applies to **Systems**, **Credentials**, and the **Home** featured-record grid: scan, compare, and jump — not sustained reading. Typography stays sans-first; panels use the full library pane width (no `--note-read-max` cap).
@@ -281,6 +302,7 @@ Inner pages:
 - **Library strip** footer switches collections (Systems · Notes · Credentials) — browsing chrome, not related evidence
 - Writing index: publication rows with catalogue metadata (`NOTE-*`, formatted date in `.library-index-meta`), not blog card grid
 - Header Pagefind + in-panel headings — no sticky long-form TOC on library routes (Notes use **in-index** in-article links via `data-inarticle-toc`, not a body TOC rail)
+- **Index rail controls (769–1024px):** collapsed-index **TOC rail** pin/expand buttons are **32×32px** (`--library-index-control-size`, 2rem). Earlier shipped chrome used **20×32px** controls; the second rail icon sits **12px** lower in the stacked layout — intentional, documented only (no CSS revert).
 
 ### Reading mode (Notes only)
 
@@ -315,6 +337,7 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 | `.library-card` / `.site-footer` / `.library-page-footer` | Footer: location · focus · mailto · social |
 | `.site-nav` | **Systems · Notes · Credentials** |
 | `.library-shell` | Split-pane catalogue on Systems / Notes / Credentials |
+| `data-library-route` on `<main class="library-route">` | Route hook for CSS (`notes`, `systems`, `credentials`) — do not use `aria-label` for styling |
 | `.library-index-list` / `.library-index-trigger` | Catalogue index (buttons; opens panel) |
 | `.library-index-group` / `.library-index-group-label` | Sticky tiered headers in Notes index (category / series) |
 | `.library-index-inarticle-*` | In-note heading jump links in sidebar when index open |
@@ -339,8 +362,6 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | Button | `.entrance-action--primary` (outlined primary; text links stay `.entrance-action--secondary`) |
 | Text Link | `.entrance-action--secondary`, body `a` |
 | Entrance Action (Primary) | `.entrance-action--primary` |
-| Header Desktop | `.site-header` + `.site-nav-desktop` |
-| Header Compact | `.site-header` at `width <= 48rem` (icon theme, reading size in Menu) |
 | Nav Link | `.site-nav a` |
 | Nav Link Active | `.site-nav a[aria-current="page"]`, `.site-nav a[aria-current="location"]` |
 | Theme Toggle | `.theme-toggle` |
@@ -351,20 +372,45 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | Index Trigger | `.library-index-trigger` |
 | Entrance Atmosphere (optional) | `.entrance-atmosphere` / `.entrance-atmosphere--tokens` |
 
+#### Header
+
+[`variables.json`](figma/variables.json) carries tokens only — no component tree. Header variants are mapped here (markup from `scripts/build.py` `layout()`; breakpoints in `chrome.css`). Figma **Header** component set **`3:2`**.
+
+**Scroll offset:** `--header-offset` (`4.75rem`) is used for `scroll-padding-top`, TOC spy, and in-view `scroll-margin-top` — it is **not** the sticky header’s rendered block height.
+
+**Figma padding:** Header vertical padding in the **Header** set (`3:2`) uses **literal px/rem values**, not `--space-*` tokens, so frames hit the measured heights below.
+
+| Variant | Width | Controls (Figma order, left → right) | Rendered height |
+|---|---|---|---|
+| **Compact** | **375–768px** (`<= 48rem`) | **Brand** · **40px Search** · **40px Theme** · **Menu** | **64px** — node `3:25` |
+| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** · **Menu** | **59.19px** — node `21:16` |
+| **Narrow desktop** | **901–1024px** | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** | **59.19px** — node `32:292` |
+| **Desktop** | **1025–1279px** (shipped chrome: **`width > 1024px`**; no dedicated frame in set `3:2`) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** — no **Menu** | **59.19px** — shipped chrome (Figma header variants confirm **Clear** behavior) |
+| **Desktop** | **≥1280px** (Figma frame at **1280** — node `3:3`; shipped chrome breakpoint **`width > 1024px`**) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** — no **Menu** | **61.39px** — node `3:3` |
+
+**Clear (Figma + shipped):** Header variants that include **Clear** model it **hidden (`opacity: 0`)** while the Pagefind search field is empty and **visible once text is typed** (shipped: `.pagefind-ui__search-clear` inside `.header-search`).
+
+**Shipped chrome (for gap checks):** `.site-header` markup from `layout()` — **Brand** · `.site-nav-desktop` (Systems · Notes · Credentials when `> 900px`) · `.header-search` / `#search` (Pagefind **Clear** = `.pagefind-ui__search-clear` inside the search control) · `.reading-size-toggle` · `.theme-toggle` · `.nav-menu` (when `<= 900px`; **Text size** duplicate lives in the Menu panel at `<= 48rem` only).
+
 `.proof-strip` and `.connect-card` are not part of this contract. Nothing in `scripts/build.py`, `src/*.js`, or the page templates emits them.
 
 ---
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 10:29 SGT):** No open colour/spacing/type variable mismatches besides the allow-listed pair below — all other variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation.
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 20:45 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **28** `textStyles` match the typography table and `test_design_system_sync.py`. Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (line-height includes inherited `body` rhythm when a selector omits it).
 
-- **Record domains colour (B1).** Figma still carries `color/record-domains` as its own variable (alias of `color/text-muted` in the latest export). Production CSS maps `.record-domains` to `var(--text-muted)` for AA contrast — no separate token. figma bro should drop the duplicate variable; sync allow-lists `color/record-domains` until then.
-- **Text style drift (CSS vs Figma snapshot).** Until figma bro or CSS reconciles: **Display/H2** is bound to `font-size/text-display-2/max` in Figma but catalogue/Home section titles use `--text-display-3` in CSS; **Label/Xs Caps** is 6% tracking in Figma vs 8% in CSS (`library.css`); **Label/Xs Group** is 2% tracking, no caps in Figma vs 8% tracked caps in CSS. The typography table documents shipped CSS; `test_design_system_sync.py` allow-lists these three names.
+**Open (not enforced by sync; Yingzhao decides):**
+
+- **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
+- **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
+- **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
+- **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).
+- **Header · Compact Text size.** Figma **Compact** (`3:25`) omits **Text size** from the header row; shipped chrome keeps **Text size** inside the **Menu** panel only (`<= 48rem`) — matches intent, different surface than a header control.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
-- **Unstyled in Figma textStyles (doc-only).** Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind`), fallback index (`.current-index .index-entry`), and monospace code (`.note-code`).
+- **Unstyled in Figma textStyles (doc-only).** Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind`), fallback index (`.current-index .index-entry`), monospace code (`.note-code`), and **`.library-index-label`** (400 / `0.08em` caps on the catalogue index header — not Label/Xs Caps or Label/Xs Group Caps).
 
 ---
 

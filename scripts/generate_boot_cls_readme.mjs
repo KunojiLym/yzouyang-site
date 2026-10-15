@@ -1,0 +1,114 @@
+#!/usr/bin/env node
+/**
+ * Build docs/reviews/boot-cls-2026-10-15/README.md from cls-before.json + cls-after.json.
+ */
+import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "reviews", "boot-cls-2026-10-15");
+
+function loadJson(name) {
+  return JSON.parse(readFileSync(join(dir, name), "utf8"));
+}
+
+function clsRows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.cls)) return payload.cls;
+  throw new Error("expected array or { cls: [] }");
+}
+
+function key(row) {
+  return `${row.route}|${row.width}|${row.theme}`;
+}
+
+function fmt(n) {
+  return typeof n === "number" ? n.toFixed(3) : "—";
+}
+
+const before = clsRows(loadJson("cls-before.json"));
+const afterPayload = loadJson("cls-after.json");
+const after = clsRows(afterPayload);
+const mapB = new Map(before.map((r) => [key(r), r.cls]));
+const mapA = new Map(after.map((r) => [key(r), r.cls]));
+
+const routes = ["notes", "systems", "credentials"];
+const widths = [...new Set(after.map((r) => r.width))].sort((a, b) => a - b);
+const themes = ["dark", "light"];
+
+let md = `# Boot CLS — library deep links\n\n`;
+md += `Measured with \`scripts/measure_boot_cls_matrix.mjs\` against local \`dist\` (same flow as \`library boot CLS\` e2e: \`load\` → active panel → \`document.fonts.ready\` → CLS stable). `;
+md += `Tables below are generated from \`cls-before.json\` and \`cls-after.json\` via \`scripts/generate_boot_cls_readme.mjs\`. Budget **0.1**.\n\n`;
+md += `## What changed\n\n`;
+md += `- **Header (769–900px):** fixed \`12.5rem\` (200px) \`.header-search\` slot + \`#search\` min-height so Pagefind mount does not wrap the action row or shrink the library grid (\`chrome.css\`, pre-fix baseline \`862e9d8\`).\n`;
+md += `- **Library strip + footer:** \`--library-strip-min-height\` and \`--library-page-footer-min-height\` on \`.library-strip\` / \`.library-page-footer\` so strip and footer block size is stable before paint (no \`max-height\` reserve on \`.library-frame\` — that double-counted and left a ~52px gap under the footer).\n`;
+md += `- **Boot reading context:** note-panel boot reserve + \`syncReadingContext()\` before \`is-booting\` is cleared; \`is-reading-context-visible\` only shows the bar when it is not \`[hidden]\`.\n`;
+const contextPath = join(dir, "CONTEXT.md");
+let contextText = "";
+try {
+  contextText = readFileSync(contextPath, "utf8");
+} catch {
+  contextText = "";
+}
+if (contextText.trim()) {
+  for (const line of contextText.split("\n")) {
+    const trimmed = line.replace(/^#\s+.*$/, "").trim();
+    if (trimmed.startsWith("- **")) {
+      md += `${trimmed}\n`;
+    }
+  }
+}
+md += `\n`;
+md += `Playwright gate (\`library boot CLS\`): deep links @ **375**, **768**, **769**, **784**, **800**, **900**, **1024**, and **1280** — all **< 0.1** in \`cls-after.json\` (After column below is sourced only from that file).\n\n`;
+
+const sources = afterPayload.layoutShiftSourcesMedian;
+const jumps = afterPayload.layoutShiftJumpCounts;
+if (sources || jumps) {
+  md += `**Layout-shift sources (median of **${afterPayload.runs ?? "≥3"}** runs, dark, 769–1024px):** see \`layoutShiftSourcesMedian\` and \`layoutShiftJumpCounts\` in \`cls-after.json\`.\n\n`;
+}
+
+for (const theme of themes) {
+  md += `## ${theme}\n\n`;
+  md += `| Route | ${widths.join(" | ")} |\n`;
+  md += `| --- | ${widths.map(() => "---:").join(" | ")} |\n`;
+  for (const route of routes) {
+    const cells = widths.map((width) => {
+      const b = mapB.get(`${route}|${width}|${theme}`);
+      const a = mapA.get(`${route}|${width}|${theme}`);
+      if (a === undefined) return "—";
+      if (b === undefined) return `**${fmt(a)}**`;
+      return `${fmt(b)} → **${fmt(a)}**`;
+    });
+    md += `| ${route} | ${cells.join(" | ")} |\n`;
+  }
+  md += "\n";
+}
+
+if (sources) {
+  md += `## Layout-shift sources (median, dark)\n\n`;
+  for (const route of ["notes", "systems", "credentials"]) {
+    md += `### ${route}\n\n`;
+    for (const width of [769, 784, 800, 900, 1024]) {
+      const list = sources[route]?.[width] || sources[route]?.[String(width)] || [];
+      md += `**${width}px** — `;
+      if (!list.length) {
+        md += "no attributed sources in capture.\n\n";
+        continue;
+      }
+      const top = list.slice(0, 4);
+      md += top
+        .map((item) => {
+          const dy = (item.currentRect?.y ?? 0) - (item.previousRect?.y ?? 0);
+          return `\`${item.node}\` Δy=${dy.toFixed(0)}px (value ${(item.value ?? 0).toFixed(4)})`;
+        })
+        .join("; ");
+      md += "\n\n";
+    }
+  }
+}
+
+md += `## Screenshots @ 784px (\`/systems/#SYS-03\`)\n\n`;
+md += `Header: \`before-header-784-*.png\` → \`after-header-784-*.png\`. Viewport: \`before-systems-784-*.png\` → \`after-systems-784-*.png\`.\n`;
+
+writeFileSync(join(dir, "README.md"), md);
+console.error(`wrote ${join(dir, "README.md")}`);

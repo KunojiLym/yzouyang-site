@@ -126,7 +126,6 @@
   function initLibraryShell() {
     const shell = document.querySelector(".library-shell");
     if (!shell) return;
-    document.documentElement.removeAttribute("data-library-hash");
 
     const split = shell.querySelector(".library-split");
     const routeTitle = document.title;
@@ -755,6 +754,19 @@
       if (hashId) {
         const resolved = resolveTarget(hashId);
         if (resolved) {
+          const panel = panelById.get(resolved.panelId);
+          if (
+            panel &&
+            panel.classList.contains("is-active") &&
+            !panel.hidden &&
+            split?.classList.contains("is-detail-open")
+          ) {
+            activeIndexId = resolved.indexId;
+            setIndexHighlight(resolved.indexId);
+            syncBackButton();
+            syncIndexVisibility();
+            return;
+          }
           showPanel(resolved);
           return;
         }

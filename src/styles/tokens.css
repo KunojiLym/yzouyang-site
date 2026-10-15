@@ -57,6 +57,7 @@
   --note-read-max: 34rem;
   --lh-display: 1.1;
   --lh-heading: 1.2;
+  --lh-blockquote: 1.5;
   --track-caps: 0.08em;
   --dur-fast: 150ms;
   --dur-base: 240ms;
@@ -70,6 +71,9 @@
     calc(3.25rem * var(--text-scale))
   );
   --header-offset: 4.75rem;
+  --library-strip-min-height: 3.2rem;
+  --library-page-footer-min-height: 4.9rem;
+  --library-index-control-size: 2rem;
 
   /* Readable type scale — multiply by --text-scale for viewport + user preference. */
   --text-scale: 1;
@@ -166,7 +170,7 @@
   --success: #3d6b4d;
   --warning: #8a6a2a;
   --danger: #9a4a3a;
-  --glow: rgb(196 154 90 / 16%);
+  --glow: color-mix(in srgb, var(--accent) 16%, transparent);
   --bg-gradient-mid: #e2d8c8;
   --bg-gradient-end: #ddd2c0;
   --code-bg: var(--bg-mid);

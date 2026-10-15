@@ -181,6 +181,8 @@ CASE_BEAT_KEYS = (
     ("outcome", "Outcome"),
     ("evidence", "Evidence"),
 )
+JS_ROOT_CLASS_SCRIPT = '<script>document.documentElement.classList.add("js");</script>\n'
+
 THEME_BOOT_SCRIPT = """<script>
 function yzLibraryHash() {
   try {
@@ -214,6 +216,9 @@ function yzLibraryHash() {
   }
   var libraryBoot = "overview";
   var libraryHash = yzLibraryHash();
+  if (libraryHash && !/^[A-Za-z0-9-]+$/.test(libraryHash)) {
+    libraryHash = "";
+  }
   try {
     if (libraryHash || (window.matchMedia && !window.matchMedia("(max-width: 48rem)").matches)) {
       libraryBoot = "detail";
@@ -258,7 +263,10 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
   }
   var target = hash ? findPanel(hash) : null;
   if (!target && hash) target = findLegacy(hash);
-  if (!target && wide) target = panels[0];
+  if (!target && wide) {
+    var firstItem = split.querySelector(".library-index [data-panel-id]");
+    target = (firstItem && findPanel(firstItem.getAttribute("data-panel-id"))) || panels[0];
+  }
   if (target) {
     for (var index = 0; index < panels.length; index++) {
       var open = panels[index] === target;
@@ -271,6 +279,11 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
       split.classList.add("is-detail-open");
       var back = split.querySelector(".library-back");
       if (back) back.hidden = false;
+    } else if (
+      target.classList.contains("library-panel--note") &&
+      split.getAttribute("data-index-default") === "collapsed"
+    ) {
+      split.classList.add("is-index-collapsed", "is-index-unpinned");
     }
   }
   root.removeAttribute("data-library-hash");
@@ -890,16 +903,36 @@ def library_section_panel(
     return library_panel_html(section_id, heading, body, level=level, hidden=hidden)
 
 
-def append_library_panel(panels: list[str], panel_id: str, heading: str, body: str, **kwargs) -> None:
-    """First catalogue panel stays unhidden so the desktop boot paint can show it."""
-    kwargs.setdefault("hidden", bool(panels))
+def append_library_panel(
+    panels: list[str],
+    panel_id: str,
+    heading: str,
+    body: str,
+    *,
+    ssr_gate: list[bool],
+    **kwargs,
+) -> None:
+    """First panel in index order is visible for no-JS; JS hides extras via html.js rules."""
+    if "hidden" not in kwargs:
+        kwargs["hidden"] = not ssr_gate[0]
+        if not kwargs["hidden"]:
+            ssr_gate[0] = False
     panels.append(library_panel_html(panel_id, heading, body, **kwargs))
 
 
 def append_library_section(
-    panels: list[str], section_id: str, heading: str, inner_html: str, **kwargs
+    panels: list[str],
+    section_id: str,
+    heading: str,
+    inner_html: str,
+    *,
+    ssr_gate: list[bool],
+    **kwargs,
 ) -> None:
-    kwargs.setdefault("hidden", bool(panels))
+    if "hidden" not in kwargs:
+        kwargs["hidden"] = not ssr_gate[0]
+        if not kwargs["hidden"]:
+            ssr_gate[0] = False
     panels.append(library_section_panel(section_id, heading, inner_html, **kwargs))
 
 
@@ -957,12 +990,13 @@ def library_shell(
         if route_lede.strip()
         else ""
     )
+    split_classes = "library-split is-booting"
     return (
         f'    <div class="library-shell" id="library-shell">\n'
         f'      <h1 class="visually-hidden">{esc(title)}</h1>\n'
         f"{lede_html}"
         f'      <div class="library-frame">\n'
-        f'        <div class="library-split is-booting" id="library-split" '
+        f'        <div class="{split_classes}" id="library-split" '
         f'data-index-default="{esc(index_default)}">\n'
         f"{index}\n"
         f'          <div class="library-pane" aria-live="polite">\n'
@@ -1189,6 +1223,7 @@ def layout(
     deck_mode: bool = False,
     header_search: bool = False,
     library_route: bool = False,
+    data_library_route: str | None = None,
     home_route: bool = False,
     extra_head: str = "",
 ) -> str:
@@ -1212,6 +1247,9 @@ def layout(
     favicon_png = esc(with_base(site, "/assets/favicon-32.png"))
     apple_icon = esc(with_base(site, "/assets/apple-touch-icon.png"))
     pf_attr = " data-pagefind-body" if pagefind else ""
+    library_route_attr = (
+        f' data-library-route="{esc(data_library_route)}"' if data_library_route else ""
+    )
     head_analytics = analytics_head(site)
     body_analytics = analytics_body(site, active)
     css = esc(with_base(site, "/styles.css"))
@@ -1281,11 +1319,11 @@ def layout(
   <link rel="icon" href="{favicon_svg}" type="image/svg+xml" />
   <link rel="icon" href="{favicon_png}" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="{apple_icon}" />
-{THEME_BOOT_SCRIPT}
+{JS_ROOT_CLASS_SCRIPT}{THEME_BOOT_SCRIPT}
+  <link rel="stylesheet" href="{css}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />{pf_css_tag}
-  <link rel="stylesheet" href="{css}" />
 {person_json_ld(site)}
 {extra_head}
 {head_analytics}
@@ -1327,7 +1365,7 @@ def layout(
     </div>
   </header>
   </div>
-  <main id="main" class="{page_class}" aria-label="{esc(title)}"{pf_attr}>
+  <main id="main" class="{page_class}" aria-label="{esc(title)}"{library_route_attr}{pf_attr}>
 {body}
   </main>
 {footer_html(site) if not (library_route or home_route) else ""}{pf_script}
@@ -3487,6 +3525,7 @@ def build_systems_catalogue(site: dict, export: dict) -> str:
 
 
 def build_portfolio(site: dict, export: dict) -> str:
+    ssr_gate: list[bool] = [True]
     page = export.get("portfolio") if isinstance(export.get("portfolio"), dict) else {}
     projects = [p for p in (export.get("projects") or []) if isinstance(p, dict)]
     copy_map = lookup_site(site, "project_copy", {})
@@ -3553,7 +3592,9 @@ def build_portfolio(site: dict, export: dict) -> str:
                     f"{case_html}\n"
                     "      </div>"
                 )
-                append_library_panel(panels, item_id, display_title, body, level="h2")
+                append_library_panel(
+                    panels, item_id, display_title, body, level="h2", ssr_gate=ssr_gate
+                )
 
         for item in export_items:
             item_title = str(item.get("title") or "")
@@ -3598,7 +3639,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         if outro:
             child_parts.append(f"      <p><em>{esc(outro)}</em></p>")
         child_inner = "\n".join(child_parts)
-        append_library_panel(panels, hid, title, child_inner, level="h2")
+        append_library_panel(panels, hid, title, child_inner, level="h2", ssr_gate=ssr_gate)
 
         if parent:
             parent_key = str(parent)
@@ -3631,7 +3672,7 @@ def build_portfolio(site: dict, export: dict) -> str:
             + "\n".join(_project_item_html(_merge_project_copy(r, copy_map)) for r in rows)
             + "\n      </ul>"
         )
-        append_library_section(panels, hid, title, inner)
+        append_library_section(panels, hid, title, inner, ssr_gate=ssr_gate)
 
     verify = page.get("verify") or {}
     verify_override = lookup_site(site, "systems_verify", {})
@@ -3661,7 +3702,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         note = (verify.get("note") or "").strip()
         if note:
             inner += f"\n      <p><em>{esc(note)}</em></p>"
-        append_library_section(panels, vid, vtitle, inner)
+        append_library_section(panels, vid, vtitle, inner, ssr_gate=ssr_gate)
 
     if not panels:
         panels.append(
@@ -3814,6 +3855,7 @@ def _certs_by_issuer_html(
 
 
 def build_credentials(site: dict, export: dict) -> str:
+    ssr_gate: list[bool] = [True]
     page = export.get("credentials") if isinstance(export.get("credentials"), dict) else {}
     lede = str(lookup_site(site, "credentials_verify.lede", "") or "").strip() or (
         page.get("lede") or "PUBLIC certifications and qualifications."
@@ -3876,6 +3918,7 @@ def build_credentials(site: dict, export: dict) -> str:
                 hid,
                 title,
                 _credentials_card_grid([_edu_card_html(r) for r in rows]),
+                ssr_gate=ssr_gate,
             )
         else:
             rows = ordered(certs_by_cat.pop(sid, []), order.get(sid))
@@ -3888,13 +3931,16 @@ def build_credentials(site: dict, export: dict) -> str:
                 _html_parts, children, issuer_panels = _certs_by_issuer_html(rows, unique_id)
                 node["children"] = children
                 for iid, issuer, inner in issuer_panels:
-                    append_library_panel(panels, iid, issuer, inner, level="h2")
+                    append_library_panel(
+                        panels, iid, issuer, inner, level="h2", ssr_gate=ssr_gate
+                    )
             else:
                 append_library_section(
                     panels,
                     hid,
                     title,
                     _credentials_card_grid([_cert_card_html(r) for r in rows]),
+                    ssr_gate=ssr_gate,
                 )
 
     for sid, rows in list(certs_by_cat.items()):
@@ -3907,6 +3953,7 @@ def build_credentials(site: dict, export: dict) -> str:
                 hid,
                 title,
                 _credentials_card_grid([_cert_card_html(r) for r in rows]),
+                ssr_gate=ssr_gate,
             )
     for sid, rows in list(edu_by_cat.items()):
         if rows:
@@ -3918,6 +3965,7 @@ def build_credentials(site: dict, export: dict) -> str:
                 hid,
                 title,
                 _credentials_card_grid([_edu_card_html(r) for r in rows]),
+                ssr_gate=ssr_gate,
             )
 
     cred_title = route_title(site, "Credentials")
@@ -4130,6 +4178,7 @@ def _append_note_panel(
     row: dict,
     note_id: str,
     panels: list[str],
+    ssr_gate: list[bool],
     uncaptioned: list[dict] | None = None,
 ) -> None:
     heading = esc(str(row.get("title") or note_id).strip())
@@ -4151,6 +4200,7 @@ def _append_note_panel(
         heading,
         _writing_note_panel_body(site, row, note_id, uncaptioned),
         level="h2",
+        ssr_gate=ssr_gate,
         extra_attrs=toc_attr,
         panel_class="library-panel--note",
         header_lead=header_lead,
@@ -4162,6 +4212,7 @@ def build_perspectives(
     site: dict, export: dict, uncaptioned: list[dict] | None = None,
 ) -> str:
     """Notes library — NOTE-* entries grouped by category, ordered by date."""
+    ssr_gate: list[bool] = [True]
     rows = _writing_rows(export)
     assigned = _unique_note_catalog_ids(rows)
 
@@ -4217,6 +4268,7 @@ def build_perspectives(
                         row=row,
                         note_id=note_id,
                         panels=panels,
+                        ssr_gate=ssr_gate,
                         uncaptioned=uncaptioned,
                     )
                     series_node["children"].append(
@@ -4230,6 +4282,7 @@ def build_perspectives(
                     row=row,
                     note_id=note_id,
                     panels=panels,
+                    ssr_gate=ssr_gate,
                     uncaptioned=uncaptioned,
                 )
                 cat_node["children"].append(_note_index_entry(row, note_id))
@@ -4398,6 +4451,11 @@ def main() -> None:
             "credentials/index.html",
         }
     )
+    library_route_slug = {
+        "systems/index.html": "systems",
+        "notes/index.html": "notes",
+        "credentials/index.html": "credentials",
+    }
     for rel, path, title, active, body, pf, extra_head in pages:
         is_home = rel == "index.html"
         is_library = rel in library_rels
@@ -4413,6 +4471,7 @@ def main() -> None:
                 deck_mode=False,
                 header_search=is_home or is_library,
                 library_route=is_library,
+                data_library_route=library_route_slug.get(rel),
                 home_route=is_home,
                 extra_head=extra_head,
             ),

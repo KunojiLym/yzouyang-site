@@ -32,6 +32,7 @@ body:has(main.library-route) {
   padding: var(--space-4) var(--space-6) var(--space-3);
   box-sizing: border-box;
   min-height: 0;
+
 }
 
 .library-frame {
@@ -43,6 +44,35 @@ body:has(main.library-route) {
   border-radius: var(--radius-md);
   background: var(--bg-panel);
   overflow: hidden;
+}
+
+/* Boot: reserve strip row before late parse (DOM order: split then strip).
+   Wide viewports only — flex↔grid flip regressed mobile deep-link CLS (375 / 768). */
+@media (width > 48rem) {
+  html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) var(--library-strip-min-height);
+  }
+
+  html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-split {
+    grid-row: 1;
+    min-height: 0;
+  }
+
+  html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-strip {
+    grid-row: 2;
+  }
+
+  /* Boot: reserve library shell footer before late parse (frame then footer). */
+  html.js .library-shell:has(#library-split.is-booting):not(:has(> .library-page-footer.library-card))::after {
+    content: "";
+    display: block;
+    flex: 0 0 auto;
+    min-height: calc(var(--library-page-footer-min-height) + var(--space-3));
+    margin-top: var(--space-3);
+    box-sizing: border-box;
+    pointer-events: none;
+  }
 }
 
 .library-split {
@@ -59,8 +89,7 @@ body:has(main.library-route) {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  transition: grid-template-columns var(--library-fold-duration) var(--library-fold-ease),
-    grid-template-rows var(--library-fold-duration) var(--library-fold-ease);
+  transition: grid-template-columns var(--library-fold-duration) var(--library-fold-ease);
 }
 
 .library-index {
@@ -94,8 +123,10 @@ body:has(main.library-route) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: var(--library-index-control-size);
+  height: var(--library-index-control-size);
+  min-width: var(--library-index-control-size);
+  min-height: var(--library-index-control-size);
   margin: 0;
   padding: 0;
   border: 1px solid transparent;
@@ -719,6 +750,7 @@ body:has(main.library-route) {
 
 .library-panel--note .library-panel-title {
   font-size: var(--text-display-1);
+  font-weight: 600;
   line-height: var(--lh-heading);
   letter-spacing: -0.025em;
 }
@@ -790,7 +822,16 @@ body:has(main.library-route) {
   animation: none !important;
 }
 
-.library-panel[hidden] {
+html:not(.js) .library-panel[hidden],
+html:not(.js) .library-overview[hidden] {
+  display: block !important;
+}
+
+html:not(.js) .library-panel:not([hidden]) {
+  display: block;
+}
+
+html.js .library-panel[hidden] {
   display: none !important;
 }
 
@@ -932,7 +973,7 @@ main.page .library-panel--note .library-panel-title {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  line-height: 1.5;
+  line-height: var(--lh-blockquote);
   font-style: italic;
   color: var(--text-default);
 }
@@ -1129,6 +1170,8 @@ main.page .library-panel--note .library-panel-title {
 
 .library-strip {
   flex-shrink: 0;
+  margin: 0;
+  box-sizing: border-box;
   border-top: 1px solid var(--line-soft);
   padding: var(--space-2) var(--space-4);
   background: var(--bg-elevated);
@@ -1137,6 +1180,7 @@ main.page .library-panel--note .library-panel-title {
 .library-strip-copy {
   margin: 0;
   font-size: var(--text-xs);
+  line-height: 1.35;
 }
 
 .library-strip-label {
@@ -1148,10 +1192,25 @@ main.page .library-panel--note .library-panel-title {
 
 .library-page-footer {
   flex-shrink: 0;
-  margin-top: var(--space-3);
+  margin: var(--space-3) 0 0;
+  box-sizing: border-box;
   padding: var(--space-2) 0 0;
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
+@media (width > 48rem) {
+  .library-strip {
+    min-height: var(--library-strip-min-height);
+  }
+
+  .library-strip-copy {
+    min-height: calc(var(--text-xs) * 1.35);
+  }
+
+  .library-page-footer {
+    min-height: var(--library-page-footer-min-height);
+  }
 }
 
 .library-page-footer .library-card-meta {
@@ -1240,23 +1299,71 @@ main.page .library-panel--note .library-panel-title {
 }
 
 @media (width > 48rem) {
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {
+  html[data-library-boot="detail"] .library-panels > .library-panel:first-child:not([hidden]) {
+    display: block;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
+    .library-index-header {
+    min-height: var(--library-index-control-size);
+    align-items: center;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
+    .library-index-controls {
+    min-height: var(--library-index-control-size);
+    align-items: center;
+  }
+}
+
+.library-split.is-reading-context-visible .library-reading-context:not([hidden]) {
+  display: flex;
+}
+
+/* Notes: reserve `.library-reading-context` slot while collapsed index + [hidden] (design-system). */
+html.js[data-library-boot="detail"]
+  main.library-route[data-library-route="notes"]
+  .library-split:is(.is-booting, .is-boot-settle):is(
+    .is-index-collapsed,
+    .is-detail-open,
+    [data-index-default="collapsed"]
+  )
+  .library-reading-context[hidden] {
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Notes index: expanded in SSR; only JS may collapse during hash boot (html.js). */
+@media (width > 48rem) {
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"] {
     grid-template-columns: var(--library-rail-width) minmax(0, 1fr);
     position: relative;
     overflow: visible;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index {
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index {
     width: var(--library-rail-width);
     overflow: visible;
     z-index: 20;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index-rail {
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index-rail {
     display: flex;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-index-drawer {
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index-drawer {
     position: absolute;
     left: var(--library-rail-width);
     top: 0;
@@ -1267,14 +1374,21 @@ main.page .library-panel--note .library-panel-title {
     transform: scaleX(0);
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
   }
+}
 
-  html[data-library-boot="detail"] .library-panels > .library-panel:first-child:not([hidden]) {
-    display: block;
-  }
+/* Notes index: expanded in SSR; only JS may collapse (html.js). */
+html:not(.js) main.library-route[data-library-route="notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
+  transform: scaleX(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] .library-reading-context {
-    display: flex !important;
+@media (width <= 64rem) and (width > 48rem) {
+  html:not(.js) main.library-route[data-library-route="notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
+    transform: scaleY(1);
   }
 }
 
@@ -1288,6 +1402,12 @@ main.page .library-panel--note .library-panel-title {
 
 /* Narrow desktop / tablet: stack index above pane — vertical fold */
 @media (width <= 64rem) and (width > 48rem) {
+  html.js .library-split.is-booting .library-index-header,
+  html.js .library-split.is-booting .library-index-controls {
+    min-height: var(--library-index-control-size);
+    align-items: center;
+  }
+
   .library-split {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 0.38fr) minmax(0, 0.62fr);
@@ -1296,7 +1416,9 @@ main.page .library-panel--note .library-panel-title {
   /* Side-by-side rail columns from (width > 48rem) must not stack with these rows. */
   .library-split.is-index-collapsed,
   .library-split.is-index-unpinned,
-  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"] {
     grid-template-columns: 1fr;
     grid-template-rows: var(--library-rail-width) minmax(0, 1fr);
   }
@@ -1314,6 +1436,13 @@ main.page .library-panel--note .library-panel-title {
     transform: scaleY(0);
   }
 
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"]:not(.is-index-overlay-open)
+    .library-index-drawer {
+    transform: scaleY(0);
+  }
+
   .library-split.is-index-collapsed {
     grid-template-rows: var(--library-rail-width) minmax(0, 1fr);
   }
@@ -1325,6 +1454,14 @@ main.page .library-panel--note .library-panel-title {
   }
 
   .library-split.is-index-collapsed .library-index {
+    max-height: var(--library-rail-width);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index {
     max-height: var(--library-rail-width);
     border-bottom: 1px solid var(--line-soft);
   }
@@ -1399,15 +1536,41 @@ main.page .library-panel--note .library-panel-title {
     display: inline-flex;
   }
 
-  html[data-library-hash] .library-split.is-booting .library-index {
+  html.js[data-library-hash] .library-split.is-booting .library-index,
+  html.js[data-library-boot="detail"] .library-split.is-booting.is-detail-open .library-index {
     display: none;
   }
 
-  html[data-library-hash] .library-split.is-booting .library-back {
+  html.js[data-library-mobile-detail] #library-split.is-booting .library-pane,
+  html.js[data-library-boot="detail"] #library-split.is-booting.is-detail-open .library-pane {
+    height: 100%;
+  }
+
+  html.js[data-library-boot="detail"]
+    main.library-route[data-library-route="notes"]
+    .library-split.is-booting[data-index-default="collapsed"]
+    .library-index-drawer {
+    display: none;
+  }
+
+  html.js[data-library-hash] .library-split.is-booting .library-back {
     display: inline-flex !important;
   }
 
+  /* Reserve reading-context block size while [hidden] (main parity — avoids +36px .library-panels shift). */
   html[data-library-boot="detail"] .library-split.is-booting.is-detail-open .library-reading-context {
     display: flex !important;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open
+    .library-reading-context[hidden] {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-detail-open .library-reading-context[hidden] {
+    display: flex !important;
+    visibility: hidden;
+    pointer-events: none;
   }
 }

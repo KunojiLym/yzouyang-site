@@ -843,6 +843,8 @@ def assert_library_boot_panel() -> None:
         fail("hash decoding must live in one shared helper")
     if boot.count("yzLibraryHash()") < 3:
         fail("theme boot and the pre-paint hash script must both call the shared helper")
+    if 'classList.add("js")' not in boot and "JS_ROOT_CLASS_SCRIPT" not in boot:
+        fail("page shell must add html.js before paint for no-JS panel fallback")
     panel_fn = boot.split("def library_panel_html", 1)[1].split("\ndef ", 1)[0]
     if re.search(r'\sid="\{esc\(panel_id\)\}"', panel_fn):
         fail("library panels must not carry the record id")
@@ -860,7 +862,9 @@ def assert_library_boot_panel() -> None:
         if first is None:
             fail(f"{rel} missing a library panel")
         if first.group(1):
-            fail(f"{rel} first panel must be unhidden so the desktop boot paint can show it")
+            fail(
+                f"{rel} first panel must be visible in SSR for no-JS; html.js hides extras after boot"
+            )
 
 
 def assert_lookup_site() -> None:
@@ -940,9 +944,118 @@ def assert_unique_ids() -> None:
                 fail(f"{rel} library panel still has an id")
 
 
+def _boot_cls_rows(payload: object, name: str) -> list[dict]:
+    if isinstance(payload, list):
+        rows = payload
+    elif isinstance(payload, dict) and isinstance(payload.get("cls"), list):
+        rows = payload["cls"]
+    else:
+        fail(f"{name} must be a JSON array or object with a cls array")
+    if not rows:
+        fail(f"{name} must be a non-empty CLS matrix")
+    for row in rows:
+        if not isinstance(row, dict):
+            fail(f"{name} rows must be objects")
+        for key in ("route", "path", "width", "theme", "cls"):
+            if key not in row:
+                fail(f"{name} row missing {key!r}")
+    return rows
+
+
+def assert_boot_cls_review_json() -> None:
+    review = ROOT / "docs" / "reviews" / "boot-cls-2026-10-15"
+    for name in ("cls-before.json", "cls-after.json"):
+        path = review / name
+        if not path.is_file():
+            fail(f"missing {path.relative_to(ROOT)}")
+        raw = path.read_text(encoding="utf-8")
+        if not raw.lstrip().startswith(("[", "{")):
+            fail(
+                f"{name} must be JSON only (stderr belongs on measure_boot_cls_matrix stderr, not in the file)"
+            )
+        _boot_cls_rows(json.loads(raw), name)
+    after_payload = json.loads((review / "cls-after.json").read_text(encoding="utf-8"))
+    after = _boot_cls_rows(after_payload, "cls-after.json")
+    if isinstance(after_payload, dict):
+        runs = after_payload.get("runs")
+        if not isinstance(runs, int) or runs < 3:
+            fail("cls-after.json must record median of at least 3 runs (runs >= 3)")
+        shifts = after_payload.get("layoutShiftSourcesMedian")
+        if not isinstance(shifts, dict):
+            fail("cls-after.json missing layoutShiftSourcesMedian object")
+        jumps = after_payload.get("layoutShiftJumpCounts")
+        if not isinstance(jumps, dict):
+            fail("cls-after.json missing layoutShiftJumpCounts object")
+        for width in (769, 784, 800, 900, 1024):
+            for route in ("notes", "systems", "credentials"):
+                route_block = shifts.get(route, {})
+                block = route_block.get(width)
+                if block is None:
+                    block = route_block.get(str(width))
+                if not isinstance(block, list):
+                    fail(f"cls-after.json missing layoutShiftSourcesMedian[{route}][{width}]")
+        for row in after:
+            capture = row.get("capture")
+            if not isinstance(capture, dict):
+                fail("cls-after.json cls rows must include capture metadata")
+            if not capture.get("libraryShell") or not capture.get("librarySplit"):
+                fail("cls-after.json capture missing library shell markers")
+            if not capture.get("observerActive"):
+                fail("cls-after.json capture missing layout-shift observer")
+    widths = {int(row["width"]) for row in after}
+    for required_width in (784, 800, 900):
+        if required_width not in widths:
+            fail(f"cls-after.json must include {required_width}px width rows")
+    assert_boot_cls_readme_matches_after(after_payload, after)
+
+
+def assert_boot_cls_readme_matches_after(after_payload: dict, after_rows: list[dict]) -> None:
+    import subprocess
+
+    review = ROOT / "docs" / "reviews" / "boot-cls-2026-10-15"
+    readme_path = review / "README.md"
+    subprocess.run(
+        ["node", str(ROOT / "scripts" / "generate_boot_cls_readme.mjs")],
+        check=True,
+        cwd=ROOT,
+    )
+    readme = readme_path.read_text(encoding="utf-8")
+    map_a = {(r["route"], int(r["width"]), r["theme"]): float(r["cls"]) for r in after_rows}
+
+    def fmt(n: float) -> str:
+        return f"{n:.3f}"
+
+    for theme in ("dark", "light"):
+        section = readme.split(f"## {theme}\n", 1)
+        if len(section) < 2:
+            fail(f"boot CLS README missing ## {theme}")
+        body = section[1].split("\n## ", 1)[0]
+        header = [line for line in body.splitlines() if line.startswith("| Route |")][0]
+        width_cols = [int(part.strip()) for part in header.split("|")[2:-1]]
+        for route in ("notes", "systems", "credentials"):
+            row_line = next(
+                (line for line in body.splitlines() if line.startswith(f"| {route} |")),
+                None,
+            )
+            if row_line is None:
+                fail(f"boot CLS README missing row for {route} ({theme})")
+            cells = [part.strip() for part in row_line.split("|")[2:-1]]
+            for width, cell in zip(width_cols, cells, strict=True):
+                expected = map_a.get((route, width, theme))
+                if expected is None:
+                    continue
+                token = f"**{fmt(expected)}**"
+                if token not in cell and fmt(expected) not in cell:
+                    fail(
+                        f"boot CLS README {theme} {route}@{width}px "
+                        f"expected {fmt(expected)} in cell {cell!r}"
+                    )
+
+
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
+    assert_boot_cls_review_json()
     assert_evidence_href_https_only()
     assert_deploy_preview_contract()
     assert_local_image_size()
@@ -1298,11 +1411,34 @@ def main() -> None:
     if not has_html_class(systems, "library-strip"):
         fail("systems page must include cross-link strip")
 
+    def assert_library_shell_dom_order(html: str, label: str) -> None:
+        shell = html.find('id="library-shell"')
+        if shell < 0:
+            fail(f"{label} missing library-shell")
+        frame = html.find('class="library-frame"', shell)
+        footer = html.find('class="library-page-footer', shell)
+        split = html.find('id="library-split"', shell)
+        strip = html.find('class="library-strip"', shell)
+        if frame < 0 or footer < 0 or split < 0:
+            fail(f"{label} library shell missing frame, split, or page footer")
+        if not (frame < split < footer):
+            fail(f"{label} DOM order must be library-frame, then split, then page footer")
+        if strip >= 0 and not (split < strip < footer):
+            fail(f"{label} library-strip must follow library-split and precede page footer")
+
+    for label, html in (
+        ("Systems", systems),
+    ):
+        assert_library_shell_dom_order(html, label)
+
     notes = (DIST / "notes" / "index.html").read_text(encoding="utf-8")
     credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
     for label, html in (("Notes", notes), ("Credentials", credentials)):
         if not has_html_class(html, "library-shell"):
             fail(f"{label} must use unified library-shell")
+        assert_library_shell_dom_order(html, label)
+    if 'data-library-route="notes"' not in notes:
+        fail("notes main must set data-library-route=notes for route-specific CSS")
         if 'class="page-with-toc"' in html:
             fail(f"{label} must not use legacy scroll longform layout")
         if not has_html_class(html, "header-search"):
@@ -1369,8 +1505,8 @@ def main() -> None:
         fail("styles.css must reference --glow on the body wash and both entrance atmospheres")
     if "rgb(212 163 92 / 12%)" not in css:
         fail("styles.css dark glow token must use amber pool (12%)")
-    if "rgb(196 154 90 / 16%)" not in css:
-        fail("styles.css light glow must be accent at 16%")
+    if "color-mix(in srgb, var(--accent) 16%, transparent)" not in css:
+        fail("styles.css light glow must be accent at 16% (color-mix)")
     if "rgb(212 163 92 / 10%)" in css:
         fail("styles.css light glow must not stay at 10%")
     if "--accent-link" not in css:

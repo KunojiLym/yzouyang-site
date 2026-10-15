@@ -73,22 +73,29 @@ jobs:
           echo "deploy_target=$TARGET" >> "$GITHUB_OUTPUT"
           echo "Resolved deploy_target=$TARGET env=$ENV_NAME"
 
-      - name: Lint and static contracts
-        run: |
-          uv run python scripts/lint.py
-          uv run python scripts/check_token_drift.py
-          uv run python scripts/test_design_system_sync.py
-          uv run python scripts/test_check_token_drift.py
-          uv run python scripts/test_diy_collect.py
+      - name: Python lint
+        run: uv run python scripts/lint.py
+
+      - name: Token drift check
+        run: uv run python scripts/check_token_drift.py
 
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Frontend lint (Stylelint)
+      - name: Install Node deps (Playwright for design-system line-height probe)
         run: |
           npm install
-          npm run lint:css
+          npx playwright install --with-deps chromium
+
+      - name: Token drift fixtures
+        run: uv run python scripts/test_check_token_drift.py
+
+      - name: DIY collect contract
+        run: uv run python scripts/test_diy_collect.py
+
+      - name: Frontend lint (Stylelint)
+        run: npm run lint:css
 
       # Asset prefix comes from deploy.preview_origin while preview_mode is on,
       # and from public_origin after that one flag is turned off. Do not set
@@ -97,6 +104,12 @@ jobs:
         env:
           SITE_UAT_BUILD: ${{ steps.meta.outputs.deploy_env == 'uat' && '1' || '' }}
         run: uv run python scripts/build.py --skip-pagefind
+
+      - name: Design system sync
+        run: uv run python scripts/test_design_system_sync.py
+
+      - name: Design system sync regressions
+        run: uv run python scripts/test_design_system_sync_regressions.py
 
       - name: Pagefind
         run: npx --yes pagefind@1.3.0 --site dist

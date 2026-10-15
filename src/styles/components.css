@@ -318,6 +318,7 @@ a.embed-frame-static:hover {
   font-size: var(--text-display-2);
   font-weight: 600;
   line-height: var(--lh-display);
+  letter-spacing: -0.01em;
 }
 
 .not-found p {

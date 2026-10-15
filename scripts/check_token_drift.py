@@ -5,8 +5,9 @@ into a CSS file other than tokens.css.
 This is intentionally narrow: it does not check font-size/spacing/radius
 (stylelint's scale-unlimited/declaration-strict-value rule owns that, see
 .stylelintrc.json). Hex colors and named font-family strings are always
-flagged. rgb()/rgba() is flagged only when the channels match a palette
-token. Overlay scrims stay on an allow-list.
+flagged. rgb()/rgba() literals are flagged outside tokens.css except for
+overlay scrims on the allow-list. hsl(), oklch(), and named colors
+are flagged outside tokens.css. Literal rgb inside color-mix() is flagged.
 """
 
 from __future__ import annotations
@@ -22,31 +23,97 @@ TOKENS_FILE = STYLES_DIR / "tokens.css"
 HEX_COLOR_RE = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 FONT_FAMILY_LITERAL_RE = re.compile(r"font-family:(?!\s*var\()")
 RGB_LITERAL_RE = re.compile(
-    r"rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})"
-    r"(?:[\s,]+(?:/)?\s*[\d.]+%?)?\s*\)",
+    r"rgba?\(\s*"
+    r"(?:"
+    r"(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})"
+    r"|(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})"
+    r"|(\d+(?:\.\d+)?%)\s+(\d+(?:\.\d+)?%)\s+(\d+(?:\.\d+)?%)"
+    r")"
+    r"(?:\s*/\s*[\d.]+%?)?\s*\)",
     re.IGNORECASE,
 )
-
-# Channels that already have a token. A literal with these channels outside
-# tokens.css is drift, whatever the alpha is.
-PALETTE_RGB = {
-    (196, 154, 90),  # --accent
-    (212, 163, 92),  # --glow
-    (168, 154, 136),  # retired muted
-    (74, 92, 78),  # --rail-green / --line-*
-    (61, 122, 94),  # retired record-domain green
-}
+COLOR_MIX_RGB_RE = re.compile(
+    r"color-mix\(\s*in\s+srgb\s*,\s*rgba?\([^)]+\)",
+    re.IGNORECASE,
+)
+HSL_RE = re.compile(r"hsla?\(", re.IGNORECASE)
+OKLCH_RE = re.compile(r"oklch\(", re.IGNORECASE)
+NAMED_COLOR_RE = re.compile(
+    r"(?<![\w-])(?:"
+    r"aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|"
+    r"blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|"
+    r"cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|"
+    r"darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|"
+    r"darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|"
+    r"deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|"
+    r"fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|grey|honeydew|"
+    r"hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|"
+    r"lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|"
+    r"lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|"
+    r"lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|"
+    r"mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|"
+    r"mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|"
+    r"navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|"
+    r"paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|"
+    r"rebeccapurple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|"
+    r"seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|"
+    r"steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|"
+    r"yellow|yellowgreen"
+    r")(?![\w-])",
+    re.IGNORECASE,
+)
 
 # Overlays that are not palette tokens. 43 84 64 stays until Figma gap C9
 # has a variable.
 ALLOW_RGB = {
     (6, 5, 3),
     (0, 0, 0),
-    (10, 11, 10),
-    (232, 223, 208),
-    (245, 239, 228),
     (43, 84, 64),
 }
+
+
+def _rgb_channels_allowed(match: re.Match[str]) -> bool:
+    groups = match.groups()
+    if groups[0] is not None:
+        channels = tuple(int(groups[i]) for i in range(3))
+        return channels in ALLOW_RGB
+    if groups[3] is not None:
+        channels = tuple(int(groups[i]) for i in range(3, 6))
+        return channels in ALLOW_RGB
+    return False
+
+
+def _strip_inline_comments(line: str) -> str:
+    """Remove /* … */ segments so comment words are not scanned as code."""
+    return re.sub(r"/\*.*?\*/", "", line)
+
+
+def _color_mix_rgb_spans(line: str) -> list[tuple[int, int]]:
+    return [match.span() for match in COLOR_MIX_RGB_RE.finditer(line)]
+
+
+def _span_overlaps_color_mix(pos: int, spans: list[tuple[int, int]]) -> bool:
+    return any(start <= pos < end for start, end in spans)
+
+
+def _iter_scannable_lines(text: str) -> list[tuple[int, str]]:
+    """Yield (lineno, line) skipping comments (including ` * ` continuation lines)."""
+    lines: list[tuple[int, str]] = []
+    in_block = False
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if in_block:
+            if "*/" in line:
+                in_block = False
+            continue
+        if stripped.startswith("//"):
+            continue
+        if stripped.startswith("/*"):
+            if "*/" not in line:
+                in_block = True
+            continue
+        lines.append((lineno, line))
+    return lines
 
 
 def find_violations(
@@ -60,27 +127,45 @@ def find_violations(
         if css_file.resolve() == tokens_file.resolve():
             continue
         text = css_file.read_text(encoding="utf-8")
-        for lineno, line in enumerate(text.splitlines(), start=1):
-            stripped = line.strip()
-            if stripped.startswith("/*") or stripped.startswith("*"):
-                continue
-            for match in HEX_COLOR_RE.finditer(line):
+        for lineno, line in _iter_scannable_lines(text):
+            code_line = _strip_inline_comments(line)
+            mix_spans = _color_mix_rgb_spans(code_line)
+            for match in HEX_COLOR_RE.finditer(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: raw hex color {match.group(0)!r} "
                     f"outside tokens.css — add a token instead"
                 )
-            if FONT_FAMILY_LITERAL_RE.search(line):
+            if FONT_FAMILY_LITERAL_RE.search(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: font-family set without "
                     f"var(--font-*) — use --font-display / --font-body from tokens.css"
                 )
-            for match in RGB_LITERAL_RE.finditer(line):
-                channels = tuple(int(part) for part in match.groups())
-                if channels in ALLOW_RGB or channels not in PALETTE_RGB:
+            if HSL_RE.search(code_line):
+                violations.append(
+                    f"{_display(css_file)}:{lineno}: hsl() outside tokens.css — use a token"
+                )
+            if OKLCH_RE.search(code_line):
+                violations.append(
+                    f"{_display(css_file)}:{lineno}: oklch() outside tokens.css — use a token"
+                )
+            for match in NAMED_COLOR_RE.finditer(code_line):
+                violations.append(
+                    f"{_display(css_file)}:{lineno}: named color {match.group(0)!r} "
+                    f"outside tokens.css — use a token"
+                )
+            for match in COLOR_MIX_RGB_RE.finditer(code_line):
+                violations.append(
+                    f"{_display(css_file)}:{lineno}: color-mix with raw rgb literal "
+                    f"{match.group(0)!r} outside tokens.css — use a token or color-mix()"
+                )
+            for match in RGB_LITERAL_RE.finditer(code_line):
+                if _span_overlaps_color_mix(match.start(), mix_spans):
+                    continue
+                if _rgb_channels_allowed(match):
                     continue
                 violations.append(
-                    f"{_display(css_file)}:{lineno}: palette rgb {match.group(0)!r} "
-                    f"outside tokens.css — use a token or color-mix()"
+                    f"{_display(css_file)}:{lineno}: rgb/rgba literal "
+                    f"{match.group(0)!r} outside tokens.css — use a token or color-mix()"
                 )
     return violations
 

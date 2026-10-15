@@ -1,0 +1,6 @@
+/*
+ * Design note: avoid red literals and rgb(1 2 3) in production CSS.
+ */
+.safe {
+  color: var(--text-default);
+}

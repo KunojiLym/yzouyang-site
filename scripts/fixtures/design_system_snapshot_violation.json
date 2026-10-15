@@ -3,23 +3,545 @@
   "fileUrl": "https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ",
   "exportedAt": "fixture",
   "source": "intentional drift for sync test",
-  "counts": { "variables": 1, "textStyles": 0 },
+  "counts": {
+    "variables": 1,
+    "textStyles": 26
+  },
   "collections": [
     {
       "name": "Color",
-      "modes": ["Dark", "Light"],
+      "modes": [
+        "Dark",
+        "Light"
+      ],
       "variables": [
         {
           "name": "color/bg-deep",
           "type": "COLOR",
           "web": "var(--bg-deep)",
           "values": {
-            "Dark": { "resolved": "#000000" },
-            "Light": { "resolved": "#e8dfd0" }
+            "Dark": {
+              "resolved": "#000000"
+            },
+            "Light": {
+              "resolved": "#e8dfd0"
+            }
           }
         }
       ]
     }
   ],
-  "textStyles": []
+  "textStyles": [
+    {
+      "name": "Display/Hero",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 76,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 110.00000238418579
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-display-hero/max"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Display/H1",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 40,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": -2
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-display-1/max"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Display/H2",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 23.200000762939453,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 120.00000476837158
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-display-3/max"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Display/Brand",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 22,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": -2
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xl"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Display/Record Title",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 19,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 135.0000023841858
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-md"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Display/Practice Title",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 135.0000023841858
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-sm"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Heading/H3",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "SemiBold",
+      "fontSize": 20,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 120.00000476837158
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-lg"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Label/Caps",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "SemiBold",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 139.9999976158142
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 8
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Body/Base",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 16,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-base"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Body/Large",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 20,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 150
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-lg"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Body/Proof",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 19,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-proof/max"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Body/Small",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 150
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-sm"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Body/Small Strong",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "SemiBold",
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-sm"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Meta/Small",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 139.9999976158142
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-sm"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "UI/Control",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 120.00000476837158
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-sm"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Label/Xs Caps",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 6
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Label/Xs Group",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "SemiBold",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 135.0000023841858
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 2
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Label/Xs Group Light",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 135.0000023841858
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 2
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Meta/Xs",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Body/Prose",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "Regular",
+      "fontSize": 19,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 172.00000286102295
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-md"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Body/Blockquote",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "Italic",
+      "fontSize": 20,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 150
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-lg"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Display/Dropcap",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 52,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 81.99999928474426
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-dropcap/max"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Meta/Record Domains",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 4
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Meta/Map Node Label",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "AUTO"
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Display/H2 Page",
+      "fontFamily": "Crimson Pro",
+      "fontStyle": "SemiBold",
+      "fontSize": 27.200000762939453,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 120.00000476837158
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": -1
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-display-2/max"
+      },
+      "fontWeight": 600
+    },
+    {
+      "name": "Label/Xs Group Caps",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "SemiBold",
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 135.0000023841858
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 8
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-xs"
+      },
+      "fontWeight": 600
+    }
+  ]
 }
