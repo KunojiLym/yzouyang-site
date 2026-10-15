@@ -831,8 +831,10 @@ def assert_library_boot_panel() -> None:
     if "library-panel:first-child {" in css:
         fail("boot rule must not target every first panel, including hidden ones")
     boot = (ROOT / "scripts" / "build.py").read_text(encoding="utf-8")
-    if 'matchMedia("(min-width: 49rem)")' not in boot:
-        fail("library boot script must use the same 49rem rail as the CSS")
+    if "!window.matchMedia(\"(max-width: 48rem)\").matches" not in boot:
+        fail("library boot script must use the same >48rem rail edge as the CSS")
+    if "(width > 48rem)" not in css:
+        fail("library CSS must use width > 48rem for rail layout (no gap after mobile <= 48rem)")
     if "data-library-hash" not in boot:
         fail("library boot script must record the hash before first paint")
     if ":target" in css:

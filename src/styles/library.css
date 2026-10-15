@@ -1183,7 +1183,7 @@ main.page .library-panel--note .library-panel-title {
 }
 
 /* Desktop/tablet: collapse index to icon rail instead of hiding it */
-@media (width >= 49rem) {
+@media (width > 48rem) {
   .library-split.is-index-collapsed {
     grid-template-columns: var(--library-rail-width) minmax(0, 1fr);
   }
@@ -1239,7 +1239,7 @@ main.page .library-panel--note .library-panel-title {
   }
 }
 
-@media (width >= 49rem) {
+@media (width > 48rem) {
   html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {
     grid-template-columns: var(--library-rail-width) minmax(0, 1fr);
     position: relative;
@@ -1287,13 +1287,13 @@ main.page .library-panel--note .library-panel-title {
 }
 
 /* Narrow desktop / tablet: stack index above pane — vertical fold */
-@media (width <= 64rem) and (width >= 49rem) {
+@media (width <= 64rem) and (width > 48rem) {
   .library-split {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 0.38fr) minmax(0, 0.62fr);
   }
 
-  /* Side-by-side rail columns from (width >= 49rem) must not stack with these rows. */
+  /* Side-by-side rail columns from (width > 48rem) must not stack with these rows. */
   .library-split.is-index-collapsed,
   .library-split.is-index-unpinned,
   html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {

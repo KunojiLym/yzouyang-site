@@ -191,7 +191,7 @@
     }
 
     function isRailLayout() {
-      return window.matchMedia("(min-width: 49rem)").matches;
+      return !window.matchMedia("(max-width: 48rem)").matches;
     }
 
     function isIndexCollapsed() {
