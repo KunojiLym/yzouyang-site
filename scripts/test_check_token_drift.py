@@ -21,6 +21,24 @@ def _assert_rejected(violations: list[str], needle: str, label: str) -> None:
         raise SystemExit(1)
 
 
+def _assert_clean(violations: list[str], label: str) -> None:
+    if violations:
+        print(f"{label} should be clean but got:", file=sys.stderr)
+        for item in violations:
+            print(f"  {item}", file=sys.stderr)
+        raise SystemExit(1)
+
+
+def _run_fixture(fixture_name: str) -> list[str]:
+    with tempfile.TemporaryDirectory() as tmp:
+        styles = Path(tmp)
+        tokens = styles / "tokens.css"
+        tokens.write_text(":root { --bg-deep: #0a0b0a; --accent: #c49a5a; }\n")
+        bad = styles / "bad.css"
+        bad.write_text((FIXTURES / fixture_name).read_text(encoding="utf-8"))
+        return find_violations(styles, tokens)
+
+
 def main() -> None:
     palette = FIXTURES / "token_drift_violation.css"
     if not palette.is_file():
@@ -49,21 +67,22 @@ def main() -> None:
             print(joined, file=sys.stderr)
             raise SystemExit(1)
 
-    cases: list[tuple[str, str]] = [
+    reject_cases: list[tuple[str, str]] = [
         ("token_drift_hsl.css", "hsl("),
         ("token_drift_oklch.css", "oklch("),
         ("token_drift_named.css", "named color 'red'"),
         ("token_drift_universal_comment.css", "rgb(196 154 90 / 12%)"),
         ("token_drift_bg_deep_rgb.css", "rgb(10 11 10 / 90%)"),
+        ("token_drift_color_mix_palette.css", "rgb(196 154 90)"),
+        ("token_drift_rgb_uppercase.css", "RGB(196 154 90)"),
+        ("token_drift_rgb_arbitrary.css", "rgb(12 34 56)"),
+        ("token_drift_pseudo_before.css", "rgb(12 34 56)"),
+        ("token_drift_rgb_percent_channels.css", "100%"),
     ]
-    for fixture_name, needle in cases:
-        with tempfile.TemporaryDirectory() as tmp:
-            styles = Path(tmp)
-            tokens = styles / "tokens.css"
-            tokens.write_text(":root { --bg-deep: #0a0b0a; --accent: #c49a5a; }\n")
-            bad = styles / "bad.css"
-            bad.write_text((FIXTURES / fixture_name).read_text(encoding="utf-8"))
-            _assert_rejected(find_violations(styles, tokens), needle, fixture_name)
+    for fixture_name, needle in reject_cases:
+        _assert_rejected(_run_fixture(fixture_name), needle, fixture_name)
+
+    _assert_clean(_run_fixture("token_drift_comment_star.css"), "token_drift_comment_star.css")
 
     print("test_check_token_drift ok")
 

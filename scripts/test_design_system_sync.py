@@ -31,6 +31,18 @@ ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 # Text styles skipped for CSS selector checks: figma style name -> reason.
 TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {}
 
+
+def _validate_allow_list_reasons() -> list[str]:
+    errors: list[str] = []
+    for mapping, label in (
+        (ALLOWED_FIGMA_CSS_MISMATCHES, "ALLOWED_FIGMA_CSS_MISMATCHES"),
+        (TEXT_STYLE_FIGMA_CSS_GAPS, "TEXT_STYLE_FIGMA_CSS_GAPS"),
+    ):
+        for key, reason in mapping.items():
+            if not str(reason).strip():
+                errors.append(f"{label}{key!r}: reason must be non-empty")
+    return errors
+
 SYNC_COLLECTIONS = frozenset({"Color", "Type", "Spacing", "Radius", "Motion"})
 
 
@@ -395,6 +407,14 @@ def _figma_style_matches_doc_fixed(style: dict, row: dict[str, object]) -> list[
     return [f"{name} vs doc table: {detail}" for detail in errors]
 
 
+def _font_size_uses_token(font_size: str, size_token: str) -> bool:
+    normalized = font_size.strip()
+    if normalized == size_token:
+        return True
+    match = re.fullmatch(r"var\((--text-[\w-]+)\)", normalized)
+    return match is not None and match.group(1) == size_token
+
+
 def _parse_em(value: str) -> float | None:
     match = re.fullmatch(r"(-?[\d.]+)em", value.strip())
     if match:
@@ -424,9 +444,9 @@ def _css_matches_row(
     errors: list[str] = []
     size_token = str(row["size_token"])
     font_size = decls.get("font-size", "")
-    if size_token not in font_size:
+    if not _font_size_uses_token(font_size, size_token):
         errors.append(
-            f"{name} {selector}: font-size {font_size!r} missing token {size_token}"
+            f"{name} {selector}: font-size {font_size!r} != token {size_token}"
         )
 
     if "font_weight" in row:
@@ -656,6 +676,7 @@ def main() -> None:
     css = TOKENS.read_text(encoding="utf-8")
     doc = DOC.read_text(encoding="utf-8")
     errors: list[str] = []
+    errors.extend(_validate_allow_list_reasons())
 
     if "## Source of truth" not in doc:
         errors.append('design-system.md missing heading "Source of truth"')

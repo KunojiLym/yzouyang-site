@@ -17,34 +17,31 @@ from test_design_system_sync import (  # noqa: E402
     sync_snapshot,
 )
 
-REGRESSIONS: list[tuple[str, str, str]] = [
+REGRESSIONS: list[tuple[str, str, str, list[str]]] = [
     (
         "accent-cta-bg dark mix 8% -> 18%",
         r"--accent-cta-bg: color-mix\(in srgb, var\(--accent\) 8%, transparent\)",
         "--accent-cta-bg: color-mix(in srgb, var(--accent) 18%, transparent)",
+        ["--accent-cta-bg", "8%", "18%"],
     ),
     (
         "light accent-cta-border 40% -> 90%",
-        r"\[data-theme=\"light\"\][\s\S]*?var\(--accent\) 40%",
-        "var(--accent) 90%",
+        r'(\[data-theme="light"\][\s\S]*?color-mix\(in srgb, var\(--accent\) )40(%, var\(--accent-text\)\))',
+        r"\g<1>90\g<2>",
+        ["color/accent-cta-border", "90%", "--accent-cta-border"],
     ),
     (
         "dark accent-cta-border mix partner line-strong -> bg-deep",
         r"--accent-cta-border: color-mix\(in srgb, var\(--accent\) 55%, var\(--line-strong\)\)",
         "--accent-cta-border: color-mix(in srgb, var(--accent) 55%, var(--bg-deep))",
+        ["color/accent-cta-border", "--accent-cta-border", "bg-deep"],
     ),
     (
         "light glow mix 16% -> 14%",
-        r"\[data-theme=\"light\"\][\s\S]*?--glow: color-mix\(in srgb, var\(--accent\) 16%, transparent\)",
-        "--glow: color-mix(in srgb, var(--accent) 14%, transparent)",
+        r'(\[data-theme="light"\][\s\S]*?--glow: color-mix\(in srgb, var\(--accent\) )16(%, transparent\))',
+        r"\g<1>14\g<2>",
+        ["color/glow", "--glow", "14%, transparent"],
     ),
-]
-
-NEEDLES: list[str] = [
-    "--accent-cta-bg",
-    "accent-cta-border",
-    "accent-cta-border",
-    "--glow",
 ]
 
 LABEL_CAPS_ROW = (
@@ -55,21 +52,32 @@ LABEL_CAPS_MUTATION = (
 )
 
 
-def _apply_light_block_mutation(css: str, pattern: str, repl: str) -> str:
-    if pattern.startswith("[data-theme"):
-        light_start = css.find('[data-theme="light"]')
-        if light_start < 0:
-            raise ValueError("missing light theme block")
-        head = css[:light_start]
-        tail = css[light_start:]
-        new_tail, count = re.subn(pattern, repl, tail, count=1)
-        if count != 1:
-            raise ValueError(f"pattern did not match once in light block: {pattern!r}")
-        return head + new_tail
+def _apply_mutation(css: str, pattern: str, repl: str) -> str:
     new_css, count = re.subn(pattern, repl, css, count=1)
     if count != 1:
         raise ValueError(f"pattern did not match once: {pattern!r}")
     return new_css
+
+
+def _assert_expected_errors(label: str, errors: list[str], needles: list[str]) -> None:
+    joined = "\n".join(errors)
+    for needle in needles:
+        if needle not in joined:
+            print(
+                f"regression {label}: expected error mentioning {needle!r}; got:",
+                file=sys.stderr,
+            )
+            for item in errors[:12]:
+                print(f"  {item}", file=sys.stderr)
+            raise SystemExit(1)
+    if len(errors) > 8:
+        print(
+            f"regression {label}: too many errors ({len(errors)}) — mutation likely too broad",
+            file=sys.stderr,
+        )
+        for item in errors[:12]:
+            print(f"  {item}", file=sys.stderr)
+        raise SystemExit(1)
 
 
 def main() -> None:
@@ -82,8 +90,8 @@ def main() -> None:
             print(f"  {item}", file=sys.stderr)
         raise SystemExit(1)
 
-    for (label, pattern, repl), needle in zip(REGRESSIONS, NEEDLES, strict=True):
-        mutated = _apply_light_block_mutation(base_css, pattern, repl)
+    for label, pattern, repl, needles in REGRESSIONS:
+        mutated = _apply_mutation(base_css, pattern, repl)
         if mutated == base_css:
             print(f"regression {label}: mutation had no effect", file=sys.stderr)
             raise SystemExit(1)
@@ -91,14 +99,7 @@ def main() -> None:
         if not errors:
             print(f"regression {label}: expected sync failure", file=sys.stderr)
             raise SystemExit(1)
-        if not any(needle in item for item in errors):
-            print(
-                f"regression {label}: errors missing {needle!r}:",
-                file=sys.stderr,
-            )
-            for item in errors[:10]:
-                print(f"  {item}", file=sys.stderr)
-            raise SystemExit(1)
+        _assert_expected_errors(label, errors, needles)
 
     doc = DOC.read_text(encoding="utf-8")
     if LABEL_CAPS_ROW not in doc:

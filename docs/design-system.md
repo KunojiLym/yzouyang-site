@@ -177,7 +177,7 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
 | Body/Prose | `.note-body.prose` | Crimson Pro | `--text-md` | 400, lh 172% |
-| Body/Blockquote | `.note-body.prose .note-blockquote` | Crimson Pro italic | `--text-lg` | 400 |
+| Body/Blockquote | `.note-body.prose .note-blockquote p` | Crimson Pro italic | `--text-lg` | 400 |
 | Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
 | Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
 | Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** |

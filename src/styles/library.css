@@ -32,6 +32,10 @@ body:has(main.library-route) {
   padding: var(--space-4) var(--space-6) var(--space-3);
   box-sizing: border-box;
   min-height: 0;
+
+  /* Strip + footer parse after the frame; reserve their block size so the split
+     grid height is stable before siblings exist (boot CLS on deep links). */
+  --library-foot-reserve: calc(3.2rem + 4.9rem + var(--space-3));
 }
 
 .library-frame {
@@ -39,6 +43,7 @@ body:has(main.library-route) {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+  max-height: calc(100% - var(--library-foot-reserve));
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--bg-panel);
@@ -721,7 +726,6 @@ body:has(main.library-route) {
   font-size: var(--text-display-1);
   font-weight: 600;
   line-height: var(--lh-heading);
-  letter-spacing: -0.025em;
 }
 
 .library-panel--note .note-kicker {
@@ -927,11 +931,6 @@ main.page .library-panel--note .library-panel-title {
   padding: var(--space-4) var(--space-5);
   border-left: 3px solid var(--accent);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-style: italic;
-  line-height: 1.5;
-  color: var(--text-default);
 }
 
 .note-body.prose .note-blockquote p {
@@ -1135,6 +1134,8 @@ main.page .library-panel--note .library-panel-title {
 
 .library-strip {
   flex-shrink: 0;
+  min-height: 3.2rem;
+  box-sizing: border-box;
   border-top: 1px solid var(--line-soft);
   padding: var(--space-2) var(--space-4);
   background: var(--bg-elevated);
@@ -1154,6 +1155,8 @@ main.page .library-panel--note .library-panel-title {
 
 .library-page-footer {
   flex-shrink: 0;
+  min-height: 4.9rem;
+  box-sizing: border-box;
   margin-top: var(--space-3);
   padding: var(--space-2) 0 0;
   font-size: var(--text-xs);
