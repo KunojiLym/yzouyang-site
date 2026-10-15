@@ -21,14 +21,6 @@ DECL_RE = re.compile(r"(--[a-z0-9-]+)\s*:\s*([^;]+);", re.I)
 HEX_DECL_RE = re.compile(r"--[a-z0-9-]+\s*:\s*(#[0-9a-fA-F]{3,8})\b")
 PX_TOLERANCE = 1.25
 
-# Documented in design-system.md § Known Figma gaps — explicit allow-list only.
-ALLOWED_FIGMA_CSS_MISMATCHES: frozenset[tuple[str, str]] = frozenset(
-    {
-        ("color/record-domains", "dark"),
-        ("color/record-domains", "light"),
-    }
-)
-
 COLOR_MIX_TOKENS = frozenset(
     {
         "--line-soft",
@@ -566,17 +558,12 @@ def sync_snapshot(
     dark, light = theme_maps(css)
     chrome = parse_declarations(CHROME.read_text(encoding="utf-8"))
     errors: list[str] = []
-    allowed_hits: list[str] = []
 
     for figma_name, css_mode, token, resolved in iter_snapshot_bindings(snapshot):
         theme = theme_for_css_mode(css_mode)
-        key = (figma_name, theme)
         if not value_matches(
             figma_name, css_mode, resolved, token, dark, light, chrome, snapshot
         ):
-            if key in ALLOWED_FIGMA_CSS_MISMATCHES:
-                allowed_hits.append(f"{figma_name} ({theme})")
-                continue
             css_show = chrome.get(token) or resolve_css_token(token, dark, light, theme)
             errors.append(
                 f"{figma_name} [{css_mode}] snapshot {resolved!r} "
@@ -584,7 +571,7 @@ def sync_snapshot(
             )
     errors.extend(validate_text_styles(snapshot, doc))
 
-    return errors, allowed_hits
+    return errors
 
 
 def hex_tokens_in_doc(css: str, doc: str) -> list[str]:
@@ -606,7 +593,7 @@ def assert_fixture_fails() -> None:
         raise SystemExit(f"missing fixture {VIOLATION_FIXTURE}")
     css = TOKENS.read_text(encoding="utf-8")
     doc = DOC.read_text(encoding="utf-8")
-    errors, _ = sync_snapshot(VIOLATION_FIXTURE, css, doc)
+    errors = sync_snapshot(VIOLATION_FIXTURE, css, doc)
     if not errors:
         raise SystemExit("design_system_snapshot_violation fixture should fail sync")
 
@@ -625,8 +612,7 @@ def main() -> None:
     if not SNAPSHOT.is_file():
         errors.append(f"missing snapshot {SNAPSHOT}")
 
-    sync_errors, allowed_hits = sync_snapshot(SNAPSHOT, css, doc)
-    errors.extend(sync_errors)
+    errors.extend(sync_snapshot(SNAPSHOT, css, doc))
     errors.extend(hex_tokens_in_doc(css, doc))
 
     assert_fixture_fails()
@@ -637,16 +623,12 @@ def main() -> None:
             print(f"  {item}", file=sys.stderr)
         raise SystemExit(1)
 
+    snapshot_data = json.loads(SNAPSHOT.read_text())
     print(
         "test_design_system_sync ok "
-        f"(figma variables with web: {len(iter_snapshot_bindings(json.loads(SNAPSHOT.read_text())))}; "
-        f"textStyles: {len(json.loads(SNAPSHOT.read_text())['textStyles'])}; "
-        f"allow-listed gaps: {len(allowed_hits)})"
+        f"(figma variables with web: {len(iter_snapshot_bindings(snapshot_data))}; "
+        f"textStyles: {len(snapshot_data['textStyles'])})"
     )
-    if allowed_hits:
-        print("allow-listed Figma/CSS gaps:")
-        for item in allowed_hits:
-            print(f"  - {item}")
 
 
 if __name__ == "__main__":

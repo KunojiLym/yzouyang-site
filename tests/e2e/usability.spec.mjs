@@ -719,6 +719,8 @@ test.describe("library focus order", () => {
 });
 
 test.describe("library boot CLS", () => {
+  test.describe.configure({ mode: "serial" });
+
   test("notes and deep links stay under 0.1", async ({ browser }) => {
     test.setTimeout(180_000);
     test.skip(test.info().project.name === "mobile", "viewports are set per case");
@@ -762,13 +764,10 @@ test.describe("library boot CLS", () => {
           .locator(`.library-panel[data-panel-id="${hash}"].is-active`)
           .waitFor({ state: "visible", timeout: 8000 });
       }
+      await page.evaluate(() => document.fonts.ready);
       const cls = await waitForClsStable(page);
-      const clsLimit =
-        item.path.includes("#") && item.width >= 768 && item.width < 800
-          ? 0.15
-          : 0.1;
       scores.push(`${item.path} @${item.width} ${cls.toFixed(3)}`);
-      expect(cls, `${item.path} @${item.width}`).toBeLessThan(clsLimit);
+      expect(cls, `${item.path} @${item.width}`).toBeLessThan(0.1);
       await context.close();
     }
     console.log(scores.join("\n"));
