@@ -1293,6 +1293,14 @@ main.page .library-panel--note .library-panel-title {
     grid-template-rows: minmax(0, 0.38fr) minmax(0, 0.62fr);
   }
 
+  /* Side-by-side rail columns from (width >= 49rem) must not stack with these rows. */
+  .library-split.is-index-collapsed,
+  .library-split.is-index-unpinned,
+  html[data-library-boot="detail"] .library-split.is-booting[data-index-default="collapsed"] {
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--library-rail-width) minmax(0, 1fr);
+  }
+
   .library-index-drawer {
     transform-origin: top center;
   }
