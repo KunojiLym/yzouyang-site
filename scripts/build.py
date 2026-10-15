@@ -994,7 +994,7 @@ def library_shell(
     library_stack_critical = (
         "      <style>"
         "@media (width > 48rem) and (width <= 64rem){"
-        "#library-split.library-split{"
+        "#library-split.library-split[data-index-default=open]{"
         "grid-template-columns:1fr;"
         "grid-template-rows:38dvh minmax(0,1fr);"
         "}"
