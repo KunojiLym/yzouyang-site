@@ -356,15 +356,16 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 #### Header
 
-[`variables.json`](figma/variables.json) carries tokens only — no component tree. Header variants are mapped here (markup from `scripts/build.py` `layout()`; breakpoints in `chrome.css`).
+[`variables.json`](figma/variables.json) carries tokens only — no component tree. Header variants are mapped here (markup from `scripts/build.py` `layout()`; breakpoints in `chrome.css`). Figma **Header** component set **`3:2`**.
 
 **Scroll offset:** `--header-offset` (`4.75rem`) is used for `scroll-padding-top`, TOC spy, and in-view `scroll-margin-top` — it is **not** the sticky header’s rendered block height.
 
-| Variant | Width | Controls (DOM order, left → right) | Rendered height (Visual Design) |
+| Variant | Width | Controls (DOM order, left → right) | Rendered height |
 |---|---|---|---|
-| **Compact** | `width <= 768px` (`<= 48rem`) | **Brand** · **Search** (icon slot, `--space-10`; expands on focus) · **Theme** (icon-only `.theme-toggle`) · **Menu** (primary nav + **Text size** in the panel only) | **64px** |
-| **769–1024** | `769px–1024px` | **Brand** · **Search** (`12.5rem`; fixed **200px** slot when `48rem < width <= 900px`) · **Text size** · **Theme** · **Menu** (`<= 900px`) or **Primary nav** (`> 900px`) | **59.19px** |
-| **Desktop (wide)** | `width >= 1280px` | **Brand** · **Primary nav** · **Search** (`12.5rem`) · **Text size** · **Theme** | **61.39px** — **Clear @ 1280 unconfirmed** |
+| **Compact** | **375–768px** (`<= 48rem`) | **Brand** (`.brand`) · **Search** (icon slot, `--space-10`; expands on focus) · **Theme** (icon-only `.theme-toggle`) · **Menu** (`.nav-menu` — primary nav + **Text size** in the panel only) | **64px** — Figma node `3:25` |
+| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **Search** (`#search` in fixed **`12.5rem` (200px)** `.header-search` slot) · **Text size** (`.reading-size-toggle`) · **Theme** · **Menu** | **59.19px** — Figma node `21:16` |
+| **Narrow desktop** | **901–1024px** (`width > 900px` and `<= 1024px`) | **Brand** · **Primary nav** (`.site-nav-desktop`) · **Search** (`12.5rem`) · **Text size** · **Theme** (Menu hidden) | **59.19px** — Figma node `32:292` |
+| **Desktop** | **1280px** (wide desktop; `width > 1024px` in code) | **Brand** · **Primary nav** · **Search** (`12.5rem`) · **Text size** · **Theme** | **61.39px** — Figma node `3:3` |
 
 `.proof-strip` and `.connect-card` are not part of this contract. Nothing in `scripts/build.py`, `src/*.js`, or the page templates emits them.
 
@@ -375,6 +376,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 **Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
 - **Body/Large (Figma vs shipped).** Figma binds **Body/Large** to `--text-lg`; shipped Home lede (`.entrance .lede`) uses `--text-md`. Typography table documents shipped CSS only — not `--text-lg`. Yingzhao decision pending — [issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).
+- **Header · Clear @ 1280.** Figma **Desktop** (node `3:3`, **61.39px**) matches shipped chrome at 1280 with **Text size** on the row; **Clear** confirmation at 1280 is still open with Visual Design.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
