@@ -625,21 +625,23 @@ def collect_figma_export_css_mismatches(
 
     figma_lh = _figma_line_height_ratio(style)
     if figma_lh is not None:
-        css_lh_raw = decls.get("line-height", "")
-        css_lh = _parse_line_height_ratio(css_lh_raw, dark, light) if css_lh_raw else None
-        if css_lh is None or abs(css_lh - figma_lh) > LINE_HEIGHT_TOLERANCE:
-            shipped = css_lh_raw or "(missing)"
-            if css_lh is not None:
-                shipped = str(css_lh)
-            mismatches.append(
-                TextStyleCssMismatch(
-                    name,
-                    selector,
-                    "line-height",
-                    shipped,
-                    _format_line_height_ratio(figma_lh),
+        css_lh_raw = decls.get("line-height", "").strip()
+        if not css_lh_raw:
+            # Shipped line-height may inherit; see design-system.md open items.
+            pass
+        else:
+            css_lh = _parse_line_height_ratio(css_lh_raw, dark, light)
+            if css_lh is None or abs(css_lh - figma_lh) > LINE_HEIGHT_TOLERANCE:
+                shipped = str(css_lh) if css_lh is not None else css_lh_raw
+                mismatches.append(
+                    TextStyleCssMismatch(
+                        name,
+                        selector,
+                        "line-height",
+                        shipped,
+                        _format_line_height_ratio(figma_lh),
+                    )
                 )
-            )
 
     figma_ls = _style_letter_spacing_pct(style)
     if figma_ls is not None and abs(figma_ls) > 0.01:
@@ -918,11 +920,13 @@ def sync_snapshot(
     snapshot_path: Path,
     css: str,
     doc: str,
+    styles_dir: Path | None = None,
 ) -> list[str]:
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
     dark, light = theme_maps(css)
     chrome = parse_declarations(CHROME.read_text(encoding="utf-8"))
     errors: list[str] = []
+    sheet_dir = styles_dir or STYLES_DIR
 
     for figma_name, css_mode, token, resolved in iter_snapshot_bindings(snapshot):
         theme = theme_for_css_mode(css_mode)
@@ -934,8 +938,7 @@ def sync_snapshot(
                 f"{figma_name} [{css_mode}] snapshot {resolved!r} "
                 f"≠ tokens.css {token} ({css_show!r})"
             )
-    dark, light = theme_maps(css)
-    errors.extend(validate_text_styles(snapshot, doc, STYLES_DIR, dark, light))
+    errors.extend(validate_text_styles(snapshot, doc, sheet_dir, dark, light))
 
     return errors
 

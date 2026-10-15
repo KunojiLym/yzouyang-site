@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,42 +101,73 @@ def main() -> None:
     export_mismatches = collect_text_style_css_mismatches(
         snapshot, doc, STYLES_DIR, dark, light
     )
-    if not any(
-        item.style == "Body/Large"
-        and item.selector == ".entrance .lede"
-        and item.property == "line-height"
-        for item in export_mismatches
-    ):
-        print(
-            "Body/Large .entrance .lede line-height must mismatch Figma export "
-            "(seeded export check)",
-            file=sys.stderr,
-        )
-        raise SystemExit(1)
+    for item in export_mismatches:
+        if item.style == "Body/Large Dek":
+            print(
+                f"Body/Large Dek should match .library-panel--note .note-dek: {item}",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
 
     gap_prefix = (
-        "- **Text style CSS · Body/Large · `.entrance .lede` · line-height:**"
+        "- **Text style CSS · Body/Large Dek · `.library-panel--note .note-dek` · line-height:**"
     )
-    if gap_prefix not in doc:
-        print("missing Body/Large text style CSS gap bullet in design-system.md", file=sys.stderr)
-        raise SystemExit(1)
-    doc_without_lede_gap = doc.replace(
-        next(line for line in doc.splitlines() if line.startswith(gap_prefix)) + "\n",
-        "",
+    synthetic_gap = (
+        gap_prefix
+        + " shipped **9.99**; Figma **145%**. seeded test — "
+        + "[issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).\n"
+    )
+    doc_with_fake_gap = doc.replace(
+        "**Open (not enforced by sync; Yingzhao decides):**",
+        synthetic_gap + "**Open (not enforced by sync; Yingzhao decides):**",
         1,
     )
-    gap_errors = sync_snapshot(SNAPSHOT, base_css, doc_without_lede_gap)
-    if not any(
-        "undocumented text style CSS mismatch" in item
-        and "Body/Large" in item
-        and "line-height" in item
-        for item in gap_errors
-    ):
+    gap_errors = sync_snapshot(SNAPSHOT, base_css, doc_with_fake_gap)
+    if not any("stale text style CSS gap" in item for item in gap_errors):
         print(
-            "removing Body/Large line-height gap should fail text style CSS validation",
+            "stale text style CSS gap bullet should fail when Body/Large Dek matches CSS",
             file=sys.stderr,
         )
         for item in gap_errors[:10]:
+            print(f"  {item}", file=sys.stderr)
+        raise SystemExit(1)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        styles_tmp = Path(tmp)
+        for sheet in STYLES_DIR.glob("*.css"):
+            shutil.copy(sheet, styles_tmp / sheet.name)
+        library_path = styles_tmp / "library.css"
+        library_text = library_path.read_text(encoding="utf-8")
+        library_path.write_text(
+            library_text.replace(
+                ".library-panel--note .note-dek {\n"
+                "  margin: 0 0 var(--space-4);\n"
+                "  max-width: none;\n"
+                "  font-family: var(--font-body);\n"
+                "  font-size: var(--text-lg);\n"
+                "  line-height: 1.45;",
+                ".library-panel--note .note-dek {\n"
+                "  margin: 0 0 var(--space-4);\n"
+                "  max-width: none;\n"
+                "  font-family: var(--font-body);\n"
+                "  font-size: var(--text-lg);\n"
+                "  line-height: 9.99;",
+                1,
+            ),
+            encoding="utf-8",
+        )
+        lh_errors = sync_snapshot(SNAPSHOT, base_css, doc, styles_dir=styles_tmp)
+    if not any(
+        "undocumented text style CSS mismatch" in item
+        and "Body/Large Dek" in item
+        and "line-height" in item
+        for item in lh_errors
+    ):
+        print(
+            "Body/Large Dek line-height mutation should fail export CSS validation",
+            file=sys.stderr,
+        )
+        for item in lh_errors[:10]:
             print(f"  {item}", file=sys.stderr)
         raise SystemExit(1)
 

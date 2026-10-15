@@ -1,12 +1,12 @@
 {
   "fileKey": "xr2asASU4M8amldS2Lm0hQ",
   "fileUrl": "https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ",
-  "exportedAt": "2026-10-15T13:40:00+08:00 (SGT)",
+  "exportedAt": "2026-10-15T14:05:00+08:00 (SGT)",
   "source": "user-Figma--university, read-only",
   "counts": {
     "collections": 7,
     "variables": 106,
-    "textStyles": 26,
+    "textStyles": 27,
     "perCollection": {
       "Color": {
         "variables": 43,
@@ -63,7 +63,8 @@
     "colors are #rrggbb or #rrggbbaa",
     "lineHeight PERCENT 172 = 1.72",
     "13:12 SGT re-pull after header variant update: variables and text styles re-read from Figma, no value changes vs 12:24 (106 vars / 26 styles).",
-    "13:40 SGT: Body/Large changed to font-size/text-md (19px), line height 145% (main .note-dek), Source Sans 3 Regular; approved by Yingzhao. Entry edited in place; other values unchanged."
+    "13:40 SGT: Body/Large changed to font-size/text-md (19px), line height 145% (main .note-dek), Source Sans 3 Regular; approved by Yingzhao. Entry edited in place; other values unchanged.",
+    "14:05 SGT: issue #33 code-wins pass (Yingzhao approved). Edited in place: Display/Hero lh 108, Display/H1 ls -2.5%, Display/H2 Page lh 110, Label/Caps lh 160, Body/Large lh 155, Body/Small lh 160, Meta/Small lh 145; added Body/Large Dek (text-lg 20, lh 145). Display/H2 unchanged (computed 120%)."
   ],
   "collections": [
     {
@@ -1721,7 +1722,7 @@
       "fontSize": 76,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 110.00000238418579
+        "value": 108
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -1744,7 +1745,7 @@
       },
       "letterSpacing": {
         "unit": "PERCENT",
-        "value": -2
+        "value": -2.5
       },
       "textCase": "ORIGINAL",
       "textDecoration": "NONE",
@@ -1859,7 +1860,7 @@
       "fontSize": 13,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 139.9999976158142
+        "value": 160
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -1898,7 +1899,7 @@
       "fontSize": 19,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 145
+        "value": 155
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -1908,6 +1909,26 @@
       "textDecoration": "NONE",
       "boundVariables": {
         "fontSize": "font-size/text-md"
+      },
+      "fontWeight": 400
+    },
+    {
+      "name": "Body/Large Dek",
+      "fontFamily": "Source Sans 3",
+      "fontStyle": "Regular",
+      "fontSize": 20,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 145
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "boundVariables": {
+        "fontSize": "font-size/text-lg"
       },
       "fontWeight": 400
     },
@@ -1937,7 +1958,7 @@
       "fontSize": 14,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 150
+        "value": 160
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -1976,7 +1997,7 @@
       "fontSize": 14,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 139.9999976158142
+        "value": 145
       },
       "letterSpacing": {
         "unit": "PERCENT",
@@ -2192,7 +2213,7 @@
       "fontSize": 27.200000762939453,
       "lineHeight": {
         "unit": "PERCENT",
-        "value": 120.00000476837158
+        "value": 110
       },
       "letterSpacing": {
         "unit": "PERCENT",

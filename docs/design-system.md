@@ -4,7 +4,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 ## Source of truth
 
-The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 13:40 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
+The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 14:05 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
 
 **Review on change.** Any PR that changes `tokens.css`, a component class in Layer C, a breakpoint or a page rule must (i) match the Figma snapshot and a Figma variable, style or component (or link the Figma change), and (ii) update this doc and `docs/figma/variables.json` in the same PR when design values change. If the code is right and Figma lags, file it for figma bro and record it under [Known Figma gaps](#known-figma-gaps) rather than diverging silently. A drift review runs whenever the snapshot, Figma or `tokens.css` changes.
 
@@ -153,14 +153,14 @@ Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens
 
 At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
 
-Figma text styles (26) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`.
+Figma text styles (27) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`.
 
 | Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
 | Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
 | Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
-| Display/H2 Page | `main.page h2`, `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.2, −1% |
+| Display/H2 Page | `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.1, −1% |
 | Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
 | Display/Practice Title | `.home-practice-title` | Crimson Pro | `--text-sm` | 600 |
@@ -172,7 +172,8 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 145% |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% |
+| Body/Large Dek | `.library-panel--note .note-dek` | Source Sans 3 | `--text-lg` | 400, lh 145% |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
@@ -377,16 +378,14 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 13:40 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`. **Text style CSS** bullets below are enforced by `collect_figma_export_css_mismatches` (Figma export fields vs shipped selectors).
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 14:05 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **27** `textStyles` match the typography table and `test_design_system_sync.py`. Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (explicit `line-height` only when set on the selector).
 
-- **Text style CSS · Display/Hero · `main.page .entrance h1` · line-height:** shipped **1.08**; Figma **110%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
-- **Text style CSS · Display/H1 · `.library-panel--note .library-panel-title` · letter-spacing:** shipped **-0.025em**; Figma **-2%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
-- **Text style CSS · Display/H2 · `.home-plate h2` · line-height:** shipped **(inherits)**; Figma **120%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
-- **Text style CSS · Display/H2 Page · `.not-found h1` · line-height:** shipped **1.1**; Figma **120%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
-- **Text style CSS · Label/Caps · `.record-id` · line-height:** shipped **(inherits)**; Figma **140%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
-- **Text style CSS · Body/Large · `.entrance .lede` · line-height:** shipped **1.55**; Figma **145%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
-- **Text style CSS · Body/Small · `.site-nav a` · line-height:** shipped **(inherits)**; Figma **150%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
-- **Text style CSS · Meta/Small · `.credential-card-meta` · line-height:** shipped **1.45**; Figma **140%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+**Open (not enforced by sync; Yingzhao decides):**
+
+- **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
+- **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
+- **`main.page h2`.** Shipped **`--text-display-2`** / **`var(--lh-heading)` (1.2)** in `components.css`; not mapped to a dedicated Figma text style row (404 title uses **Display/H2 Page** on `.not-found h1` only).
+
 - **Header · Clear @ 1280 (Desktop).** Figma **Desktop** (`3:3`) shows **Clear** **hidden** at 1280 (still **unconfirmed** with Visual Design). Shipped Pagefind can still show `.pagefind-ui__search-clear` whenever the search field has a value — not hidden by viewport.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).
 - **Header · Compact Text size.** Figma **Compact** (`3:25`) omits **Text size** from the header row; shipped chrome keeps **Text size** inside the **Menu** panel only (`<= 48rem`) — matches intent, different surface than a header control.
