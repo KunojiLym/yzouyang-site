@@ -47,11 +47,11 @@ TEXT_STYLE_OPEN_CSS_ITEMS: dict[tuple[str, str], dict[str, object]] = {
         "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
     },
     ("Body/Large", ".home-snap-proposition .lede"): {
-        "reason": "At **≥900px** the built home page computes **line-height 1.5** (`home.css`); Figma **Body/Large** is **155%**",
+        "reason": "**Yingzhao:** shipped CSS stays **line-height 1.5** at **≥900px** (`home.css`); legacy Figma **Body/Large** is **155%**. Figma is adding a matching text style. **No CSS change.** Sync skips **line-height** for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`) until resolved. **When `inbox/figma-vars-full.json` lands:** copy it verbatim to [`docs/figma/variables.json`](figma/variables.json), map **`.home-snap-proposition .lede`** to the new style in the typography table / sync mapping, and remove this open item.",
         "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
     },
     ("Body/Large", ".entrance .lede"): {
-        "reason": "Home proposition lede relaxes to line-height 1.5 at ≥900px (`home.css`); Figma Body/Large is 155%",
+        "reason": "Doc-table alias for the shipped Home lede; same gap and resolution as **`.home-snap-proposition .lede`** above.",
         "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
     },
 }

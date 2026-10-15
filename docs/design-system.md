@@ -172,7 +172,7 @@ Figma text styles (27) mapped to Layer C classes. Token columns reference `token
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% — **matches shipped Home lede (19px at default scale); not a visual change** |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% — **sync maps Home lede at `.home-snap-proposition .lede` (see open gap below); shipped lede is lh 1.5 at ≥900px** |
 | Body/Large Dek | `.library-panel--note .note-dek` | Source Sans 3 | `--text-lg` | 400, lh 145% — **matches shipped note dek sizing; not a visual change** |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
@@ -387,8 +387,8 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 **Open (not enforced by sync; Yingzhao decides):**
 
 - **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** / **letter-spacing** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
-- **`.home-snap-proposition .lede` (Body/Large — open).** At **≥900px** the built home page computes **line-height 1.5** (`home.css`); Figma **Body/Large** is **155%**. No CSS change until **Yingzhao** decides. Sync skips **line-height** for `.home-snap-proposition .lede` (`TEXT_STYLE_OPEN_CSS_ITEMS`).
-- **`.entrance .lede` (Body/Large table alias — open).** Same as **`.home-snap-proposition .lede`**: Home proposition lede relaxes to line-height 1.5 at ≥900px (`home.css`); Figma Body/Large is 155%.
+- **`.home-snap-proposition .lede` (Body/Large — open).** **Yingzhao:** shipped CSS stays **line-height 1.5** at **≥900px** (`home.css`); legacy Figma **Body/Large** is **155%**. Figma is adding a matching text style. **No CSS change.** Sync skips **line-height** for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`) until resolved. **When `inbox/figma-vars-full.json` lands:** copy it verbatim to [`docs/figma/variables.json`](figma/variables.json), map **`.home-snap-proposition .lede`** to the new style in the typography table / sync mapping, and remove this open item.
+- **`.entrance .lede` (Body/Large table alias — open).** Doc-table alias for the shipped Home lede; same gap and resolution as **`.home-snap-proposition .lede`** above.
 - **`.home-plate h2` (Display/H2 — open).** home-plate sections are not on the shipped home route; line-height checked on library panel titles.
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
 - **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
