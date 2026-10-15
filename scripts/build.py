@@ -263,7 +263,10 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
   }
   var target = hash ? findPanel(hash) : null;
   if (!target && hash) target = findLegacy(hash);
-  if (!target && wide) target = panels[0];
+  if (!target && wide) {
+    var firstItem = split.querySelector(".library-index [data-panel-id]");
+    target = (firstItem && findPanel(firstItem.getAttribute("data-panel-id"))) || panels[0];
+  }
   if (target) {
     for (var index = 0; index < panels.length; index++) {
       var open = panels[index] === target;
