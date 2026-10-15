@@ -976,26 +976,73 @@ def assert_boot_cls_review_json() -> None:
         runs = after_payload.get("runs")
         if not isinstance(runs, int) or runs < 3:
             fail("cls-after.json must record median of at least 3 runs (runs >= 3)")
-        shifts = after_payload.get("elementShiftMedian")
+        shifts = after_payload.get("layoutShiftSourcesMedian")
         if not isinstance(shifts, dict):
-            fail("cls-after.json missing elementShiftMedian object")
+            fail("cls-after.json missing layoutShiftSourcesMedian object")
         for width in (769, 784, 800, 900, 1024):
-            for route in ("notes", "systems"):
+            for route in ("notes", "systems", "credentials"):
                 route_block = shifts.get(route, {})
                 block = route_block.get(width)
                 if block is None:
                     block = route_block.get(str(width))
-                if not isinstance(block, dict):
-                    fail(f"cls-after.json missing elementShiftMedian[{route}][{width}]")
+                if not isinstance(block, list):
+                    fail(f"cls-after.json missing layoutShiftSourcesMedian[{route}][{width}]")
+        for row in after:
+            capture = row.get("capture")
+            if not isinstance(capture, dict):
+                fail("cls-after.json cls rows must include capture metadata")
+            if not capture.get("libraryShell") or not capture.get("librarySplit"):
+                fail("cls-after.json capture missing library shell markers")
+            if not capture.get("observerActive"):
+                fail("cls-after.json capture missing layout-shift observer")
     widths = {int(row["width"]) for row in after}
     for required_width in (784, 800, 900):
         if required_width not in widths:
             fail(f"cls-after.json must include {required_width}px width rows")
-    cls_values = [float(row["cls"]) for row in after]
-    if not cls_values or all(value == 0 for value in cls_values):
-        fail("cls-after.json looks like an empty CLS capture (all values zero)")
-    if max(cls_values) < 0.0005:
-        fail("cls-after.json max cls is below capture noise floor — re-run measure_boot_cls_matrix.mjs")
+    assert_boot_cls_readme_matches_after(after_payload, after)
+
+
+def assert_boot_cls_readme_matches_after(after_payload: dict, after_rows: list[dict]) -> None:
+    import subprocess
+
+    review = ROOT / "docs" / "reviews" / "boot-cls-2026-10-15"
+    readme_path = review / "README.md"
+    subprocess.run(
+        ["node", str(ROOT / "scripts" / "generate_boot_cls_readme.mjs")],
+        check=True,
+        cwd=ROOT,
+    )
+    readme = readme_path.read_text(encoding="utf-8")
+    map_a = {(r["route"], int(r["width"]), r["theme"]): float(r["cls"]) for r in after_rows}
+
+    def fmt(n: float) -> str:
+        return f"{n:.3f}"
+
+    for theme in ("dark", "light"):
+        section = readme.split(f"## {theme}\n", 1)
+        if len(section) < 2:
+            fail(f"boot CLS README missing ## {theme}")
+        body = section[1].split("\n## ", 1)[0]
+        header = [line for line in body.splitlines() if line.startswith("| Route |")][0]
+        width_cols = [int(part.strip()) for part in header.split("|")[2:-1]]
+        for route in ("notes", "systems", "credentials"):
+            row_line = next(
+                (line for line in body.splitlines() if line.startswith(f"| {route} |")),
+                None,
+            )
+            if row_line is None:
+                fail(f"boot CLS README missing row for {route} ({theme})")
+            cells = [part.strip() for part in row_line.split("|")[2:-1]]
+            for width, cell in zip(width_cols, cells, strict=True):
+                expected = map_a.get((route, width, theme))
+                if expected is None:
+                    continue
+                token = f"**{fmt(expected)}**"
+                if token not in cell and fmt(expected) not in cell:
+                    fail(
+                        f"boot CLS README {theme} {route}@{width}px "
+                        f"expected {fmt(expected)} in cell {cell!r}"
+                    )
 
 
 def main() -> None:

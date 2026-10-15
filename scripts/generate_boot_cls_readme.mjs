@@ -41,9 +41,14 @@ md += `Measured with \`scripts/measure_boot_cls_matrix.mjs\` against local \`dis
 md += `Tables below are generated from \`cls-before.json\` and \`cls-after.json\` via \`scripts/generate_boot_cls_readme.mjs\`. Budget **0.1**.\n\n`;
 md += `## What changed\n\n`;
 md += `- **Header (769–900px):** fixed \`12.5rem\` (200px) \`.header-search\` slot + \`#search\` min-height so Pagefind mount does not wrap the action row or shrink the library grid (\`chrome.css\`, pre-fix baseline \`862e9d8\`).\n`;
-md += `- **Library strip + footer:** \`--library-strip-min-height\` and \`--library-page-footer-min-height\` on \`.library-strip\` / \`.library-page-footer\` so strip and footer block size is stable before paint (no \`max-height\` reserve on \`.library-frame\` — that double-counted and left a ~52px gap under the footer).\n\n`;
-md += `Playwright gate (\`library boot CLS\`): deep links @ **375**, **768**, **769**, **784**, **800**, **900**, **1024**, and **1280** — all **< 0.1** in \`cls-after.json\`.\n\n`;
-md += `**Boot layout shifts:** \`elementShiftMedian\` in \`cls-after.json\` is the median of **${afterPayload.runs ?? "≥3"}** Playwright runs (dark theme) at **769–1024px** for \`div.library-pane\`, \`.library-panel-body\`, and \`.library-index-control\`. Reading-context **boot-only** flex reserve applies to every library deep link during \`.is-booting\`, not only notes.\n\n`;
+md += `- **Library strip + footer:** \`--library-strip-min-height\` and \`--library-page-footer-min-height\` on \`.library-strip\` / \`.library-page-footer\` so strip and footer block size is stable before paint (no \`max-height\` reserve on \`.library-frame\` — that double-counted and left a ~52px gap under the footer).\n`;
+md += `- **Boot reading context:** note-panel boot reserve + \`syncReadingContext()\` before \`is-booting\` is cleared; \`is-reading-context-visible\` only shows the bar when it is not \`[hidden]\`.\n\n`;
+md += `Playwright gate (\`library boot CLS\`): deep links @ **375**, **768**, **769**, **784**, **800**, **900**, **1024**, and **1280** — all **< 0.1** in \`cls-after.json\` (After column below is sourced only from that file).\n\n`;
+
+const sources = afterPayload.layoutShiftSourcesMedian;
+if (sources) {
+  md += `**Layout-shift sources (median of **${afterPayload.runs ?? "≥3"}** runs, dark, 769–1024px):** see \`layoutShiftSourcesMedian\` in \`cls-after.json\` (node, \`previousRect\`, \`currentRect\`, \`value\`).\n\n`;
+}
 
 for (const theme of themes) {
   md += `## ${theme}\n\n`;
@@ -53,13 +58,36 @@ for (const theme of themes) {
     const cells = widths.map((width) => {
       const b = mapB.get(`${route}|${width}|${theme}`);
       const a = mapA.get(`${route}|${width}|${theme}`);
-      if (b === undefined && a === undefined) return "—";
-      if (b === undefined) return fmt(a);
+      if (a === undefined) return "—";
+      if (b === undefined) return `**${fmt(a)}**`;
       return `${fmt(b)} → **${fmt(a)}**`;
     });
     md += `| ${route} | ${cells.join(" | ")} |\n`;
   }
   md += "\n";
+}
+
+if (sources) {
+  md += `## Layout-shift sources (median, dark)\n\n`;
+  for (const route of ["notes", "systems", "credentials"]) {
+    md += `### ${route}\n\n`;
+    for (const width of [769, 784, 800, 900, 1024]) {
+      const list = sources[route]?.[width] || sources[route]?.[String(width)] || [];
+      md += `**${width}px** — `;
+      if (!list.length) {
+        md += "no attributed sources in capture.\n\n";
+        continue;
+      }
+      const top = list.slice(0, 4);
+      md += top
+        .map((item) => {
+          const dy = (item.currentRect?.y ?? 0) - (item.previousRect?.y ?? 0);
+          return `\`${item.node}\` Δy=${dy.toFixed(0)}px (value ${(item.value ?? 0).toFixed(4)})`;
+        })
+        .join("; ");
+      md += "\n\n";
+    }
+  }
 }
 
 md += `## Screenshots @ 784px (\`/systems/#SYS-03\`)\n\n`;

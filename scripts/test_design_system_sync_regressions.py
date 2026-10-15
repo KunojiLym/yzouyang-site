@@ -19,10 +19,27 @@ from test_design_system_sync import (  # noqa: E402
     SNAPSHOT,
     STYLES_DIR,
     TOKENS,
+    TEXT_STYLE_OPEN_CSS_ITEMS,
     collect_text_style_css_mismatches,
     sync_snapshot,
     theme_maps,
+    validate_text_style_open_css_items,
 )
+
+LIGHT_DECL_MUTATIONS: list[tuple[str, str, str, list[str]]] = [
+    (
+        "light accent-cta-border 40% -> 90%",
+        "--accent-cta-border: color-mix(in srgb, var(--accent) 40%, var(--accent-text))",
+        "--accent-cta-border: color-mix(in srgb, var(--accent) 90%, var(--accent-text))",
+        ["color/accent-cta-border", "90%", "--accent-cta-border"],
+    ),
+    (
+        "light glow mix 16% -> 14%",
+        "--glow: color-mix(in srgb, var(--accent) 16%, transparent)",
+        "--glow: color-mix(in srgb, var(--accent) 14%, transparent)",
+        ["color/glow", "--glow", "14%, transparent"],
+    ),
+]
 
 REGRESSIONS: list[tuple[str, str, str, list[str]]] = [
     (
@@ -32,24 +49,13 @@ REGRESSIONS: list[tuple[str, str, str, list[str]]] = [
         ["--accent-cta-bg", "8%", "18%"],
     ),
     (
-        "light accent-cta-border 40% -> 90%",
-        r'(\[data-theme="light"\][\s\S]*?color-mix\(in srgb, var\(--accent\) )40(%, var\(--accent-text\)\))',
-        r"\g<1>90\g<2>",
-        ["color/accent-cta-border", "90%", "--accent-cta-border"],
-    ),
-    (
         "dark accent-cta-border mix partner line-strong -> bg-deep",
         r"--accent-cta-border: color-mix\(in srgb, var\(--accent\) 55%, var\(--line-strong\)\)",
         "--accent-cta-border: color-mix(in srgb, var(--accent) 55%, var(--bg-deep))",
         ["color/accent-cta-border", "--accent-cta-border", "bg-deep"],
     ),
-    (
-        "light glow mix 16% -> 14%",
-        r'(\[data-theme="light"\][\s\S]*?--glow: color-mix\(in srgb, var\(--accent\) )16(%, transparent\))',
-        r"\g<1>14\g<2>",
-        ["color/glow", "--glow", "14%, transparent"],
-    ),
 ]
+
 
 LABEL_CAPS_ROW = (
     "| Label/Caps | `.record-id` | Source Sans 3 | `--text-xs` | 600, 8%, caps |"
@@ -64,6 +70,22 @@ def _apply_mutation(css: str, pattern: str, repl: str) -> str:
     if count != 1:
         raise ValueError(f"pattern did not match once: {pattern!r}")
     return new_css
+
+
+def _mutate_light_decl(css: str, needle: str, repl: str) -> str:
+    marker = '[data-theme="light"]'
+    start = css.find(marker)
+    if start < 0:
+        raise ValueError("missing light theme block")
+    brace = css.find("{", start)
+    end = css.find("}", brace)
+    if brace < 0 or end < 0:
+        raise ValueError("malformed light theme block")
+    block = css[brace + 1 : end]
+    if needle not in block:
+        raise ValueError(f"needle not in light block: {needle!r}")
+    new_block = block.replace(needle, repl, 1)
+    return css[: brace + 1] + new_block + css[end:]
 
 
 def _assert_expected_errors(label: str, errors: list[str], needles: list[str]) -> None:
@@ -229,6 +251,52 @@ def main() -> None:
             print(f"regression {label}: expected sync failure", file=sys.stderr)
             raise SystemExit(1)
         _assert_expected_errors(label, errors, needles)
+
+    for label, needle, repl, needles in LIGHT_DECL_MUTATIONS:
+        mutated = _mutate_light_decl(base_css, needle, repl)
+        if mutated == base_css:
+            print(f"regression {label}: mutation had no effect", file=sys.stderr)
+            raise SystemExit(1)
+        if '[data-theme="light"]' not in mutated:
+            print(f"regression {label}: light theme block was removed", file=sys.stderr)
+            raise SystemExit(1)
+        errors = sync_snapshot(SNAPSHOT, mutated, doc)
+        if not errors:
+            print(f"regression {label}: expected sync failure", file=sys.stderr)
+            raise SystemExit(1)
+        _assert_expected_errors(label, errors, needles)
+
+    bogus = dict(TEXT_STYLE_OPEN_CSS_ITEMS)
+    bogus[("Nope/X", ".nope")] = {"reason": "stale probe", "skip_properties": frozenset()}
+    import test_design_system_sync as sync_mod
+
+    original = sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS
+    sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = bogus
+    try:
+        stale_errors = validate_text_style_open_css_items(doc)
+    finally:
+        sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = original
+    if not any("Nope/X" in item or "stale probe" in item for item in stale_errors):
+        print("bogus TEXT_STYLE_OPEN_CSS_ITEMS should fail validation", file=sys.stderr)
+        raise SystemExit(1)
+
+    snapshot_h2 = copy.deepcopy(snapshot)
+    for style in snapshot_h2["textStyles"]:
+        if style["name"] == "Display/H2":
+            style["lineHeight"] = {"unit": "PERCENT", "value": 300}
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
+        json.dump(snapshot_h2, handle)
+        h2_path = Path(handle.name)
+    try:
+        h2_errors = sync_snapshot(h2_path, base_css, doc)
+    finally:
+        h2_path.unlink(missing_ok=True)
+    _assert_line_height_mismatch(
+        h2_errors,
+        style="Display/H2",
+        selector=".home-plate h2",
+        label="Display/H2 300% flags .home-plate h2",
+    )
 
     doc = DOC.read_text(encoding="utf-8")
     if LABEL_CAPS_ROW not in doc:

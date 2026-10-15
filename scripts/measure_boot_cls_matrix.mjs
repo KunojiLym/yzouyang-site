@@ -2,12 +2,6 @@
 /**
  * Boot CLS matrix for library deep links (Playwright + dist server on :8765).
  * Progress logs go to stderr; stdout is JSON only for cls-*.json consumers.
- *
- * Usage (local dist must serve chrome/styles — use root base_path):
- *   SITE_BASE_PATH= uv run python scripts/build.py --skip-pagefind && npx pagefind --site dist
- *   node scripts/serve-dist.mjs 8765 &
- *   node scripts/measure_boot_cls_matrix.mjs > docs/reviews/boot-cls-2026-10-15/cls-after.json
- *   node scripts/generate_boot_cls_readme.mjs
  */
 import { chromium } from "@playwright/test";
 
@@ -18,6 +12,7 @@ const SHIFT_WIDTHS = [769, 784, 800, 900, 1024];
 const SHIFT_ROUTES = [
   { key: "notes", path: "/notes/#NOTE-2026-005" },
   { key: "systems", path: "/systems/#SYS-03" },
+  { key: "credentials", path: "/credentials/#google-cloud" },
 ];
 const ROUTES = [
   { key: "notes", path: "/notes/#NOTE-2026-005" },
@@ -26,7 +21,66 @@ const ROUTES = [
 ];
 const THEMES = ["dark", "light"];
 const RUNS = Math.max(1, Number.parseInt(process.env.CLS_RUNS || "3", 10));
-const SHIFT_TARGETS = ["div.library-pane", ".library-panel-body", ".library-index-control"];
+
+const LAYOUT_SHIFT_INIT = () => {
+  window.__layoutShiftSources = [];
+  window.__layoutShiftEntryCount = 0;
+  window.__layoutShiftObserverActive = false;
+  try {
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.hadRecentInput) continue;
+        window.__layoutShiftEntryCount += 1;
+        for (const source of entry.sources || []) {
+          const node = source.node;
+          let label = null;
+          if (node && node.nodeType === 1) {
+            const el = node;
+            if (el.classList?.contains("library-pane")) label = "div.library-pane";
+            else if (el.classList?.contains("library-panel-body")) label = ".library-panel-body";
+            else if (el.classList?.contains("library-index-control")) label = ".library-index-control";
+            else if (el.classList?.contains("library-reading-context")) label = "div.library-reading-context";
+            else {
+              const tag = el.tagName?.toLowerCase() || "node";
+              const cls = [...(el.classList || [])].slice(0, 3).join(".");
+              label = cls ? `${tag}.${cls}` : tag;
+            }
+          }
+          window.__layoutShiftSources.push({
+            value: entry.value,
+            startTime: entry.startTime,
+            node: label,
+            previousRect: {
+              x: source.previousRect.x,
+              y: source.previousRect.y,
+              width: source.previousRect.width,
+              height: source.previousRect.height,
+            },
+            currentRect: {
+              x: source.currentRect.x,
+              y: source.currentRect.y,
+              width: source.currentRect.width,
+              height: source.currentRect.height,
+            },
+          });
+        }
+      }
+    }).observe({ type: "layout-shift", buffered: true });
+    window.__layoutShiftObserverActive = true;
+  } catch {
+    /* ignore */
+  }
+  window.__cls = 0;
+  try {
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (!entry.hadRecentInput) window.__cls += entry.value;
+      }
+    }).observe({ type: "layout-shift", buffered: true });
+  } catch {
+    /* ignore */
+  }
+};
 
 function logProgress(message) {
   console.error(message);
@@ -39,6 +93,7 @@ function withSiteBase(path) {
 
 function median(values) {
   const sorted = [...values].sort((a, b) => a - b);
+  if (!sorted.length) return null;
   const mid = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 0) {
     return (sorted[mid - 1] + sorted[mid]) / 2;
@@ -55,6 +110,17 @@ async function readClsTotal(page) {
     }
     return Math.max(fromObserver, fromEntries);
   });
+}
+
+async function readCaptureHealth(page) {
+  return page.evaluate(() => ({
+    libraryShell: Boolean(document.querySelector(".library-shell")),
+    librarySplit: Boolean(document.querySelector("#library-split")),
+    layoutShiftEntryCount: window.__layoutShiftEntryCount || 0,
+    layoutShiftSourceCount: (window.__layoutShiftSources || []).length,
+    stylesheetCount: document.styleSheets?.length || 0,
+    observerActive: Boolean(window.__layoutShiftObserverActive),
+  }));
 }
 
 async function waitForClsStable(
@@ -79,64 +145,12 @@ async function waitForClsStable(
   throw new Error(`CLS did not stabilize within ${timeoutMs}ms (last value ${final})`);
 }
 
-async function readShiftPositions(page) {
-  return page.evaluate((targets) => {
-    const map = {
-      "div.library-pane": ".library-pane",
-      ".library-panel-body": ".library-panel.is-active .library-panel-body",
-      ".library-index-control": ".library-index-control",
-    };
-    const out = {};
-    for (const key of targets) {
-      const el = document.querySelector(map[key]);
-      out[key] = el ? Math.round(el.getBoundingClientRect().y) : null;
-    }
-    return out;
-  }, SHIFT_TARGETS);
-}
-
-async function measureElementShifts(page, path, width) {
+async function measureRoute(page, path, width) {
   await page.setViewportSize({ width, height: 800 });
-  await page.goto(`${BASE}${withSiteBase(path)}`, { waitUntil: "domcontentloaded" });
-  const hash = new URL(path, BASE).hash.slice(1);
-  if (hash) {
-    await page
-      .locator(
-        `.library-panel[data-panel-id="${hash}"].is-active, .library-panel[data-record="${hash}"].is-active`
-      )
-      .first()
-      .waitFor({ state: "visible", timeout: 8000 });
+  const response = await page.goto(`${BASE}${withSiteBase(path)}`, { waitUntil: "load" });
+  if (!response || !response.ok()) {
+    throw new Error(`navigation failed for ${path} @ ${width}px (${response?.status()})`);
   }
-  let bootY = null;
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    const booting = await page.locator("#library-split.is-booting").count();
-    if (booting > 0) {
-      bootY = await readShiftPositions(page);
-      break;
-    }
-    await page.waitForTimeout(16);
-  }
-  if (!bootY) {
-    bootY = await readShiftPositions(page);
-  }
-  await page.locator("#library-split:not(.is-booting)").waitFor({ state: "attached", timeout: 8000 });
-  await page.evaluate(() => document.fonts.ready);
-  const settledY = await readShiftPositions(page);
-  const shifts = {};
-  for (const key of SHIFT_TARGETS) {
-    const before = bootY[key];
-    const after = settledY[key];
-    shifts[key] =
-      before === null || after === null
-        ? null
-        : { beforeY: before, afterY: after, deltaY: after - before };
-  }
-  return shifts;
-}
-
-async function measureCls(page, path, width) {
-  await page.setViewportSize({ width, height: 800 });
-  await page.goto(`${BASE}${withSiteBase(path)}`, { waitUntil: "load" });
   const hash = new URL(path, BASE).hash.slice(1);
   if (hash) {
     await page
@@ -151,7 +165,11 @@ async function measureCls(page, path, width) {
     .locator("#library-split:not(.is-booting)")
     .waitFor({ state: "attached", timeout: 8000 });
   await page.evaluate(() => document.fonts.ready);
-  return waitForClsStable(page);
+  await page.waitForTimeout(400);
+  const cls = await waitForClsStable(page);
+  const capture = await readCaptureHealth(page);
+  const sources = await page.evaluate(() => window.__layoutShiftSources || []);
+  return { cls, capture, sources };
 }
 
 function validateRows(rows) {
@@ -159,15 +177,20 @@ function validateRows(rows) {
     console.error("CLS capture failed: no rows");
     process.exit(1);
   }
-  const values = rows.map((row) => row.cls);
-  if (values.every((cls) => cls === 0)) {
-    console.error("CLS capture failed: every cls value is 0 (broken capture)");
-    process.exit(1);
-  }
-  const max = Math.max(...values);
-  if (max < 0.000_5) {
-    console.error(`CLS capture failed: max cls ${max} is below noise floor`);
-    process.exit(1);
+  for (const row of rows) {
+    const capture = row.capture;
+    if (!capture?.libraryShell || !capture?.librarySplit) {
+      console.error("CLS capture failed: page shell missing", row);
+      process.exit(1);
+    }
+    if (!capture.stylesheetCount) {
+      console.error("CLS capture failed: no stylesheets", row);
+      process.exit(1);
+    }
+    if (!capture.observerActive) {
+      console.error("CLS capture failed: layout-shift observer not active", row);
+      process.exit(1);
+    }
   }
 }
 
@@ -175,28 +198,43 @@ function clsKey(row) {
   return `${row.route}|${row.width}|${row.theme}`;
 }
 
-function medianShiftRuns(runs) {
+function medianSourcesRuns(runs) {
   const out = {};
   for (const route of SHIFT_ROUTES) {
     out[route.key] = {};
     for (const width of SHIFT_WIDTHS) {
-      out[route.key][width] = {};
-      for (const target of SHIFT_TARGETS) {
-        const deltas = runs
-          .map((run) => run?.[route.key]?.[width]?.[target]?.deltaY)
-          .filter((value) => typeof value === "number");
-        const befores = runs
-          .map((run) => run?.[route.key]?.[width]?.[target]?.beforeY)
-          .filter((value) => typeof value === "number");
-        const afters = runs
-          .map((run) => run?.[route.key]?.[width]?.[target]?.afterY)
-          .filter((value) => typeof value === "number");
-        out[route.key][width][target] = {
-          beforeY: befores.length ? median(befores) : null,
-          afterY: afters.length ? median(afters) : null,
-          deltaY: deltas.length ? median(deltas) : null,
-        };
+      const buckets = new Map();
+      for (const run of runs) {
+        const list = run?.[route.key]?.[width] || [];
+        for (const item of list) {
+          const key = item.node || "unknown";
+          if (!buckets.has(key)) buckets.set(key, []);
+          buckets.get(key).push(item);
+        }
       }
+      const merged = [];
+      for (const [node, items] of buckets.entries()) {
+        merged.push({
+          node,
+          count: items.length,
+          value: median(items.map((i) => i.value)),
+          startTime: median(items.map((i) => i.startTime)),
+          previousRect: {
+            x: median(items.map((i) => i.previousRect.x)),
+            y: median(items.map((i) => i.previousRect.y)),
+            width: median(items.map((i) => i.previousRect.width)),
+            height: median(items.map((i) => i.previousRect.height)),
+          },
+          currentRect: {
+            x: median(items.map((i) => i.currentRect.x)),
+            y: median(items.map((i) => i.currentRect.y)),
+            width: median(items.map((i) => i.currentRect.width)),
+            height: median(items.map((i) => i.currentRect.height)),
+          },
+        });
+      }
+      merged.sort((a, b) => (b.value || 0) - (a.value || 0));
+      out[route.key][width] = merged;
     }
   }
   return out;
@@ -204,11 +242,14 @@ function medianShiftRuns(runs) {
 
 function medianClsRuns(allRuns) {
   const buckets = new Map();
+  const captureBuckets = new Map();
   for (const rows of allRuns) {
     for (const row of rows) {
       const key = clsKey(row);
       if (!buckets.has(key)) buckets.set(key, []);
       buckets.get(key).push(row.cls);
+      if (!captureBuckets.has(key)) captureBuckets.set(key, []);
+      captureBuckets.get(key).push(row.capture);
     }
   }
   const medianRows = [];
@@ -217,12 +258,15 @@ function medianClsRuns(allRuns) {
     const sample = allRuns[0].find(
       (row) => row.route === route && String(row.width) === width && row.theme === theme
     );
+    const captures = captureBuckets.get(key) || [];
+    const capture = captures[Math.floor(captures.length / 2)] || sample?.capture;
     medianRows.push({
       route,
       path: sample.path,
       width: Number(width),
       theme,
       cls: median(values),
+      capture,
     });
   }
   medianRows.sort(
@@ -243,7 +287,6 @@ try {
     logProgress(`CLS matrix run ${run + 1}/${RUNS}…`);
     const rows = [];
     const shiftRun = {};
-
     for (const route of SHIFT_ROUTES) {
       shiftRun[route.key] = {};
     }
@@ -263,16 +306,18 @@ try {
             } catch {
               /* ignore */
             }
-            window.__cls = 0;
-            new PerformanceObserver((list) => {
-              for (const entry of list.getEntries()) {
-                if (!entry.hadRecentInput) window.__cls += entry.value;
-              }
-            }).observe({ type: "layout-shift", buffered: true });
           }, theme);
+          await context.addInitScript(LAYOUT_SHIFT_INIT);
           const page = await context.newPage();
-          const cls = await measureCls(page, route.path, width, theme);
-          rows.push({ route: route.key, path: route.path, width, theme, cls });
+          const result = await measureRoute(page, route.path, width);
+          rows.push({
+            route: route.key,
+            path: route.path,
+            width,
+            theme,
+            cls: result.cls,
+            capture: result.capture,
+          });
           await context.close();
         }
       }
@@ -280,7 +325,7 @@ try {
 
     for (const route of SHIFT_ROUTES) {
       for (const width of SHIFT_WIDTHS) {
-        logProgress(`run ${run + 1}: shifts ${route.key} ${width}px dark…`);
+        logProgress(`run ${run + 1}: layout-shift sources ${route.key} ${width}px dark…`);
         const context = await browser.newContext({
           viewport: { width, height: 800 },
           colorScheme: "dark",
@@ -293,8 +338,10 @@ try {
             /* ignore */
           }
         });
+        await context.addInitScript(LAYOUT_SHIFT_INIT);
         const page = await context.newPage();
-        shiftRun[route.key][width] = await measureElementShifts(page, route.path, width);
+        const result = await measureRoute(page, route.path, width);
+        shiftRun[route.key][width] = result.sources;
         await context.close();
       }
     }
@@ -312,7 +359,7 @@ validateRows(cls);
 const payload = {
   runs: RUNS,
   cls,
-  elementShiftMedian: medianShiftRuns(shiftRuns),
+  layoutShiftSourcesMedian: medianSourcesRuns(shiftRuns),
 };
 
 process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);

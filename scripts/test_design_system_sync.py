@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,17 +34,17 @@ FIGMA_FONT_FAMILIES: dict[str, tuple[str, str]] = {
 LINE_HEIGHT_TOLERANCE = 0.012
 FONT_SIZE_PX_TOLERANCE = 1.5
 
-# Per-selector doc overrides when one Figma style maps to multiple shipped selectors.
-TEXT_STYLE_SELECTOR_OVERRIDES: dict[tuple[str, str], dict[str, object]] = {
+# Named open CSS ↔ Figma gaps (must match docs/design-system.md Known Figma gaps).
+TEXT_STYLE_OPEN_CSS_ITEMS: dict[tuple[str, str], dict[str, object]] = {
     ("Display/H2", "main.page h2"): {
-        "size_token": "--text-display-2",
-        "letter_spacing_pct": -1.0,
-    },
-    # Shipped CSS omits lh; body inherit (1.6) is a known doc gap — do not regress to silent skip.
-    ("Display/H2", ".home-plate h2"): {
-        "skip_properties": frozenset({"line-height"}),
+        "reason": "Display/H2 Page size/tracking with Display/H2 line height",
+        "skip_properties": frozenset(
+            {"font-size", "font-size (px)", "font-size binding", "letter-spacing"}
+        ),
     },
 }
+
+COMPUTE_LINE_HEIGHTS = ROOT / "scripts" / "compute_text_style_line_heights.mjs"
 
 SYNC_COLLECTIONS = frozenset({"Color", "Type", "Spacing", "Radius", "Motion"})
 
@@ -437,27 +438,77 @@ class TextStyleCssMismatch:
         return (self.style, self.selector, self.property)
 
 
-def _selector_row_overrides(style_name: str, selector: str) -> dict[str, object]:
-    return TEXT_STYLE_SELECTOR_OVERRIDES.get((style_name, selector), {})
+def _open_css_item(style_name: str, selector: str) -> dict[str, object]:
+    return TEXT_STYLE_OPEN_CSS_ITEMS.get((style_name, selector), {})
 
 
-def _inherited_line_height_raw(
-    selector: str,
-    rules: dict[str, dict[str, str]],
-) -> str:
-    decls = collect_selector_decls(selector, rules)
-    raw = decls.get("line-height", "").strip()
-    if raw:
-        return raw
-    if " " in selector:
-        parent = selector.rsplit(" ", 1)[0]
-        parent_raw = _inherited_line_height_raw(parent, rules)
-        if parent_raw:
-            return parent_raw
-    body_rule = rules.get("body", {})
-    if body_rule.get("line-height"):
-        return body_rule["line-height"].strip()
-    return "1.6"
+def _open_skip_properties(style_name: str, selector: str) -> frozenset[str]:
+    spec = _open_css_item(style_name, selector)
+    raw = spec.get("skip_properties") or frozenset()
+    return frozenset(str(item) for item in raw)
+
+
+def validate_text_style_open_css_items(doc: str) -> list[str]:
+    errors: list[str] = []
+    for key, spec in TEXT_STYLE_OPEN_CSS_ITEMS.items():
+        style_name, selector = key
+        reason = str(spec.get("reason") or "").strip()
+        if not reason:
+            errors.append(f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: missing reason")
+            continue
+        if reason not in doc:
+            errors.append(
+                f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: reason not found in design-system.md"
+            )
+        if f"`{selector}`" not in doc:
+            errors.append(
+                f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: selector {selector!r} missing from doc"
+            )
+        skip = spec.get("skip_properties") or frozenset()
+        if "line-height" in skip:
+            errors.append(
+                f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: must not skip line-height checks"
+            )
+    open_section = doc.split("**Open (not enforced by sync; Yingzhao decides):**", 1)
+    open_text = open_section[1] if len(open_section) > 1 else ""
+    for style_name, selector in TEXT_STYLE_OPEN_CSS_ITEMS:
+        if f"`{selector}`" not in open_text:
+            errors.append(
+                f"TEXT_STYLE_OPEN_CSS_ITEMS{(style_name, selector)!r}: "
+                f"missing from Known Figma gaps open list"
+            )
+    return errors
+
+
+def computed_line_height_ratios(
+    selectors: list[str],
+    styles_dir: Path | None = None,
+) -> dict[str, float | None]:
+    if not selectors:
+        return {}
+    if not COMPUTE_LINE_HEIGHTS.is_file():
+        raise RuntimeError(f"missing {COMPUTE_LINE_HEIGHTS}")
+    payload = json.dumps(selectors).encode("utf-8")
+    env = None
+    if styles_dir is not None and styles_dir.resolve() != STYLES_DIR.resolve():
+        import os
+
+        env = os.environ.copy()
+        env["TEXT_STYLE_PROBE_STYLES_DIR"] = str(styles_dir.resolve())
+    proc = subprocess.run(
+        ["node", str(COMPUTE_LINE_HEIGHTS)],
+        input=payload,
+        capture_output=True,
+        cwd=ROOT,
+        check=False,
+        env=env,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            "compute_text_style_line_heights failed: "
+            + proc.stderr.decode("utf-8", errors="replace")
+        )
+    return json.loads(proc.stdout.decode("utf-8"))
 
 
 def _resolve_css_scalar(
@@ -544,10 +595,10 @@ def collect_figma_export_css_mismatches(
     dark: dict[str, str],
     light: dict[str, str],
     rules: dict[str, dict[str, str]],
+    computed_line_heights: dict[str, float | None],
 ) -> list[TextStyleCssMismatch]:
     name = str(row["name"])
-    overrides = _selector_row_overrides(name, selector)
-    skip_props = overrides.get("skip_properties") or frozenset()
+    skip_props = _open_skip_properties(name, selector)
     mismatches: list[TextStyleCssMismatch] = []
 
     figma_family = str(style.get("fontFamily") or "")
@@ -593,7 +644,7 @@ def collect_figma_export_css_mismatches(
             )
         )
 
-    size_token = str(overrides.get("size_token") or row["size_token"])
+    size_token = str(row["size_token"])
     css_font_size = decls.get("font-size", "")
     if not _font_size_uses_token(css_font_size, size_token):
         mismatches.append(
@@ -608,8 +659,6 @@ def collect_figma_export_css_mismatches(
     else:
         bound = (style.get("boundVariables") or {}).get("fontSize")
         allowed = _expected_bound_font_size(size_token)
-        if overrides.get("size_token"):
-            bound = None
         if bound and bound not in allowed:
             mismatches.append(
                 TextStyleCssMismatch(
@@ -636,10 +685,9 @@ def collect_figma_export_css_mismatches(
 
     figma_lh = _figma_line_height_ratio(style)
     if figma_lh is not None and "line-height" not in skip_props:
-        css_lh_raw = _inherited_line_height_raw(selector, rules)
-        css_lh = _parse_line_height_ratio(css_lh_raw, dark, light)
+        css_lh = computed_line_heights.get(selector)
         if css_lh is None or abs(css_lh - figma_lh) > LINE_HEIGHT_TOLERANCE:
-            shipped = str(css_lh) if css_lh is not None else css_lh_raw
+            shipped = str(css_lh) if css_lh is not None else "(missing)"
             mismatches.append(
                 TextStyleCssMismatch(
                     name,
@@ -650,12 +698,7 @@ def collect_figma_export_css_mismatches(
                 )
             )
 
-    doc_ls = overrides.get("letter_spacing_pct")
-    figma_ls = (
-        float(doc_ls)
-        if doc_ls is not None
-        else _style_letter_spacing_pct(style)
-    )
+    figma_ls = _style_letter_spacing_pct(style)
     if figma_ls is not None and abs(figma_ls) > 0.01:
         expected_em = figma_ls / 100.0
         css_ls = decls.get("letter-spacing", "")
@@ -740,7 +783,12 @@ def collect_figma_export_css_mismatches(
                 )
             )
 
-    return mismatches
+    filtered: list[TextStyleCssMismatch] = []
+    for item in mismatches:
+        if item.property in skip_props:
+            continue
+        filtered.append(item)
+    return filtered
 
 
 def collect_text_style_css_mismatches(
@@ -754,6 +802,12 @@ def collect_text_style_css_mismatches(
     by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
     css_rules = parse_stylesheet_selectors(styles_dir)
     mismatches: list[TextStyleCssMismatch] = []
+    selectors: list[str] = []
+    for row in doc_rows:
+        selectors.extend(str(sel) for sel in row["selectors"])
+    for _style, selector in TEXT_STYLE_OPEN_CSS_ITEMS:
+        selectors.append(selector)
+    computed_lh = computed_line_height_ratios(sorted(set(selectors)), styles_dir)
 
     for row in doc_rows:
         name = str(row["name"])
@@ -775,9 +829,46 @@ def collect_text_style_css_mismatches(
                 continue
             mismatches.extend(
                 collect_figma_export_css_mismatches(
-                    style, row, selector, decls, dark, light, css_rules
+                    style,
+                    row,
+                    selector,
+                    decls,
+                    dark,
+                    light,
+                    css_rules,
+                    computed_lh,
                 )
             )
+
+    for (style_name, selector), _spec in TEXT_STYLE_OPEN_CSS_ITEMS.items():
+        style = by_name.get(style_name)
+        row = next((item for item in doc_rows if item["name"] == style_name), None)
+        if style is None or row is None:
+            continue
+        decls = collect_selector_decls(selector, css_rules)
+        if not decls:
+            mismatches.append(
+                TextStyleCssMismatch(
+                    style_name,
+                    selector,
+                    "selector",
+                    "(missing)",
+                    "present in src/styles",
+                )
+            )
+            continue
+        mismatches.extend(
+            collect_figma_export_css_mismatches(
+                style,
+                row,
+                selector,
+                decls,
+                dark,
+                light,
+                css_rules,
+                computed_lh,
+            )
+        )
     return mismatches
 
 
@@ -961,6 +1052,9 @@ def main() -> None:
     css = TOKENS.read_text(encoding="utf-8")
     doc = DOC.read_text(encoding="utf-8")
     errors: list[str] = []
+    errors.extend(validate_text_style_open_css_items(doc))
+    if re.search(r"TEXT_STYLE_FIELD_DRIFT\s*[:=]", Path(__file__).read_text(encoding="utf-8")):
+        errors.append("TEXT_STYLE_FIELD_DRIFT allow-list must not return (removed)")
 
     if "## Source of truth" not in doc:
         errors.append('design-system.md missing heading "Source of truth"')
