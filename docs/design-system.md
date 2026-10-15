@@ -180,11 +180,11 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Body/Blockquote | `.note-body.prose .note-blockquote p` | Crimson Pro italic | `--text-lg` | 400 |
 | Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
 | Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
-| Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** |
+| Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** — dark **~7.0:1** on `--bg-mid` panel; light **~4.7–4.9:1** on panel |
 | Meta/Map Node Label | `.map-node-label` | Source Sans 3 | `--text-xs` | 400 |
 | UI/Control | `.theme-toggle` | Source Sans 3 | `--text-sm` | 400 (label); icon-only below 48rem |
 
-**Chrome layout (not Figma textStyles):** `.header-search` at **769–900px** — search-first on the action row, fixed **`12.5rem` (200px)** slot and `#search` min-height = header control (`chrome.css`). Listed under [Known Figma gaps](#known-figma-gaps) until a Header variant exists.
+**Chrome layout (not Figma textStyles):** **769–900px** matches Figma **Header · Viewport=Mid** (brand, **200px** search, theme, Menu; row hugs **~58.8px**). Code: `.header-search` search-first on the action row, fixed **`12.5rem` (200px)** slot and `#search` min-height = header control (`chrome.css`).
 
 Doc-only aliases retired: Wordmark → Display/Brand.
 
@@ -344,6 +344,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | Text Link | `.entrance-action--secondary`, body `a` |
 | Entrance Action (Primary) | `.entrance-action--primary` |
 | Header Desktop | `.site-header` + `.site-nav-desktop` |
+| Header · Viewport=Mid (769–900px) | `.site-header` + `.header-search` (200px slot) + `.theme-toggle` + `.nav-menu` (`chrome.css` `48rem < width <= 900px`) |
 | Header Compact | `.site-header` at `width <= 48rem` (icon theme, reading size in Menu) |
 | Nav Link | `.site-nav a` |
 | Nav Link Active | `.site-nav a[aria-current="page"]`, `.site-nav a[aria-current="location"]` |
@@ -367,7 +368,6 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
 - **Unstyled in Figma textStyles (doc-only).** Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind`), fallback index (`.current-index .index-entry`), monospace code (`.note-code`), and **`.library-index-label`** (400 / `0.08em` caps on the catalogue index header — not Label/Xs Caps or Label/Xs Group Caps).
-- **Header (769–900px).** Search leads the action row at a fixed **200px** (`12.5rem`) slot before Pagefind mounts (`chrome.css`). No matching Figma Header variant yet — track with figma bro.
 
 ---
 
