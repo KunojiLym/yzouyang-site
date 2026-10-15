@@ -5,25 +5,27 @@ Measured with `scripts/measure_boot_cls_matrix.mjs` against local `dist` (same f
 ## What changed
 
 - **Header (769–900px):** fixed `12.5rem` (200px) `.header-search` slot + `#search` min-height so Pagefind mount does not wrap the action row or shrink the library grid (`chrome.css`, pre-fix baseline `862e9d8`).
-- **Split-pane frame:** `--library-foot-reserve` on `.library-shell` plus strip/footer `min-height` so the painted grid no longer jumps **~376px → ~322px** when strip + footer parse after the frame (`library.css`).
+- **Library strip + footer:** `--library-strip-min-height` and `--library-page-footer-min-height` on `.library-strip` / `.library-page-footer` so strip and footer block size is stable before paint (no `max-height` reserve on `.library-frame` — that double-counted and left a ~52px gap under the footer).
 
-Playwright gate (`library boot CLS`): deep links @ **769**, **784**, **800**, **900**, and **1024** — all **< 0.1**.
+Playwright gate (`library boot CLS`): deep links @ **375**, **768**, **769**, **900**, **1024**, and **1280** — all **< 0.1** in `cls-after.json`.
+
+**Pane shift (Visual Design):** Removing `.library-frame` `max-height` reserve fixes the ~52px empty band under the footer and the ~19px Credentials pane jump from double-counting strip/footer. Mid-band index-control / reading-context reserves remain for sub-CLS layout nudges; no matrix row exceeds **0.1** after this change.
 
 ## dark
 
-| Route | 769 | 784 | 800 | 900 | 1024 |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| notes | 0.089 → **0.012** | 0.087 → **0.018** | 0.087 → **0.011** | 0.008 | 0.012 → **0.006** |
-| systems | 0.134 → **0.013** | 0.080 → **0.013** | 0.136 → **0.006** | 0.016 | 0.004 → **0.003** |
-| credentials | 0.148 → **0.006** | 0.094 → **0.005** | 0.069 → **0.008** | 0.011 | 0.025 → **0.003** |
+| Route | 375 | 768 | 769 | 900 | 1024 | 1280 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| notes | 0.004 | 0.030 | 0.089 → **0.038** | 0.017 | 0.012 → **0.008** | 0.005 |
+| systems | 0.021 | 0.003 | 0.134 → **0.030** | 0.007 | 0.004 → **0.024** | 0.002 |
+| credentials | 0.010 | 0.010 | 0.148 → **0.006** | 0.028 | 0.025 → **0.003** | 0.005 |
 
 ## light
 
-| Route | 769 | 784 | 800 | 900 | 1024 |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| notes | 0.089 → **0.011** | 0.087 → **0.018** | 0.088 → **0.018** | 0.015 | 0.012 → **0.012** |
-| systems | 0.004 → **0.013** | 0.064 → **0.003** | 0.091 → **0.005** | 0.016 | 0.024 → **0.011** |
-| credentials | 0.149 → **0.015** | 0.149 → **0.015** | 0.152 → **0.018** | 0.002 | 0.025 → **0.002** |
+| Route | 375 | 768 | 769 | 900 | 1024 | 1280 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| notes | 0.004 | 0.038 | 0.089 → **0.029** | 0.010 | 0.012 → **0.014** | 0.005 |
+| systems | 0.022 | 0.004 | 0.004 → **0.030** | 0.031 | 0.024 → **0.024** | 0.002 |
+| credentials | 0.009 | 0.010 | 0.149 → **0.035** | 0.002 | 0.025 → **0.025** | 0.005 |
 
 ## Screenshots @ 784px (`/systems/#SYS-03`)
 

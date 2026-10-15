@@ -33,11 +33,6 @@ body:has(main.library-route) {
   box-sizing: border-box;
   min-height: 0;
 
-  /* Strip + footer parse after the frame; reserve their block size so the split
-     grid height is stable before siblings exist (boot CLS on deep links). */
-  --library-foot-reserve: calc(
-    var(--library-strip-min-height) + var(--library-page-footer-min-height) + var(--space-3)
-  );
 }
 
 .library-frame {
@@ -45,7 +40,6 @@ body:has(main.library-route) {
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  max-height: calc(100% - var(--library-foot-reserve));
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
   background: var(--bg-panel);
@@ -730,6 +724,7 @@ body:has(main.library-route) {
   font-size: var(--text-display-1);
   font-weight: 600;
   line-height: var(--lh-heading);
+  letter-spacing: -0.025em;
 }
 
 .library-panel--note .note-kicker {
@@ -939,6 +934,11 @@ main.page .library-panel--note .library-panel-title {
 
 .note-body.prose .note-blockquote p {
   margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--text-default);
 }
 
 .note-body.prose pre.note-code,

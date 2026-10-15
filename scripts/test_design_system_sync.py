@@ -34,11 +34,6 @@ TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {
         "Figma Body/Large binds to `--text-lg`; shipped `.entrance .lede` uses `--text-md`. "
         "Yingzhao decision pending — https://github.com/KunojiLym/yzouyang-site/issues/32"
     ),
-    "Body/Blockquote": (
-        "Figma Body/Blockquote binds to `--text-lg`; shipped `.note-blockquote p` inherits "
-        "Body/Prose (`--text-md`). Yingzhao decision pending — "
-        "https://github.com/KunojiLym/yzouyang-site/issues/32"
-    ),
 }
 
 

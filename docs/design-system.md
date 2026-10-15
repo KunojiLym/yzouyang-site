@@ -177,7 +177,7 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
 | Body/Prose | `.note-body.prose` | Crimson Pro | `--text-md` | 400, lh 172% |
-| Body/Blockquote | `.note-body.prose .note-blockquote p` | inherits Body/Prose (Crimson Pro) | `--text-md` (inherited) | 400 |
+| Body/Blockquote | `.note-body.prose .note-blockquote p` | Crimson Pro italic | `--text-lg` | 400, lh 1.5 |
 | Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
 | Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
 | Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** — dark **~7.0:1** on `--bg-mid` panel; light **~4.7–4.9:1** on panel |
@@ -216,6 +216,9 @@ Publication dates in the Notes index and byline use **full calendar dates** when
 | `--space-10` | 2.5rem (40px) |
 | `--space-11` | 3rem |
 | `--space-12` | 4rem |
+| `--library-strip-min-height` | 3.2rem — catalogue strip (`.library-strip`) min block size before paint |
+| `--library-page-footer-min-height` | 4.9rem — library shell footer (`.library-page-footer`) min block size before paint |
+| `--library-index-control-size` | 2rem — pin/hide/rail index controls (`.library-index-control`) |
 | `--radius-sm` | 0.15rem |
 | `--radius-md` | 0.2rem |
 | `--radius-lg` | 0.25rem |
@@ -357,11 +360,11 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 **Scroll offset:** `--header-offset` (`4.75rem`) is used for `scroll-padding-top`, TOC spy, and in-view `scroll-margin-top` — it is **not** the sticky header’s rendered block height.
 
-| Variant | Width | Controls (DOM order, left → right) | Rendered height |
+| Variant | Width | Controls (DOM order, left → right) | Rendered height (Visual Design) |
 |---|---|---|---|
-| **Compact** | `width <= 48rem` | **Brand** (`.brand`) · **Search** (icon slot, `--space-10`; expands on focus) · **Theme** (icon-only `.theme-toggle`) · **Menu** (`.nav-menu` — primary nav + **Text size** in the panel only) | Pending final measurement (figma bro) |
-| **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **Search** (`#search` in fixed **`12.5rem` (200px)** `.header-search` slot) · **Text size** (`.reading-size-toggle`) · **Theme** · **Menu** | **~58.8px** — matches Figma **Header · Viewport=Mid** (node `21:16`); one row at **769**, **840**, and **900px** |
-| **Desktop** | `width > 900px` | **Brand** · **Primary nav** (`.site-nav-desktop`: Systems · Notes · Credentials) · **Search** (`12.5rem`) · **Text size** · **Theme** (Menu hidden) | Pending final measurement (figma bro) |
+| **Compact** | `width <= 768px` (`<= 48rem`) | **Brand** · **Search** (icon slot, `--space-10`; expands on focus) · **Theme** (icon-only `.theme-toggle`) · **Menu** (primary nav + **Text size** in the panel only) | **64px** |
+| **769–1024** | `769px–1024px` | **Brand** · **Search** (`12.5rem`; fixed **200px** slot when `48rem < width <= 900px`) · **Text size** · **Theme** · **Menu** (`<= 900px`) or **Primary nav** (`> 900px`) | **59.19px** |
+| **Desktop (wide)** | `width >= 1280px` | **Brand** · **Primary nav** · **Search** (`12.5rem`) · **Text size** · **Theme** | **61.39px** — **Clear @ 1280 unconfirmed** |
 
 `.proof-strip` and `.connect-card` are not part of this contract. Nothing in `scripts/build.py`, `src/*.js`, or the page templates emits them.
 
@@ -371,10 +374,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 **Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
-- **Body/Large (Figma vs shipped).** Figma binds **Body/Large** to `--text-lg`; shipped Home lede (`.entrance .lede`) uses `--text-md`. Yingzhao decision pending — [issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).
-- **Body/Blockquote (Figma vs shipped).** Figma binds **Body/Blockquote** to `--text-lg` italic; shipped `.note-blockquote p` inherits Body/Prose (`--text-md`). Yingzhao decision pending — [issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).
-- **Header · Viewport=Desktop.** Figma Desktop variant omits **Text size**; shipped chrome keeps `.reading-size-toggle` on the action row (`width > 900px`).
-- **Header · Desktop & Compact height in Figma.** Figma Desktop and Compact variants are labeled **76px**; shipped chrome renders about **59px** (Desktop) and **~65px** (Compact) — pending Visual Design’s final measurements. Figma will be corrected after those land; the component map keeps Compact and Desktop heights **pending** until then.
+- **Body/Large (Figma vs shipped).** Figma binds **Body/Large** to `--text-lg`; shipped Home lede (`.entrance .lede`) uses `--text-md`. Typography table documents shipped CSS only — not `--text-lg`. Yingzhao decision pending — [issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
