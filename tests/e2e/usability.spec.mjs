@@ -715,7 +715,10 @@ test.describe("library focus order", () => {
     ];
     for (const viewport of viewports) {
       await page.setViewportSize(viewport);
-      await page.goto("/systems/", { waitUntil: "load" });
+      await page.goto("/systems/#verify", { waitUntil: "load" });
+      await page.waitForFunction(
+        () => !document.querySelector("#library-split")?.classList.contains("is-booting")
+      );
       const { paneLastIdx, footerFirstIdx } = await page.evaluate(() => {
         const pane = document.querySelector(".library-pane");
         const footer = document.querySelector("footer.library-page-footer");
