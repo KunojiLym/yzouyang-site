@@ -161,7 +161,7 @@ Figma text styles (28) mapped to Layer C classes. Token columns reference `token
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
 | Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600, −2.5% |
-| Display/H2 | `.library-panel-header .library-panel-title` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
+| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
 | Display/H2 Page | `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.1, −1% |
 | Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
@@ -222,9 +222,6 @@ Publication dates in the Notes index and byline use **full calendar dates** when
 | `--space-12` | 4rem |
 | `--library-strip-min-height` | 3.2rem — catalogue strip (`.library-strip`) min block size before paint |
 | `--library-page-footer-min-height` | 4.9rem — library shell footer (`.library-page-footer`) min block size before paint |
-| `--library-panels-boot-min-height` | 14rem — catalogue `.library-panels` min block size during `#library-split.is-booting` (non-note routes) |
-| `--library-frame-boot-min-height` | `min(32rem, calc(100dvh - var(--header-offset) - 10rem))` — `.library-frame` min block size during boot at ≤48rem |
-| `--library-note-masthead-boot-min-height` | 11.5rem — active note `.library-panel-header` min block size during boot |
 | `--library-index-control-size` | 2rem — pin/hide/rail index controls (`.library-index-control`) |
 | `--radius-sm` | 0.15rem |
 | `--radius-md` | 0.2rem |
@@ -288,12 +285,9 @@ While `#library-split` carries `.is-booting`, CSS reserves block size so late-pa
 |---|---|---|
 | `.library-frame` **grid** row `var(--library-strip-min-height)` | Systems, Notes, Credentials (when `.library-strip` exists) | Strip row reserved before `.library-strip` parses |
 | `.library-shell::after` placeholder | All library routes until `.library-page-footer` parses | Footer slot = `--library-page-footer-min-height` + `--space-3` |
-| `.library-reading-context[hidden]` flex reserve | **Notes** only (`data-library-route="notes"`, collapsed index / hash boot) | Reading-context bar slot while `[hidden]` during boot |
-| `.library-panels` `min-height: var(--library-panels-boot-min-height)` | **Systems / Credentials** (non-note active panel) | Catalogue scrollport stable at 375 / 768 before panel reveal |
-| `.library-frame` `min-height: var(--library-frame-boot-min-height)` | Library routes at **≤48rem** | Mobile frame height stable during boot |
-| `.library-panel-header` `min-height: var(--library-note-masthead-boot-min-height)` | **Notes** deep links (active `.library-panel--note`) | Masthead / dek / byline stack before body paints |
+| `.library-reading-context[hidden]` flex reserve | **Notes** only (`data-library-route="notes"`, collapsed index / hash boot) | Reading-context bar slot while `[hidden]` during boot (target for remaining ~36px panel shift when the bar appears above `.library-panels`) |
 
-Tokens: spacing table (`--library-strip-min-height`, `--library-page-footer-min-height`, `--library-panels-boot-min-height`, `--library-frame-boot-min-height`, `--library-note-masthead-boot-min-height`). Route hook: `data-library-route` on `<main class="library-route">` (`notes` \| `systems` \| `credentials`) — not `aria-label`.
+Tokens: `--library-strip-min-height`, `--library-page-footer-min-height`, `--library-index-control-size`. Route hook: `data-library-route` on `<main class="library-route">` (`notes` \| `systems` \| `credentials`) — not `aria-label`.
 
 ### Library scanning (Catalogue mode)
 
@@ -409,7 +403,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 **Open (not enforced by sync; Yingzhao decides):**
 
 - **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
-- **`.home-plate h2` (Display/H2 — open).** Legacy home-plate sections are not on the shipped home route; shipped `.home-plate h2` inherits **body line-height (1.6)** while Figma **Display/H2** is **120%**. **Yingzhao** to align or retire the selector — not enforced by sync (library panel titles use Display/H2).
+- **`.home-plate h2` (Display/H2 — open mapping).** Shipped `.home-plate h2` inherits **body line-height (1.6)** while Figma **Display/H2** is **120%**. **Yingzhao** to align or retire the selector. Listed in the typography table; automated export checks omit this selector (no `skip_properties` / no line-height skip).
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
 - **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).

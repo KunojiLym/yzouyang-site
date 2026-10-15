@@ -265,6 +265,20 @@ def main() -> None:
         print("Body/Large line-height skip should fail open-item validation", file=sys.stderr)
         raise SystemExit(1)
 
+    lh_skip_h2 = dict(TEXT_STYLE_OPEN_CSS_ITEMS)
+    lh_skip_h2[("Display/H2", ".home-plate h2")] = {
+        "reason": "regression probe for forbidden Display/H2 line-height skip",
+        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
+    }
+    sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = lh_skip_h2
+    try:
+        lh_h2_errors = validate_text_style_open_css_items(doc, snapshot)
+    finally:
+        sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = original_open
+    if not any("must not skip line-height" in item for item in lh_h2_errors):
+        print("Display/H2 line-height skip should fail open-item validation", file=sys.stderr)
+        raise SystemExit(1)
+
     stale_font = dict(TEXT_STYLE_OPEN_CSS_ITEMS)
     stale_font[("Display/H2", "main.page h2")] = {
         "reason": "Display/H2 Page size/tracking with Display/H2 line height",

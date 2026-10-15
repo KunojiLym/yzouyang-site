@@ -730,7 +730,17 @@ test.describe("library focus order", () => {
           const index = document.querySelector(".library-index");
           const pane = document.querySelector(".library-pane");
           const footer = document.querySelector("footer.library-page-footer");
-          const nodes = [index, pane, footer].filter(Boolean);
+          if (!index || !pane || !footer) {
+            return {
+              ok: false,
+              missing: {
+                index: !index,
+                pane: !pane,
+                footer: !footer,
+              },
+            };
+          }
+          const nodes = [index, pane, footer];
           for (let i = 0; i < nodes.length - 1; i += 1) {
             const relation = nodes[i].compareDocumentPosition(nodes[i + 1]);
             if ((relation & Node.DOCUMENT_POSITION_FOLLOWING) === 0) {
@@ -739,7 +749,9 @@ test.describe("library focus order", () => {
           }
           return { ok: true };
         });
-        expect(order.ok, `${route.label} @ ${viewport.width}px`).toBe(true);
+        expect(order.ok, `${route.label} @ ${viewport.width}px ${JSON.stringify(order)}`).toBe(
+          true
+        );
       }
     }
   });
