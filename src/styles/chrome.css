@@ -89,6 +89,7 @@ html.library-deck-root {
     flex: 1 1 100%;
     width: 100%;
     max-width: none;
+    min-height: var(--header-control-height);
   }
 }
 

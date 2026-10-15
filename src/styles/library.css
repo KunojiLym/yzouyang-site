@@ -44,6 +44,21 @@ body:has(main.library-route) {
   border-radius: var(--radius-md);
   background: var(--bg-panel);
   overflow: hidden;
+  order: 1;
+}
+
+.library-shell > .library-page-footer.library-card {
+  order: 2;
+}
+
+.library-frame > .library-split {
+  order: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.library-frame > .library-strip {
+  order: 2;
 }
 
 .library-split {
@@ -1166,6 +1181,7 @@ main.page .library-panel--note .library-panel-title {
 
 .library-strip {
   flex-shrink: 0;
+  margin: 0;
   min-height: var(--library-strip-min-height);
   box-sizing: border-box;
   border-top: 1px solid var(--line-soft);
@@ -1176,6 +1192,8 @@ main.page .library-panel--note .library-panel-title {
 .library-strip-copy {
   margin: 0;
   font-size: var(--text-xs);
+  line-height: 1.35;
+  min-height: calc(var(--text-xs) * 1.35);
 }
 
 .library-strip-label {
@@ -1187,9 +1205,9 @@ main.page .library-panel--note .library-panel-title {
 
 .library-page-footer {
   flex-shrink: 0;
+  margin: var(--space-3) 0 0;
   min-height: var(--library-page-footer-min-height);
   box-sizing: border-box;
-  margin-top: var(--space-3);
   padding: var(--space-2) 0 0;
   font-size: var(--text-xs);
   color: var(--text-muted);
@@ -1305,7 +1323,11 @@ main.page .library-panel--note .library-panel-title {
 /* Notes: reserve `.library-reading-context` slot while collapsed index + [hidden] (design-system). */
 html.js[data-library-boot="detail"]
   main.library-route[aria-label="Notes"]
-  .library-split.is-booting:is(.is-index-collapsed, .is-detail-open, [data-index-default="collapsed"])
+  .library-split:is(.is-booting, .is-boot-settle):is(
+    .is-index-collapsed,
+    .is-detail-open,
+    [data-index-default="collapsed"]
+  )
   .library-reading-context[hidden] {
   display: flex !important;
   visibility: hidden;
@@ -1508,11 +1530,13 @@ html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-d
     display: inline-flex;
   }
 
-  html.js[data-library-hash] .library-split.is-booting .library-index {
+  html.js[data-library-hash] .library-split.is-booting .library-index,
+  html.js[data-library-boot="detail"] .library-split.is-booting.is-detail-open .library-index {
     display: none;
   }
 
-  html.js[data-library-mobile-detail] #library-split.is-booting .library-pane {
+  html.js[data-library-mobile-detail] #library-split.is-booting .library-pane,
+  html.js[data-library-boot="detail"] #library-split.is-booting.is-detail-open .library-pane {
     height: 100%;
   }
 

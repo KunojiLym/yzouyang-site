@@ -265,7 +265,8 @@ function yzLibraryRevealPanel(panelId) {
       'html.js[data-library-hash] .library-panels > .library-panel[data-record="' +
       hashCss +
       '"][hidden]{display:block!important}' +
-      "html.js[data-library-hash] .library-panels > .library-panel.is-active{display:block!important}";
+      "html.js[data-library-hash] .library-panels > .library-panel.is-active{display:block!important}" +
+      "@media (max-width:48rem){html.js[data-library-mobile-detail] .library-index,html.js[data-library-hash] .library-index{display:none!important}}";
     document.head.appendChild(bootStyle);
   }
 })();
@@ -323,8 +324,6 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
       split.classList.add("is-index-collapsed", "is-index-unpinned");
     }
   }
-  root.removeAttribute("data-library-hash");
-  root.removeAttribute("data-library-mobile-detail");
   root.setAttribute("data-library-panel-ready", "1");
 })();
 </script>
@@ -1012,7 +1011,11 @@ def library_shell(
         else ""
     )
     strip_block = strip_html or ""
-    page_footer = footer_html(site, compact=True)
+    page_footer = footer_html(site, compact=True).replace(
+        '<footer class="library-page-footer library-card"',
+        '<footer class="library-page-footer library-card" style="order:2"',
+        1,
+    )
     lede_html = (
         f'      <p class="page-lede library-route-lede">{esc(route_lede)}</p>\n'
         if route_lede.strip()
@@ -1023,7 +1026,9 @@ def library_shell(
         f'    <div class="library-shell" id="library-shell">\n'
         f'      <h1 class="visually-hidden">{esc(title)}</h1>\n'
         f"{lede_html}"
-        f'      <div class="library-frame">\n'
+        f"{page_footer}\n"
+        f'      <div class="library-frame" style="order:1">\n'
+        f"{strip_block}\n"
         f'        <div class="{split_classes}" id="library-split" '
         f'data-index-default="{esc(index_default)}">\n'
         f"{index}\n"
@@ -1047,9 +1052,7 @@ def library_shell(
         f"{LIBRARY_HASH_BOOT_SCRIPT}"
         f"          </div>\n"
         f"        </div>\n"
-        f"{strip_block}\n"
         f"      </div>\n"
-        f"{page_footer}\n"
         f"    </div>\n"
     )
 
@@ -1344,10 +1347,10 @@ def layout(
   <link rel="icon" href="{favicon_png}" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="{apple_icon}" />
 {JS_ROOT_CLASS_SCRIPT}{THEME_BOOT_SCRIPT}
+  <link rel="stylesheet" href="{css}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />{pf_css_tag}
-  <link rel="stylesheet" href="{css}" />
 {person_json_ld(site)}
 {extra_head}
 {head_analytics}

@@ -18,55 +18,55 @@ Playwright gate (`library boot CLS`): deep links @ **375**, **768**, **769**, **
 
 | Route | 375 | 768 | 769 | 784 | 800 | 900 | 1024 | 1280 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| notes | 0.004 → **0.004** | 0.030 → **0.038** | 0.029 → **0.003** | 0.029 → **0.038** | 0.028 → **0.038** | 0.010 → **0.015** | 0.008 → **0.002** | 0.009 → **0.009** |
-| systems | 0.022 → **0.051** | 0.003 → **0.036** | 0.030 → **0.030** | 0.030 → **0.030** | 0.031 → **0.006** | 0.031 → **0.008** | 0.024 → **0.024** | 0.002 → **0.003** |
-| credentials | 0.009 → **0.042** | 0.010 → **0.010** | 0.035 → **0.035** | 0.035 → **0.035** | 0.010 → **0.010** | 0.028 → **0.028** | 0.025 → **0.025** | 0.005 → **0.002** |
+| notes | 0.004 → **0.003** | 0.030 → **0.003** | 0.029 → **0.030** | 0.029 → **0.038** | 0.028 → **0.038** | 0.010 → **0.015** | 0.008 → **0.012** | 0.009 → **0.009** |
+| systems | 0.022 → **0.051** | 0.003 → **0.036** | 0.030 → **0.004** | 0.030 → **0.004** | 0.031 → **0.006** | 0.031 → **0.007** | 0.024 → **0.004** | 0.002 → **0.006** |
+| credentials | 0.009 → **0.010** | 0.010 → **0.011** | 0.035 → **0.007** | 0.035 → **0.007** | 0.010 → **0.010** | 0.028 → **0.003** | 0.025 → **0.003** | 0.005 → **0.002** |
 
 ## light
 
 | Route | 375 | 768 | 769 | 784 | 800 | 900 | 1024 | 1280 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| notes | 0.003 → **0.004** | 0.030 → **0.001** | 0.039 → **0.039** | 0.038 → **0.038** | 0.028 → **0.038** | 0.010 → **0.002** | 0.008 → **0.012** | 0.005 → **0.001** |
-| systems | 0.022 → **0.051** | 0.003 → **0.036** | 0.030 → **0.030** | 0.030 → **0.030** | 0.031 → **0.032** | 0.031 → **0.031** | 0.003 → **0.004** | 0.002 → **0.003** |
-| credentials | 0.010 → **0.042** | 0.011 → **0.045** | 0.035 → **0.035** | 0.035 → **0.035** | 0.010 → **0.038** | 0.028 → **0.028** | 0.025 → **0.025** | 0.005 → **0.002** |
+| notes | 0.003 → **0.003** | 0.030 → **0.003** | 0.039 → **0.004** | 0.038 → **0.004** | 0.028 → **0.004** | 0.010 → **0.015** | 0.008 → **0.003** | 0.005 → **0.002** |
+| systems | 0.022 → **0.051** | 0.003 → **0.036** | 0.030 → **0.004** | 0.030 → **0.004** | 0.031 → **0.006** | 0.031 → **0.008** | 0.003 → **0.004** | 0.002 → **0.002** |
+| credentials | 0.010 → **0.042** | 0.011 → **0.045** | 0.035 → **0.007** | 0.035 → **0.007** | 0.010 → **0.010** | 0.028 → **0.003** | 0.025 → **0.003** | 0.005 → **0.002** |
 
 ## Layout-shift sources (median, dark)
 
 ### notes
 
-**769px** — `.library-panel-body` Δy=-65px (value 0.0387); `p.note-dek` Δy=-36px (value 0.0387); `p.note-byline.meta` Δy=-65px (value 0.0387); `div.header-actions` Δy=0px (value 0.0015)
+**769px** — `.library-panel-body` Δy=-65px (value 0.0387); `p.note-dek` Δy=-36px (value 0.0387); `p.note-byline.meta` Δy=-65px (value 0.0387); `div.header-actions` Δy=0px (value 0.0034)
 
 **784px** — `.library-panel-body` Δy=-65px (value 0.0382); `p.note-dek` Δy=-36px (value 0.0382); `footer.library-page-footer.library-card` Δy=-5px (value 0.0382); `p.note-byline.meta` Δy=-65px (value 0.0382)
 
-**800px** — `.library-panel-body` Δy=-65px (value 0.0377); `p.note-dek` Δy=-36px (value 0.0377); `p.note-byline.meta` Δy=-65px (value 0.0377); `div.header-actions` Δy=0px (value 0.0015)
+**800px** — `.library-panel-body` Δy=-65px (value 0.0377); `p.note-dek` Δy=-36px (value 0.0377); `p.note-byline.meta` Δy=-65px (value 0.0377); `.library-index-control` Δy=-43px (value 0.0033)
 
-**900px** — `.library-panel-body` Δy=-29px (value 0.0149); `footer.library-page-footer.library-card` Δy=-5px (value 0.0149); `footer.library-strip` Δy=-5px (value 0.0149); `p.note-byline.meta` Δy=-29px (value 0.0149)
+**900px** — `.library-panel-body` Δy=-29px (value 0.0149); `p.note-byline.meta` Δy=-29px (value 0.0149); `unknown` Δy=0px (value 0.0028); `div.header-actions` Δy=0px (value 0.0028)
 
-**1024px** — `div.header-actions` Δy=0px (value 0.0011); `.library-index-control` Δy=-43px (value 0.0011); `footer.library-page-footer.library-card` Δy=-5px (value 0.0008); `footer.library-strip` Δy=-5px (value 0.0008)
+**1024px** — `.library-panel-body` Δy=-29px (value 0.0120); `p.note-byline.meta` Δy=-29px (value 0.0120); `.library-index-control` Δy=-43px (value 0.0024); `div.header-actions` Δy=0px (value 0.0024)
 
 ### systems
 
-**769px** — `div.library-pane` Δy=-54px (value 0.0254); `div.header-actions` Δy=0px (value 0.0035); `unknown` Δy=0px (value 0.0035); `a.external` Δy=0px (value 0.0035)
+**769px** — `div.header-actions` Δy=0px (value 0.0035); `unknown` Δy=0px (value 0.0035); `a.external` Δy=0px (value 0.0035); `footer.library-page-footer.library-card` Δy=-5px (value 0.0010)
 
-**784px** — `div.library-pane` Δy=-54px (value 0.0254); `unknown` Δy=0px (value 0.0035); `div.header-actions` Δy=0px (value 0.0035); `a.external` Δy=0px (value 0.0035)
+**784px** — `unknown` Δy=0px (value 0.0035); `div.header-actions` Δy=0px (value 0.0035); `a.external` Δy=0px (value 0.0035); `footer.library-page-footer.library-card` Δy=-5px (value 0.0010)
 
-**800px** — `div.library-pane` Δy=-54px (value 0.0255); `li` Δy=-26px (value 0.0053); `unknown` Δy=0px (value 0.0053); `div.header-actions` Δy=0px (value 0.0053)
+**800px** — `li` Δy=-26px (value 0.0053); `unknown` Δy=0px (value 0.0053); `div.header-actions` Δy=0px (value 0.0053); `a.external` Δy=0px (value 0.0053)
 
-**900px** — `div.library-pane` Δy=-54px (value 0.0228); `p.record-methods.meta` Δy=-26px (value 0.0073); `p.related-paths.meta` Δy=-26px (value 0.0073); `p.record-domains` Δy=-26px (value 0.0073)
+**900px** — `p.record-methods.meta` Δy=-26px (value 0.0073); `p.related-paths.meta` Δy=-26px (value 0.0073); `p.record-domains` Δy=-26px (value 0.0073); `unknown` Δy=0px (value 0.0073)
 
-**1024px** — `div.library-pane` Δy=-54px (value 0.0202); `unknown` Δy=0px (value 0.0030); `div.header-actions` Δy=0px (value 0.0030); `a.external` Δy=0px (value 0.0030)
+**1024px** — `unknown` Δy=0px (value 0.0030); `div.header-actions` Δy=0px (value 0.0030); `a.external` Δy=0px (value 0.0030); `footer.library-page-footer.library-card` Δy=-5px (value 0.0008)
 
 ### credentials
 
-**769px** — `div.library-pane` Δy=-56px (value 0.0284); `div.header-actions` Δy=0px (value 0.0062); `unknown` Δy=0px (value 0.0062); `article.credential-card` Δy=-20px (value 0.0062)
+**769px** — `div.header-actions` Δy=0px (value 0.0062); `unknown` Δy=0px (value 0.0062); `article.credential-card` Δy=-20px (value 0.0062); `p.links.credential-card-links` Δy=-20px (value 0.0062)
 
-**784px** — `div.library-pane` Δy=-56px (value 0.0284); `unknown` Δy=0px (value 0.0062); `div.header-actions` Δy=0px (value 0.0062); `article.credential-card` Δy=-20px (value 0.0062)
+**784px** — `unknown` Δy=0px (value 0.0062); `div.header-actions` Δy=0px (value 0.0062); `article.credential-card` Δy=-20px (value 0.0062); `p.links.credential-card-links` Δy=-20px (value 0.0062)
 
-**800px** — `div.library-pane` Δy=-54px (value 0.0277); `article.credential-card` Δy=-44px (value 0.0090); `p.meta.credential-card-meta` Δy=-24px (value 0.0090); `p.links.credential-card-links` Δy=-44px (value 0.0090)
+**800px** — `article.credential-card` Δy=-44px (value 0.0090); `p.meta.credential-card-meta` Δy=-24px (value 0.0090); `p.links.credential-card-links` Δy=-44px (value 0.0090); `unknown` Δy=0px (value 0.0090)
 
-**900px** — `div.library-pane` Δy=-54px (value 0.0248); `unknown` Δy=0px (value 0.0024); `div.header-actions` Δy=0px (value 0.0024); `a.external` Δy=0px (value 0.0024)
+**900px** — `unknown` Δy=0px (value 0.0024); `div.header-actions` Δy=0px (value 0.0024); `a.external` Δy=0px (value 0.0024); `footer.library-page-footer.library-card` Δy=-5px (value 0.0009)
 
-**1024px** — `div.library-pane` Δy=-54px (value 0.0220); `unknown` Δy=0px (value 0.0021); `div.header-actions` Δy=0px (value 0.0021); `a.external` Δy=0px (value 0.0021)
+**1024px** — `unknown` Δy=0px (value 0.0021); `div.header-actions` Δy=0px (value 0.0021); `a.external` Δy=0px (value 0.0021); `footer.library-page-footer.library-card` Δy=-5px (value 0.0008)
 
 ## Screenshots @ 784px (`/systems/#SYS-03`)
 
