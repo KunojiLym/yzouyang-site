@@ -37,6 +37,8 @@ from build import (
 )
 from site_paths import lookup_site
 from launch_facts import launch_fact_errors
+from test_check_token_drift import main as assert_token_drift_fixture
+from test_design_system_sync import main as assert_design_system_sync
 from note_figures import NoteFigureContext, local_image_size, resolve_note_alt
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -939,6 +941,8 @@ def assert_unique_ids() -> None:
 
 
 def main() -> None:
+    assert_design_system_sync()
+    assert_token_drift_fixture()
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
     assert_evidence_href_https_only()
@@ -1363,8 +1367,8 @@ def main() -> None:
         fail("styles.css missing semantic tokens (--bg-elevated / --focus-ring)")
     if "--text-default" not in css:
         fail("styles.css missing --text-default")
-    if css.count("var(--glow)") != 1:
-        fail("styles.css must use a single var(--glow) layer")
+    if css.count("var(--glow)") != 2:
+        fail("styles.css must reference --glow on the body wash and the dark entrance atmosphere")
     if "rgb(212 163 92 / 12%)" not in css:
         fail("styles.css dark glow token must use amber pool (12%)")
     if "rgb(212 163 92 / 10%)" not in css:

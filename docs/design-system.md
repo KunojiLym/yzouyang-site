@@ -2,6 +2,12 @@
 
 Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles/) (assembled to `dist/styles.css`). Builder / IA / embeds: [site-builder.md](site-builder.md).
 
+## Source of truth
+
+The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it.
+
+**Review on change.** Any PR that changes `tokens.css`, a component class in Layer C, a breakpoint or a page rule must (i) match a Figma variable, style or component, or link the Figma change, and (ii) update this doc in the same PR. If the code is right and Figma lags, file it for figma bro and record it under [Known Figma gaps](#known-figma-gaps) rather than diverging silently. A drift review runs whenever Figma or `tokens.css` changes.
+
 **Governing sentence:** Design the site like a carefully maintained personal systems library: warm, cinematic, and catalogued — a scholar-engineer’s archive of systems, notes, and experiments, not a boardroom slide, a cyberpunk demo, or a steampunk toy.
 
 **Style direction:** Warm walnut/brass archive with Swiss grid discipline. Mood = **scholar-engineer systems library**, not boardroom deck, SaaS template, or novelty AI chrome. Optimize for **credibility, catalogue scanability, and proof discipline** — one cinematic Entrance moment; everything else quieter.
@@ -27,16 +33,26 @@ Default is **dark** (`data-theme="dark"` on `<html>`). If `localStorage` key `yz
 | `--bg-deep` | Page fill / sticky header base | `#0a0b0a` |
 | `--bg-mid` | Secondary surface | `#1c1612` |
 | `--bg-elevated` | Lifted surface | `#2a2118` |
-| `--text-strong` | Emphasized text | `#f2ebe0` |
-| `--text-default` / `--ink` | Primary text | `#e6dcc8` |
-| `--text-muted` / `--muted` | Secondary text | `#a89a88` |
-| `--text-faint` | Tertiary / chrome hints (AA on `--bg-deep` / `--bg-elevated`) | `#968a78` |
-| `--accent` | CTA border / rules / TOC underline | `#c49a5a` |
+| `--text-strong` | Emphasized text | `#f5efe6` |
+| `--text-default` / `--ink` | Primary text | `#efe6d8` |
+| `--text-muted` / `--muted` | Secondary text | `#b0a090` |
+| `--text-faint` | Tertiary / chrome hints (AA on `--bg-deep` / `--bg-elevated`) | `#9a8e7c` |
+| `--accent` | Rules / TOC underline | `#c49a5a` |
+| `--accent-text` | Accent-colored text | `#c49a5a` |
 | `--accent-link` | Body links (dark) | `#c49a5a` |
 | `--accent-hover` | Link / accent hover | `#dbb06e` |
-| `--line-strong` / `--line-soft` | Railway-green hairlines | `rgb(74 92 78 / …)` |
-| `--glow` | Single amber pool (one layer max) | `rgb(212 163 92 / 12%)` |
-| `--photo-scrim` / `--photo-chip` / `--photo-ink` | Entrance / atmosphere overlays | ink/walnut tuned |
+| `--accent-active` | Pressed accent | `#a88448` |
+| `--focus-ring` | Focus outline | `#c49a5a` |
+| `--rail-green` | Hairline green (same RGB as `--line-*`) | `#4a5c4e` |
+| `--line-strong` / `--line-soft` | Railway-green hairlines | `color-mix` of `#4a5c4e` at 28% / 14% |
+| `--success` | Positive status | `#6a9a7a` |
+| `--warning` | Caution status | `#c4a35a` |
+| `--danger` | Destructive status | `#c47a6a` |
+| `--glow` | Amber pool on the body wash | `rgb(212 163 92 / 12%)` |
+| `--bg-gradient-mid` | Body gradient stop | `#15110e` |
+| `--bg-gradient-end` | Body gradient end | `#0a0b0a` |
+| `--photo-ink` | Atmosphere ink | `#e8dfd0` |
+| `--note-image-bg` | Neutral mat behind figures | `#fefefe` |
 
 #### Light (tobacco paper — AA-hardened)
 
@@ -51,9 +67,53 @@ Gold (`--accent`) is **decorative only** on light: CTA border, rules, TOC underl
 | `--text-default` / `--ink` | Primary text | `#2a2724` |
 | `--text-muted` / `--muted` | Secondary text | `#5c5548` |
 | `--text-faint` | Chrome/meta only (AA on `--bg-deep`) | `#5c5548` |
-| `--accent` | Rules / CTA border | `#c49a5a` |
+| `--accent` | Rules | `#c49a5a` |
+| `--accent-text` | Accent-colored text | `#6b4f10` |
 | `--accent-link` | Body links | `#6b4f10` |
+| `--accent-hover` | Link hover | `#5c450e` |
+| `--accent-active` | Pressed accent | `#6b4f10` |
+| `--focus-ring` | Focus outline | `#6b4f10` |
+| `--success` | Positive status | `#3d6b4d` |
+| `--warning` | Caution status | `#8a6a2a` |
+| `--danger` | Destructive status | `#9a4a3a` |
 | `--glow` | Soft amber wash | `rgb(212 163 92 / 10%)` |
+| `--bg-gradient-mid` | Body gradient stop | `#e2d8c8` |
+| `--bg-gradient-end` | Body gradient end | `#ddd2c0` |
+| `--photo-ink` | Atmosphere ink | `#e8dfd0` |
+| `--note-image-bg` | Neutral mat behind figures | `#fefefe` |
+
+#### Surfaces and status (dark | light)
+
+Figma writes some alphas as 8-digit hex. `tokens.css` stores the same tokens as `rgb()` percentages (`#ffffff08` is alpha 8/255, which the stylesheet rounds to 3%; `#ffffff0f` to 6%; `#1c16120a` to 4%; `#1c161212` to 7%).
+
+| Token | Dark | Light |
+|---|---|---|
+| `--bg-panel` | `#ffffff08` | `#1c16120a` |
+| `--bg-hover` | `#ffffff0f` | `#1c161212` |
+| `--header-bg` | `#0a0b0a` at 96% | `#e8dfd0` at 94% |
+| `--search-surface` | `#0a0b0a` at 94% | `#f5efe4` at 96% |
+| `--accent-text` | `#c49a5a` | `#6b4f10` |
+| `--accent-soft` | `#c49a5a` at 18% | `#c49a5a` at 22% |
+| `--accent-active` | `#a88448` | `#6b4f10` |
+| `--success` | `#6a9a7a` | `#3d6b4d` |
+| `--warning` | `#c4a35a` | `#8a6a2a` |
+| `--danger` | `#c47a6a` | `#9a4a3a` |
+| `--bg-gradient-mid` | `#15110e` | `#e2d8c8` |
+| `--bg-gradient-end` | `#0a0b0a` | `#ddd2c0` |
+| `--note-image-bg` | `#fefefe` | `#fefefe` |
+| `--photo-scrim` | `#0a0b0a` at 72% | `#0a0b0a` at 55% |
+| `--photo-chip` | `#1c1612` at 88% | `#1c1612` at 88% |
+| `--photo-ink` | `#e8dfd0` | `#e8dfd0` |
+
+#### CTA tokens
+
+| Token | Dark | Light |
+|---|---|---|
+| `--accent-cta-border` | `color-mix(in srgb, var(--accent) 55%, var(--line-strong))` | `color-mix(in srgb, var(--accent) 40%, var(--accent-text))`, 3.62:1 |
+| `--accent-cta-bg` | 8% brass (`color-mix(in srgb, var(--accent) 8%, transparent)`) | same 8% |
+| `--accent-cta-bg-hover` | 10% brass | same 10% |
+
+The Home primary (`.entrance-action--primary`) is an outlined primary with an 8% brass fill: 40px tall (`--space-10`), `radius-md`, weight 600.
 
 Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3; `--max` `68rem`; `--max-longform` `80rem`; `--frame-max` aliases `--max-longform` (Home hero, header, and featured grid share this frame); `--text-proof` fluid 17–19px (17px at 1280, 19px at 1440); `--header-offset` `4.75rem`; `--gutter: clamp(1.25rem, 5vw, 1.5rem)`.
 
@@ -63,11 +123,53 @@ Shared (both themes): `--font-display` Crimson Pro; `--font-body` Source Sans 3;
 
 ### Type scale
 
-Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens.css`). Display serif (**Crimson Pro**) is reserved for wordmark, Entrance `h1`, section titles, and **Notes panel titles** — not dense catalogue list rows or beat grids.
+Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens.css`). Display serif (**Crimson Pro**) is reserved for the wordmark, Entrance `h1`, section titles, `.home-practice-title`, and **Notes panel titles** — not dense catalogue list rows or beat grids.
+
+| Step | Token | Computed size (scale 1) |
+|---|---|---|
+| xs | `--text-xs` | 0.8125rem |
+| sm | `--text-sm` | 0.875rem |
+| base | `--text-base` | 1rem |
+| md | `--text-md` | 1.1875rem |
+| lg | `--text-lg` | 1.25rem |
+| xl | `--text-xl` | 1.375rem |
+| proof | `--text-proof` | fluid 17–19px (17px at 1280, 19px at 1440) |
+
+| Fluid step | Token | Clamp (× `--text-scale`) |
+|---|---|---|
+| Hero | `--text-display-hero` | 2.75rem → 7.5vw → 4.75rem |
+| Display 1 | `--text-display-1` | 1.9rem → 3.6vw → 2.5rem |
+| Display 2 | `--text-display-2` | 1.35rem → 2.6vw → 1.7rem |
+| Display 3 | `--text-display-3` | 1.2rem → 2.3vw → 1.45rem |
+| Display 4 | `--text-display-4` | 1.1rem → 2.3vw → 1.4rem |
+
+At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
+
+| Style | Class | Face | Size | Weight |
+|---|---|---|---|---|
+| Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
+| Display/Section | `.home-plate h2` | Crimson Pro | `--text-display-3` | 600 |
+| Display/Practice Title | `.home-practice-title` | Crimson Pro | `--text-sm` | 600 |
+| Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
+| Display/Panel Title | `.library-panel-title` | Crimson Pro | `--text-display-3` | 600 |
+| Display/Note Title | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600 |
+| Display/Wordmark | `.brand` | Crimson Pro | `--text-xl` | 600 |
+| Body/Essay | `.note-body.prose` | Crimson Pro | `--text-md` | 400 |
+| Body/Pull Quote | `.note-blockquote` | Crimson Pro italic | `--text-lg` | 400 |
+| Body/Default | `body` | Source Sans 3 | `--text-base` | 400 |
+| Body/Lede | `.entrance .lede` | Source Sans 3 | `--text-md` | 400 |
+| Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
+| Body/Identity Name | `.entrance-name` | Source Sans 3 | `--text-md` | 600 |
+| Body/Identity Role | `.entrance-role` | Source Sans 3 | `--text-base` | 400 |
+| UI/Nav | `.site-nav` | Source Sans 3 | `--text-sm` | 400 |
+| UI/Catalogue ID | `.record-id` | Source Sans 3 | `--text-xs` | 600 |
+| UI/Primary Action | `.entrance-action--primary` | Source Sans 3 | `--text-sm` | 600 |
+| UI/Index Entry | `.current-index .index-entry` | Crimson Pro italic | `--text-sm` | 400 |
+| UI/Code | `.note-code` | `--font-mono` | inherited | 400 |
 
 | Use | Face |
 |---|---|
-| `.brand`, `.entrance h1`, section `h2` on Home | Crimson Pro (serif) |
+| `.brand`, `.entrance h1`, section `h2` on Home, `.home-practice-title` | Crimson Pro (serif) |
 | `.library-panel--note .library-panel-title`, in-note section headings (`.note-section-heading--major`) | Crimson Pro (serif) |
 | **Notes essay body** (`.note-body.prose` only) | Crimson Pro (serif) at `--text-md` — see [Reading mode](#reading-mode-notes-only) |
 | Body, nav, TOC, chips, record IDs, search, buttons, SYS beat copy | Source Sans 3 (sans) |
@@ -76,15 +178,46 @@ Catalogue IDs (`SYS-01`, `NOTE-2026-014`) use Source Sans 3 with slightly tracke
 
 Publication dates in the Notes index and byline use **full calendar dates** when `writing.yaml` stores `YYYY-MM-DD` (display: `22 Dec 2025`). Month-only `YYYY-MM` remains a fallback (`Dec 2025`).
 
-### Spacing, radius, breakpoints
+### Spacing and radius
 
-Same scales as before (`--space-*`, `--radius-*`). Breakpoints:
+4px base (`1rem` = 16px). `--space-hairline` and `--space-tight` sit off that grid.
 
-| Reference | Value | Applies to |
-|---|---|---|
-| `--bp-sm` | `800px` | Entrance layout stack (`home.css`) |
-| `--bp-md` | `900px` | Primary nav collapse (`chrome.css`); legacy long-form `.page-with-toc` sidebar stack (`longform.css`) |
-| `--bp-lg` | `1024px` (`64rem`) | Record impact grid (`home.css`); library shell stacks index above panel (`library.css`) |
+| Token | Value |
+|---|---|
+| `--space-hairline` | 0.15rem |
+| `--space-tight` | 0.35rem |
+| `--space-1` | 0.25rem |
+| `--space-2` | 0.5rem |
+| `--space-3` | 0.75rem |
+| `--space-4` | 1rem |
+| `--space-5` | 1.25rem |
+| `--space-6` | 1.5rem |
+| `--space-7` | 1.75rem |
+| `--space-8` | 2rem |
+| `--space-9` | 2.25rem |
+| `--space-10` | 2.5rem (40px) |
+| `--space-11` | 3rem |
+| `--space-12` | 4rem |
+| `--radius-sm` | 0.15rem |
+| `--radius-md` | 0.2rem |
+| `--radius-lg` | 0.25rem |
+
+### Breakpoints
+
+`@media` queries cannot read custom properties without a build step, so these are documented constants. `--header-control-height` is `calc((var(--space-2) * 2) + (1.2 * var(--text-sm)))`, set on `.header-actions`. Desktop nav links, the theme toggle, the reading-size toggle, and the menu summary use that height. Below 48rem the theme toggle leaves that height and becomes a `--space-10` square.
+
+| Width | Applies to |
+|---|---|
+| `640px` | Credentials featured grid becomes 2 columns (`library.css`, `width >= 640px`). Long-form `.case-beats` stacks at `width <= 640px` (`longform.css`). |
+| `40rem` | Entrance actions stack below 40rem. Featured records are 2 columns from 40rem (`home.css`). |
+| `48rem` | Compact header: icon search, icon theme, reading size inside Menu (`chrome.css`). Library master-detail (`library.css`). Systems split stacks (`home.css`). |
+| `49rem` | Library index collapses to a rail instead of hiding (`library.css`). |
+| `64rem` / `1024px` (`--bp-lg`) | Between 49rem and 64rem the library shell stacks the index above the pane. `tokens.css` still names this constant for the record impact grid; `home.css` has no `1024px` query. |
+| `72rem` | Featured records are 4 columns (`home.css`). |
+| `800px` (`--bp-sm`) | Entrance copy padding stack (`home.css`). Career-journey stack (`career-journey.css`). |
+| `900px` (`--bp-md`) | Primary nav collapses to Menu (`chrome.css`). Practice grid is 2 columns from 900px (`home.css`). Long-form sidebar stacks (`longform.css`). Search drawer spans the header (`search.css`). |
+| `1280px` | `--text-scale: 1.0625` |
+| `1440px` | `--text-scale: 1.0833` |
 
 ---
 
@@ -163,7 +296,6 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 | `.home-record-strip` / `.home-featured-records` | Featured SYS / NOTE grid (1 / 2 / 4 columns; no horizontal scroll) |
 | `.home-practice-grid` | Practice-area capability cards |
 | `.home-context-strip` / `.home-platform-strip` | Location / platform proof meta |
-| `.proof-strip` | Singapore + ≤4 platforms (legacy class; context strip on current Home) |
 | `.library-card` / `.site-footer` / `.library-page-footer` | Footer: location · focus · mailto · social |
 | `.site-nav` | **Systems · Notes · Credentials** |
 | `.library-shell` | Split-pane catalogue on Systems / Notes / Credentials |
@@ -181,6 +313,40 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 **Motion:** Map-node and record hover/focus only. **No** per-section `rise` on Home. Honor `prefers-reduced-motion` on library panel transitions. Durations use three tokens only: `--dur-fast` 150ms, `--dur-base` 240ms, `--dur-slow` 400ms.
 
 External nav links use `.external` (↗ via CSS `::after`).
+
+### Figma component ↔ class
+
+Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset (`base.css`). Dark ring `#c49a5a`, light ring `#6b4f10`.
+
+| Figma component | Class |
+|---|---|
+| Button | `.entrance-action--primary` (outlined primary; text links stay `.entrance-action--secondary`) |
+| Text Link | `.entrance-action--secondary`, body `a` |
+| Entrance Action (Primary) | `.entrance-action--primary` |
+| Header Desktop | `.site-header` + `.site-nav-desktop` |
+| Header Compact | `.site-header` at `width <= 48rem` (icon theme, reading size in Menu) |
+| Nav Link | `.site-nav a` |
+| Nav Link Active | `.site-nav a[aria-current="page"]`, `.site-nav a[aria-current="location"]` |
+| Theme Toggle | `.theme-toggle` |
+| Reading-size Toggle | `.reading-size-toggle` |
+| Menu Button | `.nav-menu > summary` |
+| Embed Frame | `.embed-frame` |
+| Record Card | `.home-record-row` (Home); Systems record body uses `.library-panel` |
+| Index Trigger | `.library-index-trigger` |
+| Entrance Atmosphere (optional) | `.entrance-atmosphere` / `.entrance-atmosphere--tokens` |
+
+`.proof-strip` and `.connect-card` are not part of this contract. Nothing in `scripts/build.py`, `src/*.js`, or the page templates emits them.
+
+---
+
+## Known Figma gaps
+
+- **C8.** Add `color/rail-green`. CSS now has `--rail-green: #4a5c4e` (same RGB as the `--line-*` mixes). Figma does not have that variable yet — file it for figma bro.
+- **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
+- **D-a.** The light Entrance atmosphere glow stays 16% `--accent`. `--glow` on light is 10%. Glow intensity is out of scope; the 16% rule is held on purpose.
+- **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
+- **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
+- This pass could not open the Figma file (the Figma connection was unauthorized), so no further Figma-only gaps are claimed.
 
 ---
 

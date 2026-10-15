@@ -158,7 +158,7 @@ body:has(main.home-route) .site-header {
   font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px solid rgb(196 154 90 / 35%);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   color: var(--text-strong);
   transition:
     border-color var(--dur-fast) var(--ease-standard),
@@ -168,7 +168,7 @@ body:has(main.home-route) .site-header {
 .entrance-action:hover,
 .entrance-action:focus-visible {
   color: var(--text-strong);
-  border-bottom-color: rgb(196 154 90 / 70%);
+  border-bottom-color: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .entrance-action--secondary {
@@ -185,11 +185,9 @@ body:has(main.home-route) .site-header {
   height: var(--space-10);
   padding: 0 var(--space-4);
   white-space: nowrap;
-
-  /* Dark page: 55% brass in the hairline clears 3:1. Light parchment needs the hardened accent. */
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line-strong));
+  border: 1px solid var(--accent-cta-border);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  background: var(--accent-cta-bg);
   color: var(--text-strong);
   font-weight: 600;
   line-height: 1.2;
@@ -199,14 +197,8 @@ body:has(main.home-route) .site-header {
 .entrance-action--primary:hover,
 .entrance-action--primary:focus-visible {
   color: var(--text-strong);
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line-strong));
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
-
-[data-theme="light"] .entrance-action--primary,
-[data-theme="light"] .entrance-action--primary:hover,
-[data-theme="light"] .entrance-action--primary:focus-visible {
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--accent-text));
+  border-color: var(--accent-cta-border);
+  background: var(--accent-cta-bg-hover);
 }
 
 .entrance-action--primary:focus-visible {
@@ -316,12 +308,12 @@ body:has(main.home-route) .site-header {
   color: var(--text-strong);
   font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px solid rgb(196 154 90 / 40%);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .home-record-cta a:hover,
 .home-record-cta a:focus-visible {
-  border-bottom-color: rgb(196 154 90 / 75%);
+  border-bottom-color: color-mix(in srgb, var(--accent) 75%, transparent);
 }
 
 .home-practice-areas {
@@ -490,10 +482,6 @@ body:has(main.home-route) .site-header {
   gap: var(--space-3);
 }
 
-.home-contact-plate .connect-cards {
-  margin-top: var(--space-4);
-}
-
 .note-dek {
   margin: var(--space-3) 0 0;
   max-width: 42rem;
@@ -560,13 +548,14 @@ body:has(main.home-route) .site-header {
 
 .entrance-atmosphere--tokens {
   background:
-    radial-gradient(ellipse 80% 55% at 18% 22%, rgb(212 163 92 / 12%) 0%, transparent 62%),
+    radial-gradient(ellipse 80% 55% at 18% 22%, var(--glow) 0%, transparent 62%),
     linear-gradient(160deg, var(--bg-mid) 0%, var(--bg-deep) 55%, var(--bg-deep) 100%);
 }
 
 [data-theme="light"] .entrance-atmosphere--tokens {
   background:
-    radial-gradient(ellipse 80% 55% at 18% 22%, rgb(196 154 90 / 16%) 0%, transparent 62%),
+    /* held: D-a — light glow stays 16% accent; --glow on light is 10% */
+    radial-gradient(ellipse 80% 55% at 18% 22%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 62%),
     linear-gradient(165deg, var(--bg-elevated) 0%, var(--bg-deep) 65%, var(--bg-mid) 100%);
 }
 
@@ -685,15 +674,6 @@ body:has(main.home-route) .site-header {
   color: var(--text-faint);
 }
 
-.entrance-catalog-dot {
-  display: inline-block;
-  width: var(--space-tight);
-  height: var(--space-tight);
-  border-radius: var(--radius-lg);
-  background: rgb(74 92 78 / 85%);
-  flex-shrink: 0;
-}
-
 main.page .entrance h1 {
   font-family: var(--font-display);
   font-size: var(--text-display-hero);
@@ -753,36 +733,12 @@ main.page .entrance h1 {
 .current-index .index-entry a {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px solid rgb(168 154 136 / 25%);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-muted) 25%, transparent);
 }
 
 .current-index .index-entry a:hover {
   color: var(--text-default);
-  border-bottom-color: rgb(196 154 90 / 50%);
-}
-
-.proof-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-  list-style: none;
-  margin: var(--space-4) 0 0;
-  padding: 0;
-  max-width: 40rem;
-}
-
-.proof-strip li {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  padding: var(--space-tight) var(--space-3);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
-}
-
-.proof-strip strong {
-  color: var(--text-default);
-  font-weight: 600;
+  border-bottom-color: color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 .cta-row {
@@ -877,10 +833,6 @@ main.page .entrance h1 {
   margin-bottom: var(--space-4);
 }
 
-.profile-connect-aside .connect-cards {
-  margin-top: 0;
-}
-
 .credentials-section {
   max-width: var(--max);
   margin: 0 auto;
@@ -923,46 +875,6 @@ main.page .entrance h1 {
 
 .credentials-section .verify-panel {
   margin-bottom: var(--space-4);
-}
-
-.connect-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: var(--space-4);
-  margin: var(--space-5) 0 0;
-  max-width: 36rem;
-}
-
-.connect-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-md);
-  background: var(--bg-panel);
-  color: inherit;
-  text-decoration: none;
-}
-
-.connect-card:hover {
-  border-color: var(--accent);
-  background: rgb(196 154 90 / 8%);
-}
-
-.connect-card-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--accent-text);
-}
-
-.connect-card-value {
-  font-size: var(--text-sm);
-  color: var(--text-default);
-  line-height: 1.4;
-  word-break: break-word;
 }
 
 .contact-profiles {
@@ -1028,7 +940,7 @@ main.page .entrance h1 {
 
 .system-map-domain-index-list li:hover,
 .system-map-domain-index-list li.domain-highlight {
-  background: rgb(196 154 90 / 10%);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   border-left-color: var(--accent);
 }
 
@@ -1187,7 +1099,7 @@ main.page .entrance h1 {
 .map-detail-records li.record-highlight,
 .map-detail-records li.domain-highlight {
   border-left-color: var(--accent);
-  background: rgb(196 154 90 / 8%);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   animation: none;
   box-shadow: none;
 }
@@ -1199,12 +1111,12 @@ main.page .entrance h1 {
 
 .system-map-section .item-list > li:hover,
 .workshop .item-list > li:hover {
-  border-color: rgb(196 154 90 / 35%);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .system-map-svg circle {
-  fill: rgb(43 84 64 / 35%);
-  stroke: rgb(74 92 78 / 70%);
+  fill: rgb(43 84 64 / 35%); /* Figma gap C9: no token */
+  stroke: color-mix(in srgb, var(--rail-green) 70%, transparent);
   stroke-width: 1.5;
 }
 
@@ -1215,7 +1127,7 @@ main.page .entrance h1 {
 .map-node.domain-highlight,
 .map-node:focus-visible,
 .map-node:hover {
-  filter: drop-shadow(0 0 0.35rem rgb(196 154 90 / 45%));
+  filter: drop-shadow(0 0 0.35rem color-mix(in srgb, var(--accent) 45%, transparent));
 }
 
 .map-node-label {
@@ -1227,12 +1139,12 @@ main.page .entrance h1 {
 
 .map-node.domain-highlight circle,
 .map-node:hover circle {
-  fill: rgb(196 154 90 / 22%);
+  fill: color-mix(in srgb, var(--accent) 22%, transparent);
   stroke: var(--accent);
 }
 
 .map-node:focus-visible circle {
-  fill: rgb(196 154 90 / 22%);
+  fill: color-mix(in srgb, var(--accent) 22%, transparent);
   stroke: var(--focus-ring);
 }
 
@@ -1245,8 +1157,8 @@ main.page .entrance h1 {
 .record-highlight:not(.system-map-record-panel),
 .domain-highlight.item-list > li,
 .domain-highlight[data-record]:not(.system-map-record-panel) {
-  border-color: rgb(196 154 90 / 45%) !important;
-  background: rgb(196 154 90 / 8%);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent) !important;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .system-map-record-panel.record-highlight {
@@ -1277,7 +1189,7 @@ main.page .entrance h1 {
   width: 100%;
   max-width: 42rem;
   height: auto;
-  color: rgb(74 92 78 / 55%);
+  color: color-mix(in srgb, var(--rail-green) 55%, transparent);
 }
 
 .system-map-svg line {
@@ -1334,8 +1246,7 @@ main.page .entrance h1 {
   padding-bottom: var(--space-12);
 }
 
-.contact-section .record-context,
-.page-main .connect-cards {
+.contact-section .record-context {
   max-width: 36rem;
 }
 

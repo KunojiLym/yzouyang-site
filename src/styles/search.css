@@ -255,7 +255,7 @@
 
 .search-result-badge--systems {
   color: var(--accent-text);
-  border-color: rgb(196 154 90 / 35%);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .search-result-badge--notes {
