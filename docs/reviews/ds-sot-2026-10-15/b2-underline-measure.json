@@ -1,0 +1,45 @@
+{
+  "measuredAt": "2026-10-15T02:12:42.786Z",
+  "results": [
+    {
+      "theme": "dark",
+      "label": "before",
+      "computed": {
+        "borderBottomColor": "rgba(168, 154, 136, 0.25)",
+        "borderBottomWidth": "1px",
+        "color": "rgb(176, 160, 144)"
+      },
+      "file": "/workspace/docs/reviews/ds-sot-2026-10-15/before-b2-index-entry-dark.png"
+    },
+    {
+      "theme": "dark",
+      "label": "after",
+      "computed": {
+        "borderBottomColor": "color(srgb 0.690196 0.627451 0.564706 / 0.25)",
+        "borderBottomWidth": "1px",
+        "color": "rgb(176, 160, 144)"
+      },
+      "file": "/workspace/docs/reviews/ds-sot-2026-10-15/after-b2-index-entry-dark.png"
+    },
+    {
+      "theme": "light",
+      "label": "before",
+      "computed": {
+        "borderBottomColor": "rgba(168, 154, 136, 0.25)",
+        "borderBottomWidth": "1px",
+        "color": "rgb(92, 85, 72)"
+      },
+      "file": "/workspace/docs/reviews/ds-sot-2026-10-15/before-b2-index-entry-light.png"
+    },
+    {
+      "theme": "light",
+      "label": "after",
+      "computed": {
+        "borderBottomColor": "color(srgb 0.360784 0.333333 0.282353 / 0.25)",
+        "borderBottomWidth": "1px",
+        "color": "rgb(92, 85, 72)"
+      },
+      "file": "/workspace/docs/reviews/ds-sot-2026-10-15/after-b2-index-entry-light.png"
+    }
+  ]
+}
