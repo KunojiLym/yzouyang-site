@@ -121,7 +121,7 @@ main.page .item-list h2,
 .record-domains {
   font-size: var(--text-xs);
   letter-spacing: 0.04em;
-  color: rgb(61 122 94);
+  color: var(--text-muted);
   margin: 0 0 var(--space-2);
 }
 

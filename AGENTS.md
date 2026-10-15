@@ -1,3 +1,7 @@
+## Figma source of truth in the repo
+
+Cursor agents and CI **cannot** call the Figma MCP. Use **`docs/figma/variables.json`** plus `docs/design-system.md` (section **How the Figma source of truth reaches the repo**) and `src/styles/tokens.css`. Never guess Figma values; refresh the snapshot when design tokens change (figma bro / Site Critic). PRs that change design values without updating the snapshot must say so in the PR body.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

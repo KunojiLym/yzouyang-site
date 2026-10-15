@@ -1,0 +1,4 @@
+/* Fixture: check_token_drift must reject this file. */
+.bad-accent {
+  color: rgb(196 154 90 / 10%);
+}

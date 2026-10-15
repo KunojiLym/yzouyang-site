@@ -1,0 +1,15 @@
+---
+description: Figma SoT is mirrored in docs/figma/variables.json — agents must not guess Figma values
+alwaysApply: true
+---
+
+# Figma snapshot (no MCP in CI / Cloud Agents)
+
+Cursor agents and CI **cannot** rely on the Figma MCP. The repo copy of design variables is **`docs/figma/variables.json`**.
+
+Before changing tokens or design-system values:
+
+1. Read `docs/design-system.md` → [How the Figma source of truth reaches the repo](docs/design-system.md#how-the-figma-source-of-truth-reaches-the-repo).
+2. Match non-null snapshot values in `tokens.css` and document them in `design-system.md`.
+3. Do **not** invent Figma values; null snapshot fields are pending export only.
+4. PRs that change design values without updating the snapshot must **flag it in the PR body**.
