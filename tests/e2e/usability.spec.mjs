@@ -733,14 +733,7 @@ test.describe("library boot CLS", () => {
       });
       const page = await context.newPage();
       await page.goto(item.path, { waitUntil: "load" });
-      if (item.path.includes("#")) {
-        await page
-          .locator(".library-panel:not(.library-panel--hidden)")
-          .first()
-          .waitFor({ state: "visible", timeout: 8000 })
-          .catch(() => undefined);
-      }
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(1800);
       const cls = await page.evaluate(() => window.__cls || 0);
       const clsLimit =
         item.path.includes("#") && item.width >= 768 && item.width < 800
