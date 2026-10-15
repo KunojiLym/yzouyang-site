@@ -29,8 +29,13 @@ const routes = ["notes", "systems", "credentials"];
 const widths = [...new Set(after.map((r) => r.width))].sort((a, b) => a - b);
 const themes = ["dark", "light"];
 
-let md = `# Boot CLS matrix\n\n`;
-md += `Generated from \`cls-before.json\` and \`cls-after.json\` via \`scripts/generate_boot_cls_readme.mjs\`. Budget **0.1**.\n\n`;
+let md = `# Boot CLS — library deep links\n\n`;
+md += `Measured with \`scripts/measure_boot_cls_matrix.mjs\` against local \`dist\` (same flow as \`library boot CLS\` e2e: \`load\` → active panel → \`document.fonts.ready\` → CLS stable). `;
+md += `Tables below are generated from \`cls-before.json\` and \`cls-after.json\` via \`scripts/generate_boot_cls_readme.mjs\`. Budget **0.1**.\n\n`;
+md += `## What changed\n\n`;
+md += `- **Header (769–900px):** fixed \`12.5rem\` (200px) \`.header-search\` slot + \`#search\` min-height so Pagefind mount does not wrap the action row or shrink the library grid (\`chrome.css\`, pre-fix baseline \`862e9d8\`).\n`;
+md += `- **Split-pane frame:** \`--library-foot-reserve\` on \`.library-shell\` plus strip/footer \`min-height\` so the painted grid no longer jumps **~376px → ~322px** when strip + footer parse after the frame (\`library.css\`).\n\n`;
+md += `Playwright gate (\`library boot CLS\`): deep links @ **769**, **784**, **800**, **900**, and **1024** — all **< 0.1**.\n\n`;
 
 for (const theme of themes) {
   md += `## ${theme}\n\n`;

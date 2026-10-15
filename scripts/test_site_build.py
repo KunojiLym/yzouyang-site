@@ -940,9 +940,36 @@ def assert_unique_ids() -> None:
                 fail(f"{rel} library panel still has an id")
 
 
+def assert_boot_cls_review_json() -> None:
+    review = ROOT / "docs" / "reviews" / "boot-cls-2026-10-15"
+    for name in ("cls-before.json", "cls-after.json"):
+        path = review / name
+        if not path.is_file():
+            fail(f"missing {path.relative_to(ROOT)}")
+        raw = path.read_text(encoding="utf-8")
+        if not raw.lstrip().startswith("["):
+            fail(
+                f"{name} must be JSON only (stderr belongs on measure_boot_cls_matrix stderr, not in the file)"
+            )
+        rows = json.loads(raw)
+        if not isinstance(rows, list) or not rows:
+            fail(f"{name} must be a non-empty JSON array")
+        for row in rows:
+            if not isinstance(row, dict):
+                fail(f"{name} rows must be objects")
+            for key in ("route", "path", "width", "theme", "cls"):
+                if key not in row:
+                    fail(f"{name} row missing {key!r}")
+    after = json.loads((review / "cls-after.json").read_text(encoding="utf-8"))
+    widths = {int(row["width"]) for row in after}
+    if 900 not in widths:
+        fail("cls-after.json must include 900px width rows (mid header band)")
+
+
 def main() -> None:
     if not DIST.is_dir():
         fail("dist/ missing — run python scripts/build.py first")
+    assert_boot_cls_review_json()
     assert_evidence_href_https_only()
     assert_deploy_preview_contract()
     assert_local_image_size()

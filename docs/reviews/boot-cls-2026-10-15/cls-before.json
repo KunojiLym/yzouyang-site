@@ -1,27 +1,3 @@
-notes 769 dark 0.0895
-notes 769 light 0.0895
-notes 784 dark 0.0866
-notes 784 light 0.0866
-notes 800 dark 0.0869
-notes 800 light 0.0883
-notes 1024 dark 0.0121
-notes 1024 light 0.0121
-systems 769 dark 0.1343
-systems 769 light 0.0037
-systems 784 dark 0.0804
-systems 784 light 0.0640
-systems 800 dark 0.1361
-systems 800 light 0.0912
-systems 1024 dark 0.0038
-systems 1024 light 0.0240
-credentials 769 dark 0.1481
-credentials 769 light 0.1491
-credentials 784 dark 0.0940
-credentials 784 light 0.1491
-credentials 800 dark 0.0690
-credentials 800 light 0.1519
-credentials 1024 dark 0.0246
-credentials 1024 light 0.0246
 [
   {
     "route": "notes",
