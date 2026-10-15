@@ -891,16 +891,12 @@
       }
     });
     syncIndexControls();
-    applyHash();
     syncIndexVisibility();
-    syncReadingContext();
+    applyHash();
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        syncReadingContext();
         split?.classList.add("is-boot-settle");
         split?.classList.remove("is-booting");
-        document.documentElement.removeAttribute("data-library-mobile-detail");
-        document.documentElement.removeAttribute("data-library-hash");
         requestAnimationFrame(() => {
           scrollActiveIndexIntoView(activeIndexId);
           requestAnimationFrame(() => split?.classList.remove("is-boot-settle"));

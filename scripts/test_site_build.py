@@ -843,8 +843,6 @@ def assert_library_boot_panel() -> None:
         fail("hash decoding must live in one shared helper")
     if boot.count("yzLibraryHash()") < 3:
         fail("theme boot and the pre-paint hash script must both call the shared helper")
-    if "function yzLibraryRevealPanel" not in boot:
-        fail("theme boot must define yzLibraryRevealPanel for per-panel hash reveal")
     if 'classList.add("js")' not in boot and "JS_ROOT_CLASS_SCRIPT" not in boot:
         fail("page shell must add html.js before paint for no-JS panel fallback")
     panel_fn = boot.split("def library_panel_html", 1)[1].split("\ndef ", 1)[0]

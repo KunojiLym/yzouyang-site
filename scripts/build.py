@@ -191,18 +191,6 @@ function yzLibraryHash() {
     return (location.hash || "").replace(/^#/, "");
   }
 }
-function yzLibraryRevealPanel(panelId) {
-  var hash = yzLibraryHash();
-  if (!hash || hash !== panelId) return;
-  var panel = document.currentScript && document.currentScript.previousElementSibling;
-  if (!panel || panel.getAttribute("data-panel-id") !== panelId) return;
-  panel.hidden = false;
-  panel.classList.add("is-active");
-  var overview = document.querySelector(".library-overview");
-  if (overview) overview.hidden = true;
-  var split = document.getElementById("library-split");
-  if (split) split.classList.add("is-detail-open");
-}
 (function () {
   var KEY = "yz-theme";
   var theme = "dark";
@@ -239,31 +227,6 @@ function yzLibraryRevealPanel(panelId) {
   document.documentElement.setAttribute("data-library-boot", libraryBoot);
   if (libraryHash) {
     document.documentElement.setAttribute("data-library-hash", libraryHash);
-    try {
-      if (window.matchMedia("(max-width: 48rem)").matches) {
-        document.documentElement.setAttribute("data-library-mobile-detail", "1");
-      }
-    } catch (e3) {}
-    var bootStyle = document.createElement("style");
-    bootStyle.id = "yz-library-hash-boot";
-    var hashCss = libraryHash;
-    bootStyle.textContent =
-      "html.js[data-library-hash]:not([data-library-panel-ready]) .library-panels > .library-panel{display:none!important}" +
-      'html.js[data-library-hash] .library-panels > .library-panel[data-panel-id="' +
-      hashCss +
-      '"]{display:block!important}' +
-      'html.js[data-library-hash] .library-panels > .library-panel[data-panel-id="' +
-      hashCss +
-      '"][hidden]{display:block!important}' +
-      'html.js[data-library-hash] .library-panels > .library-panel[data-record="' +
-      hashCss +
-      '"]{display:block!important}' +
-      'html.js[data-library-hash] .library-panels > .library-panel[data-record="' +
-      hashCss +
-      '"][hidden]{display:block!important}' +
-      "html.js[data-library-hash] .library-panels > .library-panel.is-active{display:block!important}" +
-      "@media (max-width:48rem){html.js[data-library-mobile-detail] .library-index,html.js[data-library-hash] .library-index{display:none!important}}";
-    document.head.appendChild(bootStyle);
   }
 })();
 </script>"""
@@ -320,7 +283,7 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
       split.classList.add("is-index-collapsed", "is-index-unpinned");
     }
   }
-  root.setAttribute("data-library-panel-ready", "1");
+  root.removeAttribute("data-library-hash");
 })();
 </script>
 """
@@ -915,8 +878,7 @@ def library_panel_html(
         f'          <div class="library-panel-body">\n'
         f"{body}\n"
         f"          </div>\n"
-        f"        </article>\n"
-        f'        <script>yzLibraryRevealPanel({json.dumps(panel_id)});</script>'
+        f"        </article>"
     )
 
 

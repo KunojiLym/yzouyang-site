@@ -8,7 +8,7 @@ import { chromium } from "@playwright/test";
 const BASE = process.env.E2E_BASE_URL || "http://127.0.0.1:8765";
 const SITE_BASE = (process.env.SITE_BASE_PATH ?? "").replace(/\/$/, "");
 const WIDTHS = [375, 768, 769, 784, 800, 900, 1024, 1280];
-const SHIFT_WIDTHS = [769, 784, 800, 900, 1024];
+const SHIFT_WIDTHS = [375, 768, 769, 784, 800, 900, 1024];
 const SHIFT_ROUTES = [
   { key: "notes", path: "/notes/#NOTE-2026-005" },
   { key: "systems", path: "/systems/#SYS-03" },

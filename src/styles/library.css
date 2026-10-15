@@ -46,35 +46,33 @@ body:has(main.library-route) {
   overflow: hidden;
 }
 
-.library-frame > .library-split {
-  flex: 1 1 auto;
-  min-height: 0;
-}
+/* Boot: reserve strip row before late parse (DOM order: split then strip).
+   Wide viewports only — flex↔grid flip regressed mobile deep-link CLS (375 / 768). */
+@media (width > 48rem) {
+  html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) var(--library-strip-min-height);
+  }
 
-/* Boot: reserve strip row before late parse (DOM order: split then strip). */
-html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) var(--library-strip-min-height);
-}
+  html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-split {
+    grid-row: 1;
+    min-height: 0;
+  }
 
-html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-split {
-  grid-row: 1;
-  min-height: 0;
-}
+  html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-strip {
+    grid-row: 2;
+  }
 
-html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-strip {
-  grid-row: 2;
-}
-
-/* Boot: reserve library shell footer before late parse (frame then footer). */
-html.js .library-shell:has(#library-split.is-booting):not(:has(> .library-page-footer.library-card))::after {
-  content: "";
-  display: block;
-  flex: 0 0 auto;
-  min-height: calc(var(--library-page-footer-min-height) + var(--space-3));
-  margin-top: var(--space-3);
-  box-sizing: border-box;
-  pointer-events: none;
+  /* Boot: reserve library shell footer before late parse (frame then footer). */
+  html.js .library-shell:has(#library-split.is-booting):not(:has(> .library-page-footer.library-card))::after {
+    content: "";
+    display: block;
+    flex: 0 0 auto;
+    min-height: calc(var(--library-page-footer-min-height) + var(--space-3));
+    margin-top: var(--space-3);
+    box-sizing: border-box;
+    pointer-events: none;
+  }
 }
 
 .library-split {
@@ -837,40 +835,15 @@ html.js .library-panel[hidden] {
   display: none !important;
 }
 
-@media (width > 48rem) {
-  html:not([data-library-panel-ready]) .library-panel.is-active {
-    visibility: hidden;
-  }
-
-  html[data-library-panel-ready] .library-panel.is-active {
-    visibility: visible;
-  }
-}
-
 /* Hash deep links, only until the inline script clears data-library-hash.
    Panels are chosen by data-panel-id. Record ids on the article would
    steal the first Tab and scroll the record under the reading bar. */
-html.js[data-library-hash] .library-panels > .library-panel:not(.is-active) {
+html[data-library-hash] .library-panels > .library-panel:not(.is-active) {
   display: none !important;
 }
 
-html.js[data-library-hash] .library-panels > .library-panel.is-active {
+html[data-library-hash] .library-panels > .library-panel.is-active {
   display: block !important;
-}
-
-html.js[data-library-hash]:not([data-library-panel-ready])
-  .library-panels
-  > .library-panel:first-child:not([hidden]) {
-  display: block !important;
-}
-
-/* Hash deep links: lay out panels before reveal (opacity avoids a visible wrong-first-panel flash). */
-html.js[data-library-hash]:not([data-library-panel-ready]) .library-panels {
-  opacity: 0;
-}
-
-html.js[data-library-panel-ready] .library-panels {
-  opacity: 1;
 }
 
 .library-panel-header {
@@ -1198,7 +1171,6 @@ main.page .library-panel--note .library-panel-title {
 .library-strip {
   flex-shrink: 0;
   margin: 0;
-  min-height: var(--library-strip-min-height);
   box-sizing: border-box;
   border-top: 1px solid var(--line-soft);
   padding: var(--space-2) var(--space-4);
@@ -1209,7 +1181,6 @@ main.page .library-panel--note .library-panel-title {
   margin: 0;
   font-size: var(--text-xs);
   line-height: 1.35;
-  min-height: calc(var(--text-xs) * 1.35);
 }
 
 .library-strip-label {
@@ -1222,11 +1193,24 @@ main.page .library-panel--note .library-panel-title {
 .library-page-footer {
   flex-shrink: 0;
   margin: var(--space-3) 0 0;
-  min-height: var(--library-page-footer-min-height);
   box-sizing: border-box;
   padding: var(--space-2) 0 0;
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
+@media (width > 48rem) {
+  .library-strip {
+    min-height: var(--library-strip-min-height);
+  }
+
+  .library-strip-copy {
+    min-height: calc(var(--text-xs) * 1.35);
+  }
+
+  .library-page-footer {
+    min-height: var(--library-page-footer-min-height);
+  }
 }
 
 .library-page-footer .library-card-meta {
