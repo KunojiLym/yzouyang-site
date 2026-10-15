@@ -879,10 +879,12 @@
       }
     });
     syncIndexControls();
-    syncIndexVisibility();
     applyHash();
+    syncIndexVisibility();
+    syncReadingContext();
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        syncReadingContext();
         split?.classList.add("is-boot-settle");
         split?.classList.remove("is-booting");
         requestAnimationFrame(() => {

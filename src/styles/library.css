@@ -1281,15 +1281,33 @@ main.page .library-panel--note .library-panel-title {
     display: block;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting .library-reading-context[hidden] {
+  html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
+    .library-reading-context[hidden] {
     display: flex !important;
     visibility: hidden;
     pointer-events: none;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting .library-reading-context:not([hidden]) {
+  html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
+    .library-reading-context:not([hidden]) {
     display: flex !important;
   }
+
+  html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
+    .library-index-header {
+    min-height: var(--library-index-control-size);
+    align-items: center;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting:has(.library-panel--note.is-active)
+    .library-index-controls {
+    min-height: var(--library-index-control-size);
+    align-items: center;
+  }
+}
+
+.library-split.is-reading-context-visible .library-reading-context:not([hidden]) {
+  display: flex;
 }
 
 @media (prefers-reduced-motion: reduce) {
