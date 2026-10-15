@@ -407,6 +407,57 @@ def main() -> None:
             for item in drift_errors[:12]:
                 print(f"  {item}", file=sys.stderr)
             raise SystemExit(1)
+
+        track_gap_spec = {
+            ("Display/H1", ".library-panel--note .library-panel-title"): {
+                "reason": MAPPING_GAP_PROBE_REASON + " (tracking probe).",
+                "gap_property": "line-height",
+            },
+        }
+        doc_for_track = doc_for_gap.replace(
+            MAPPING_GAP_PROBE_REASON,
+            MAPPING_GAP_PROBE_REASON + " (tracking probe).",
+            1,
+        )
+        sync_mod.TEXT_STYLE_OPEN_MAPPING_GAPS = track_gap_spec
+        with tempfile.TemporaryDirectory() as tmp_track:
+            styles_track = Path(tmp_track)
+            for sheet in STYLES_DIR.glob("*.css"):
+                shutil.copy(sheet, styles_track / sheet.name)
+            library_path = styles_track / "library.css"
+            library_text = library_path.read_text(encoding="utf-8")
+            library_path.write_text(
+                library_text.replace(
+                    ".library-panel--note .library-panel-title {\n"
+                    "  font-size: var(--text-display-1);\n"
+                    "  font-weight: 600;\n"
+                    "  line-height: var(--lh-heading);\n"
+                    "  letter-spacing: -0.025em;",
+                    ".library-panel--note .library-panel-title {\n"
+                    "  font-size: var(--text-display-1);\n"
+                    "  font-weight: 600;\n"
+                    "  line-height: var(--lh-heading);\n"
+                    "  letter-spacing: 0.3em;",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            track_errors = collect_text_style_css_mismatches(
+                snapshot, doc_for_track, styles_track, dark, light
+            )
+        if not any(
+            item.style == "Display/H1"
+            and item.selector == ".library-panel--note .library-panel-title"
+            and item.property in ("letter-spacing", "letter-spacing (doc)")
+            for item in track_errors
+        ):
+            print(
+                "letter-spacing drift on gapped selector should still fail sync",
+                file=sys.stderr,
+            )
+            for item in track_errors[:12]:
+                print(f"  {item}", file=sys.stderr)
+            raise SystemExit(1)
     finally:
         sync_mod.TEXT_STYLE_OPEN_MAPPING_GAPS = original_gaps
 

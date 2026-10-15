@@ -319,10 +319,6 @@
 }
 
 @media (width <= 48rem) {
-  .header-search {
-    min-height: var(--header-control-height);
-  }
-
   .header-search #search .pagefind-ui__search-input {
     height: var(--space-10);
     min-height: var(--space-10);

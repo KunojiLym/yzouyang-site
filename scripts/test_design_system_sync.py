@@ -598,7 +598,7 @@ def _mismatch_covers_skip(mismatch: TextStyleCssMismatch, skip_token: str) -> bo
         return prop in ("font-size", "font-size (px)", "font-size binding")
     if skip_token == "font-size binding":
         return prop in ("font-size", "font-size (px)", "font-size binding")
-    if skip_token == "letter-spacing":
+    if skip_token in ("letter-spacing", "tracking", "letter-spacing (doc)"):
         return prop in ("letter-spacing", "letter-spacing (doc)")
     return prop == skip_token
 

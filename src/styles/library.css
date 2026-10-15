@@ -1557,8 +1557,20 @@ html:not(.js) main.library-route[data-library-route="notes"] .library-split[data
     display: inline-flex !important;
   }
 
-  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open
-    .library-reading-context:not([hidden]) {
+  /* Reserve reading-context block size while [hidden] (main parity — avoids +36px .library-panels shift). */
+  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open .library-reading-context {
     display: flex !important;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-booting.is-detail-open
+    .library-reading-context[hidden] {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  html[data-library-boot="detail"] .library-split.is-detail-open .library-reading-context[hidden] {
+    display: flex !important;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
