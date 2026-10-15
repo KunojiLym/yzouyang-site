@@ -1,0 +1,10 @@
+{
+  "figma_file_id": "xr2asASU4M8amldS2Lm0hQ",
+  "pulled": "2026-10-15",
+  "source": "fixture — intentional drift for sync test",
+  "pending": "full light/dark export from figma bro",
+  "variables": [
+    { "name": "--bg-deep", "dark": "#000000", "light": null }
+  ],
+  "text_styles": []
+}

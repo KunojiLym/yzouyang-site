@@ -1,0 +1,115 @@
+{
+  "figma_file_id": "xr2asASU4M8amldS2Lm0hQ",
+  "pulled": "2026-10-15",
+  "source": "figma-vars-home-4_3 (dark mode, Home frame)",
+  "pending": "full light/dark export from figma bro",
+  "variables": [
+    { "name": "--text-default", "dark": "#efe6d8", "light": null },
+    { "name": "--text-xl", "dark": "22", "light": null },
+    { "name": "--text-muted", "dark": "#b0a090", "light": null },
+    { "name": "--text-sm", "dark": "14", "light": null },
+    { "name": "--radius-sm", "dark": "2.4", "light": null },
+    { "name": "--accent", "dark": "#c49a5a", "light": null },
+    { "name": "--space-tight", "dark": "5.6", "light": null },
+    { "name": "--header-control-height", "dark": "33.8", "light": null },
+    { "name": "--space-3", "dark": "12", "light": null },
+    { "name": "--text-base", "dark": "16", "light": null },
+    { "name": "--radius-lg", "dark": "4", "light": null },
+    { "name": "--bg-panel", "dark": "#ffffff08", "light": null },
+    { "name": "--line-soft", "dark": "#4a5c4e24", "light": null },
+    { "name": "--radius-md", "dark": "3.2", "light": null },
+    { "name": "--space-2", "dark": "8", "light": null },
+    { "name": "--space-6", "dark": "24", "light": null },
+    { "name": "--header-offset", "dark": "76", "light": null },
+    { "name": "--header-bg", "dark": "#0a0b0af5", "light": null },
+    { "name": "--text-strong", "dark": "#f5efe6", "light": null },
+    { "name": "--space-1", "dark": "4", "light": null },
+    { "name": "--text-display-hero", "dark": "76", "light": null },
+    { "name": "--text-lg", "dark": "20", "light": null },
+    { "name": "--text-proof", "dark": "19", "light": null },
+    { "name": "--space-4", "dark": "16", "light": null },
+    { "name": "--line-strong", "dark": "#4a5c4e47", "light": null },
+    { "name": "--space-10", "dark": "40", "light": null },
+    {
+      "name": "--accent-cta-bg",
+      "figma_label": "accent-cta-bg (accent 8%)",
+      "dark": "#c49a5a14",
+      "light": null
+    },
+    {
+      "name": "--accent-cta-border",
+      "figma_label": "accent-cta-border dark (accent 55% in line-strong)",
+      "dark": "#ad8e58ac",
+      "light": null
+    },
+    { "name": "--space-5", "dark": "20", "light": null },
+    { "name": "--accent-link", "dark": "#c49a5a", "light": null },
+    { "name": "--text-xs", "dark": "13", "light": null },
+    { "name": "--text-md", "dark": "19", "light": null },
+    { "name": "--space-12", "dark": "64", "light": null },
+    { "name": "--bg-deep", "dark": "#0a0b0a", "light": null },
+    { "name": "color/glow", "dark": null, "light": "#c49a5a29" }
+  ],
+  "text_styles": [
+    {
+      "name": "Display/Brand",
+      "dark": "Crimson Pro SemiBold 600, size var(--text-xl), lh 100%, ls -2%",
+      "light": null
+    },
+    {
+      "name": "UI/Control",
+      "dark": "Source Sans 3 Regular 400, size var(--text-sm), lh 1.2",
+      "light": null
+    },
+    {
+      "name": "Body/Base",
+      "dark": "Source Sans 3 Regular 400, var(--text-base), lh 100%",
+      "light": null
+    },
+    {
+      "name": "Body/Small Strong",
+      "dark": "Source Sans 3 SemiBold 600, var(--text-sm), lh 100%",
+      "light": null
+    },
+    {
+      "name": "Body/Small",
+      "dark": "Source Sans 3 Regular 400, var(--text-sm), lh 1.5",
+      "light": null
+    },
+    {
+      "name": "Display/Hero",
+      "dark": "Crimson Pro SemiBold 600, var(--text-display-hero), lh 1.1",
+      "light": null
+    },
+    {
+      "name": "Body/Large",
+      "dark": "Source Sans 3 Regular 400, var(--text-lg), lh 1.5",
+      "light": null
+    },
+    {
+      "name": "Body/Proof",
+      "dark": "Source Sans 3 Regular 400, var(--text-proof), lh 100%",
+      "light": null
+    },
+    {
+      "name": "Label/Caps",
+      "dark": "Source Sans 3 SemiBold 600, var(--text-xs), lh 1.4, ls 8%",
+      "light": null
+    },
+    {
+      "name": "Meta/Small",
+      "dark": "Source Sans 3 Regular 400, var(--text-sm), lh 1.4",
+      "light": null
+    },
+    {
+      "name": "Display/Record Title",
+      "dark": "Crimson Pro SemiBold 600, var(--text-md), lh 1.35",
+      "light": null
+    },
+    {
+      "name": "Display/Practice Title",
+      "dark": "Crimson Pro SemiBold 600, var(--text-sm), lh 1.35",
+      "light": null
+    }
+  ]
+}
