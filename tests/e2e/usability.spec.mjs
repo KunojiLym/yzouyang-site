@@ -437,6 +437,34 @@ test.describe("library shell", () => {
     await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"].is-active')).toBeVisible();
   });
 
+  test("notes deep link shows full reading pane at 1024px", async ({ browser }) => {
+    test.skip(test.info().project.name === "mobile", "viewport is set per case");
+    const context = await browser.newContext({
+      viewport: { width: 1024, height: 800 },
+    });
+    await context.addInitScript(() => {
+      try {
+        localStorage.clear();
+      } catch {
+        /* ignore */
+      }
+    });
+    const page = await context.newPage();
+    await page.goto("/notes/#NOTE-2026-005", { waitUntil: "load" });
+    await page.waitForFunction(
+      () => !document.querySelector(".library-split")?.classList.contains("is-booting")
+    );
+    const paneHeight = await page.locator(".library-pane").evaluate((el) => {
+      return el.getBoundingClientRect().height;
+    });
+    expect(paneHeight).toBeGreaterThan(400);
+    const active = page.locator(".library-panel.is-active");
+    await expect(active).toHaveAttribute("data-panel-id", "NOTE-2026-005");
+    await expect(active.locator(".library-panel-title")).toBeVisible();
+    await expect(active.locator(".library-panel-body")).toBeVisible();
+    await context.close();
+  });
+
   test("notes deep link scrolls catalogue index to active article", async ({
     page,
     context,
@@ -623,6 +651,7 @@ test.describe("library boot CLS", () => {
       { path: "/notes/", width: 1280, height: 800 },
       { path: "/notes/", width: 375, height: 812 },
       { path: "/notes/#NOTE-2026-005", width: 1280, height: 800 },
+      { path: "/notes/#NOTE-2026-005", width: 1024, height: 800 },
       { path: "/notes/#NOTE-2026-005", width: 375, height: 812 },
       { path: "/systems/#SYS-03", width: 1280, height: 800 },
       { path: "/systems/#SYS-03", width: 375, height: 812 },
