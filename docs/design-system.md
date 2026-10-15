@@ -172,8 +172,8 @@ Figma text styles (27) mapped to Layer C classes. Token columns reference `token
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% |
-| Body/Large Dek | `.library-panel--note .note-dek` | Source Sans 3 | `--text-lg` | 400, lh 145% |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% — **matches shipped Home lede (19px at default scale); not a visual change** |
+| Body/Large Dek | `.library-panel--note .note-dek` | Source Sans 3 | `--text-lg` | 400, lh 145% — **matches shipped note dek sizing; not a visual change** |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
@@ -287,6 +287,7 @@ Inner pages:
 - **Library strip** footer switches collections (Systems · Notes · Credentials) — browsing chrome, not related evidence
 - Writing index: publication rows with catalogue metadata (`NOTE-*`, formatted date in `.library-index-meta`), not blog card grid
 - Header Pagefind + in-panel headings — no sticky long-form TOC on library routes (Notes use **in-index** in-article links via `data-inarticle-toc`, not a body TOC rail)
+- **Index rail controls (769–1024px):** collapsed-index **TOC rail** pin/expand buttons are **32×32px** (`--library-index-control-size`, 2rem). Earlier shipped chrome used **20×32px** controls; the second rail icon sits **12px** lower in the stacked layout — intentional, documented only (no CSS revert).
 
 ### Reading mode (Notes only)
 
@@ -368,7 +369,7 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 | **Compact** | **375–768px** (`<= 48rem`) | **Brand** · **40px Search** · **40px Theme** · **Menu** | **64px** — node `3:25` |
 | **Mid** | **769–900px** (`48rem < width <= 900px`) | **Brand** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** · **Menu** | **59.19px** — node `21:16` |
 | **Narrow desktop** | **901–1024px** | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** | **59.19px** — node `32:292` |
-| **Desktop** | **1025–1279px** (shipped chrome: **`width > 1024px`**; no dedicated frame in set `3:2`) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** — no **Menu** | **59.19px** — shipped chrome (Figma header variants confirm **Clear** behaviour) |
+| **Desktop** | **1025–1279px** (shipped chrome: **`width > 1024px`**; no dedicated frame in set `3:2`) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** — no **Menu** | **59.19px** — shipped chrome (Figma header variants confirm **Clear** behavior) |
 | **Desktop** | **≥1280px** (Figma frame at **1280** — node `3:3`; shipped chrome breakpoint **`width > 1024px`**) | **Brand** · **Systems** · **Notes** · **Credentials** · **200px Search** · **Clear** (empty field: `opacity: 0`; visible once text is typed) · **Text size** · **Theme** — no **Menu** | **61.39px** — node `3:3` |
 
 **Clear (Figma + shipped):** Header variants that include **Clear** model it **hidden (`opacity: 0`)** while the Pagefind search field is empty and **visible once text is typed** (shipped: `.pagefind-ui__search-clear` inside `.header-search`).
