@@ -172,12 +172,12 @@ Figma text styles (26) mapped to Layer C classes. Token columns reference `token
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-lg` | 400 |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` (shipped) | 400 |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
 | Body/Small Strong | `.library-index-text` | Source Sans 3 | `--text-sm` | 600 |
 | Body/Prose | `.note-body.prose` | Crimson Pro | `--text-md` | 400, lh 172% |
-| Body/Blockquote | `.note-body.prose .note-blockquote p` | Crimson Pro italic | `--text-lg` | 400 |
+| Body/Blockquote | `.note-body.prose .note-blockquote p` | inherits Body/Prose (Crimson Pro) | `--text-md` (inherited) | 400 |
 | Meta/Small | `.credential-card-meta` | Source Sans 3 | `--text-sm` | 400 |
 | Meta/Xs | `.library-index-meta` | Source Sans 3 | `--text-xs` | 400 |
 | Meta/Record Domains | `.record-domains` | Source Sans 3 | `--text-xs` | 400 — **`var(--text-muted)` (B1)** — dark **~7.0:1** on `--bg-mid` panel; light **~4.7–4.9:1** on panel |
@@ -371,6 +371,8 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 **Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 11:20 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
 
+- **Body/Large (Figma vs shipped).** Figma binds **Body/Large** to `--text-lg`; shipped Home lede (`.entrance .lede`) uses `--text-md`. Yingzhao decision pending — [issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).
+- **Body/Blockquote (Figma vs shipped).** Figma binds **Body/Blockquote** to `--text-lg` italic; shipped `.note-blockquote p` inherits Body/Prose (`--text-md`). Yingzhao decision pending — [issue #32](https://github.com/KunojiLym/yzouyang-site/issues/32).
 - **Header · Viewport=Desktop.** Figma Desktop variant omits **Text size**; shipped chrome keeps `.reading-size-toggle` on the action row (`width > 900px`).
 - **Header · Desktop & Compact height in Figma.** Figma Desktop and Compact variants are labeled **76px**; shipped chrome renders about **59px** (Desktop) and **~65px** (Compact) — pending Visual Design’s final measurements. Figma will be corrected after those land; the component map keeps Compact and Desktop heights **pending** until then.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.

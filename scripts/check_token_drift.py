@@ -83,6 +83,19 @@ def _rgb_channels_allowed(match: re.Match[str]) -> bool:
     return False
 
 
+def _strip_inline_comments(line: str) -> str:
+    """Remove /* … */ segments so comment words are not scanned as code."""
+    return re.sub(r"/\*.*?\*/", "", line)
+
+
+def _color_mix_rgb_spans(line: str) -> list[tuple[int, int]]:
+    return [match.span() for match in COLOR_MIX_RGB_RE.finditer(line)]
+
+
+def _span_overlaps_color_mix(pos: int, spans: list[tuple[int, int]]) -> bool:
+    return any(start <= pos < end for start, end in spans)
+
+
 def _iter_scannable_lines(text: str) -> list[tuple[int, str]]:
     """Yield (lineno, line) skipping comments (including ` * ` continuation lines)."""
     lines: list[tuple[int, str]] = []
@@ -115,35 +128,39 @@ def find_violations(
             continue
         text = css_file.read_text(encoding="utf-8")
         for lineno, line in _iter_scannable_lines(text):
-            for match in HEX_COLOR_RE.finditer(line):
+            code_line = _strip_inline_comments(line)
+            mix_spans = _color_mix_rgb_spans(code_line)
+            for match in HEX_COLOR_RE.finditer(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: raw hex color {match.group(0)!r} "
                     f"outside tokens.css — add a token instead"
                 )
-            if FONT_FAMILY_LITERAL_RE.search(line):
+            if FONT_FAMILY_LITERAL_RE.search(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: font-family set without "
                     f"var(--font-*) — use --font-display / --font-body from tokens.css"
                 )
-            if HSL_RE.search(line):
+            if HSL_RE.search(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: hsl() outside tokens.css — use a token"
                 )
-            if OKLCH_RE.search(line):
+            if OKLCH_RE.search(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: oklch() outside tokens.css — use a token"
                 )
-            for match in NAMED_COLOR_RE.finditer(line):
+            for match in NAMED_COLOR_RE.finditer(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: named color {match.group(0)!r} "
                     f"outside tokens.css — use a token"
                 )
-            for match in COLOR_MIX_RGB_RE.finditer(line):
+            for match in COLOR_MIX_RGB_RE.finditer(code_line):
                 violations.append(
                     f"{_display(css_file)}:{lineno}: color-mix with raw rgb literal "
                     f"{match.group(0)!r} outside tokens.css — use a token or color-mix()"
                 )
-            for match in RGB_LITERAL_RE.finditer(line):
+            for match in RGB_LITERAL_RE.finditer(code_line):
+                if _span_overlaps_color_mix(match.start(), mix_spans):
+                    continue
                 if _rgb_channels_allowed(match):
                     continue
                 violations.append(

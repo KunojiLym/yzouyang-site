@@ -31,12 +31,13 @@ ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 # Text styles skipped for CSS selector checks: figma style name -> reason.
 TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {
     "Body/Large": (
-        "Home `.entrance .lede` stays at `--text-md` (19px); Figma Body/Large 20px "
-        "reserved until a hero variant is wired."
+        "Figma Body/Large binds to `--text-lg`; shipped `.entrance .lede` uses `--text-md`. "
+        "Yingzhao decision pending — https://github.com/KunojiLym/yzouyang-site/issues/32"
     ),
     "Body/Blockquote": (
-        "`.note-blockquote p` inherits Body/Prose; Figma italic 20px pull-quote "
-        "not applied to avoid essay typography drift."
+        "Figma Body/Blockquote binds to `--text-lg`; shipped `.note-blockquote p` inherits "
+        "Body/Prose (`--text-md`). Yingzhao decision pending — "
+        "https://github.com/KunojiLym/yzouyang-site/issues/32"
     ),
 }
 
@@ -399,6 +400,8 @@ def _expected_bound_font_size(size_token: str) -> set[str]:
 def _figma_style_matches_doc_fixed(style: dict, row: dict[str, object]) -> list[str]:
     errors: list[str] = []
     name = str(row["name"])
+    if name in TEXT_STYLE_FIGMA_CSS_GAPS:
+        return []
     bound = (style.get("boundVariables") or {}).get("fontSize")
     size_token = str(row["size_token"])
     allowed = _expected_bound_font_size(size_token)

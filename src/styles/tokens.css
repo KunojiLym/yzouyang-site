@@ -70,6 +70,9 @@
     calc(3.25rem * var(--text-scale))
   );
   --header-offset: 4.75rem;
+  --library-strip-min-height: 3.2rem;
+  --library-page-footer-min-height: 4.9rem;
+  --library-index-control-size: 2rem;
 
   /* Readable type scale — multiply by --text-scale for viewport + user preference. */
   --text-scale: 1;

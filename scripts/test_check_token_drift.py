@@ -83,6 +83,20 @@ def main() -> None:
         _assert_rejected(_run_fixture(fixture_name), needle, fixture_name)
 
     _assert_clean(_run_fixture("token_drift_comment_star.css"), "token_drift_comment_star.css")
+    _assert_clean(
+        _run_fixture("token_drift_comment_trailing_white.css"),
+        "token_drift_comment_trailing_white.css",
+    )
+
+    mix_violations = _run_fixture("token_drift_color_mix_single.css")
+    joined_mix = "\n".join(mix_violations)
+    if "rgb(196 154 90)" not in joined_mix:
+        print("token_drift_color_mix_single.css: expected color-mix rgb violation", file=sys.stderr)
+        raise SystemExit(1)
+    if joined_mix.count("rgb(196 154 90)") != 1:
+        print("color-mix line must not produce duplicate rgb violations:", file=sys.stderr)
+        print(joined_mix, file=sys.stderr)
+        raise SystemExit(1)
 
     print("test_check_token_drift ok")
 

@@ -964,6 +964,11 @@ def assert_boot_cls_review_json() -> None:
     widths = {int(row["width"]) for row in after}
     if 900 not in widths:
         fail("cls-after.json must include 900px width rows (mid header band)")
+    cls_values = [float(row["cls"]) for row in after]
+    if not cls_values or all(value == 0 for value in cls_values):
+        fail("cls-after.json looks like an empty CLS capture (all values zero)")
+    if max(cls_values) < 0.0005:
+        fail("cls-after.json max cls is below capture noise floor — re-run measure_boot_cls_matrix.mjs")
 
 
 def main() -> None:
