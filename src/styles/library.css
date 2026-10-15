@@ -739,6 +739,15 @@ html.js .library-shell:has(#library-split.is-booting):not(:has(> .library-page-f
   padding: var(--space-5) var(--space-8) var(--space-8);
 }
 
+/* Boot: reserve catalogue panel scrollport before hash/panel reveal (systems/credentials CLS). */
+html.js #library-split.is-booting:not(:has(.library-panel--note.is-active)) .library-panels {
+  min-height: var(--library-panels-boot-min-height);
+}
+
+html.js #library-split.is-booting:has(.library-panel--note.is-active) .library-panel--note.is-active .library-panel-header {
+  min-height: var(--library-note-masthead-boot-min-height);
+}
+
 .library-panel--note .library-panel-header,
 .library-panel--note .library-panel-body {
   max-width: var(--note-read-max);
@@ -1512,6 +1521,10 @@ html:not(.js) main.library-route[data-library-route="notes"] .library-split[data
 
 /* Mobile: master-detail. Notes prose margins use the page gutter (20px @375). */
 @media (width <= 48rem) {
+  html.js .library-shell:has(#library-split.is-booting) .library-frame {
+    min-height: var(--library-frame-boot-min-height);
+  }
+
   .library-shell {
     padding: var(--space-3) var(--space-4) var(--space-2);
   }

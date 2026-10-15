@@ -40,12 +40,8 @@ TEXT_STYLE_OPEN_CSS_ITEMS: dict[tuple[str, str], dict[str, object]] = {
     ("Display/H2", "main.page h2"): {
         "reason": "Display/H2 Page size/tracking with Display/H2 line height",
         "skip_properties": frozenset(
-            {"font-size", "font-size (px)", "font-size binding", "letter-spacing"}
+            {"font-size", "font-size (px)", "font-size binding"}
         ),
-    },
-    ("Display/H2", ".home-plate h2"): {
-        "reason": "home-plate sections are not on the shipped home route; line-height checked on library panel titles.",
-        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
     },
 }
 
@@ -55,7 +51,7 @@ COMPUTED_LH_ONLY_SELECTORS = frozenset(
     {".home-snap-proposition .lede", ".entrance .lede"}
 )
 DECL_LH_ONLY_SELECTORS = frozenset(
-    {".home-record-title", ".home-practice-title", ".home-plate h2"}
+    {".home-record-title", ".home-practice-title"}
 )
 
 COMPUTE_LINE_HEIGHTS = ROOT / "scripts" / "compute_text_style_line_heights.mjs"
@@ -509,7 +505,7 @@ def validate_text_style_open_css_items(doc: str, snapshot: dict | None = None) -
                 f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: selector {selector!r} missing from doc"
             )
         skip = spec.get("skip_properties") or frozenset()
-        if "line-height" in skip and style_name not in ("Body/Large", "Display/H2"):
+        if "line-height" in skip or "line-height (ratio)" in skip:
             errors.append(
                 f"TEXT_STYLE_OPEN_CSS_ITEMS{key!r}: must not skip line-height checks"
             )
@@ -521,6 +517,74 @@ def validate_text_style_open_css_items(doc: str, snapshot: dict | None = None) -
                 f"TEXT_STYLE_OPEN_CSS_ITEMS{(style_name, selector)!r}: "
                 f"missing from Known Figma gaps open list"
             )
+    return errors
+
+
+def _mismatch_covers_skip(mismatch: TextStyleCssMismatch, skip_token: str) -> bool:
+    prop = mismatch.property
+    if skip_token in ("line-height", "line-height (ratio)"):
+        return prop == "line-height"
+    if skip_token == "font-size":
+        return prop in ("font-size", "font-size (px)", "font-size binding")
+    if skip_token == "font-size (px)":
+        return prop in ("font-size", "font-size (px)", "font-size binding")
+    if skip_token == "font-size binding":
+        return prop in ("font-size", "font-size (px)", "font-size binding")
+    if skip_token == "letter-spacing":
+        return prop in ("letter-spacing", "letter-spacing (doc)")
+    return prop == skip_token
+
+
+def validate_stale_open_css_skips(
+    snapshot: dict,
+    doc: str,
+    styles_dir: Path,
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> list[str]:
+    if not TEXT_STYLE_OPEN_CSS_ITEMS:
+        return []
+    doc_rows = parse_text_style_table(doc)
+    by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
+    css_rules = parse_stylesheet_selectors(styles_dir)
+    selectors: list[str] = []
+    for row in doc_rows:
+        selectors.extend(str(sel) for sel in row["selectors"])
+    for _style, selector in TEXT_STYLE_OPEN_CSS_ITEMS:
+        selectors.append(selector)
+    computed_lh = computed_line_height_ratios(
+        sorted(s for s in set(selectors) if s not in DECL_LH_ONLY_SELECTORS),
+        styles_dir,
+    )
+    errors: list[str] = []
+    for (style_name, selector), spec in TEXT_STYLE_OPEN_CSS_ITEMS.items():
+        skip_props = frozenset(str(item) for item in (spec.get("skip_properties") or frozenset()))
+        if not skip_props:
+            continue
+        style = by_name.get(style_name)
+        row = next((item for item in doc_rows if item["name"] == style_name), None)
+        if style is None or row is None:
+            continue
+        decls = collect_selector_decls(selector, css_rules)
+        if not decls:
+            continue
+        raw = collect_figma_export_css_mismatches(
+            style,
+            row,
+            selector,
+            decls,
+            dark,
+            light,
+            css_rules,
+            computed_lh,
+            skip_props_override=frozenset(),
+        )
+        for skip_token in sorted(skip_props):
+            if not any(_mismatch_covers_skip(item, skip_token) for item in raw):
+                errors.append(
+                    f"TEXT_STYLE_OPEN_CSS_ITEMS{(style_name, selector)!r}: "
+                    f"stale skip for {skip_token!r} (shipped CSS already matches Figma)"
+                )
     return errors
 
 
@@ -648,9 +712,15 @@ def collect_figma_export_css_mismatches(
     light: dict[str, str],
     rules: dict[str, dict[str, str]],
     computed_line_heights: dict[str, float | None],
+    *,
+    skip_props_override: frozenset[str] | None = None,
 ) -> list[TextStyleCssMismatch]:
     name = str(row["name"])
-    skip_props = _open_skip_properties(name, selector)
+    skip_props = (
+        skip_props_override
+        if skip_props_override is not None
+        else _open_skip_properties(name, selector)
+    )
     mismatches: list[TextStyleCssMismatch] = []
 
     figma_family = str(style.get("fontFamily") or "")
@@ -1118,6 +1188,8 @@ def main() -> None:
     snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8")) if SNAPSHOT.is_file() else {}
     errors: list[str] = []
     errors.extend(validate_text_style_open_css_items(doc, snapshot))
+    dark, light = theme_maps(css)
+    errors.extend(validate_stale_open_css_skips(snapshot, doc, STYLES_DIR, dark, light))
     if re.search(r"TEXT_STYLE_FIELD_DRIFT\s*[:=]", Path(__file__).read_text(encoding="utf-8")):
         errors.append("TEXT_STYLE_FIELD_DRIFT allow-list must not return (removed)")
 

@@ -246,7 +246,7 @@ function yzLibraryRevealPanel(panelId) {
     } catch (e3) {}
     var bootStyle = document.createElement("style");
     bootStyle.id = "yz-library-hash-boot";
-    var hashCss = libraryHash.replace(/\\\\/g, "\\\\\\\\").replace(/"/g, '\\\\"');
+    var hashCss = libraryHash;
     bootStyle.textContent =
       "html.js[data-library-hash]:not([data-library-panel-ready]) .library-panels > .library-panel{display:none!important}" +
       'html.js[data-library-hash] .library-panels > .library-panel[data-panel-id="' +

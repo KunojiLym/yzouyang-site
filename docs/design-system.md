@@ -16,6 +16,8 @@ Figma remains the authoritative design file; **`docs/figma/variables.json`** is 
 
 A PR that changes design tokens, text styles, or other values covered by the snapshot **without** updating `docs/figma/variables.json` must call that out explicitly in the PR body so reviewers can reconcile before merge.
 
+The **14:05 SGT** export changelog inside `variables.json` still says GitHub issue **#33**; that pull was **#34** (code-wins pass). Do not hand-edit `variables.json` — fix the issue number on the next verbatim re-export from `inbox/figma-vars-full.json`.
+
 **Governing sentence:** Design the site like a carefully maintained personal systems library: warm, cinematic, and catalogued — a scholar-engineer’s archive of systems, notes, and experiments, not a boardroom slide, a cyberpunk demo, or a steampunk toy.
 
 **Style direction:** Warm walnut/brass archive with Swiss grid discipline. Mood = **scholar-engineer systems library**, not boardroom deck, SaaS template, or novelty AI chrome. Optimize for **credibility, catalogue scanability, and proof discipline** — one cinematic Entrance moment; everything else quieter.
@@ -159,7 +161,7 @@ Figma text styles (28) mapped to Layer C classes. Token columns reference `token
 |---|---|---|---|---|
 | Display/Hero | `main.page .entrance h1` | Crimson Pro | `--text-display-hero` | 600 |
 | Display/H1 | `.library-panel--note .library-panel-title` | Crimson Pro | `--text-display-1` | 600, −2.5% |
-| Display/H2 | `.library-panel-header .library-panel-title`, `.home-plate h2` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
+| Display/H2 | `.library-panel-header .library-panel-title` | Crimson Pro | `--text-display-3` | 600, lh 1.2, 0% |
 | Display/H2 Page | `.not-found h1` (404 heading) | Crimson Pro | `--text-display-2` | 600, lh 1.1, −1% |
 | Display/Brand | `.brand` | Crimson Pro | `--text-xl` | 600, −2% |
 | Display/Record Title | `.home-record-title` | Crimson Pro | `--text-md` | 600 |
@@ -173,7 +175,7 @@ Figma text styles (28) mapped to Layer C classes. Token columns reference `token
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
 | Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% |
-| Body/Large Hero | `.home-snap-proposition .lede` | Source Sans 3 | `--text-md` | 400, lh 150% at ≥900px (`home.css`) |
+| Body/Large Hero | `.home-snap-proposition .lede` | Source Sans 3 | `--text-md` | 400, lh 150% at ≥900px (`home.css`) — **computed font-size ~20.19px at 1280** while Figma **text-md** pins **19px** (token fluidity); note only, no CSS change |
 | Body/Large Dek | `.library-panel--note .note-dek` | Source Sans 3 | `--text-lg` | 400, lh 145% — **matches shipped note dek sizing; not a visual change** |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
@@ -220,6 +222,9 @@ Publication dates in the Notes index and byline use **full calendar dates** when
 | `--space-12` | 4rem |
 | `--library-strip-min-height` | 3.2rem — catalogue strip (`.library-strip`) min block size before paint |
 | `--library-page-footer-min-height` | 4.9rem — library shell footer (`.library-page-footer`) min block size before paint |
+| `--library-panels-boot-min-height` | 14rem — catalogue `.library-panels` min block size during `#library-split.is-booting` (non-note routes) |
+| `--library-frame-boot-min-height` | `min(32rem, calc(100dvh - var(--header-offset) - 10rem))` — `.library-frame` min block size during boot at ≤48rem |
+| `--library-note-masthead-boot-min-height` | 11.5rem — active note `.library-panel-header` min block size during boot |
 | `--library-index-control-size` | 2rem — pin/hide/rail index controls (`.library-index-control`) |
 | `--radius-sm` | 0.15rem |
 | `--radius-md` | 0.2rem |
@@ -274,6 +279,21 @@ Inner pages:
 - stay one sentence: not bolded, not split into tiles, not animated, not repeated elsewhere on Home, and not promoted into a metrics hero.
 
 **Still banned:** boardroom outcome strip; metric counters or big-number tiles; a metrics hero; more than one proof line; unit-less percentages.
+
+### Library boot layout reserves
+
+While `#library-split` carries `.is-booting`, CSS reserves block size so late-parsed shell chrome does not shrink the pane (DOM order: lede → frame → split → strip → page footer; no flex `order` hacks).
+
+| Mechanism | Routes | Purpose |
+|---|---|---|
+| `.library-frame` **grid** row `var(--library-strip-min-height)` | Systems, Notes, Credentials (when `.library-strip` exists) | Strip row reserved before `.library-strip` parses |
+| `.library-shell::after` placeholder | All library routes until `.library-page-footer` parses | Footer slot = `--library-page-footer-min-height` + `--space-3` |
+| `.library-reading-context[hidden]` flex reserve | **Notes** only (`data-library-route="notes"`, collapsed index / hash boot) | Reading-context bar slot while `[hidden]` during boot |
+| `.library-panels` `min-height: var(--library-panels-boot-min-height)` | **Systems / Credentials** (non-note active panel) | Catalogue scrollport stable at 375 / 768 before panel reveal |
+| `.library-frame` `min-height: var(--library-frame-boot-min-height)` | Library routes at **≤48rem** | Mobile frame height stable during boot |
+| `.library-panel-header` `min-height: var(--library-note-masthead-boot-min-height)` | **Notes** deep links (active `.library-panel--note`) | Masthead / dek / byline stack before body paints |
+
+Tokens: spacing table (`--library-strip-min-height`, `--library-page-footer-min-height`, `--library-panels-boot-min-height`, `--library-frame-boot-min-height`, `--library-note-masthead-boot-min-height`). Route hook: `data-library-route` on `<main class="library-route">` (`notes` \| `systems` \| `credentials`) — not `aria-label`.
 
 ### Library scanning (Catalogue mode)
 
@@ -388,8 +408,8 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 **Open (not enforced by sync; Yingzhao decides):**
 
-- **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** / **letter-spacing** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
-- **`.home-plate h2` (Display/H2 — open).** home-plate sections are not on the shipped home route; line-height checked on library panel titles.
+- **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
+- **`.home-plate h2` (Display/H2 — open).** Legacy home-plate sections are not on the shipped home route; shipped `.home-plate h2` inherits **body line-height (1.6)** while Figma **Display/H2** is **120%**. **Yingzhao** to align or retire the selector — not enforced by sync (library panel titles use Display/H2).
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
 - **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).

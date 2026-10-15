@@ -74,6 +74,9 @@
   --library-strip-min-height: 3.2rem;
   --library-page-footer-min-height: 4.9rem;
   --library-index-control-size: 2rem;
+  --library-panels-boot-min-height: 14rem;
+  --library-frame-boot-min-height: min(32rem, calc(100dvh - var(--header-offset) - 10rem));
+  --library-note-masthead-boot-min-height: 11.5rem;
 
   /* Readable type scale — multiply by --text-scale for viewport + user preference. */
   --text-scale: 1;

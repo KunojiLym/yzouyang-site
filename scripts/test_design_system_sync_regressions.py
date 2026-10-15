@@ -23,6 +23,7 @@ from test_design_system_sync import (  # noqa: E402
     collect_text_style_css_mismatches,
     sync_snapshot,
     theme_maps,
+    validate_stale_open_css_skips,
     validate_text_style_open_css_items,
 )
 
@@ -247,6 +248,39 @@ def main() -> None:
         sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = original
     if not any("Nope/X" in item or "stale probe" in item for item in stale_errors):
         print("bogus TEXT_STYLE_OPEN_CSS_ITEMS should fail validation", file=sys.stderr)
+        raise SystemExit(1)
+
+    lh_skip = dict(TEXT_STYLE_OPEN_CSS_ITEMS)
+    lh_skip[("Body/Large", ".entrance .lede")] = {
+        "reason": "regression probe for forbidden line-height skip",
+        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
+    }
+    original_open = sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS
+    sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = lh_skip
+    try:
+        lh_errors = validate_text_style_open_css_items(doc, snapshot)
+    finally:
+        sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = original_open
+    if not any("must not skip line-height" in item for item in lh_errors):
+        print("Body/Large line-height skip should fail open-item validation", file=sys.stderr)
+        raise SystemExit(1)
+
+    stale_font = dict(TEXT_STYLE_OPEN_CSS_ITEMS)
+    stale_font[("Display/H2", "main.page h2")] = {
+        "reason": "Display/H2 Page size/tracking with Display/H2 line height",
+        "skip_properties": frozenset({"font-family"}),
+    }
+    sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = stale_font
+    try:
+        stale_font_errors = validate_stale_open_css_skips(
+            snapshot, doc, STYLES_DIR, *theme_maps(base_css)
+        )
+    finally:
+        sync_mod.TEXT_STYLE_OPEN_CSS_ITEMS = original_open
+    if not any("stale skip" in item and "font-family" in item for item in stale_font_errors):
+        print("matching font-family skip on main.page h2 should fail as stale", file=sys.stderr)
+        for item in stale_font_errors[:8]:
+            print(f"  {item}", file=sys.stderr)
         raise SystemExit(1)
 
     snapshot_h2 = copy.deepcopy(snapshot)

@@ -707,36 +707,40 @@ test.describe("library focus order", () => {
     }
   });
 
-  test("library page footer follows pane in tab order", async ({ page }) => {
+  test("library DOM order: index before pane before footer", async ({ page }) => {
     const viewports = [
       { width: 1280, height: 800 },
       { width: 800, height: 600 },
       { width: 375, height: 812 },
     ];
+    const routes = [
+      { label: "systems-overview", path: "/systems/" },
+      { label: "systems-deep", path: "/systems/#verify" },
+      { label: "credentials-deep", path: "/credentials/#google-cloud" },
+      { label: "notes-deep", path: "/notes/#NOTE-2026-005" },
+    ];
     for (const viewport of viewports) {
       await page.setViewportSize(viewport);
-      await page.goto("/systems/#verify", { waitUntil: "load" });
-      await page.waitForFunction(
-        () => !document.querySelector("#library-split")?.classList.contains("is-booting")
-      );
-      const { paneLastIdx, footerFirstIdx } = await page.evaluate(() => {
-        const pane = document.querySelector(".library-pane");
-        const footer = document.querySelector("footer.library-page-footer");
-        const tabbables = [
-          ...document.querySelectorAll(
-            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
-          ),
-        ].filter((el) => !el.closest("[hidden]") && el.getClientRects().length > 0);
-        const inPane = tabbables.filter((el) => pane?.contains(el));
-        const inFooter = tabbables.filter((el) => footer?.contains(el));
-        const paneLastIdx = inPane.length
-          ? tabbables.indexOf(inPane[inPane.length - 1])
-          : -1;
-        const footerFirstIdx = inFooter.length ? tabbables.indexOf(inFooter[0]) : -1;
-        return { paneLastIdx, footerFirstIdx };
-      });
-      expect(paneLastIdx, `${viewport.width}px`).toBeGreaterThanOrEqual(0);
-      expect(footerFirstIdx, `${viewport.width}px`).toBeGreaterThan(paneLastIdx);
+      for (const route of routes) {
+        await page.goto(route.path, { waitUntil: "load" });
+        await page.waitForFunction(
+          () => !document.querySelector("#library-split")?.classList.contains("is-booting")
+        );
+        const order = await page.evaluate(() => {
+          const index = document.querySelector(".library-index");
+          const pane = document.querySelector(".library-pane");
+          const footer = document.querySelector("footer.library-page-footer");
+          const nodes = [index, pane, footer].filter(Boolean);
+          for (let i = 0; i < nodes.length - 1; i += 1) {
+            const relation = nodes[i].compareDocumentPosition(nodes[i + 1]);
+            if ((relation & Node.DOCUMENT_POSITION_FOLLOWING) === 0) {
+              return { ok: false, relation };
+            }
+          }
+          return { ok: true };
+        });
+        expect(order.ok, `${route.label} @ ${viewport.width}px`).toBe(true);
+      }
     }
   });
 
