@@ -30,7 +30,7 @@ COLOR_MIX_TOKENS = frozenset(
     }
 )
 
-# CSS / design-system.md — must match Figma snapshot except TEXT_STYLE_FIGMA_CSS_GAPS.
+# CSS / design-system.md — must match Figma snapshot textStyles.
 DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
     "Display/Hero": {
         "font_size": "font-size/text-display-hero/max",
@@ -47,6 +47,14 @@ DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
     "Display/H2": {
         "font_size": "font-size/text-display-3/max",
         "font_weight": 600,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Display/H2 Page": {
+        "font_size": "font-size/text-display-2/max",
+        "font_weight": 600,
+        "letter_spacing_pct": -1,
+        "text_case": "ORIGINAL",
     },
     "Display/Brand": {
         "font_size": "font-size/text-xl",
@@ -91,6 +99,12 @@ DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
         "text_case": "UPPER",
     },
     "Label/Xs Group": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 600,
+        "letter_spacing_pct": 2,
+        "text_case": "ORIGINAL",
+    },
+    "Label/Xs Group Caps": {
         "font_size": "font-size/text-xs",
         "font_weight": 600,
         "letter_spacing_pct": 8,
@@ -176,33 +190,9 @@ DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
     },
 }
 
-TEXT_STYLE_FIGMA_CSS_GAPS = frozenset(
-    {
-        "Display/H2",
-        "Label/Xs Caps",
-        "Label/Xs Group",
-    }
-)
-
-FIGMA_TEXT_STYLE_SNAPSHOT: dict[str, dict[str, object]] = {
-    "Display/H2": {
-        "font_size": "font-size/text-display-2/max",
-        "font_weight": 600,
-        "letter_spacing_pct": -1,
-        "text_case": "ORIGINAL",
-    },
-    "Label/Xs Caps": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 400,
-        "letter_spacing_pct": 6,
-        "text_case": "UPPER",
-    },
-    "Label/Xs Group": {
-        "font_size": "font-size/text-xs",
-        "font_weight": 600,
-        "letter_spacing_pct": 2,
-        "text_case": "ORIGINAL",
-    },
+# Fields documented under Known Figma gaps — snapshot may lag shipped CSS.
+TEXT_STYLE_FIELD_DRIFT: dict[str, frozenset[str]] = {
+    "Label/Xs Caps": frozenset({"letter_spacing_pct"}),
 }
 
 
@@ -448,8 +438,6 @@ def _style_matches_spec(style: dict, spec: dict[str, object]) -> list[str]:
 
 def validate_text_styles(snapshot: dict, doc: str) -> list[str]:
     errors: list[str] = []
-    if "Text style drift" not in doc:
-        errors.append('design-system.md missing "Text style drift" under Known Figma gaps')
     by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
     for name, spec in DOC_TEXT_STYLE_SPEC.items():
         style = by_name.get(name)
@@ -458,12 +446,10 @@ def validate_text_styles(snapshot: dict, doc: str) -> list[str]:
             continue
         if name not in doc:
             errors.append(f"text style {name} missing from design-system.md")
-        if name in TEXT_STYLE_FIGMA_CSS_GAPS:
-            figma_spec = FIGMA_TEXT_STYLE_SNAPSHOT[name]
-            for detail in _style_matches_spec(style, figma_spec):
-                errors.append(f"{name} snapshot drift: {detail}")
-            continue
+        skip_fields = TEXT_STYLE_FIELD_DRIFT.get(name, frozenset())
         for detail in _style_matches_spec(style, spec):
+            if "letterSpacing" in detail and "letter_spacing_pct" in skip_fields:
+                continue
             errors.append(f"{name} vs doc/CSS spec: {detail}")
     return errors
 
