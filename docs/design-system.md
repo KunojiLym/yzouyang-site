@@ -371,9 +371,9 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 | Gate | Command |
 |---|---|
+| Static contracts (CI pre-build) | `uv run python scripts/lint.py` · `check_token_drift.py` · `test_design_system_sync.py` · `test_check_token_drift.py` |
 | Stylelint | `npm run lint:css` |
-| Token drift | `python scripts/check_token_drift.py` |
-| Contract tests | `uv run python scripts/test_site_build.py` |
+| Dist contract tests | `uv run python scripts/test_site_build.py` (requires `dist/` after build) |
 | axe-core | `npm run test:a11y` |
 | Playwright | `npm run test:e2e` |
 
