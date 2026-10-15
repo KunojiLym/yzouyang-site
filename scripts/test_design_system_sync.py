@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from design_system_color import colors_equivalent, computed_color_hex8
@@ -25,6 +26,18 @@ CSS_PROP_RE = re.compile(r"([a-z][a-z0-9-]*)\s*:\s*([^;]+);", re.I)
 HEX_DECL_RE = re.compile(r"--[a-z0-9-]+\s*:\s*(#[0-9a-fA-F]{3,8})\b")
 PX_TOLERANCE = 1.25
 TEXT_STYLE_TABLE_HEADER = "| Figma style | Class | Face | Size / token | Weight / tracking |"
+TEXT_STYLE_CSS_GAP_LINE_RE = re.compile(
+    r"^\-\s+\*\*Text style CSS · ([^·]+) · `([^`]+)` · ([^:]+):\*\*"
+    r"\s+shipped\s+\*\*([^*]+)\*\*;\s+Figma\s+\*\*([^*]+)\*\*\."
+    r"\s+.+?\[issue #\d+\]\([^)]+\)",
+    re.MULTILINE,
+)
+FIGMA_FONT_FAMILIES: dict[str, tuple[str, str]] = {
+    "Crimson Pro": ("--font-display", "crimson pro"),
+    "Source Sans 3": ("--font-body", "source sans 3"),
+}
+LINE_HEIGHT_TOLERANCE = 0.012
+FONT_SIZE_PX_TOLERANCE = 1.5
 # Intentional Figma vs CSS selector gaps: (figma style, selector) -> reason.
 ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 
@@ -424,67 +437,367 @@ def _parse_em(value: str) -> float | None:
     return None
 
 
-def _css_matches_row(
-    selector: str,
+@dataclass(frozen=True)
+class TextStyleCssMismatch:
+    style: str
+    selector: str
+    property: str
+    shipped: str
+    figma: str
+
+    @property
+    def key(self) -> tuple[str, str, str]:
+        return (self.style, self.selector, self.property)
+
+
+def parse_text_style_css_gaps(doc: str) -> dict[tuple[str, str, str], tuple[str, str]]:
+    """Known Figma gaps: (style, selector, property) -> (shipped, figma) from doc bullets."""
+    gaps: dict[tuple[str, str, str], tuple[str, str]] = {}
+    for match in TEXT_STYLE_CSS_GAP_LINE_RE.finditer(doc):
+        style, selector, prop, shipped, figma = match.groups()
+        gaps[(style.strip(), selector.strip(), prop.strip())] = (
+            shipped.strip(),
+            figma.strip(),
+        )
+    return gaps
+
+
+def _resolve_css_scalar(
+    raw: str,
+    dark: dict[str, str],
+    light: dict[str, str],
+    theme: str = "dark",
+) -> str:
+    trimmed = raw.strip()
+    if trimmed.startswith("var("):
+        token = trimmed[4:-1].strip()
+        resolved = resolve_css_token(token, dark, light, theme)
+        return resolved if resolved is not None else trimmed
+    return trimmed
+
+
+def _parse_line_height_ratio(
+    raw: str,
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> float | None:
+    value = _resolve_css_scalar(raw, dark, light)
+    if value.endswith("%"):
+        return float(value[:-1]) / 100.0
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
+def _figma_line_height_ratio(style: dict) -> float | None:
+    lh = style.get("lineHeight") or {}
+    unit = lh.get("unit")
+    if unit == "PERCENT" and "value" in lh:
+        return float(lh["value"]) / 100.0
+    if unit == "PIXELS" and "value" in lh:
+        font_size = style.get("fontSize")
+        if isinstance(font_size, (int, float)) and font_size:
+            return float(lh["value"]) / float(font_size)
+    return None
+
+
+def _format_line_height_ratio(ratio: float | None) -> str:
+    if ratio is None:
+        return "AUTO"
+    return f"{round(ratio * 100)}%"
+
+
+def _css_font_family_matches(figma_family: str, css_value: str) -> bool:
+    token_hint, needle = FIGMA_FONT_FAMILIES.get(figma_family, ("", figma_family.lower()))
+    normalized = css_value.lower().replace('"', "")
+    if needle and needle in normalized:
+        return True
+    if token_hint and f"var({token_hint})" in css_value.replace(" ", ""):
+        return True
+    return False
+
+
+def _css_text_transform_matches(figma_case: str, css_value: str) -> bool:
+    if figma_case == "UPPER":
+        return css_value.strip().lower() == "uppercase"
+    if figma_case in ("ORIGINAL", "AS_TYPED"):
+        return css_value.strip().lower() in ("", "none")
+    return True
+
+
+def _css_text_decoration_matches(figma_decoration: str, css_value: str) -> bool:
+    if figma_decoration == "NONE":
+        return css_value.strip().lower() in ("", "none")
+    return figma_decoration.lower() in css_value.lower()
+
+
+def collect_figma_export_css_mismatches(
+    style: dict,
     row: dict[str, object],
-    rules: dict[str, dict[str, str]],
-    used_mismatches: set[tuple[str, str]],
-) -> list[str]:
+    selector: str,
+    decls: dict[str, str],
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> list[TextStyleCssMismatch]:
     name = str(row["name"])
-    gap_key = name
-    if gap_key in TEXT_STYLE_FIGMA_CSS_GAPS:
-        return []
-    mismatch_key = (name, selector)
-    if mismatch_key in ALLOWED_FIGMA_CSS_MISMATCHES:
-        used_mismatches.add(mismatch_key)
-        return []
+    mismatches: list[TextStyleCssMismatch] = []
 
-    decls = collect_selector_decls(selector, rules)
-    if not decls:
-        return [f"{name} CSS: selector {selector!r} not found in src/styles"]
+    figma_family = str(style.get("fontFamily") or "")
+    css_family = decls.get("font-family", "")
+    if figma_family and css_family and not _css_font_family_matches(figma_family, css_family):
+        mismatches.append(
+            TextStyleCssMismatch(
+                name,
+                selector,
+                "font-family",
+                css_family,
+                figma_family,
+            )
+        )
 
-    errors: list[str] = []
+    figma_weight = style.get("fontWeight")
+    if isinstance(figma_weight, int):
+        css_weight = decls.get("font-weight", "").strip() or "400"
+        if str(figma_weight) != css_weight:
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "font-weight",
+                    css_weight,
+                    str(figma_weight),
+                )
+            )
+
+    figma_style_name = str(style.get("fontStyle") or "")
+    css_font_style = decls.get("font-style", "").strip().lower()
+    if figma_style_name == "Italic":
+        if css_font_style not in ("italic", "oblique"):
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "font-style",
+                    css_font_style or "normal",
+                    "italic",
+                )
+            )
+
     size_token = str(row["size_token"])
-    font_size = decls.get("font-size", "")
-    if not _font_size_uses_token(font_size, size_token):
-        errors.append(
-            f"{name} {selector}: font-size {font_size!r} != token {size_token}"
+    css_font_size = decls.get("font-size", "")
+    if not _font_size_uses_token(css_font_size, size_token):
+        mismatches.append(
+            TextStyleCssMismatch(
+                name,
+                selector,
+                "font-size",
+                css_font_size or "(missing)",
+                size_token,
+            )
+        )
+    else:
+        bound = (style.get("boundVariables") or {}).get("fontSize")
+        allowed = _expected_bound_font_size(size_token)
+        if bound and bound not in allowed:
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "font-size binding",
+                    str(bound),
+                    ", ".join(sorted(allowed)),
+                )
+            )
+        figma_px = style.get("fontSize")
+        if isinstance(figma_px, (int, float)):
+            token_px_val = token_px(size_token, dark)
+            if token_px_val is not None and abs(token_px_val - float(figma_px)) > FONT_SIZE_PX_TOLERANCE:
+                mismatches.append(
+                    TextStyleCssMismatch(
+                        name,
+                        selector,
+                        "font-size (px)",
+                        f"{token_px_val:.2f}px",
+                        f"{float(figma_px):.2f}px",
+                    )
+                )
+
+    figma_lh = _figma_line_height_ratio(style)
+    if figma_lh is not None:
+        css_lh_raw = decls.get("line-height", "")
+        css_lh = _parse_line_height_ratio(css_lh_raw, dark, light) if css_lh_raw else None
+        if css_lh is None or abs(css_lh - figma_lh) > LINE_HEIGHT_TOLERANCE:
+            shipped = css_lh_raw or "(missing)"
+            if css_lh is not None:
+                shipped = str(css_lh)
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "line-height",
+                    shipped,
+                    _format_line_height_ratio(figma_lh),
+                )
+            )
+
+    figma_ls = _style_letter_spacing_pct(style)
+    if figma_ls is not None and abs(figma_ls) > 0.01:
+        expected_em = figma_ls / 100.0
+        css_ls = decls.get("letter-spacing", "")
+        parsed = _parse_em(css_ls) if css_ls else None
+        if parsed is None or abs(parsed - expected_em) > 0.0001:
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "letter-spacing",
+                    css_ls or "(missing)",
+                    f"{figma_ls:g}%",
+                )
+            )
+
+    figma_case = str(style.get("textCase") or "ORIGINAL")
+    css_transform = decls.get("text-transform", "")
+    if not _css_text_transform_matches(figma_case, css_transform):
+        mismatches.append(
+            TextStyleCssMismatch(
+                name,
+                selector,
+                "text-transform",
+                css_transform or "none",
+                figma_case,
+            )
+        )
+
+    figma_decoration = str(style.get("textDecoration") or "NONE")
+    css_decoration = decls.get("text-decoration", "")
+    if not _css_text_decoration_matches(figma_decoration, css_decoration):
+        mismatches.append(
+            TextStyleCssMismatch(
+                name,
+                selector,
+                "text-decoration",
+                css_decoration or "none",
+                figma_decoration,
+            )
         )
 
     if "font_weight" in row:
-        fw = decls.get("font-weight", "")
         expected_fw = int(row["font_weight"])
-        if not fw.strip():
-            if expected_fw != 400:
-                errors.append(
-                    f"{name} {selector}: font-weight missing, expected {expected_fw}"
+        css_fw = decls.get("font-weight", "").strip() or "400"
+        if str(expected_fw) != css_fw:
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "font-weight (doc)",
+                    css_fw,
+                    str(expected_fw),
                 )
-        elif str(expected_fw) != fw.strip():
-            errors.append(
-                f"{name} {selector}: font-weight {fw!r} != {expected_fw}"
             )
 
     if "letter_spacing_pct" in row:
         expected_em = float(row["letter_spacing_pct"]) / 100.0
-        ls = decls.get("letter-spacing", "")
-        parsed = _parse_em(ls)
-        if parsed is None:
-            if abs(expected_em) > 0.0001:
-                errors.append(
-                    f"{name} {selector}: letter-spacing missing, expected {expected_em}em"
+        if abs(expected_em) > 0.0001:
+            css_ls = decls.get("letter-spacing", "")
+            parsed = _parse_em(css_ls) if css_ls else None
+            if parsed is None or abs(parsed - expected_em) > 0.0001:
+                mismatches.append(
+                    TextStyleCssMismatch(
+                        name,
+                        selector,
+                        "letter-spacing (doc)",
+                        css_ls or "(missing)",
+                        f"{float(row['letter_spacing_pct']):g}%",
+                    )
                 )
-        elif abs(parsed - expected_em) > 0.0001:
-            errors.append(
-                f"{name} {selector}: letter-spacing {ls!r} != {expected_em}em"
-            )
 
     if row.get("text_case") == "UPPER":
-        tt = decls.get("text-transform", "")
-        if tt.lower() != "uppercase":
-            errors.append(
-                f"{name} {selector}: text-transform {tt!r} != uppercase"
+        css_transform = decls.get("text-transform", "")
+        if css_transform.lower() != "uppercase":
+            mismatches.append(
+                TextStyleCssMismatch(
+                    name,
+                    selector,
+                    "text-transform (doc)",
+                    css_transform or "none",
+                    "uppercase",
+                )
             )
 
+    return mismatches
+
+
+def collect_text_style_css_mismatches(
+    snapshot: dict,
+    doc: str,
+    styles_dir: Path,
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> list[TextStyleCssMismatch]:
+    doc_rows = parse_text_style_table(doc)
+    by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
+    css_rules = parse_stylesheet_selectors(styles_dir)
+    mismatches: list[TextStyleCssMismatch] = []
+
+    for row in doc_rows:
+        name = str(row["name"])
+        style = by_name.get(name)
+        if style is None:
+            continue
+        if name in TEXT_STYLE_FIGMA_CSS_GAPS:
+            continue
+        for selector in row["selectors"]:
+            mismatch_key = (name, selector)
+            if mismatch_key in ALLOWED_FIGMA_CSS_MISMATCHES:
+                continue
+            decls = collect_selector_decls(selector, css_rules)
+            if not decls:
+                mismatches.append(
+                    TextStyleCssMismatch(
+                        name,
+                        selector,
+                        "selector",
+                        "(missing)",
+                        "present in src/styles",
+                    )
+                )
+                continue
+            mismatches.extend(
+                collect_figma_export_css_mismatches(
+                    style, row, selector, decls, dark, light
+                )
+            )
+    return mismatches
+
+
+def validate_text_style_css_gaps(
+    snapshot: dict,
+    doc: str,
+    styles_dir: Path,
+    dark: dict[str, str],
+    light: dict[str, str],
+) -> list[str]:
+    errors: list[str] = []
+    found = collect_text_style_css_mismatches(snapshot, doc, styles_dir, dark, light)
+    found_keys = {item.key for item in found}
+    documented = parse_text_style_css_gaps(doc)
+
+    for item in found:
+        if item.key not in documented:
+            errors.append(
+                f"undocumented text style CSS mismatch: {item.style} "
+                f"{item.selector} {item.property} shipped={item.shipped!r} "
+                f"figma={item.figma!r}"
+            )
+
+    for key, (shipped, figma) in documented.items():
+        if key not in found_keys:
+            errors.append(
+                f"stale text style CSS gap (no mismatch): {key[0]} {key[1]} {key[2]} "
+                f"documented shipped={shipped!r} figma={figma!r}"
+            )
     return errors
 
 
@@ -492,11 +805,12 @@ def validate_text_styles(
     snapshot: dict,
     doc: str,
     styles_dir: Path,
+    dark: dict[str, str],
+    light: dict[str, str],
 ) -> list[str]:
     errors: list[str] = []
     doc_rows = parse_text_style_table(doc)
     by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
-    css_rules = parse_stylesheet_selectors(styles_dir)
     used_mismatches: set[tuple[str, str]] = set()
     used_gaps: set[str] = set()
 
@@ -511,9 +825,8 @@ def validate_text_styles(
             used_gaps.add(name)
             continue
         for selector in row["selectors"]:
-            errors.extend(
-                _css_matches_row(selector, row, css_rules, used_mismatches)
-            )
+            if (name, selector) in ALLOWED_FIGMA_CSS_MISMATCHES:
+                used_mismatches.add((name, selector))
 
     unused_mismatch = set(ALLOWED_FIGMA_CSS_MISMATCHES.keys()) - used_mismatches
     if unused_mismatch:
@@ -526,6 +839,9 @@ def validate_text_styles(
         errors.append(
             "unused TEXT_STYLE_FIGMA_CSS_GAPS entries: " + ", ".join(sorted(unused_gaps))
         )
+    errors.extend(
+        validate_text_style_css_gaps(snapshot, doc, styles_dir, dark, light)
+    )
     return errors
 
 
@@ -618,7 +934,8 @@ def sync_snapshot(
                 f"{figma_name} [{css_mode}] snapshot {resolved!r} "
                 f"≠ tokens.css {token} ({css_show!r})"
             )
-    errors.extend(validate_text_styles(snapshot, doc, STYLES_DIR))
+    dark, light = theme_maps(css)
+    errors.extend(validate_text_styles(snapshot, doc, STYLES_DIR, dark, light))
 
     return errors
 

@@ -377,8 +377,16 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 13:40 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`.
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 13:40 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **26** `textStyles` match the typography table and `test_design_system_sync.py`. **Text style CSS** bullets below are enforced by `collect_figma_export_css_mismatches` (Figma export fields vs shipped selectors).
 
+- **Text style CSS · Display/Hero · `main.page .entrance h1` · line-height:** shipped **1.08**; Figma **110%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+- **Text style CSS · Display/H1 · `.library-panel--note .library-panel-title` · letter-spacing:** shipped **-0.025em**; Figma **-2%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+- **Text style CSS · Display/H2 · `.home-plate h2` · line-height:** shipped **(inherits)**; Figma **120%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+- **Text style CSS · Display/H2 Page · `.not-found h1` · line-height:** shipped **1.1**; Figma **120%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+- **Text style CSS · Label/Caps · `.record-id` · line-height:** shipped **(inherits)**; Figma **140%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+- **Text style CSS · Body/Large · `.entrance .lede` · line-height:** shipped **1.55**; Figma **145%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+- **Text style CSS · Body/Small · `.site-nav a` · line-height:** shipped **(inherits)**; Figma **150%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
+- **Text style CSS · Meta/Small · `.credential-card-meta` · line-height:** shipped **1.45**; Figma **140%**. Yingzhao decides — [issue #33](https://github.com/KunojiLym/yzouyang-site/issues/33).
 - **Header · Clear @ 1280 (Desktop).** Figma **Desktop** (`3:3`) shows **Clear** **hidden** at 1280 (still **unconfirmed** with Visual Design). Shipped Pagefind can still show `.pagefind-ui__search-clear` whenever the search field has a value — not hidden by viewport.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).
 - **Header · Compact Text size.** Figma **Compact** (`3:25`) omits **Text size** from the header row; shipped chrome keeps **Text size** inside the **Menu** panel only (`<= 48rem`) — matches intent, different surface than a header control.

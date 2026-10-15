@@ -23,6 +23,9 @@ collect/.wrangler/
 # Vendored note assets live under assets/notes/ — not repo root
 /NOTE-*/
 
+# Figma inbox drops (canonical snapshot is docs/figma/variables.json only)
+inbox/
+
 # Ad hoc data / WP export scratch files (not part of the tracked data contract)
 data/diy-events*.ndjson
 docs/_about-wp*

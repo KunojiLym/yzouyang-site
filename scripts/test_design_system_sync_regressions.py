@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -13,8 +14,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from test_design_system_sync import (  # noqa: E402
     DOC,
     SNAPSHOT,
+    STYLES_DIR,
     TOKENS,
+    collect_text_style_css_mismatches,
     sync_snapshot,
+    theme_maps,
 )
 
 REGRESSIONS: list[tuple[str, str, str, list[str]]] = [
@@ -87,6 +91,50 @@ def main() -> None:
     if baseline_errors:
         print("baseline sync_snapshot should pass before regressions:", file=sys.stderr)
         for item in baseline_errors[:20]:
+            print(f"  {item}", file=sys.stderr)
+        raise SystemExit(1)
+
+    snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
+    dark, light = theme_maps(base_css)
+    export_mismatches = collect_text_style_css_mismatches(
+        snapshot, doc, STYLES_DIR, dark, light
+    )
+    if not any(
+        item.style == "Body/Large"
+        and item.selector == ".entrance .lede"
+        and item.property == "line-height"
+        for item in export_mismatches
+    ):
+        print(
+            "Body/Large .entrance .lede line-height must mismatch Figma export "
+            "(seeded export check)",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+
+    gap_prefix = (
+        "- **Text style CSS · Body/Large · `.entrance .lede` · line-height:**"
+    )
+    if gap_prefix not in doc:
+        print("missing Body/Large text style CSS gap bullet in design-system.md", file=sys.stderr)
+        raise SystemExit(1)
+    doc_without_lede_gap = doc.replace(
+        next(line for line in doc.splitlines() if line.startswith(gap_prefix)) + "\n",
+        "",
+        1,
+    )
+    gap_errors = sync_snapshot(SNAPSHOT, base_css, doc_without_lede_gap)
+    if not any(
+        "undocumented text style CSS mismatch" in item
+        and "Body/Large" in item
+        and "line-height" in item
+        for item in gap_errors
+    ):
+        print(
+            "removing Body/Large line-height gap should fail text style CSS validation",
+            file=sys.stderr,
+        )
+        for item in gap_errors[:10]:
             print(f"  {item}", file=sys.stderr)
         raise SystemExit(1)
 
