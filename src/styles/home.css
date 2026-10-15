@@ -554,7 +554,7 @@ body:has(main.home-route) .site-header {
 
 [data-theme="light"] .entrance-atmosphere--tokens {
   background:
-    /* held: D-a — light glow stays 16% accent; --glow on light is 10% */
+    /* 16% per Yingzhao 2026-10-15 */
     radial-gradient(ellipse 80% 55% at 18% 22%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 62%),
     linear-gradient(165deg, var(--bg-elevated) 0%, var(--bg-deep) 65%, var(--bg-mid) 100%);
 }
