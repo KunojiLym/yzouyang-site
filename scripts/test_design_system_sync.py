@@ -615,6 +615,27 @@ def hex_tokens_in_doc(css: str, doc: str) -> list[str]:
     return errors
 
 
+def assert_library_index_label_not_group_caps(doc: str) -> None:
+    """`.library-index-label` is doc-only (Known gaps), not Label/Xs Group Caps."""
+    rows = parse_text_style_table(doc)
+    group_row = next((row for row in rows if row["name"] == "Label/Xs Group Caps"), None)
+    if group_row is None:
+        raise SystemExit("missing Label/Xs Group Caps row in design-system.md")
+    selectors = [str(item) for item in group_row["selectors"]]
+    if ".library-index-label" in selectors:
+        raise SystemExit(
+            "Label/Xs Group Caps must not map to .library-index-label "
+            "(use .library-index-group--depth-0; index header is a known gap)"
+        )
+    rules = parse_stylesheet_selectors(STYLES_DIR)
+    decls = collect_selector_decls(".library-index-label", rules)
+    weight = decls.get("font-weight", "400").strip()
+    if weight not in ("400", "normal"):
+        raise SystemExit(
+            f".library-index-label font-weight {weight!r} looks like Group Caps (600)"
+        )
+
+
 def assert_fixture_fails() -> None:
     if not VIOLATION_FIXTURE.is_file():
         raise SystemExit(f"missing fixture {VIOLATION_FIXTURE}")
@@ -649,6 +670,7 @@ def main() -> None:
     errors.extend(hex_tokens_in_doc(css, doc))
 
     assert_fixture_fails()
+    assert_library_index_label_not_group_caps(doc)
 
     if errors:
         print("test_design_system_sync failed:", file=sys.stderr)

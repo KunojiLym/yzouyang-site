@@ -812,24 +812,6 @@ main.page .entrance h1 {
   box-sizing: border-box;
 }
 
-.profile-connect-section {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.profile-connect-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: var(--space-8);
-  align-items: start;
-}
-
-.profile-connect-about .profile-portrait {
-  margin: 0 0 var(--space-4);
-}
-
 .credentials-section {
   max-width: var(--max);
   margin: 0 auto;
@@ -1252,10 +1234,6 @@ main.page .entrance h1 {
 
   .entrance-copy {
     padding-top: var(--space-6);
-  }
-
-  .profile-connect-grid {
-    grid-template-columns: 1fr;
   }
 
   .system-map-stage {
