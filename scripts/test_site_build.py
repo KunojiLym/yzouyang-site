@@ -843,6 +843,8 @@ def assert_library_boot_panel() -> None:
         fail("hash decoding must live in one shared helper")
     if boot.count("yzLibraryHash()") < 3:
         fail("theme boot and the pre-paint hash script must both call the shared helper")
+    if "function yzLibraryRevealPanel" not in boot:
+        fail("theme boot must define yzLibraryRevealPanel for per-panel hash reveal")
     panel_fn = boot.split("def library_panel_html", 1)[1].split("\ndef ", 1)[0]
     if re.search(r'\sid="\{esc\(panel_id\)\}"', panel_fn):
         fail("library panels must not carry the record id")
@@ -859,8 +861,10 @@ def assert_library_boot_panel() -> None:
         )
         if first is None:
             fail(f"{rel} missing a library panel")
-        if first.group(1):
-            fail(f"{rel} first panel must be unhidden so the desktop boot paint can show it")
+        if not first.group(1):
+            fail(
+                f"{rel} first panel must be hidden in SSR; hash boot picks the active panel before paint"
+            )
 
 
 def assert_lookup_site() -> None:

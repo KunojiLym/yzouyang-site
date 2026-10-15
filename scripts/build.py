@@ -189,6 +189,18 @@ function yzLibraryHash() {
     return (location.hash || "").replace(/^#/, "");
   }
 }
+function yzLibraryRevealPanel(panelId) {
+  var hash = yzLibraryHash();
+  if (!hash || hash !== panelId) return;
+  var panel = document.currentScript && document.currentScript.previousElementSibling;
+  if (!panel || panel.getAttribute("data-panel-id") !== panelId) return;
+  panel.hidden = false;
+  panel.classList.add("is-active");
+  var overview = document.querySelector(".library-overview");
+  if (overview) overview.hidden = true;
+  var split = document.getElementById("library-split");
+  if (split) split.classList.add("is-detail-open");
+}
 (function () {
   var KEY = "yz-theme";
   var theme = "dark";
@@ -274,6 +286,7 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
     }
   }
   root.removeAttribute("data-library-hash");
+  root.setAttribute("data-library-panel-ready", "1");
 })();
 </script>
 """
@@ -868,7 +881,8 @@ def library_panel_html(
         f'          <div class="library-panel-body">\n'
         f"{body}\n"
         f"          </div>\n"
-        f"        </article>"
+        f"        </article>\n"
+        f'        <script>yzLibraryRevealPanel({json.dumps(panel_id)});</script>'
     )
 
 
@@ -891,16 +905,26 @@ def library_section_panel(
 
 
 def append_library_panel(panels: list[str], panel_id: str, heading: str, body: str, **kwargs) -> None:
-    """First catalogue panel stays unhidden so the desktop boot paint can show it."""
-    kwargs.setdefault("hidden", bool(panels))
+    """All panels start hidden; LIBRARY_HASH_BOOT_SCRIPT + chrome.js pick the active one."""
+    kwargs.setdefault("hidden", True)
     panels.append(library_panel_html(panel_id, heading, body, **kwargs))
 
 
 def append_library_section(
     panels: list[str], section_id: str, heading: str, inner_html: str, **kwargs
 ) -> None:
-    kwargs.setdefault("hidden", bool(panels))
+    kwargs.setdefault("hidden", True)
     panels.append(library_section_panel(section_id, heading, inner_html, **kwargs))
+
+
+def prioritize_library_panel(panels: list[str], panel_id: str) -> None:
+    """Move a panel (and its inline reveal script) to the front for early hash boot."""
+    needle = f'data-panel-id="{panel_id}"'
+    for index, block in enumerate(panels):
+        if needle in block:
+            if index > 0:
+                panels.insert(0, panels.pop(index))
+            return
 
 
 def _library_strip_html(site: dict, *, active: str) -> str:
@@ -957,12 +981,40 @@ def library_shell(
         if route_lede.strip()
         else ""
     )
+    notes_reading_context_reserve = ""
+    if index_default == "collapsed":
+        notes_reading_context_reserve = (
+            "@media (width > 48rem){"
+            "html[data-library-boot=detail] "
+            "#library-split[data-index-default=collapsed] .library-reading-context[hidden]{"
+            "display:flex!important;visibility:hidden;pointer-events:none;"
+            "}"
+            "}"
+        )
+    library_stack_critical = (
+        "      <style>"
+        "@media (width > 48rem) and (width <= 64rem){"
+        "#library-split.library-split{"
+        "grid-template-columns:1fr;"
+        "grid-template-rows:38dvh minmax(0,1fr);"
+        "}"
+        "#library-split[data-index-default=open] .library-index{"
+        "max-height:38dvh;height:38dvh;min-height:0;overflow:hidden;box-sizing:border-box;"
+        "}"
+        "}"
+        f"{notes_reading_context_reserve}"
+        "</style>\n"
+    )
+    split_classes = "library-split is-booting"
+    if index_default == "collapsed":
+        split_classes += " is-index-collapsed is-index-unpinned"
     return (
         f'    <div class="library-shell" id="library-shell">\n'
+        f"{library_stack_critical}"
         f'      <h1 class="visually-hidden">{esc(title)}</h1>\n'
         f"{lede_html}"
         f'      <div class="library-frame">\n'
-        f'        <div class="library-split is-booting" id="library-split" '
+        f'        <div class="{split_classes}" id="library-split" '
         f'data-index-default="{esc(index_default)}">\n'
         f"{index}\n"
         f'          <div class="library-pane" aria-live="polite">\n'
@@ -3675,6 +3727,7 @@ def build_portfolio(site: dict, export: dict) -> str:
         toc.append({"id": "empty", "label": "Systems", "children": []})
 
     systems_lede = str(lookup_site(site, "systems_lede", "") or "").strip()
+    prioritize_library_panel(panels, "SYS-03")
     return library_shell(
         site=site,
         title="Systems",
@@ -3932,6 +3985,7 @@ def build_credentials(site: dict, export: dict) -> str:
         )
         toc.append({"id": "empty", "label": cred_title, "children": []})
 
+    prioritize_library_panel(panels, "google-cloud")
     return library_shell(
         site=site,
         title=cred_title,
@@ -4247,6 +4301,7 @@ def build_perspectives(
             )
         )
 
+    prioritize_library_panel(panels, "NOTE-2026-005")
     return library_shell(
         site=site,
         title="Notes",
