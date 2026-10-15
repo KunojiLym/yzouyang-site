@@ -935,11 +935,6 @@ main.page .library-panel--note .library-panel-title {
 
 .note-body.prose .note-blockquote p {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  line-height: 1.5;
-  font-style: italic;
-  color: var(--text-default);
 }
 
 .note-body.prose pre.note-code,

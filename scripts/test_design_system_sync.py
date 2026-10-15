@@ -29,7 +29,16 @@ TEXT_STYLE_TABLE_HEADER = "| Figma style | Class | Face | Size / token | Weight 
 ALLOWED_FIGMA_CSS_MISMATCHES: dict[tuple[str, str], str] = {}
 
 # Text styles skipped for CSS selector checks: figma style name -> reason.
-TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {}
+TEXT_STYLE_FIGMA_CSS_GAPS: dict[str, str] = {
+    "Body/Large": (
+        "Home `.entrance .lede` stays at `--text-md` (19px); Figma Body/Large 20px "
+        "reserved until a hero variant is wired."
+    ),
+    "Body/Blockquote": (
+        "`.note-blockquote p` inherits Body/Prose; Figma italic 20px pull-quote "
+        "not applied to avoid essay typography drift."
+    ),
+}
 
 
 def _validate_allow_list_reasons() -> list[str]:

@@ -694,7 +694,7 @@ main.page .entrance h1 {
   max-width: 38rem;
   color: var(--text-default);
   margin: 0 0 var(--space-4);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   line-height: 1.55;
 }
 
