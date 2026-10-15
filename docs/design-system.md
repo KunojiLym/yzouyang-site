@@ -357,9 +357,10 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 10:29 SGT):** No open mismatches besides the allow-listed pair below — all other variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation.
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 10:29 SGT):** No open colour/spacing/type variable mismatches besides the allow-listed pair below — all other variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation.
 
 - **Record domains colour (B1).** Figma still carries `color/record-domains` as its own variable (alias of `color/text-muted` in the latest export). Production CSS maps `.record-domains` to `var(--text-muted)` for AA contrast — no separate token. figma bro should drop the duplicate variable; sync allow-lists `color/record-domains` until then.
+- **Text style drift (CSS vs Figma snapshot).** Until figma bro or CSS reconciles: **Display/H2** is bound to `font-size/text-display-2/max` in Figma but catalogue/Home section titles use `--text-display-3` in CSS; **Label/Xs Caps** is 6% tracking in Figma vs 8% in CSS (`library.css`); **Label/Xs Group** is 2% tracking, no caps in Figma vs 8% tracked caps in CSS. The typography table documents shipped CSS; `test_design_system_sync.py` allow-lists these three names.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).

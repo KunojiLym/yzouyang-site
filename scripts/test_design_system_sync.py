@@ -38,6 +38,181 @@ COLOR_MIX_TOKENS = frozenset(
     }
 )
 
+# CSS / design-system.md — must match Figma snapshot except TEXT_STYLE_FIGMA_CSS_GAPS.
+DOC_TEXT_STYLE_SPEC: dict[str, dict[str, object]] = {
+    "Display/Hero": {
+        "font_size": "font-size/text-display-hero/max",
+        "font_weight": 600,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Display/H1": {
+        "font_size": "font-size/text-display-1/max",
+        "font_weight": 600,
+        "letter_spacing_pct": -2,
+        "text_case": "ORIGINAL",
+    },
+    "Display/H2": {
+        "font_size": "font-size/text-display-3/max",
+        "font_weight": 600,
+    },
+    "Display/Brand": {
+        "font_size": "font-size/text-xl",
+        "font_weight": 600,
+        "letter_spacing_pct": -2,
+        "text_case": "ORIGINAL",
+    },
+    "Display/Record Title": {
+        "font_size": "font-size/text-md",
+        "font_weight": 600,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Display/Practice Title": {
+        "font_size": "font-size/text-sm",
+        "font_weight": 600,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Display/Dropcap": {
+        "font_size": "font-size/text-dropcap/max",
+        "font_weight": 600,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Heading/H3": {
+        "font_size": "font-size/text-lg",
+        "font_weight": 600,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Label/Caps": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 600,
+        "letter_spacing_pct": 8,
+        "text_case": "UPPER",
+    },
+    "Label/Xs Caps": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 400,
+        "letter_spacing_pct": 8,
+        "text_case": "UPPER",
+    },
+    "Label/Xs Group": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 600,
+        "letter_spacing_pct": 8,
+        "text_case": "UPPER",
+    },
+    "Label/Xs Group Light": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 400,
+        "letter_spacing_pct": 2,
+        "text_case": "ORIGINAL",
+    },
+    "Body/Base": {
+        "font_size": "font-size/text-base",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Body/Large": {
+        "font_size": "font-size/text-lg",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Body/Proof": {
+        "font_size": "font-size/text-proof/max",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Body/Small": {
+        "font_size": "font-size/text-sm",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Body/Small Strong": {
+        "font_size": "font-size/text-sm",
+        "font_weight": 600,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Body/Prose": {
+        "font_size": "font-size/text-md",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Body/Blockquote": {
+        "font_size": "font-size/text-lg",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Meta/Small": {
+        "font_size": "font-size/text-sm",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Meta/Xs": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "Meta/Record Domains": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 400,
+        "letter_spacing_pct": 4,
+        "text_case": "ORIGINAL",
+    },
+    "Meta/Map Node Label": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+    "UI/Control": {
+        "font_size": "font-size/text-sm",
+        "font_weight": 400,
+        "letter_spacing_pct": 0,
+        "text_case": "ORIGINAL",
+    },
+}
+
+TEXT_STYLE_FIGMA_CSS_GAPS = frozenset(
+    {
+        "Display/H2",
+        "Label/Xs Caps",
+        "Label/Xs Group",
+    }
+)
+
+FIGMA_TEXT_STYLE_SNAPSHOT: dict[str, dict[str, object]] = {
+    "Display/H2": {
+        "font_size": "font-size/text-display-2/max",
+        "font_weight": 600,
+        "letter_spacing_pct": -1,
+        "text_case": "ORIGINAL",
+    },
+    "Label/Xs Caps": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 400,
+        "letter_spacing_pct": 6,
+        "text_case": "UPPER",
+    },
+    "Label/Xs Group": {
+        "font_size": "font-size/text-xs",
+        "font_weight": 600,
+        "letter_spacing_pct": 2,
+        "text_case": "ORIGINAL",
+    },
+}
+
 
 def _block_after(text: str, marker: str) -> str:
     start = text.find(marker)
@@ -229,6 +404,78 @@ def normalize_font_stack(value: str) -> str:
     return re.sub(r'"', "", value.lower().replace(" ", ""))
 
 
+def color_mix_matches(
+    token: str, snapshot_hex: str, css_value: str, theme: str = "dark"
+) -> bool:
+    snap = snapshot_hex.strip().lower()
+    css = css_value.lower().replace(" ", "")
+    if token == "--line-soft":
+        expected = "#4a5c4e24" if theme == "dark" else "#4a5c4e1f"
+        pct = "14%" if theme == "dark" else "12%"
+        return snap == expected and "var(--rail-green)" in css and pct in css
+    if token == "--line-strong":
+        expected = "#4a5c4e47" if theme == "dark" else "#4a5c4e38"
+        pct = "28%" if theme == "dark" else "22%"
+        return snap == expected and "var(--rail-green)" in css and pct in css
+    if token == "--accent-cta-bg":
+        return snap == "#c49a5a14" and "var(--accent)" in css and "8%" in css
+    if token == "--accent-cta-border":
+        return (
+            snap == "#ad8e58ac"
+            and "55%" in css
+            and "var(--accent)" in css
+            and "var(--line-strong)" in css
+        )
+    return False
+
+
+def _style_letter_spacing_pct(style: dict) -> float | None:
+    ls = style.get("letterSpacing") or {}
+    if ls.get("unit") == "PERCENT" and "value" in ls:
+        return float(ls["value"])
+    return None
+
+
+def _style_matches_spec(style: dict, spec: dict[str, object]) -> list[str]:
+    errors: list[str] = []
+    bound = (style.get("boundVariables") or {}).get("fontSize")
+    expected_fs = spec.get("font_size")
+    if expected_fs and bound != expected_fs:
+        errors.append(f"fontSize {bound!r} != {expected_fs!r}")
+    if "font_weight" in spec and style.get("fontWeight") != spec["font_weight"]:
+        errors.append(f"fontWeight {style.get('fontWeight')} != {spec['font_weight']}")
+    if "letter_spacing_pct" in spec:
+        actual = _style_letter_spacing_pct(style)
+        expected = spec["letter_spacing_pct"]
+        if actual is None or abs(actual - float(expected)) > 0.01:
+            errors.append(f"letterSpacing {actual} != {expected}")
+    if "text_case" in spec and style.get("textCase") != spec["text_case"]:
+        errors.append(f"textCase {style.get('textCase')} != {spec['text_case']}")
+    return errors
+
+
+def validate_text_styles(snapshot: dict, doc: str) -> list[str]:
+    errors: list[str] = []
+    if "Text style drift" not in doc:
+        errors.append('design-system.md missing "Text style drift" under Known Figma gaps')
+    by_name = {item["name"]: item for item in snapshot.get("textStyles", [])}
+    for name, spec in DOC_TEXT_STYLE_SPEC.items():
+        style = by_name.get(name)
+        if style is None:
+            errors.append(f"text style {name} missing from snapshot")
+            continue
+        if name not in doc:
+            errors.append(f"text style {name} missing from design-system.md")
+        if name in TEXT_STYLE_FIGMA_CSS_GAPS:
+            figma_spec = FIGMA_TEXT_STYLE_SNAPSHOT[name]
+            for detail in _style_matches_spec(style, figma_spec):
+                errors.append(f"{name} snapshot drift: {detail}")
+            continue
+        for detail in _style_matches_spec(style, spec):
+            errors.append(f"{name} vs doc/CSS spec: {detail}")
+    return errors
+
+
 def value_matches(
     figma_name: str,
     css_mode: str,
@@ -254,13 +501,13 @@ def value_matches(
             if colors_equivalent(figma_value, line_css):
                 return True
             if line_token in COLOR_MIX_TOKENS and "color-mix" in line_css:
-                return True
+                return color_mix_matches(line_token, figma_value, line_css, theme)
 
     if isinstance(figma_value, str) and figma_value.startswith("#"):
         if colors_equivalent(figma_value, css_value):
             return True
         if css_token in COLOR_MIX_TOKENS and "color-mix" in css_value:
-            return True
+            return color_mix_matches(css_token, figma_value, css_value, theme)
         if css_value.startswith("var("):
             inner = css_token_from_web(css_value)
             if inner in COLOR_MIX_TOKENS:
@@ -335,9 +582,7 @@ def sync_snapshot(
                 f"{figma_name} [{css_mode}] snapshot {resolved!r} "
                 f"≠ tokens.css {token} ({css_show!r})"
             )
-    for style in snapshot.get("textStyles", []):
-        if style["name"] not in doc:
-            errors.append(f"text style {style['name']} missing from design-system.md")
+    errors.extend(validate_text_styles(snapshot, doc))
 
     return errors, allowed_hits
 
