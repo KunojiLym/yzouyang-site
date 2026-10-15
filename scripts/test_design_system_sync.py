@@ -45,15 +45,6 @@ TEXT_STYLE_OPEN_CSS_ITEMS: dict[tuple[str, str], dict[str, object]] = {
     },
 }
 
-# Typography-table mappings with a documented gap (Known Figma gaps). No skip_properties —
-# export checks omit these selectors until Yingzhao aligns or retires them.
-TEXT_STYLE_OPEN_MAPPING_GAPS: dict[tuple[str, str], str] = {
-    ("Display/H2", ".home-plate h2"): (
-        "Shipped `.home-plate h2` inherits **body line-height (1.6)** while Figma **Display/H2** "
-        "is **120%**. **Yingzhao** to align or retire the selector."
-    ),
-}
-
 DIST = ROOT / "dist"
 
 COMPUTED_LH_ONLY_SELECTORS = frozenset(
@@ -526,24 +517,6 @@ def validate_text_style_open_css_items(doc: str, snapshot: dict | None = None) -
                 f"TEXT_STYLE_OPEN_CSS_ITEMS{(style_name, selector)!r}: "
                 f"missing from Known Figma gaps open list"
             )
-    table = parse_text_style_table(doc)
-    for (style_name, selector), reason in TEXT_STYLE_OPEN_MAPPING_GAPS.items():
-        if reason not in doc:
-            errors.append(
-                f"TEXT_STYLE_OPEN_MAPPING_GAPS{(style_name, selector)!r}: "
-                f"reason not found in design-system.md"
-            )
-        if f"`{selector}`" not in open_text:
-            errors.append(
-                f"TEXT_STYLE_OPEN_MAPPING_GAPS{(style_name, selector)!r}: "
-                f"missing from Known Figma gaps open list"
-            )
-        row = next((item for item in table if item["name"] == style_name), None)
-        if row is None or selector not in row["selectors"]:
-            errors.append(
-                f"TEXT_STYLE_OPEN_MAPPING_GAPS{(style_name, selector)!r}: "
-                f"selector missing from typography table row"
-            )
     return errors
 
 
@@ -976,8 +949,6 @@ def collect_text_style_css_mismatches(
         if style is None:
             continue
         for selector in row["selectors"]:
-            if (name, selector) in TEXT_STYLE_OPEN_MAPPING_GAPS:
-                continue
             decls = collect_selector_decls(selector, css_rules)
             if not decls:
                 mismatches.append(
