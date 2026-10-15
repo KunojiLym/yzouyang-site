@@ -707,6 +707,36 @@ test.describe("library focus order", () => {
     }
   });
 
+  test("library page footer follows pane in tab order", async ({ page }) => {
+    const viewports = [
+      { width: 1280, height: 800 },
+      { width: 800, height: 600 },
+      { width: 375, height: 812 },
+    ];
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.goto("/systems/", { waitUntil: "load" });
+      const { paneLastIdx, footerFirstIdx } = await page.evaluate(() => {
+        const pane = document.querySelector(".library-pane");
+        const footer = document.querySelector("footer.library-page-footer");
+        const tabbables = [
+          ...document.querySelectorAll(
+            'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          ),
+        ].filter((el) => !el.closest("[hidden]") && el.getClientRects().length > 0);
+        const inPane = tabbables.filter((el) => pane?.contains(el));
+        const inFooter = tabbables.filter((el) => footer?.contains(el));
+        const paneLastIdx = inPane.length
+          ? tabbables.indexOf(inPane[inPane.length - 1])
+          : -1;
+        const footerFirstIdx = inFooter.length ? tabbables.indexOf(inFooter[0]) : -1;
+        return { paneLastIdx, footerFirstIdx };
+      });
+      expect(paneLastIdx, `${viewport.width}px`).toBeGreaterThanOrEqual(0);
+      expect(footerFirstIdx, `${viewport.width}px`).toBeGreaterThan(paneLastIdx);
+    }
+  });
+
   test("legacy note section hash opens the note that contains it", async ({ page }) => {
     const hash = "2-i-setting-up-databricks-free-edition-account";
     await page.goto(`/notes/#${hash}`, { waitUntil: "load" });

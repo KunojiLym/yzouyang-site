@@ -6,12 +6,12 @@
       "path": "/credentials/#google-cloud",
       "width": 375,
       "theme": "dark",
-      "cls": 0.010260579166666665,
+      "cls": 0.042244585546875,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 9,
+        "layoutShiftSourceCount": 8,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -21,12 +21,12 @@
       "path": "/credentials/#google-cloud",
       "width": 375,
       "theme": "light",
-      "cls": 0.04248385638020833,
+      "cls": 0.042244585546875,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 9,
+        "layoutShiftSourceCount": 8,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -36,7 +36,7 @@
       "path": "/credentials/#google-cloud",
       "width": 768,
       "theme": "dark",
-      "cls": 0.010946124013264974,
+      "cls": 0.044769966443379716,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -51,12 +51,12 @@
       "path": "/credentials/#google-cloud",
       "width": 768,
       "theme": "light",
-      "cls": 0.04488679790496826,
+      "cls": 0.044769966443379716,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
-        "layoutShiftEntryCount": 1,
-        "layoutShiftSourceCount": 5,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 8,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -71,7 +71,7 @@
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 1,
-        "layoutShiftSourceCount": 3,
+        "layoutShiftSourceCount": 5,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -115,8 +115,8 @@
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 7,
+        "layoutShiftEntryCount": 1,
+        "layoutShiftSourceCount": 5,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -126,12 +126,12 @@
       "path": "/credentials/#google-cloud",
       "width": 800,
       "theme": "dark",
-      "cls": 0.01001466766357422,
+      "cls": 0.00902427703857422,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 7,
+        "layoutShiftEntryCount": 1,
+        "layoutShiftSourceCount": 5,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -145,8 +145,8 @@
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
-        "layoutShiftEntryCount": 1,
-        "layoutShiftSourceCount": 5,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 7,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -175,8 +175,8 @@
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
-        "layoutShiftEntryCount": 1,
-        "layoutShiftSourceCount": 5,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 7,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -216,7 +216,7 @@
       "path": "/credentials/#google-cloud",
       "width": 1280,
       "theme": "dark",
-      "cls": 0.0022619461059570313,
+      "cls": 0.0048950695037841795,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -231,7 +231,7 @@
       "path": "/credentials/#google-cloud",
       "width": 1280,
       "theme": "light",
-      "cls": 0.0022639045715332033,
+      "cls": 0.0048970279693603515,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -246,12 +246,12 @@
       "path": "/notes/#NOTE-2026-005",
       "width": 375,
       "theme": "dark",
-      "cls": 0.002892333203125,
+      "cls": 0.0012815729166666665,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 8,
+        "layoutShiftSourceCount": 3,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -261,12 +261,12 @@
       "path": "/notes/#NOTE-2026-005",
       "width": 375,
       "theme": "light",
-      "cls": 0.002892333203125,
+      "cls": 0.0012815729166666665,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 8,
+        "layoutShiftSourceCount": 3,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -276,7 +276,37 @@
       "path": "/notes/#NOTE-2026-005",
       "width": 768,
       "theme": "dark",
-      "cls": 0.003208682123819987,
+      "cls": 0.001059046427408854,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 7,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 768,
+      "theme": "light",
+      "cls": 0.001059046427408854,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 3,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 769,
+      "theme": "dark",
+      "cls": 0.0012600125594318923,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -289,44 +319,14 @@
     {
       "route": "notes",
       "path": "/notes/#NOTE-2026-005",
-      "width": 768,
-      "theme": "light",
-      "cls": 0.003208682123819987,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 8,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 769,
-      "theme": "dark",
-      "cls": 0.030370901199559083,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 7,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
       "width": 769,
       "theme": "light",
-      "cls": 0.004386606997724318,
+      "cls": 0.0012600125594318923,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
+        "layoutShiftSourceCount": 3,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -336,12 +336,12 @@
       "path": "/notes/#NOTE-2026-005",
       "width": 784,
       "theme": "dark",
-      "cls": 0.03838908881362603,
+      "cls": 0.0012560841463050065,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
+        "layoutShiftSourceCount": 3,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -351,112 +351,7 @@
       "path": "/notes/#NOTE-2026-005",
       "width": 784,
       "theme": "light",
-      "cls": 0.004350810148278061,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 800,
-      "theme": "dark",
-      "cls": 0.03789756924438477,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 800,
-      "theme": "light",
-      "cls": 0.0043141064453125,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 7,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 900,
-      "theme": "dark",
-      "cls": 0.015054545018325618,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 900,
-      "theme": "light",
-      "cls": 0.015054545018325618,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 1024,
-      "theme": "dark",
-      "cls": 0.012146966848522425,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 1024,
-      "theme": "light",
-      "cls": 0.0032335728406906127,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 6,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "notes",
-      "path": "/notes/#NOTE-2026-005",
-      "width": 1280,
-      "theme": "dark",
-      "cls": 0.008951397323608399,
+      "cls": 0.0012560841463050065,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -469,9 +364,129 @@
     {
       "route": "notes",
       "path": "/notes/#NOTE-2026-005",
+      "width": 800,
+      "theme": "dark",
+      "cls": 0.037727569244384765,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 1,
+        "layoutShiftSourceCount": 5,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 800,
+      "theme": "light",
+      "cls": 0.0012520562133789064,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 3,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 900,
+      "theme": "dark",
+      "cls": 0.0010934456500771605,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 3,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 900,
+      "theme": "light",
+      "cls": 0.0010934456500771605,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 3,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 1024,
+      "theme": "dark",
+      "cls": 0.012043207082897425,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 3,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 1024,
+      "theme": "light",
+      "cls": 0.0011813363060355186,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 3,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
+      "width": 1280,
+      "theme": "dark",
+      "cls": 0.0010543644189834594,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 3,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "notes",
+      "path": "/notes/#NOTE-2026-005",
       "width": 1280,
       "theme": "light",
-      "cls": 0.0023344482421875,
+      "cls": 0.0011268665552139282,
+      "capture": {
+        "libraryShell": true,
+        "librarySplit": true,
+        "layoutShiftEntryCount": 1,
+        "layoutShiftSourceCount": 5,
+        "stylesheetCount": 4,
+        "observerActive": true
+      }
+    },
+    {
+      "route": "systems",
+      "path": "/systems/#SYS-03",
+      "width": 375,
+      "theme": "dark",
+      "cls": 0.0508830560546875,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -485,28 +500,13 @@
       "route": "systems",
       "path": "/systems/#SYS-03",
       "width": 375,
-      "theme": "dark",
-      "cls": 0.05112232688802083,
-      "capture": {
-        "libraryShell": true,
-        "librarySplit": true,
-        "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 9,
-        "stylesheetCount": 4,
-        "observerActive": true
-      }
-    },
-    {
-      "route": "systems",
-      "path": "/systems/#SYS-03",
-      "width": 375,
       "theme": "light",
-      "cls": 0.05112232688802083,
+      "cls": 0.0508830560546875,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 9,
+        "layoutShiftSourceCount": 8,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -516,12 +516,12 @@
       "path": "/systems/#SYS-03",
       "width": 768,
       "theme": "dark",
-      "cls": 0.03582339477539062,
+      "cls": 0.035706563313802085,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 9,
+        "layoutShiftSourceCount": 8,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -531,12 +531,12 @@
       "path": "/systems/#SYS-03",
       "width": 768,
       "theme": "light",
-      "cls": 0.03582339477539062,
+      "cls": 0.035706563313802085,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
         "layoutShiftEntryCount": 2,
-        "layoutShiftSourceCount": 9,
+        "layoutShiftSourceCount": 8,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -636,12 +636,12 @@
       "path": "/systems/#SYS-03",
       "width": 900,
       "theme": "dark",
-      "cls": 0.0073024582127700615,
+      "cls": 0.008189155743634258,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
-        "layoutShiftEntryCount": 1,
-        "layoutShiftSourceCount": 5,
+        "layoutShiftEntryCount": 2,
+        "layoutShiftSourceCount": 7,
         "stylesheetCount": 4,
         "observerActive": true
       }
@@ -696,7 +696,7 @@
       "path": "/systems/#SYS-03",
       "width": 1280,
       "theme": "dark",
-      "cls": 0.006223197174072265,
+      "cls": 0.003020563507080078,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -711,7 +711,7 @@
       "path": "/systems/#SYS-03",
       "width": 1280,
       "theme": "light",
-      "cls": 0.0023743515014648434,
+      "cls": 0.0030225219726562496,
       "capture": {
         "libraryShell": true,
         "librarySplit": true,
@@ -729,7 +729,7 @@
           "node": ".library-panel-body",
           "count": 1,
           "value": 0.038691611150337285,
-          "startTime": 116,
+          "startTime": 114.5,
           "previousRect": {
             "x": 112.5,
             "y": 507.625,
@@ -747,7 +747,7 @@
           "node": "p.note-dek",
           "count": 1,
           "value": 0.038691611150337285,
-          "startTime": 116,
+          "startTime": 114.5,
           "previousRect": {
             "x": 112.5,
             "y": 333.234375,
@@ -765,7 +765,7 @@
           "node": "p.note-byline.meta",
           "count": 1,
           "value": 0.038691611150337285,
-          "startTime": 116,
+          "startTime": 114.5,
           "previousRect": {
             "x": 112.5,
             "y": 436.234375,
@@ -780,82 +780,10 @@
           }
         },
         {
-          "node": "div.header-actions",
-          "count": 2,
-          "value": 0.003398808314369311,
-          "startTime": 106.29999999701977,
-          "previousRect": {
-            "x": 276.34375,
-            "y": 13.1875,
-            "width": 468.65625,
-            "height": 32.796875
-          },
-          "currentRect": {
-            "x": 285,
-            "y": 13.1875,
-            "width": 460,
-            "height": 32.796875
-          }
-        },
-        {
-          "node": "unknown",
-          "count": 2,
-          "value": 0.003398808314369311,
-          "startTime": 106.29999999701977,
-          "previousRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 687,
-            "height": 22
-          },
-          "currentRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 687,
-            "height": 22
-          }
-        },
-        {
-          "node": ".library-index-control",
-          "count": 3,
-          "value": 0.003398808314369311,
-          "startTime": 103.5,
-          "previousRect": {
-            "x": 30.5,
-            "y": 125.1875,
-            "width": 32,
-            "height": 32
-          },
-          "currentRect": {
-            "x": 73,
-            "y": 82.6875,
-            "width": 32,
-            "height": 32
-          }
-        },
-        {
-          "node": "a.external",
-          "count": 4,
-          "value": 0.003398808314369311,
-          "startTime": 106.29999999701977,
-          "previousRect": {
-            "x": 273.265625,
-            "y": 767.203125,
-            "width": 61.2421875,
-            "height": 20.796875
-          },
-          "currentRect": {
-            "x": 251.5,
-            "y": 767.203125,
-            "width": 54,
-            "height": 20.796875
-          }
-        },
-        {
           "node": "footer.library-page-footer.library-card",
           "count": 3,
           "value": 0.0009877986833550067,
-          "startTime": 119.19999999552965,
+          "startTime": 125.60000000149012,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -873,7 +801,7 @@
           "node": "footer.library-strip",
           "count": 3,
           "value": 0.0009877986833550067,
-          "startTime": 119.19999999552965,
+          "startTime": 125.60000000149012,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -886,6 +814,24 @@
             "width": 719,
             "height": 51.1875
           }
+        },
+        {
+          "node": "div.header-actions",
+          "count": 2,
+          "value": 0.00027221387607688556,
+          "startTime": 113.09999999776483,
+          "previousRect": {
+            "x": 276.34375,
+            "y": 13.1875,
+            "width": 468.65625,
+            "height": 32.796875
+          },
+          "currentRect": {
+            "x": 285,
+            "y": 13.1875,
+            "width": 460,
+            "height": 32.796875
+          }
         }
       ],
       "784": [
@@ -893,7 +839,7 @@
           "node": ".library-panel-body",
           "count": 2,
           "value": 0.03821561942587093,
-          "startTime": 112.14999999850988,
+          "startTime": 160.14999999850988,
           "previousRect": {
             "x": 120,
             "y": 507.625,
@@ -911,7 +857,7 @@
           "node": "p.note-dek",
           "count": 2,
           "value": 0.03821561942587093,
-          "startTime": 112.14999999850988,
+          "startTime": 160.14999999850988,
           "previousRect": {
             "x": 120,
             "y": 333.234375,
@@ -929,7 +875,7 @@
           "node": "footer.library-page-footer.library-card",
           "count": 3,
           "value": 0.03821561942587093,
-          "startTime": 112.39999999850988,
+          "startTime": 129.19999999552965,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -947,7 +893,7 @@
           "node": "p.note-byline.meta",
           "count": 2,
           "value": 0.03821561942587093,
-          "startTime": 112.14999999850988,
+          "startTime": 160.14999999850988,
           "previousRect": {
             "x": 120,
             "y": 436.234375,
@@ -965,7 +911,7 @@
           "node": "footer.library-strip",
           "count": 3,
           "value": 0.03821561942587093,
-          "startTime": 112.39999999850988,
+          "startTime": 129.19999999552965,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -980,28 +926,10 @@
           }
         },
         {
-          "node": "unknown",
-          "count": 1,
-          "value": 0.00336173170440051,
-          "startTime": 102,
-          "previousRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 702,
-            "height": 22
-          },
-          "currentRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 702,
-            "height": 22
-          }
-        },
-        {
           "node": "div.header-actions",
           "count": 1,
-          "value": 0.00336173170440051,
-          "startTime": 102,
+          "value": 0.00026700570242745535,
+          "startTime": 111.39999999850988,
           "previousRect": {
             "x": 291.34375,
             "y": 13.1875,
@@ -1014,50 +942,32 @@
             "width": 460,
             "height": 32.796875
           }
-        },
-        {
-          "node": "a.external",
-          "count": 2,
-          "value": 0.00336173170440051,
-          "startTime": 102,
-          "previousRect": {
-            "x": 273.265625,
-            "y": 767.203125,
-            "width": 61.2421875,
-            "height": 20.796875
-          },
-          "currentRect": {
-            "x": 251.5,
-            "y": 767.203125,
-            "width": 54,
-            "height": 20.796875
-          }
-        },
-        {
-          "node": ".library-index-control",
-          "count": 3,
-          "value": 0.00017346938775510205,
-          "startTime": 91.60000000149012,
-          "previousRect": {
-            "x": 30.5,
-            "y": 125.1875,
-            "width": 32,
-            "height": 32
-          },
-          "currentRect": {
-            "x": 73,
-            "y": 82.6875,
-            "width": 32,
-            "height": 32
-          }
         }
       ],
       "800": [
         {
+          "node": "p.note-dek",
+          "count": 2,
+          "value": 0.025518976425170897,
+          "startTime": 138.05000000074506,
+          "previousRect": {
+            "x": 128,
+            "y": 333.234375,
+            "width": 544,
+            "height": 72.5
+          },
+          "currentRect": {
+            "x": 128,
+            "y": 296.75,
+            "width": 544,
+            "height": 58
+          }
+        },
+        {
           "node": ".library-panel-body",
-          "count": 1,
-          "value": 0.037727569244384765,
-          "startTime": 113.80000000447035,
+          "count": 3,
+          "value": 0.01814994644165039,
+          "startTime": 135.70000000298023,
           "previousRect": {
             "x": 128,
             "y": 507.625,
@@ -1072,118 +982,10 @@
           }
         },
         {
-          "node": "p.note-dek",
-          "count": 1,
-          "value": 0.037727569244384765,
-          "startTime": 113.80000000447035,
-          "previousRect": {
-            "x": 128,
-            "y": 333.234375,
-            "width": 544,
-            "height": 87
-          },
-          "currentRect": {
-            "x": 128,
-            "y": 296.75,
-            "width": 544,
-            "height": 58
-          }
-        },
-        {
-          "node": "p.note-byline.meta",
-          "count": 1,
-          "value": 0.037727569244384765,
-          "startTime": 113.80000000447035,
-          "previousRect": {
-            "x": 128,
-            "y": 436.234375,
-            "width": 544,
-            "height": 47.390625
-          },
-          "currentRect": {
-            "x": 128,
-            "y": 370.75,
-            "width": 544,
-            "height": 47.390625
-          }
-        },
-        {
-          "node": ".library-index-control",
-          "count": 3,
-          "value": 0.0033237158203125,
-          "startTime": 101.29999999701977,
-          "previousRect": {
-            "x": 30.5,
-            "y": 125.1875,
-            "width": 32,
-            "height": 32
-          },
-          "currentRect": {
-            "x": 73,
-            "y": 82.6875,
-            "width": 32,
-            "height": 32
-          }
-        },
-        {
-          "node": "unknown",
-          "count": 2,
-          "value": 0.0033237158203125,
-          "startTime": 104.30000000074506,
-          "previousRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 718,
-            "height": 22
-          },
-          "currentRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 718,
-            "height": 22
-          }
-        },
-        {
-          "node": "div.header-actions",
-          "count": 2,
-          "value": 0.0033237158203125,
-          "startTime": 104.30000000074506,
-          "previousRect": {
-            "x": 307.34375,
-            "y": 13.1875,
-            "width": 468.65625,
-            "height": 32.796875
-          },
-          "currentRect": {
-            "x": 316,
-            "y": 13.1875,
-            "width": 460,
-            "height": 32.796875
-          }
-        },
-        {
-          "node": "a.external",
-          "count": 4,
-          "value": 0.0033237158203125,
-          "startTime": 104.30000000074506,
-          "previousRect": {
-            "x": 273.265625,
-            "y": 767.203125,
-            "width": 61.2421875,
-            "height": 20.796875
-          },
-          "currentRect": {
-            "x": 251.5,
-            "y": 767.203125,
-            "width": 54,
-            "height": 20.796875
-          }
-        },
-        {
           "node": "footer.library-page-footer.library-card",
           "count": 3,
-          "value": 0.0009903906250000002,
-          "startTime": 117.19999999552965,
+          "value": 0.01814994644165039,
+          "startTime": 135.70000000298023,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -1198,10 +1000,28 @@
           }
         },
         {
+          "node": "p.note-byline.meta",
+          "count": 3,
+          "value": 0.01814994644165039,
+          "startTime": 135.70000000298023,
+          "previousRect": {
+            "x": 128,
+            "y": 436.234375,
+            "width": 544,
+            "height": 47.390625
+          },
+          "currentRect": {
+            "x": 128,
+            "y": 370.75,
+            "width": 544,
+            "height": 47.390625
+          }
+        },
+        {
           "node": "footer.library-strip",
           "count": 3,
-          "value": 0.0009903906250000002,
-          "startTime": 117.19999999552965,
+          "value": 0.01814994644165039,
+          "startTime": 135.70000000298023,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -1214,14 +1034,50 @@
             "width": 750,
             "height": 51.1875
           }
+        },
+        {
+          "node": "div.header-actions",
+          "count": 2,
+          "value": 0.009802329177856445,
+          "startTime": 118.64999999850988,
+          "previousRect": {
+            "x": 307.34375,
+            "y": 13.1875,
+            "width": 468.65625,
+            "height": 32.796875
+          },
+          "currentRect": {
+            "x": 316,
+            "y": 13.1875,
+            "width": 460,
+            "height": 32.796875
+          }
+        },
+        {
+          "node": ".library-index-control",
+          "count": 1,
+          "value": 0.0014547119140625,
+          "startTime": 114.60000000149012,
+          "previousRect": {
+            "x": 30.5,
+            "y": 125.1875,
+            "width": 32,
+            "height": 32
+          },
+          "currentRect": {
+            "x": 73,
+            "y": 82.6875,
+            "width": 32,
+            "height": 32
+          }
         }
       ],
       "900": [
         {
           "node": ".library-panel-body",
-          "count": 1,
-          "value": 0.014920224030671296,
-          "startTime": 120.30000000447035,
+          "count": 2,
+          "value": 0.012426604094328704,
+          "startTime": 123.14999999850988,
           "previousRect": {
             "x": 178,
             "y": 514.796875,
@@ -1237,9 +1093,9 @@
         },
         {
           "node": "p.note-byline.meta",
-          "count": 1,
-          "value": 0.014920224030671296,
-          "startTime": 120.30000000447035,
+          "count": 2,
+          "value": 0.012426604094328704,
+          "startTime": 123.14999999850988,
           "previousRect": {
             "x": 178,
             "y": 443.40625,
@@ -1254,28 +1110,10 @@
           }
         },
         {
-          "node": "unknown",
-          "count": 2,
-          "value": 0.0027704359567901236,
-          "startTime": 109.65000000223517,
-          "previousRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 818,
-            "height": 22
-          },
-          "currentRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 818,
-            "height": 22
-          }
-        },
-        {
           "node": "div.header-actions",
           "count": 3,
-          "value": 0.0027704359567901236,
-          "startTime": 111.80000000447035,
+          "value": 0.009932984157986111,
+          "startTime": 120.60000000149012,
           "previousRect": {
             "x": 407.34375,
             "y": 13.1875,
@@ -1290,46 +1128,46 @@
           }
         },
         {
-          "node": ".library-index-control",
-          "count": 3,
-          "value": 0.0027704359567901236,
-          "startTime": 107.5,
+          "node": "unknown",
+          "count": 1,
+          "value": 0.009932984157986111,
+          "startTime": 120.60000000149012,
           "previousRect": {
-            "x": 30.5,
-            "y": 125.1875,
-            "width": 32,
-            "height": 32
+            "x": 41,
+            "y": 648.421875,
+            "width": 818,
+            "height": 22
           },
           "currentRect": {
-            "x": 73,
-            "y": 82.6875,
-            "width": 32,
-            "height": 32
+            "x": 41,
+            "y": 648.421875,
+            "width": 818,
+            "height": 22
           }
         },
         {
-          "node": "a.external",
-          "count": 4,
-          "value": 0.0027704359567901236,
-          "startTime": 109.65000000223517,
+          "node": "button.library-reading-context-section",
+          "count": 1,
+          "value": 0.009932984157986111,
+          "startTime": 120.60000000149012,
           "previousRect": {
-            "x": 273.265625,
-            "y": 767.203125,
-            "width": 61.2421875,
-            "height": 20.796875
+            "x": 567.765625,
+            "y": 142.8125,
+            "width": 287.234375,
+            "height": 17.546875
           },
           "currentRect": {
-            "x": 251.5,
-            "y": 767.203125,
-            "width": 54,
-            "height": 20.796875
+            "x": 537.75,
+            "y": 142.8125,
+            "width": 317.25,
+            "height": 17.546875
           }
         },
         {
           "node": "footer.library-page-footer.library-card",
           "count": 3,
           "value": 0.0008866975308641975,
-          "startTime": 123.39999999850988,
+          "startTime": 125.69999999552965,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -1347,7 +1185,7 @@
           "node": "footer.library-strip",
           "count": 3,
           "value": 0.0008866975308641975,
-          "startTime": 123.39999999850988,
+          "startTime": 125.69999999552965,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -1364,118 +1202,10 @@
       ],
       "1024": [
         {
-          "node": ".library-panel-body",
-          "count": 1,
-          "value": 0.012043207082897425,
-          "startTime": 117.80000000447035,
-          "previousRect": {
-            "x": 240,
-            "y": 530.828125,
-            "width": 544,
-            "height": 109.59375
-          },
-          "currentRect": {
-            "x": 239,
-            "y": 501.828125,
-            "width": 545,
-            "height": 138.59375
-          }
-        },
-        {
-          "node": "p.note-byline.meta",
-          "count": 1,
-          "value": 0.012043207082897425,
-          "startTime": 117.80000000447035,
-          "previousRect": {
-            "x": 240,
-            "y": 459.4375,
-            "width": 544,
-            "height": 47.390625
-          },
-          "currentRect": {
-            "x": 240,
-            "y": 430.4375,
-            "width": 544,
-            "height": 47.390625
-          }
-        },
-        {
-          "node": ".library-index-control",
-          "count": 3,
-          "value": 0.00244884192943573,
-          "startTime": 106.19999999552965,
-          "previousRect": {
-            "x": 30.5,
-            "y": 125.1875,
-            "width": 32,
-            "height": 32
-          },
-          "currentRect": {
-            "x": 73,
-            "y": 82.6875,
-            "width": 32,
-            "height": 32
-          }
-        },
-        {
-          "node": "div.header-actions",
-          "count": 3,
-          "value": 0.00244884192943573,
-          "startTime": 106.20000000298023,
-          "previousRect": {
-            "x": 429.34375,
-            "y": 13.1875,
-            "width": 570.65625,
-            "height": 32.796875
-          },
-          "currentRect": {
-            "x": 447,
-            "y": 13.1875,
-            "width": 553,
-            "height": 32.796875
-          }
-        },
-        {
-          "node": "unknown",
-          "count": 2,
-          "value": 0.00244884192943573,
-          "startTime": 106.19999999925494,
-          "previousRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 942,
-            "height": 22
-          },
-          "currentRect": {
-            "x": 41,
-            "y": 653.421875,
-            "width": 942,
-            "height": 22
-          }
-        },
-        {
-          "node": "a.external",
-          "count": 4,
-          "value": 0.00244884192943573,
-          "startTime": 106.19999999925494,
-          "previousRect": {
-            "x": 273.265625,
-            "y": 767.203125,
-            "width": 61.2421875,
-            "height": 20.796875
-          },
-          "currentRect": {
-            "x": 251.5,
-            "y": 767.203125,
-            "width": 54,
-            "height": 20.796875
-          }
-        },
-        {
           "node": "footer.library-page-footer.library-card",
           "count": 3,
-          "value": 0.0007847309112548827,
-          "startTime": 121.70000000298023,
+          "value": 0.012043207082897425,
+          "startTime": 120.89999999850988,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -1490,10 +1220,28 @@
           }
         },
         {
+          "node": ".library-panel-body",
+          "count": 2,
+          "value": 0.012043207082897425,
+          "startTime": 121.44999999925494,
+          "previousRect": {
+            "x": 240,
+            "y": 530.828125,
+            "width": 544,
+            "height": 109.59375
+          },
+          "currentRect": {
+            "x": 239,
+            "y": 501.828125,
+            "width": 545,
+            "height": 138.59375
+          }
+        },
+        {
           "node": "footer.library-strip",
           "count": 3,
-          "value": 0.0007847309112548827,
-          "startTime": 121.70000000298023,
+          "value": 0.012043207082897425,
+          "startTime": 120.89999999850988,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -1506,6 +1254,42 @@
             "width": 974,
             "height": 51.1875
           }
+        },
+        {
+          "node": "p.note-byline.meta",
+          "count": 2,
+          "value": 0.012043207082897425,
+          "startTime": 121.44999999925494,
+          "previousRect": {
+            "x": 240,
+            "y": 459.4375,
+            "width": 544,
+            "height": 47.390625
+          },
+          "currentRect": {
+            "x": 240,
+            "y": 430.4375,
+            "width": 544,
+            "height": 47.390625
+          }
+        },
+        {
+          "node": "div.header-actions",
+          "count": 3,
+          "value": 0.012043207082897425,
+          "startTime": 120.89999999850988,
+          "previousRect": {
+            "x": 429.34375,
+            "y": 13.1875,
+            "width": 570.65625,
+            "height": 32.796875
+          },
+          "currentRect": {
+            "x": 447,
+            "y": 13.1875,
+            "width": 553,
+            "height": 32.796875
+          }
         }
       ]
     },
@@ -1515,7 +1299,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.003500589588497643,
-          "startTime": 94.89999999850988,
+          "startTime": 88.30000000447035,
           "previousRect": {
             "x": 276.34375,
             "y": 13.1875,
@@ -1533,25 +1317,25 @@
           "node": "unknown",
           "count": 6,
           "value": 0.003500589588497643,
-          "startTime": 94.89999999850988,
+          "startTime": 88.30000000447035,
           "previousRect": {
             "x": 49,
-            "y": 638.09375,
+            "y": 639.046875,
             "width": 671,
-            "height": 17.328125
+            "height": 18.875
           },
           "currentRect": {
             "x": 49,
-            "y": 638.09375,
+            "y": 639.046875,
             "width": 671,
-            "height": 17.328125
+            "height": 18.875
           }
         },
         {
           "node": "a.external",
           "count": 6,
           "value": 0.003500589588497643,
-          "startTime": 94.89999999850988,
+          "startTime": 88.30000000447035,
           "previousRect": {
             "x": 273.265625,
             "y": 762.203125,
@@ -1569,7 +1353,7 @@
           "node": "footer.library-page-footer.library-card",
           "count": 3,
           "value": 0.0009877986833550067,
-          "startTime": 68.20000000298023,
+          "startTime": 74.10000000149012,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -1587,7 +1371,7 @@
           "node": "footer.library-strip",
           "count": 3,
           "value": 0.0009877986833550067,
-          "startTime": 68.20000000298023,
+          "startTime": 74.10000000149012,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -1607,7 +1391,7 @@
           "node": "unknown",
           "count": 6,
           "value": 0.003472381000129544,
-          "startTime": 87.60000000149012,
+          "startTime": 78.20000000298023,
           "previousRect": {
             "x": 49,
             "y": 638.09375,
@@ -1625,7 +1409,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.003472381000129544,
-          "startTime": 87.60000000149012,
+          "startTime": 78.20000000298023,
           "previousRect": {
             "x": 291.34375,
             "y": 13.1875,
@@ -1643,7 +1427,7 @@
           "node": "a.external",
           "count": 6,
           "value": 0.003472381000129544,
-          "startTime": 87.60000000149012,
+          "startTime": 78.20000000298023,
           "previousRect": {
             "x": 273.265625,
             "y": 762.203125,
@@ -1659,9 +1443,9 @@
         },
         {
           "node": "footer.library-page-footer.library-card",
-          "count": 3,
+          "count": 2,
           "value": 0.000989078443877551,
-          "startTime": 67.39999999850988,
+          "startTime": 67.85000000149012,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -1677,9 +1461,9 @@
         },
         {
           "node": "footer.library-strip",
-          "count": 3,
+          "count": 2,
           "value": 0.000989078443877551,
-          "startTime": 67.39999999850988,
+          "startTime": 67.85000000149012,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -1699,7 +1483,7 @@
           "node": "li",
           "count": 3,
           "value": 0.005307655334472657,
-          "startTime": 84.70000000298023,
+          "startTime": 96.79999999701977,
           "previousRect": {
             "x": 44,
             "y": 297.65625,
@@ -1717,7 +1501,7 @@
           "node": "unknown",
           "count": 6,
           "value": 0.005307655334472657,
-          "startTime": 84.70000000298023,
+          "startTime": 96.79999999701977,
           "previousRect": {
             "x": 49,
             "y": 638.09375,
@@ -1735,7 +1519,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.005307655334472657,
-          "startTime": 84.70000000298023,
+          "startTime": 96.79999999701977,
           "previousRect": {
             "x": 307.34375,
             "y": 13.1875,
@@ -1753,7 +1537,7 @@
           "node": "a.external",
           "count": 3,
           "value": 0.005307655334472657,
-          "startTime": 84.70000000298023,
+          "startTime": 96.79999999701977,
           "previousRect": {
             "x": 371.21875,
             "y": 762.203125,
@@ -1771,7 +1555,7 @@
           "node": "footer.library-page-footer.library-card",
           "count": 3,
           "value": 0.0009903906250000002,
-          "startTime": 62.70000000298023,
+          "startTime": 67.89999999850988,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -1789,7 +1573,7 @@
           "node": "footer.library-strip",
           "count": 3,
           "value": 0.0009903906250000002,
-          "startTime": 62.70000000298023,
+          "startTime": 67.89999999850988,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -1809,7 +1593,7 @@
           "node": "p.record-methods.meta",
           "count": 3,
           "value": 0.0073024582127700615,
-          "startTime": 80.70000000298023,
+          "startTime": 83.29999999701977,
           "previousRect": {
             "x": 61,
             "y": 581.984375,
@@ -1827,7 +1611,7 @@
           "node": "p.related-paths.meta",
           "count": 3,
           "value": 0.0073024582127700615,
-          "startTime": 80.70000000298023,
+          "startTime": 83.29999999701977,
           "previousRect": {
             "x": 57,
             "y": 615.578125,
@@ -1845,7 +1629,7 @@
           "node": "p.record-domains",
           "count": 3,
           "value": 0.0073024582127700615,
-          "startTime": 80.70000000298023,
+          "startTime": 83.29999999701977,
           "previousRect": {
             "x": 61,
             "y": 553.1875,
@@ -1861,9 +1645,9 @@
         },
         {
           "node": "unknown",
-          "count": 2,
+          "count": 3,
           "value": 0.0073024582127700615,
-          "startTime": 83.35000000149012,
+          "startTime": 83.29999999701977,
           "previousRect": {
             "x": 41,
             "y": 648.421875,
@@ -1879,9 +1663,9 @@
         },
         {
           "node": "div.header-actions",
-          "count": 2,
+          "count": 3,
           "value": 0.0073024582127700615,
-          "startTime": 83.35000000149012,
+          "startTime": 83.29999999701977,
           "previousRect": {
             "x": 407.34375,
             "y": 13.1875,
@@ -1899,7 +1683,7 @@
           "node": "footer.library-page-footer.library-card",
           "count": 3,
           "value": 0.0008866975308641975,
-          "startTime": 78.30000000447035,
+          "startTime": 67.79999999701977,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -1917,7 +1701,7 @@
           "node": "footer.library-strip",
           "count": 3,
           "value": 0.0008866975308641975,
-          "startTime": 78.30000000447035,
+          "startTime": 67.79999999701977,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -1935,19 +1719,19 @@
       "1024": [
         {
           "node": "unknown",
-          "count": 5,
+          "count": 6,
           "value": 0.0030147915147244932,
-          "startTime": 85.30000000447035,
+          "startTime": 87.39999999850988,
           "previousRect": {
-            "x": 57,
-            "y": 606.984375,
-            "width": 910,
+            "x": 49,
+            "y": 627.703125,
+            "width": 926,
             "height": 22
           },
           "currentRect": {
-            "x": 57,
-            "y": 606.984375,
-            "width": 910,
+            "x": 49,
+            "y": 627.703125,
+            "width": 926,
             "height": 22
           }
         },
@@ -1955,7 +1739,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.0030147915147244932,
-          "startTime": 85.30000000447035,
+          "startTime": 87.39999999850988,
           "previousRect": {
             "x": 429.34375,
             "y": 13.1875,
@@ -1971,9 +1755,9 @@
         },
         {
           "node": "a.external",
-          "count": 4,
+          "count": 6,
           "value": 0.0030147915147244932,
-          "startTime": 86.85000000149012,
+          "startTime": 87.39999999850988,
           "previousRect": {
             "x": 273.265625,
             "y": 762.203125,
@@ -1989,9 +1773,9 @@
         },
         {
           "node": "footer.library-page-footer.library-card",
-          "count": 3,
+          "count": 2,
           "value": 0.0007847309112548827,
-          "startTime": 71.30000000447035,
+          "startTime": 66.79999999701977,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -2007,9 +1791,9 @@
         },
         {
           "node": "footer.library-strip",
-          "count": 3,
+          "count": 2,
           "value": 0.0007847309112548827,
-          "startTime": 71.30000000447035,
+          "startTime": 66.79999999701977,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -2031,7 +1815,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.00622280540119067,
-          "startTime": 81.60000000149012,
+          "startTime": 81.70000000298023,
           "previousRect": {
             "x": 276.34375,
             "y": 13.1875,
@@ -2049,7 +1833,7 @@
           "node": "unknown",
           "count": 3,
           "value": 0.00622280540119067,
-          "startTime": 81.60000000149012,
+          "startTime": 81.70000000298023,
           "previousRect": {
             "x": 41,
             "y": 648.421875,
@@ -2067,7 +1851,7 @@
           "node": "article.credential-card",
           "count": 3,
           "value": 0.00622280540119067,
-          "startTime": 81.60000000149012,
+          "startTime": 81.70000000298023,
           "previousRect": {
             "x": 57,
             "y": 614.421875,
@@ -2085,7 +1869,7 @@
           "node": "p.links.credential-card-links",
           "count": 6,
           "value": 0.00622280540119067,
-          "startTime": 81.60000000149012,
+          "startTime": 81.70000000298023,
           "previousRect": {
             "x": 240.75,
             "y": 543.828125,
@@ -2101,9 +1885,9 @@
         },
         {
           "node": "footer.library-page-footer.library-card",
-          "count": 3,
+          "count": 2,
           "value": 0.0009877986833550067,
-          "startTime": 68.70000000298023,
+          "startTime": 59.899999998509884,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -2119,9 +1903,9 @@
         },
         {
           "node": "footer.library-strip",
-          "count": 3,
+          "count": 2,
           "value": 0.0009877986833550067,
-          "startTime": 68.70000000298023,
+          "startTime": 59.899999998509884,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -2141,7 +1925,7 @@
           "node": "unknown",
           "count": 3,
           "value": 0.006209177601094149,
-          "startTime": 77.60000000149012,
+          "startTime": 80.10000000149012,
           "previousRect": {
             "x": 41,
             "y": 648.421875,
@@ -2159,7 +1943,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.006209177601094149,
-          "startTime": 77.60000000149012,
+          "startTime": 80.10000000149012,
           "previousRect": {
             "x": 291.34375,
             "y": 13.1875,
@@ -2177,7 +1961,7 @@
           "node": "article.credential-card",
           "count": 3,
           "value": 0.006209177601094149,
-          "startTime": 77.60000000149012,
+          "startTime": 80.10000000149012,
           "previousRect": {
             "x": 57,
             "y": 614.421875,
@@ -2195,7 +1979,7 @@
           "node": "p.links.credential-card-links",
           "count": 6,
           "value": 0.006209177601094149,
-          "startTime": 77.60000000149012,
+          "startTime": 80.10000000149012,
           "previousRect": {
             "x": 244.5,
             "y": 543.828125,
@@ -2211,9 +1995,9 @@
         },
         {
           "node": "footer.library-page-footer.library-card",
-          "count": 2,
+          "count": 1,
           "value": 0.000989078443877551,
-          "startTime": 63.650000002235174,
+          "startTime": 64.69999999552965,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -2229,9 +2013,9 @@
         },
         {
           "node": "footer.library-strip",
-          "count": 2,
+          "count": 1,
           "value": 0.000989078443877551,
-          "startTime": 63.650000002235174,
+          "startTime": 64.69999999552965,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -2251,7 +2035,7 @@
           "node": "article.credential-card",
           "count": 3,
           "value": 0.00902427703857422,
-          "startTime": 81.90000000596046,
+          "startTime": 80.5,
           "previousRect": {
             "x": 57,
             "y": 614.421875,
@@ -2269,7 +2053,7 @@
           "node": "p.meta.credential-card-meta",
           "count": 3,
           "value": 0.00902427703857422,
-          "startTime": 81.90000000596046,
+          "startTime": 80.5,
           "previousRect": {
             "x": 423,
             "y": 499.234375,
@@ -2287,7 +2071,7 @@
           "node": "p.links.credential-card-links",
           "count": 3,
           "value": 0.00902427703857422,
-          "startTime": 81.90000000596046,
+          "startTime": 80.5,
           "previousRect": {
             "x": 423,
             "y": 555.828125,
@@ -2305,7 +2089,7 @@
           "node": "unknown",
           "count": 3,
           "value": 0.00902427703857422,
-          "startTime": 81.90000000596046,
+          "startTime": 80.5,
           "previousRect": {
             "x": 41,
             "y": 648.421875,
@@ -2323,7 +2107,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.00902427703857422,
-          "startTime": 81.90000000596046,
+          "startTime": 80.5,
           "previousRect": {
             "x": 307.34375,
             "y": 13.1875,
@@ -2339,9 +2123,9 @@
         },
         {
           "node": "footer.library-page-footer.library-card",
-          "count": 3,
+          "count": 2,
           "value": 0.0009903906250000002,
-          "startTime": 64.10000000149012,
+          "startTime": 63.849999997764826,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -2357,9 +2141,9 @@
         },
         {
           "node": "footer.library-strip",
-          "count": 3,
+          "count": 2,
           "value": 0.0009903906250000002,
-          "startTime": 64.10000000149012,
+          "startTime": 63.849999997764826,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -2379,7 +2163,7 @@
           "node": "unknown",
           "count": 3,
           "value": 0.002365719352816358,
-          "startTime": 80,
+          "startTime": 90.69999999552965,
           "previousRect": {
             "x": 41,
             "y": 648.421875,
@@ -2397,7 +2181,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.002365719352816358,
-          "startTime": 80,
+          "startTime": 90.69999999552965,
           "previousRect": {
             "x": 407.34375,
             "y": 13.1875,
@@ -2415,7 +2199,7 @@
           "node": "a.external",
           "count": 9,
           "value": 0.002365719352816358,
-          "startTime": 80,
+          "startTime": 90.69999999552965,
           "previousRect": {
             "x": 371.21875,
             "y": 762.203125,
@@ -2431,9 +2215,9 @@
         },
         {
           "node": "footer.library-page-footer.library-card",
-          "count": 3,
+          "count": 2,
           "value": 0.0008866975308641975,
-          "startTime": 68.10000000149012,
+          "startTime": 68.59999999776483,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -2449,9 +2233,9 @@
         },
         {
           "node": "footer.library-strip",
-          "count": 3,
+          "count": 2,
           "value": 0.0008866975308641975,
-          "startTime": 68.10000000149012,
+          "startTime": 68.59999999776483,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -2471,7 +2255,7 @@
           "node": "unknown",
           "count": 3,
           "value": 0.002104538809508085,
-          "startTime": 92,
+          "startTime": 96,
           "previousRect": {
             "x": 41,
             "y": 648.421875,
@@ -2489,7 +2273,7 @@
           "node": "div.header-actions",
           "count": 3,
           "value": 0.002104538809508085,
-          "startTime": 92,
+          "startTime": 96,
           "previousRect": {
             "x": 429.34375,
             "y": 13.1875,
@@ -2507,7 +2291,7 @@
           "node": "a.external",
           "count": 9,
           "value": 0.002104538809508085,
-          "startTime": 92,
+          "startTime": 96,
           "previousRect": {
             "x": 371.21875,
             "y": 762.203125,
@@ -2523,9 +2307,9 @@
         },
         {
           "node": "footer.library-page-footer.library-card",
-          "count": 3,
+          "count": 1,
           "value": 0.0007847309112548827,
-          "startTime": 71.80000000447035,
+          "startTime": 81.29999999701977,
           "previousRect": {
             "x": 24,
             "y": 709.609375,
@@ -2541,9 +2325,9 @@
         },
         {
           "node": "footer.library-strip",
-          "count": 3,
+          "count": 1,
           "value": 0.0007847309112548827,
-          "startTime": 71.80000000447035,
+          "startTime": 81.29999999701977,
           "previousRect": {
             "x": 25,
             "y": 645.421875,
@@ -2574,17 +2358,17 @@
       },
       "800": {
         "div.library-pane": 0,
-        ".library-panel-body": 1,
+        ".library-panel-body": 2,
         "div.library-panels": 0
       },
       "900": {
         "div.library-pane": 0,
-        ".library-panel-body": 1,
+        ".library-panel-body": 2,
         "div.library-panels": 0
       },
       "1024": {
         "div.library-pane": 0,
-        ".library-panel-body": 1,
+        ".library-panel-body": 2,
         "div.library-panels": 0
       }
     },

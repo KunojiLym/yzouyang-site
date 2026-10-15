@@ -44,21 +44,37 @@ body:has(main.library-route) {
   border-radius: var(--radius-md);
   background: var(--bg-panel);
   overflow: hidden;
-  order: 1;
-}
-
-.library-shell > .library-page-footer.library-card {
-  order: 2;
 }
 
 .library-frame > .library-split {
-  order: 1;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.library-frame > .library-strip {
-  order: 2;
+/* Boot: reserve strip row before late parse (DOM order: split then strip). */
+html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) var(--library-strip-min-height);
+}
+
+html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-split {
+  grid-row: 1;
+  min-height: 0;
+}
+
+html.js .library-frame:has(#library-split.is-booting):has(> .library-strip) > .library-strip {
+  grid-row: 2;
+}
+
+/* Boot: reserve library shell footer before late parse (frame then footer). */
+html.js .library-shell:has(#library-split.is-booting):not(:has(> .library-page-footer.library-card))::after {
+  content: "";
+  display: block;
+  flex: 0 0 auto;
+  min-height: calc(var(--library-page-footer-min-height) + var(--space-3));
+  margin-top: var(--space-3);
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
 .library-split {
@@ -1322,7 +1338,7 @@ main.page .library-panel--note .library-panel-title {
 
 /* Notes: reserve `.library-reading-context` slot while collapsed index + [hidden] (design-system). */
 html.js[data-library-boot="detail"]
-  main.library-route[aria-label="Notes"]
+  main.library-route[data-library-route="notes"]
   .library-split:is(.is-booting, .is-boot-settle):is(
     .is-index-collapsed,
     .is-detail-open,
@@ -1337,7 +1353,7 @@ html.js[data-library-boot="detail"]
 /* Notes index: expanded in SSR; only JS may collapse during hash boot (html.js). */
 @media (width > 48rem) {
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"] {
     grid-template-columns: var(--library-rail-width) minmax(0, 1fr);
     position: relative;
@@ -1345,7 +1361,7 @@ html.js[data-library-boot="detail"]
   }
 
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"]
     .library-index {
     width: var(--library-rail-width);
@@ -1354,14 +1370,14 @@ html.js[data-library-boot="detail"]
   }
 
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"]
     .library-index-rail {
     display: flex;
   }
 
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"]
     .library-index-drawer {
     position: absolute;
@@ -1379,7 +1395,7 @@ html.js[data-library-boot="detail"]
 }
 
 /* Notes index: expanded in SSR; only JS may collapse (html.js). */
-html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
+html:not(.js) main.library-route[data-library-route="notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
   transform: scaleX(1);
   opacity: 1;
   visibility: visible;
@@ -1387,7 +1403,7 @@ html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-d
 }
 
 @media (width <= 64rem) and (width > 48rem) {
-  html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
+  html:not(.js) main.library-route[data-library-route="notes"] .library-split[data-index-default="collapsed"] .library-index-drawer {
     transform: scaleY(1);
   }
 }
@@ -1402,6 +1418,12 @@ html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-d
 
 /* Narrow desktop / tablet: stack index above pane — vertical fold */
 @media (width <= 64rem) and (width > 48rem) {
+  html.js .library-split.is-booting .library-index-header,
+  html.js .library-split.is-booting .library-index-controls {
+    min-height: var(--library-index-control-size);
+    align-items: center;
+  }
+
   .library-split {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 0.38fr) minmax(0, 0.62fr);
@@ -1411,7 +1433,7 @@ html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-d
   .library-split.is-index-collapsed,
   .library-split.is-index-unpinned,
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"] {
     grid-template-columns: 1fr;
     grid-template-rows: var(--library-rail-width) minmax(0, 1fr);
@@ -1431,7 +1453,7 @@ html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-d
   }
 
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"]:not(.is-index-overlay-open)
     .library-index-drawer {
     transform: scaleY(0);
@@ -1453,7 +1475,7 @@ html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-d
   }
 
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"]
     .library-index {
     max-height: var(--library-rail-width);
@@ -1541,7 +1563,7 @@ html:not(.js) main.library-route[aria-label="Notes"] .library-split[data-index-d
   }
 
   html.js[data-library-boot="detail"]
-    main.library-route[aria-label="Notes"]
+    main.library-route[data-library-route="notes"]
     .library-split.is-booting[data-index-default="collapsed"]
     .library-index-drawer {
     display: none;

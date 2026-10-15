@@ -76,7 +76,7 @@ function syntheticProbeHtml() {
   <head><meta charset="utf-8" /></head>
   <body>
     <header class="site-header"><div class="header-actions"><nav class="site-nav"><a href="/systems/">Systems</a></nav></div></header>
-    <main class="page library-route" aria-label="Notes">
+    <main class="page library-route" data-library-route="notes">
       <div class="home-snap-proposition"><p class="lede">Home lede</p></div>
       <div class="entrance"><h1>Probe h1</h1><p class="lede">Entrance lede</p></div>
       <div class="home-plate"><h2>Probe plate</h2></div>

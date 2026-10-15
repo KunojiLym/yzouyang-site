@@ -322,6 +322,7 @@ Builder: `scripts/build.py` (`build_perspectives`, `_markdown_to_html`). Content
 | `.library-card` / `.site-footer` / `.library-page-footer` | Footer: location · focus · mailto · social |
 | `.site-nav` | **Systems · Notes · Credentials** |
 | `.library-shell` | Split-pane catalogue on Systems / Notes / Credentials |
+| `data-library-route` on `<main class="library-route">` | Route hook for CSS (`notes`, `systems`, `credentials`) — do not use `aria-label` for styling |
 | `.library-index-list` / `.library-index-trigger` | Catalogue index (buttons; opens panel) |
 | `.library-index-group` / `.library-index-group-label` | Sticky tiered headers in Notes index (category / series) |
 | `.library-index-inarticle-*` | In-note heading jump links in sidebar when index open |

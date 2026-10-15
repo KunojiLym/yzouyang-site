@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -538,6 +539,10 @@ def computed_line_height_ratios(
     if not COMPUTE_LINE_HEIGHTS.is_file():
         raise RuntimeError(f"missing {COMPUTE_LINE_HEIGHTS}")
     dist = dist_dir or DIST
+    if os.environ.get("GITHUB_ACTIONS") == "true" and not dist.is_dir():
+        raise RuntimeError(
+            f"dist/ is required for line-height probes in CI; run scripts/build.py first ({dist})"
+        )
     probes = [
         {"selector": sel, **_line_height_probe_for_selector(sel)} for sel in selectors
     ]

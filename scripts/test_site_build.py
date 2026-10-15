@@ -1413,11 +1413,34 @@ def main() -> None:
     if not has_html_class(systems, "library-strip"):
         fail("systems page must include cross-link strip")
 
+    def assert_library_shell_dom_order(html: str, label: str) -> None:
+        shell = html.find('id="library-shell"')
+        if shell < 0:
+            fail(f"{label} missing library-shell")
+        frame = html.find('class="library-frame"', shell)
+        footer = html.find('class="library-page-footer', shell)
+        split = html.find('id="library-split"', shell)
+        strip = html.find('class="library-strip"', shell)
+        if frame < 0 or footer < 0 or split < 0:
+            fail(f"{label} library shell missing frame, split, or page footer")
+        if not (frame < split < footer):
+            fail(f"{label} DOM order must be library-frame, then split, then page footer")
+        if strip >= 0 and not (split < strip < footer):
+            fail(f"{label} library-strip must follow library-split and precede page footer")
+
+    for label, html in (
+        ("Systems", systems),
+    ):
+        assert_library_shell_dom_order(html, label)
+
     notes = (DIST / "notes" / "index.html").read_text(encoding="utf-8")
     credentials = (DIST / "credentials" / "index.html").read_text(encoding="utf-8")
     for label, html in (("Notes", notes), ("Credentials", credentials)):
         if not has_html_class(html, "library-shell"):
             fail(f"{label} must use unified library-shell")
+        assert_library_shell_dom_order(html, label)
+    if 'data-library-route="notes"' not in notes:
+        fail("notes main must set data-library-route=notes for route-specific CSS")
         if 'class="page-with-toc"' in html:
             fail(f"{label} must not use legacy scroll longform layout")
         if not has_html_class(html, "header-search"):
