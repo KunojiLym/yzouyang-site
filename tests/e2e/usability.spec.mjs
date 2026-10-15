@@ -739,10 +739,14 @@ test.describe("library boot CLS", () => {
           .waitFor({ state: "visible", timeout: 8000 })
           .catch(() => undefined);
       }
-      await page.waitForTimeout(2200);
+      await expect
+        .poll(async () => page.evaluate(() => window.__cls || 0), {
+          message: `${item.path} @${item.width} cumulative layout shift`,
+          timeout: 12_000,
+        })
+        .toBeLessThan(0.1);
       const cls = await page.evaluate(() => window.__cls || 0);
       scores.push(`${item.path} @${item.width} ${cls.toFixed(3)}`);
-      expect(cls, `${item.path} @${item.width}`).toBeLessThan(0.1);
       await context.close();
     }
     console.log(scores.join("\n"));
