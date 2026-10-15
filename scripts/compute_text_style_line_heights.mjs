@@ -30,8 +30,13 @@ function defaultProbeForSelector(selector) {
     selector.includes("site-nav") ||
     selector.includes("header-actions")
   ) {
-    const width = selector === ".home-snap-proposition .lede" ? 900 : 1280;
-    return { page: "index.html", width };
+    if (selector === ".home-snap-proposition .lede") {
+      return { page: "index.html", width: 900 };
+    }
+    if (selector === ".entrance .lede") {
+      return { page: "index.html", width: 800 };
+    }
+    return { page: "index.html", width: 1280 };
   }
   if (selector.includes("not-found")) {
     return { page: "404.html", width: 1280 };

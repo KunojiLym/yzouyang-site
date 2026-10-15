@@ -153,7 +153,7 @@ Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens
 
 At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
 
-Figma text styles (27) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`. **Size / token** and **Weight / tracking** columns describe **shipped CSS** on the listed selectors (not a live Figma diff).
+Figma text styles (28) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`. **Size / token** and **Weight / tracking** columns describe **shipped CSS** on the listed selectors (not a live Figma diff).
 
 | Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
@@ -172,7 +172,8 @@ Figma text styles (27) mapped to Layer C classes. Token columns reference `token
 | Label/Xs Group | `.library-index-group--depth-1 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 600, 2% |
 | Label/Xs Group Light | `.library-index-group--depth-2 > .library-index-group-label` | Source Sans 3 | `--text-xs` | 400, 2% |
 | Body/Base | `body` | Source Sans 3 | `--text-base` | 400 |
-| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% — **sync maps Home lede at `.home-snap-proposition .lede` (see open gap below); shipped lede is lh 1.5 at ≥900px** |
+| Body/Large | `.entrance .lede` | Source Sans 3 | `--text-md` | 400, lh 155% |
+| Body/Large Hero | `.home-snap-proposition .lede` | Source Sans 3 | `--text-md` | 400, lh 150% at ≥900px (`home.css`) |
 | Body/Large Dek | `.library-panel--note .note-dek` | Source Sans 3 | `--text-lg` | 400, lh 145% — **matches shipped note dek sizing; not a visual change** |
 | Body/Proof | `.entrance-proof` | Source Sans 3 | `--text-proof` | 400 |
 | Body/Small | `.site-nav a` | Source Sans 3 | `--text-sm` | 400 |
@@ -383,13 +384,11 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 14:05 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **27** `textStyles` match the typography table and `test_design_system_sync.py`. Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (line-height includes inherited `body` rhythm when a selector omits it).
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 20:45 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **28** `textStyles` match the typography table and `test_design_system_sync.py`. Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (line-height includes inherited `body` rhythm when a selector omits it).
 
 **Open (not enforced by sync; Yingzhao decides):**
 
 - **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** / **letter-spacing** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
-- **`.home-snap-proposition .lede` (Body/Large — open).** **Yingzhao:** shipped CSS stays **line-height 1.5** at **≥900px** (`home.css`); legacy Figma **Body/Large** is **155%**. Figma is adding a matching text style. **No CSS change.** Sync skips **line-height** for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`) until resolved. **When `inbox/figma-vars-full.json` lands:** copy it verbatim to [`docs/figma/variables.json`](figma/variables.json), map **`.home-snap-proposition .lede`** to the new style in the typography table / sync mapping, and remove this open item.
-- **`.entrance .lede` (Body/Large table alias — open).** Doc-table alias for the shipped Home lede; same gap and resolution as **`.home-snap-proposition .lede`** above.
 - **`.home-plate h2` (Display/H2 — open).** home-plate sections are not on the shipped home route; line-height checked on library panel titles.
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
 - **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.

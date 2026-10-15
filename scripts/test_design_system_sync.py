@@ -47,14 +47,6 @@ TEXT_STYLE_OPEN_CSS_ITEMS: dict[tuple[str, str], dict[str, object]] = {
         "reason": "home-plate sections are not on the shipped home route; line-height checked on library panel titles.",
         "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
     },
-    ("Body/Large", ".home-snap-proposition .lede"): {
-        "reason": "**Yingzhao:** shipped CSS stays **line-height 1.5** at **≥900px** (`home.css`); legacy Figma **Body/Large** is **155%**. Figma is adding a matching text style. **No CSS change.** Sync skips **line-height** for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`) until resolved. **When `inbox/figma-vars-full.json` lands:** copy it verbatim to [`docs/figma/variables.json`](figma/variables.json), map **`.home-snap-proposition .lede`** to the new style in the typography table / sync mapping, and remove this open item.",
-        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
-    },
-    ("Body/Large", ".entrance .lede"): {
-        "reason": "Doc-table alias for the shipped Home lede; same gap and resolution as **`.home-snap-proposition .lede`** above.",
-        "skip_properties": frozenset({"line-height", "line-height (ratio)"}),
-    },
 }
 
 DIST = ROOT / "dist"
@@ -479,8 +471,11 @@ def _line_height_probe_for_selector(selector: str) -> dict[str, object]:
         or "header-actions" in selector
         or selector.startswith(".entrance")
     ):
-        width = 900 if selector == ".home-snap-proposition .lede" else 1280
-        return {"page": "index.html", "width": width}
+        if selector == ".home-snap-proposition .lede":
+            return {"page": "index.html", "width": 900}
+        if selector == ".entrance .lede":
+            return {"page": "index.html", "width": 800}
+        return {"page": "index.html", "width": 1280}
     if "not-found" in selector:
         return {"page": "404.html", "width": 1280}
     if "note-dropcap" in selector or "note-body" in selector:
