@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Figma snapshot (no MCP in CI / Cloud Agents)
 
-Cursor agents and CI **cannot** rely on the Figma MCP. The repo copy of design variables is **`docs/figma/variables.json`**.
+**CI and Cloud Agents cannot** rely on the Figma MCP. **Local Cursor agents may** when Figma MCP is connected; use it to read or refresh the file, then commit an updated snapshot when tokens change. The repo copy of design variables is **`docs/figma/variables.json`** — that plus `docs/design-system.md` and `tokens.css` is the merge contract.
 
 Before changing tokens or design-system values:
 

@@ -1,6 +1,6 @@
 ## Figma source of truth in the repo
 
-Cursor agents and CI **cannot** call the Figma MCP. Use **`docs/figma/variables.json`** plus `docs/design-system.md` (section **How the Figma source of truth reaches the repo**) and `src/styles/tokens.css`. Never guess Figma values; refresh the snapshot when design tokens change (figma bro / Site Critic). PRs that change design values without updating the snapshot must say so in the PR body.
+**CI cannot** call the Figma MCP (no live Figma in GitHub Actions). **Local agents may** when Figma MCP is connected — read or refresh the file, then commit an updated snapshot when tokens change. The merge contract is **`docs/figma/variables.json`**, `docs/design-system.md` (section **How the Figma source of truth reaches the repo**), and `src/styles/tokens.css`; never guess Figma values. PRs that change design values without updating the snapshot must say so in the PR body.
 
 ## graphify
 
