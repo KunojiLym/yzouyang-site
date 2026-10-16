@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Merge split Figma MCP export JSON parts into inbox/figma-vars-full.json."""
+"""Stage a raw MCP merge under inbox/; run finalize_figma_mcp_snapshot.py for web + notes."""
 
 from __future__ import annotations
 
@@ -9,12 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 INBOX = ROOT / "inbox" / "figma-vars-full.json"
-SNAPSHOT = ROOT / "docs" / "figma" / "variables.json"
 
 
 def main() -> None:
-    if len(sys.argv) < 2:
-        raise SystemExit("usage: merge_figma_export_parts.py <head.json> <collection.json> ...")
+    if len(sys.argv) < 3:
+        raise SystemExit(
+            "usage: merge_figma_export_parts.py <head.json> <collection.json> ..."
+        )
 
     head = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     collections = []
@@ -23,14 +24,8 @@ def main() -> None:
     head["collections"] = collections
     INBOX.parent.mkdir(parents=True, exist_ok=True)
     INBOX.write_text(json.dumps(head, indent=2) + "\n", encoding="utf-8")
-    SNAPSHOT.write_text(json.dumps(head, indent=2) + "\n", encoding="utf-8")
-    print(f"wrote {INBOX} and {SNAPSHOT}")
-    print(
-        "counts:",
-        head.get("counts"),
-        "textStyles:",
-        len(head.get("textStyles", [])),
-    )
+    print(f"wrote {INBOX} (raw merge, no web bindings)")
+    print("Next: uv run python scripts/finalize_figma_mcp_snapshot.py")
 
 
 if __name__ == "__main__":

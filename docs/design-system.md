@@ -14,7 +14,7 @@ Figma remains the authoritative design file; **`docs/figma/variables.json`** is 
 
 **CI cannot call the Figma MCP** (no live Figma in GitHub Actions). **Local Cursor agents may** when Figma MCP is connected — use it to read or refresh the file, then commit an updated snapshot when tokens change. Nobody should guess values from memory: the merge contract is still `docs/figma/variables.json`, this document, and `tokens.css`.
 
-**Refresh path (MCP or read-only plugin):** drop the plugin export at `inbox/figma-vars-full.json` and copy to `docs/figma/variables.json`, or merge MCP part files with `scripts/finalize_figma_mcp_snapshot.py` (keeps existing `web` bindings). Then run `uv run python scripts/test_design_system_sync.py`.
+**Refresh path (MCP or read-only plugin):** drop the read-only plugin export at `inbox/figma-vars-full.json` and copy to `docs/figma/variables.json`, **or** update the verbatim MCP JSON under [`docs/figma/mcp-parts/`](figma/mcp-parts/) (no `web` fields), then run `uv run python scripts/finalize_figma_mcp_snapshot.py` (re-applies repo `web` bindings and writes `variables.json`). Then run `uv run python scripts/test_design_system_sync.py`.
 
 A PR that changes design tokens, text styles, or other values covered by the snapshot **without** updating `docs/figma/variables.json` must call that out explicitly in the PR body so reviewers can reconcile before merge.
 

@@ -1,0 +1,234 @@
+[
+  {
+    "id": "VariableCollectionId:1:80",
+    "name": "Radius",
+    "defaultMode": "Value",
+    "modes": [
+      "Value"
+    ],
+    "variables": [
+      {
+        "name": "radius/radius-sm",
+        "type": "FLOAT",
+        "scopes": [
+          "CORNER_RADIUS"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 2.4000000953674316
+          }
+        }
+      },
+      {
+        "name": "radius/radius-md",
+        "type": "FLOAT",
+        "scopes": [
+          "CORNER_RADIUS"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 3.200000047683716
+          }
+        }
+      },
+      {
+        "name": "radius/radius-lg",
+        "type": "FLOAT",
+        "scopes": [
+          "CORNER_RADIUS"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 4
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "VariableCollectionId:1:84",
+    "name": "Motion",
+    "defaultMode": "Value",
+    "modes": [
+      "Value"
+    ],
+    "variables": [
+      {
+        "name": "duration/dur-fast",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 150
+          }
+        }
+      },
+      {
+        "name": "duration/dur-base",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 240
+          }
+        }
+      },
+      {
+        "name": "duration/dur-slow",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 400
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "VariableCollectionId:12:12",
+    "name": "Text Scale",
+    "defaultMode": "Base (<1280)",
+    "modes": [
+      "Base (<1280)",
+      ">=1280px",
+      ">=1440px",
+      "Reading large",
+      "Reading xlarge"
+    ],
+    "variables": [
+      {
+        "name": "scale/text-scale",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Base (<1280)": {
+            "resolved": 1
+          },
+          ">=1280px": {
+            "resolved": 1.0625
+          },
+          ">=1440px": {
+            "resolved": 1.083299994468689
+          },
+          "Reading large": {
+            "resolved": 1.25
+          },
+          "Reading xlarge": {
+            "resolved": 1.5
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "VariableCollectionId:12:14",
+    "name": "Breakpoint",
+    "defaultMode": "Value",
+    "modes": [
+      "Value"
+    ],
+    "variables": [
+      {
+        "name": "bp/640px",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 640
+          }
+        }
+      },
+      {
+        "name": "bp/40rem",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 640
+          }
+        }
+      },
+      {
+        "name": "bp/48rem",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 768
+          }
+        }
+      },
+      {
+        "name": "bp/64rem",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1024
+          }
+        }
+      },
+      {
+        "name": "bp/72rem",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1152
+          }
+        }
+      },
+      {
+        "name": "bp/sm",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 800
+          }
+        }
+      },
+      {
+        "name": "bp/md",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 900
+          }
+        }
+      },
+      {
+        "name": "bp/lg",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1024
+          }
+        }
+      },
+      {
+        "name": "bp/1280px",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1280
+          }
+        }
+      },
+      {
+        "name": "bp/1440px",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1440
+          }
+        }
+      }
+    ]
+  }
+]
