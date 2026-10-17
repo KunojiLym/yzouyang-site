@@ -7,6 +7,7 @@ import copy
 import json
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -473,9 +474,34 @@ def main() -> None:
             print(f"  {item}", file=sys.stderr)
         raise SystemExit(1)
 
+    from figma_mcp_snapshot import DEFAULT_PARTS_DIR, build_snapshot, load_parts
+
+    head, collections = load_parts(DEFAULT_PARTS_DIR)
+    baseline = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
+    first = build_snapshot(head, collections, baseline)
+    second = build_snapshot(head, collections, first)
+    if len(second["notes"]) != len(first["notes"]):
+        print("finalize must not duplicate changelog notes", file=sys.stderr)
+        raise SystemExit(1)
+    if second["counts"]["variables"] != sum(
+        len(c.get("variables", [])) for c in collections
+    ):
+        print("counts.variables must match collection data", file=sys.stderr)
+        raise SystemExit(1)
+
+    merge = ROOT / "scripts" / "merge_figma_export_parts.py"
+    proc = subprocess.run(
+        [sys.executable, str(merge), str(DEFAULT_PARTS_DIR / "head.json")],
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode == 0:
+        print("merge_figma_export_parts must require collection parts", file=sys.stderr)
+        raise SystemExit(1)
+
     print(
         "test_design_system_sync_regressions ok "
-        f"({len(REGRESSIONS)} token cases + Label/Caps doc + mapping gaps)"
+        f"({len(REGRESSIONS)} token cases + Label/Caps doc + mapping gaps + MCP finalize)"
     )
 
 

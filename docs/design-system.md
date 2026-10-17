@@ -4,7 +4,7 @@ Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles
 
 ## Source of truth
 
-The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-15 14:05 SGT**; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
+The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-16 06:40 SGT** via Figma MCP; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
 
 **Review on change.** Any PR that changes `tokens.css`, a component class in Layer C, a breakpoint or a page rule must (i) match the Figma snapshot and a Figma variable, style or component (or link the Figma change), and (ii) update this doc and `docs/figma/variables.json` in the same PR when design values change. If the code is right and Figma lags, file it for figma bro and record it under [Known Figma gaps](#known-figma-gaps) rather than diverging silently. A drift review runs whenever the snapshot, Figma or `tokens.css` changes.
 
@@ -12,7 +12,9 @@ The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source
 
 Figma remains the authoritative design file; **`docs/figma/variables.json`** is the repo’s machine-readable copy for automation. Someone with Figma access (figma bro or the Site Critic lane) refreshes that snapshot whenever variables or text styles change in the file.
 
-**Cursor agents and CI cannot call the Figma MCP** and must never guess values from memory. They work only from `docs/figma/variables.json`, this document, and `tokens.css`.
+**CI cannot call the Figma MCP** (no live Figma in GitHub Actions). **Local Cursor agents may** when Figma MCP is connected — use it to read or refresh the file, then commit an updated snapshot when tokens change. Nobody should guess values from memory: the merge contract is still `docs/figma/variables.json`, this document, and `tokens.css`.
+
+**Refresh path (MCP or read-only plugin):** drop the read-only plugin export at `inbox/figma-vars-full.json` and copy to `docs/figma/variables.json`, **or** update the verbatim MCP JSON under [`docs/figma/mcp-parts/`](figma/mcp-parts/) (no `web` fields), then run `uv run python scripts/finalize_figma_mcp_snapshot.py` (re-applies repo `web` bindings and writes `variables.json`). Then run `uv run python scripts/test_design_system_sync.py`.
 
 A PR that changes design tokens, text styles, or other values covered by the snapshot **without** updating `docs/figma/variables.json` must call that out explicitly in the PR body so reviewers can reconcile before merge.
 
@@ -155,7 +157,7 @@ Fixed steps for UI/meta text; fluid `--text-display-*` for headings (see `tokens
 
 At `width >= 1280px`, `--text-scale` is `1.0625`. At `width >= 1440px`, `--text-scale` is `1.0833`. Reading-size `large` / `xlarge` set the scale to 1.25 / 1.5 and scale `--text-proof` with them.
 
-Figma text styles (28) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`. **Size / token** and **Weight / tracking** columns describe **shipped CSS** on the listed selectors (not a live Figma diff).
+Figma text styles (30) mapped to Layer C classes. Token columns reference `tokens.css` and [`docs/figma/variables.json`](figma/variables.json) `textStyles`. **Size / token** and **Weight / tracking** columns describe **shipped CSS** on the listed selectors (not a live Figma diff).
 
 | Figma style | Class | Face | Size / token | Weight / tracking |
 |---|---|---|---|---|
@@ -398,19 +400,21 @@ Shared focus rule: `:focus-visible` draws a 2px `--focus-ring` with a 2px offset
 
 ## Known Figma gaps
 
-**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-15 20:45 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **28** `textStyles` match the typography table and `test_design_system_sync.py`. Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (line-height includes inherited `body` rhythm when a selector omits it).
+**Snapshot ↔ `tokens.css` (automated sync, pull 2026-10-16 06:40 SGT):** Variables with a `web` mapping in [`variables.json`](figma/variables.json) match the CSS implementation (including `color/record-domains` → `var(--text-muted)`). All **mapped** `textStyles` in the typography table match `test_design_system_sync.py` (**30** styles in the snapshot; **2** underline variants are Figma-only until a selector is assigned). Figma export fields vs shipped selectors are checked by `collect_figma_export_css_mismatches` (line-height includes inherited `body` rhythm when a selector omits it).
 
 **Open (not enforced by sync; Yingzhao decides):**
 
 - **`main.page h2` (Display/H2 — open hybrid).** Shipped **`--text-display-2`** and **−1%** tracking (`components.css`) match **Display/H2 Page** size/tracking; **`var(--lh-heading)` (1.2)** matches **Display/H2** line height. Not a single Figma text-style row — **Yingzhao** to confirm mapping. Sync skips **font-size** only for this selector (`TEXT_STYLE_OPEN_CSS_ITEMS`); **Display/H2 Page size/tracking with Display/H2 line height**.
 - **`home.css` `.note-dek` (line 485).** A second, global `.note-dek` rule sets **line-height 1.55**; Figma models note deks only via **Body/Large Dek** on `.library-panel--note .note-dek` (`library.css`, **145%** / `1.45`). No CSS change until decided.
-- **Display/H1 line-height.** Figma **Display/H1** uses **Auto** line height; shipped `.library-panel--note .library-panel-title` sets **`var(--lh-heading)` (1.2)**. No CSS change until decided.
+- **Display/H1 line-height.** Figma **Display/H1** now exports **120%** line height; shipped `.library-panel--note .library-panel-title` uses **`var(--lh-heading)` (1.2)** — aligned in intent; confirm in Figma if **Auto** was intentionally replaced.
 - **Header · Clear placement (Mid / desktop).** Figma lists **Clear** as its own control between **Search** and **Text size**; shipped chrome nests Clear inside the Pagefind **Search** slot (same row, not a separate DOM sibling).
 - **Header · Compact Text size.** Figma **Compact** (`3:25`) omits **Text size** from the header row; shipped chrome keeps **Text size** inside the **Menu** panel only (`<= 48rem`) — matches intent, different surface than a header control.
 - **C9.** `rgb(43 84 64 / 35%)` on `.system-map-svg circle` has no token. It stays as a literal, called out in `home.css`, until Figma names it.
 - **Scrim ink.** `rgb(6 5 3 / …)` on the Entrance scrim has no token. The drift checker allow-lists it as an overlay.
 - **Vignette alphas.** The Entrance vignette uses `rgb(10 11 10 / 90%)` in dark and `rgb(232 223 208 / 82%)` in light, not `--photo-scrim` (72% / 55%).
 - **Unstyled in Figma textStyles (doc-only).** Entrance identity (`.entrance-name`, `.entrance-role`), featured kicker (`.home-section-label` / `.home-record-kind`), fallback index (`.current-index .index-entry`), monospace code (`.note-code`), and **`.library-index-label`** (400 / `0.08em` caps on the catalogue index header — not Label/Xs Caps or Label/Xs Group Caps).
+- **Figma-only text styles (no Layer C class yet).** **Body/Base Underline**, **Body/Small Strong Underline** — in the snapshot; add selectors when links or emphasis patterns are specified in Figma.
+- **Semantic text colors (snapshot only).** `color/warning-text`, `color/success-text`, `color/danger-text` — no `web` mapping until `tokens.css` exposes matching `--*` tokens.
 
 ---
 

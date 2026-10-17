@@ -1,0 +1,630 @@
+[
+  {
+    "id": "VariableCollectionId:1:33",
+    "name": "Type",
+    "defaultMode": "Value",
+    "modes": [
+      "Value"
+    ],
+    "variables": [
+      {
+        "name": "font-size/text-xs",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 13
+          }
+        }
+      },
+      {
+        "name": "font-size/text-sm",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 14
+          }
+        }
+      },
+      {
+        "name": "font-size/text-base",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 16
+          }
+        }
+      },
+      {
+        "name": "font-size/text-md",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 19
+          }
+        }
+      },
+      {
+        "name": "font-size/text-lg",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 20
+          }
+        }
+      },
+      {
+        "name": "font-size/text-xl",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 22
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-hero/min",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 44
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-hero/max",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 76
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-1/min",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 30.399999618530273
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-1/max",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 40
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-2/min",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 21.600000381469727
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-2/max",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 27.200000762939453
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-3/min",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 19.200000762939453
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-3/max",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 23.200000762939453
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-4/min",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 17.600000381469727
+          }
+        }
+      },
+      {
+        "name": "font-size/text-display-4/max",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 22.399999618530273
+          }
+        }
+      },
+      {
+        "name": "font-size/text-proof/min",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 17
+          }
+        }
+      },
+      {
+        "name": "font-size/text-proof/max",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 19
+          }
+        }
+      },
+      {
+        "name": "font-size/text-dropcap/min",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 41.599998474121094
+          }
+        }
+      },
+      {
+        "name": "font-size/text-dropcap/max",
+        "type": "FLOAT",
+        "scopes": [
+          "FONT_SIZE"
+        ],
+        "values": {
+          "Value": {
+            "resolved": 52
+          }
+        }
+      },
+      {
+        "name": "line-height/lh-display",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1.100000023841858
+          }
+        }
+      },
+      {
+        "name": "line-height/lh-heading",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1.2000000476837158
+          }
+        }
+      },
+      {
+        "name": "line-height/note-read-lead",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 1.7200000286102295
+          }
+        }
+      },
+      {
+        "name": "letter-spacing/track-caps-em",
+        "type": "FLOAT",
+        "scopes": [],
+        "values": {
+          "Value": {
+            "resolved": 0.07999999821186066
+          }
+        }
+      },
+      {
+        "name": "font/mono",
+        "type": "STRING",
+        "scopes": [
+          "FONT_FAMILY"
+        ],
+        "values": {
+          "Value": {
+            "resolved": "Consolas, \"Liberation Mono\", \"Courier New\", monospace"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "VariableCollectionId:1:58",
+    "name": "Spacing",
+    "defaultMode": "Desktop (>48rem, @1280)",
+    "modes": [
+      "Desktop (>48rem, @1280)",
+      "Compact (<=48rem)"
+    ],
+    "variables": [
+      {
+        "name": "space/space-hairline",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 2.4000000953674316
+          },
+          "Compact (<=48rem)": {
+            "resolved": 2.4000000953674316
+          }
+        }
+      },
+      {
+        "name": "space/space-tight",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 5.599999904632568
+          },
+          "Compact (<=48rem)": {
+            "resolved": 5.599999904632568
+          }
+        }
+      },
+      {
+        "name": "space/space-1",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 4
+          },
+          "Compact (<=48rem)": {
+            "resolved": 4
+          }
+        }
+      },
+      {
+        "name": "space/space-2",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 8
+          },
+          "Compact (<=48rem)": {
+            "resolved": 8
+          }
+        }
+      },
+      {
+        "name": "space/space-3",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 12
+          },
+          "Compact (<=48rem)": {
+            "resolved": 12
+          }
+        }
+      },
+      {
+        "name": "space/space-4",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 16
+          },
+          "Compact (<=48rem)": {
+            "resolved": 16
+          }
+        }
+      },
+      {
+        "name": "space/space-5",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 20
+          },
+          "Compact (<=48rem)": {
+            "resolved": 20
+          }
+        }
+      },
+      {
+        "name": "space/space-6",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 24
+          },
+          "Compact (<=48rem)": {
+            "resolved": 24
+          }
+        }
+      },
+      {
+        "name": "space/space-7",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 28
+          },
+          "Compact (<=48rem)": {
+            "resolved": 28
+          }
+        }
+      },
+      {
+        "name": "space/space-8",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 32
+          },
+          "Compact (<=48rem)": {
+            "resolved": 32
+          }
+        }
+      },
+      {
+        "name": "space/space-9",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 36
+          },
+          "Compact (<=48rem)": {
+            "resolved": 36
+          }
+        }
+      },
+      {
+        "name": "space/space-10",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 40
+          },
+          "Compact (<=48rem)": {
+            "resolved": 40
+          }
+        }
+      },
+      {
+        "name": "space/space-11",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 48
+          },
+          "Compact (<=48rem)": {
+            "resolved": 48
+          }
+        }
+      },
+      {
+        "name": "space/space-12",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 64
+          },
+          "Compact (<=48rem)": {
+            "resolved": 64
+          }
+        }
+      },
+      {
+        "name": "layout/gutter/min",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 20
+          },
+          "Compact (<=48rem)": {
+            "resolved": 20
+          }
+        }
+      },
+      {
+        "name": "layout/gutter/max",
+        "type": "FLOAT",
+        "scopes": [
+          "GAP"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 24
+          },
+          "Compact (<=48rem)": {
+            "resolved": 24
+          }
+        }
+      },
+      {
+        "name": "layout/header-control-height",
+        "type": "FLOAT",
+        "scopes": [
+          "WIDTH_HEIGHT"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 33.79999923706055
+          },
+          "Compact (<=48rem)": {
+            "resolved": 40
+          }
+        }
+      },
+      {
+        "name": "layout/header-offset",
+        "type": "FLOAT",
+        "scopes": [
+          "WIDTH_HEIGHT"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 76
+          },
+          "Compact (<=48rem)": {
+            "resolved": 76
+          }
+        }
+      },
+      {
+        "name": "layout/max",
+        "type": "FLOAT",
+        "scopes": [
+          "WIDTH_HEIGHT"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 1088
+          },
+          "Compact (<=48rem)": {
+            "resolved": 1088
+          }
+        }
+      },
+      {
+        "name": "layout/max-longform",
+        "type": "FLOAT",
+        "scopes": [
+          "WIDTH_HEIGHT"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 1280
+          },
+          "Compact (<=48rem)": {
+            "resolved": 1280
+          }
+        }
+      },
+      {
+        "name": "layout/note-read-max",
+        "type": "FLOAT",
+        "scopes": [
+          "WIDTH_HEIGHT"
+        ],
+        "values": {
+          "Desktop (>48rem, @1280)": {
+            "resolved": 544
+          },
+          "Compact (<=48rem)": {
+            "resolved": 544
+          }
+        }
+      }
+    ]
+  }
+]

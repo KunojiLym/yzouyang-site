@@ -1,0 +1,739 @@
+{
+  "id": "VariableCollectionId:1:2",
+  "name": "Color",
+  "defaultMode": "Dark",
+  "modes": [
+    "Dark",
+    "Light"
+  ],
+  "variables": [
+    {
+      "name": "color/accent",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a"
+        },
+        "Light": {
+          "resolved": "#c49a5a"
+        }
+      }
+    },
+    {
+      "name": "color/accent-active",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#a88448"
+        },
+        "Light": {
+          "resolved": "#6b4f10"
+        }
+      }
+    },
+    {
+      "name": "color/accent-cta-bg",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a14"
+        },
+        "Light": {
+          "resolved": "#c49a5a14"
+        }
+      }
+    },
+    {
+      "name": "color/accent-cta-bg-hover",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a1a"
+        },
+        "Light": {
+          "resolved": "#c49a5a1a"
+        }
+      }
+    },
+    {
+      "name": "color/accent-cta-border",
+      "type": "COLOR",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#ad8e58ac"
+        },
+        "Light": {
+          "resolved": "#8f6d2e"
+        }
+      }
+    },
+    {
+      "name": "color/accent-hover",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#dbb06e"
+        },
+        "Light": {
+          "resolved": "#5c450e"
+        }
+      }
+    },
+    {
+      "name": "color/accent-link",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a"
+        },
+        "Light": {
+          "resolved": "#6b4f10"
+        }
+      }
+    },
+    {
+      "name": "color/accent-soft",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a2e"
+        },
+        "Light": {
+          "resolved": "#c49a5a38"
+        }
+      }
+    },
+    {
+      "name": "color/accent-text",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a"
+        },
+        "Light": {
+          "resolved": "#6b4f10"
+        }
+      }
+    },
+    {
+      "name": "color/bg-deep",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#0a0b0a"
+        },
+        "Light": {
+          "resolved": "#e8dfd0"
+        }
+      }
+    },
+    {
+      "name": "color/bg-elevated",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#2a2118"
+        },
+        "Light": {
+          "resolved": "#f5efe4"
+        }
+      }
+    },
+    {
+      "name": "color/bg-gradient-end",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#0a0b0a"
+        },
+        "Light": {
+          "resolved": "#ddd2c0"
+        }
+      }
+    },
+    {
+      "name": "color/bg-gradient-mid",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#15110e"
+        },
+        "Light": {
+          "resolved": "#e2d8c8"
+        }
+      }
+    },
+    {
+      "name": "color/bg-hover",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#ffffff0f"
+        },
+        "Light": {
+          "resolved": "#1c161212"
+        }
+      }
+    },
+    {
+      "name": "color/bg-mid",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#1c1612"
+        },
+        "Light": {
+          "resolved": "#ddd2c0"
+        }
+      }
+    },
+    {
+      "name": "color/bg-panel",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#ffffff08"
+        },
+        "Light": {
+          "resolved": "#1c16120a"
+        }
+      }
+    },
+    {
+      "name": "color/code-bg",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#1c1612",
+          "alias": "color/bg-mid"
+        },
+        "Light": {
+          "resolved": "#ddd2c0",
+          "alias": "color/bg-mid"
+        }
+      }
+    },
+    {
+      "name": "color/code-border",
+      "type": "COLOR",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#4a5c4e47",
+          "alias": "color/line-strong"
+        },
+        "Light": {
+          "resolved": "#4a5c4e1f",
+          "alias": "color/line-soft"
+        }
+      }
+    },
+    {
+      "name": "color/code-gutter",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#9a8e7c",
+          "alias": "color/text-faint"
+        },
+        "Light": {
+          "resolved": "#5c5548",
+          "alias": "color/text-faint"
+        }
+      }
+    },
+    {
+      "name": "color/code-text",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#efe6d8",
+          "alias": "color/text-default"
+        },
+        "Light": {
+          "resolved": "#2a2724",
+          "alias": "color/text-default"
+        }
+      }
+    },
+    {
+      "name": "color/danger",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c47a6a"
+        },
+        "Light": {
+          "resolved": "#9a4a3a"
+        }
+      }
+    },
+    {
+      "name": "color/danger-text",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#e09b88"
+        },
+        "Light": {
+          "resolved": "#79352b"
+        }
+      }
+    },
+    {
+      "name": "color/focus-ring",
+      "type": "COLOR",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a"
+        },
+        "Light": {
+          "resolved": "#6b4f10"
+        }
+      }
+    },
+    {
+      "name": "color/glow",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#d4a35c1f"
+        },
+        "Light": {
+          "resolved": "#c49a5a29"
+        }
+      }
+    },
+    {
+      "name": "color/header-bg",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#0a0b0af5"
+        },
+        "Light": {
+          "resolved": "#e8dfd0f0"
+        }
+      }
+    },
+    {
+      "name": "color/line-soft",
+      "type": "COLOR",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#4a5c4e24"
+        },
+        "Light": {
+          "resolved": "#4a5c4e1f"
+        }
+      }
+    },
+    {
+      "name": "color/line-strong",
+      "type": "COLOR",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#4a5c4e47"
+        },
+        "Light": {
+          "resolved": "#4a5c4e38"
+        }
+      }
+    },
+    {
+      "name": "color/map-node-fill",
+      "type": "COLOR",
+      "scopes": [
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#2b544059"
+        },
+        "Light": {
+          "resolved": "#2b544059"
+        }
+      }
+    },
+    {
+      "name": "color/map-node-fill-active",
+      "type": "COLOR",
+      "scopes": [
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a38"
+        },
+        "Light": {
+          "resolved": "#c49a5a38"
+        }
+      }
+    },
+    {
+      "name": "color/map-node-glow",
+      "type": "COLOR",
+      "scopes": [
+        "EFFECT_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c49a5a73"
+        },
+        "Light": {
+          "resolved": "#c49a5a73"
+        }
+      }
+    },
+    {
+      "name": "color/map-node-stroke",
+      "type": "COLOR",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#4a5c4eb3"
+        },
+        "Light": {
+          "resolved": "#4a5c4eb3"
+        }
+      }
+    },
+    {
+      "name": "color/note-image-bg",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#fefefe"
+        },
+        "Light": {
+          "resolved": "#fefefe"
+        }
+      }
+    },
+    {
+      "name": "color/photo-chip",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#1c1612e0"
+        },
+        "Light": {
+          "resolved": "#1c1612e0"
+        }
+      }
+    },
+    {
+      "name": "color/photo-ink",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#e8dfd0"
+        },
+        "Light": {
+          "resolved": "#e8dfd0"
+        }
+      }
+    },
+    {
+      "name": "color/photo-scrim",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#0a0b0ab8"
+        },
+        "Light": {
+          "resolved": "#0a0b0a8c"
+        }
+      }
+    },
+    {
+      "name": "color/rail-green",
+      "type": "COLOR",
+      "scopes": [
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#4a5c4e"
+        },
+        "Light": {
+          "resolved": "#4a5c4e"
+        }
+      }
+    },
+    {
+      "name": "color/record-domains",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#b0a090",
+          "alias": "color/text-muted"
+        },
+        "Light": {
+          "resolved": "#5c5548",
+          "alias": "color/text-muted"
+        }
+      }
+    },
+    {
+      "name": "color/search-surface",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#0a0b0af0"
+        },
+        "Light": {
+          "resolved": "#f5efe4f5"
+        }
+      }
+    },
+    {
+      "name": "color/success",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#6a9a7a"
+        },
+        "Light": {
+          "resolved": "#3d6b4d"
+        }
+      }
+    },
+    {
+      "name": "color/success-text",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#8cbd9a"
+        },
+        "Light": {
+          "resolved": "#244f35"
+        }
+      }
+    },
+    {
+      "name": "color/text-default",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#efe6d8"
+        },
+        "Light": {
+          "resolved": "#2a2724"
+        }
+      }
+    },
+    {
+      "name": "color/text-faint",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#9a8e7c"
+        },
+        "Light": {
+          "resolved": "#5c5548"
+        }
+      }
+    },
+    {
+      "name": "color/text-muted",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#b0a090"
+        },
+        "Light": {
+          "resolved": "#5c5548"
+        }
+      }
+    },
+    {
+      "name": "color/text-strong",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#f5efe6"
+        },
+        "Light": {
+          "resolved": "#171414"
+        }
+      }
+    },
+    {
+      "name": "color/warning",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#c4a35a"
+        },
+        "Light": {
+          "resolved": "#8a6a2a"
+        }
+      }
+    },
+    {
+      "name": "color/warning-text",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "values": {
+        "Dark": {
+          "resolved": "#e2bc70"
+        },
+        "Light": {
+          "resolved": "#60420f"
+        }
+      }
+    }
+  ]
+}
