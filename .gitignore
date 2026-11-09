@@ -25,6 +25,7 @@ collect/.wrangler/
 
 # Figma inbox drops (canonical snapshot is docs/figma/variables.json only)
 inbox/
+.figma-make-import/
 
 # Ad hoc data / WP export scratch files (not part of the tracked data contract)
 data/diy-events*.ndjson
