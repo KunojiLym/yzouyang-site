@@ -18,8 +18,6 @@ Figma remains the authoritative design file; **`docs/figma/variables.json`** is 
 
 A PR that changes design tokens, text styles, or other values covered by the snapshot **without** updating `docs/figma/variables.json` must call that out explicitly in the PR body so reviewers can reconcile before merge.
 
-The **14:05 SGT** export changelog inside `variables.json` still says GitHub issue **#33**; that pull was **#34** (code-wins pass). Do not hand-edit `variables.json` — fix the issue number on the next verbatim re-export from `inbox/figma-vars-full.json`.
-
 **Governing sentence:** Design the site like a carefully maintained personal systems library: warm, cinematic, and catalogued — a scholar-engineer’s archive of systems, notes, and experiments, not a boardroom slide, a cyberpunk demo, or a steampunk toy.
 
 **Style direction:** Warm walnut/brass archive with Swiss grid discipline. Mood = **scholar-engineer systems library**, not boardroom deck, SaaS template, or novelty AI chrome. Optimize for **credibility, catalogue scanability, and proof discipline** — one cinematic Entrance moment; everything else quieter.
