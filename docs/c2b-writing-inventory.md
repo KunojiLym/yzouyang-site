@@ -22,7 +22,7 @@ LinkedIn article URLs: operator paste into `syndication.linkedin` when available
 - **Reading mode** on `/notes/` only: editorial masthead (category · title · dek · byline), cover hero, narrow serif prose (`.note-body.prose`), wrapped code blocks, blockquotes, figures. **Catalogue mode** unchanged on Systems / Credentials / Home — see [design-system.md](design-system.md#reading-mode-notes-only).
 - Publication dates: `writing.yaml` stores full `YYYY-MM-DD`; byline and index meta display as `22 Dec 2025`.
 - Footer **Blog** → `/notes/` (`footer_only` — not in header nav).
-- WP permalinks → `/notes/#NOTE-*` via `dist/<slug>/` stubs + Cloudflare `_redirects` for `/blog/`.
+- WP permalinks → `/notes/note-*/` via `dist/<slug>/` stubs and `_redirects` rules. Generated `url-map.json` records exact targets; saved `/notes/#NOTE-*` library links remain usable.
 - `site.json` **must not** contain `writing_highlights`.
 
 ## Operator tools

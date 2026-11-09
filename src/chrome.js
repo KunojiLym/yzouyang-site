@@ -126,11 +126,13 @@
   function initLibraryShell() {
     const shell = document.querySelector(".library-shell");
     if (!shell) return;
+    const standaloneArticle = shell.dataset.standaloneArticle === "true";
 
     const split = shell.querySelector(".library-split");
     const routeTitle = document.title;
     const overview = shell.querySelector(".library-overview");
     const backBtn = shell.querySelector(".library-back");
+    if (standaloneArticle && backBtn) backBtn.textContent = "All notes";
     const showIndexBtn = shell.querySelector(".library-index-show");
     const pinBtn = shell.querySelector(".library-index-pin");
     const hideBtn = shell.querySelector(".library-index-hide");
@@ -533,6 +535,7 @@
     }
 
     function updateHash(indexId) {
+      if (standaloneArticle) return;
       const base = window.location.pathname;
       if (indexId) {
         history.replaceState(null, "", `${base}#${encodeURIComponent(indexId)}`);
@@ -740,7 +743,7 @@
         showPanel(resolved);
         return;
       }
-      if (isMobileLayout()) {
+      if (isMobileLayout() && !standaloneArticle) {
         showOverview();
         return;
       }
@@ -774,7 +777,7 @@
           return;
         }
       }
-      if (isMobileLayout()) {
+      if (isMobileLayout() && !standaloneArticle) {
         showOverview();
         return;
       }
@@ -802,6 +805,10 @@
     if (backBtn) {
       backBtn.addEventListener("click", (event) => {
         event.preventDefault();
+        if (standaloneArticle) {
+          window.location.assign(`${siteBasePrefix()}/notes/`);
+          return;
+        }
         showOverview();
       });
     }
@@ -886,7 +893,7 @@
     window.addEventListener("resize", () => {
       syncBackButton();
       syncIndexVisibility();
-      if (isMobileLayout() && !window.location.hash) {
+      if (isMobileLayout() && !window.location.hash && !standaloneArticle) {
         showOverview();
       }
     });

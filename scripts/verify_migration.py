@@ -15,6 +15,7 @@ import re
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
+from build import article_path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -89,13 +90,13 @@ def check_wp_stubs(dist: Path, writing: list[dict], expect_stubs: int) -> None:
             missing.append(slug)
             continue
         html = stub.read_text(encoding="utf-8")
-        target = f"/notes/#{note_id}"
-        if target not in html and f"#{note_id}" not in html:
+        target = article_path(note_id)
+        if target not in html or not (dist / target.strip("/") / "index.html").is_file():
             bad_target.append(slug)
     if missing:
         fail(f"missing dist stubs for slugs: {', '.join(missing[:5])}" + (" …" if len(missing) > 5 else ""))
     if bad_target:
-        fail(f"stub HTML missing notes hash for: {', '.join(bad_target[:5])}")
+        fail(f"stub HTML missing permanent article target for: {', '.join(bad_target[:5])}")
     ok(f"WP slug stubs present for {len(stubs)} permalinks")
 
     blog_stub = dist / "blog" / "index.html"

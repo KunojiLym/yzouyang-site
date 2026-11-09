@@ -6,13 +6,13 @@ Agents open **draft PRs only**. No direct push to `main`.
 
 ## Phase 1
 
-Routes: `/`, `/systems/`, `/notes/`, `/credentials/`. Legacy stubs: `/about/`, `/contact/`, `/career-journey/` → home; `/portfolio/`, `/work/`, `/systems/catalogue/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/` (library JS may append a panel hash). Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
+Routes: `/`, `/systems/`, `/notes/`, `/notes/note-*/`, `/credentials/`. Each PUBLIC essay has a stable path from its export id (`NOTE-2026-005` → `/notes/note-2026-005/`). `/notes/` remains the library; panel hashes (`#NOTE-*`) stay for that view. Legacy stubs: `/about/`, `/contact/`, `/career-journey/` → home; `/portfolio/`, `/work/`, `/systems/catalogue/` → `/systems/`; `/perspectives/`, `/blog/` → `/notes/`; WordPress post permalinks → the matching article. Home is a token-atmosphere entrance plus catalogue entry grid — not a scroll-home with system map, workshop, or `#contact`.
 
 Data: vendored PUBLIC JSON from [personal-content](https://github.com/KunojiLym/personal-content) `export_public.py` in `data/export_public.json` (no private token in CI).
 
 **Writing** is on `/notes/` in **Reading mode** (long-form essays — see [design-system.md](docs/design-system.md#reading-mode-notes-only)). Header nav is **Systems · Notes · Credentials**. Blog / Medium / LinkedIn / GitHub live in the library-card footer.
 
-Preview / UAT: **offline** via `python scripts/preview.py`; **UAT publish** via branch `uat` (GitHub Pages) before promoting to `main`. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
+Preview: **offline** via `python scripts/preview.py`, or download the CI **`site-preview`** artifact. GitHub Pages publishes **only from `main`**. Pushes to `uat` and pull requests build and test; they do not deploy. See [docs/preview-uat.md](docs/preview-uat.md). Apex stays on WordPress until [docs/cutover.md](docs/cutover.md).
 
 ## Develop
 
@@ -83,7 +83,7 @@ Live yzouyang.com today uses Jetpack Stats (`stats.wp.com`), not GA. Preview hos
 
 - [docs/site-builder.md](docs/site-builder.md) — build pipeline, config map, IA rules
 - [docs/design-system.md](docs/design-system.md) — tokens, **Reading mode vs Catalogue mode**, proof hierarchy, components
-- [docs/preview-uat.md](docs/preview-uat.md) — offline preview + UAT branch publish
+- [docs/preview-uat.md](docs/preview-uat.md) — offline preview, downloadable artifacts, main-only Pages release
 - [docs/diy-tracking.md](docs/diy-tracking.md) — first-party beacon + collectors
 - [docs/redirects.md](docs/redirects.md) — WP → static map
 - [docs/cutover.md](docs/cutover.md) — DNS operator gate

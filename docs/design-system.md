@@ -2,6 +2,8 @@
 
 Visual contract for yzouyang-site. Implementation: [`src/styles/`](../src/styles/) (assembled to `dist/styles.css`). Builder / IA / embeds: [site-builder.md](site-builder.md).
 
+**Permanent article pages:** `/notes/note-*/` reuses the existing Notes shell, reading panel, byline, contents drawer, and `library-strip`. The essay opens directly, including on narrow screens; “All notes” returns to the library. Catalogue panels keep an “Open article” link. Saved `/notes/#NOTE-*` links still open the library panel. No design tokens, CSS values, or Figma snapshot values change for this routing.
+
 ## Source of truth
 
 The Figma file https://www.figma.com/design/xr2asASU4M8amldS2Lm0hQ is the source of truth for tokens, text styles, components and page rules. This document mirrors it, and src/styles/tokens.css implements it. The committed copy agents and CI read is [`docs/figma/variables.json`](figma/variables.json) (last pulled **2026-10-16 06:40 SGT** via Figma MCP; refresh when Figma changes — see [How the Figma source of truth reaches the repo](#how-the-figma-source-of-truth-reaches-the-repo)).
