@@ -1,6 +1,39 @@
 import { test, expect } from "@playwright/test";
 
 const LIVE_ROUTES = ["/", "/systems/", "/notes/", "/credentials/"];
+
+test.describe("permanent article pages", () => {
+  const articlePath = "/notes/note-2026-005/";
+
+  test("direct article opens immediately, survives reload and returns to Notes", async ({ page }) => {
+    await page.goto(articlePath);
+    const panel = page.locator('.library-panel[data-panel-id="NOTE-2026-005"]');
+    await expect(panel).toBeVisible();
+    await expect(page.locator(".notes-entry")).toHaveCount(1);
+    await expect(page).toHaveURL(new RegExp(`${articlePath}$`));
+    await page.reload();
+    await expect(panel).toBeVisible();
+    await page.getByRole("link", { name: "All notes", exact: true }).last().click();
+    await expect(page).toHaveURL(/\/notes\/(?:#.*)?$/);
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`${articlePath}$`));
+    await expect(panel).toBeVisible();
+  });
+
+  test("legacy library links open the matching independent article by keyboard", async ({ page }) => {
+    await page.goto("/notes/#NOTE-2026-005");
+    await page.getByRole("link", { name: /^Open article: The AI Disruption Part 1/ }).press("Enter");
+    await expect(page).toHaveURL(new RegExp(`${articlePath}$`));
+    await expect(page.locator('.library-panel[data-panel-id="NOTE-2026-005"]')).toBeVisible();
+    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "article");
+  });
+
+  test("WordPress permalink reaches the matching article", async ({ page }) => {
+    await page.goto("/the-ai-disruption-part-1-how-ai-is-reshaping-work-before-our-institutions-are-ready/");
+    await expect(page).toHaveURL(new RegExp(`${articlePath}$`));
+    await expect(page.locator(".notes-entry")).toHaveCount(1);
+  });
+});
 const REDIRECTS = [
   { from: "/about/", path: "/" },
   { from: "/contact/", path: "/" },

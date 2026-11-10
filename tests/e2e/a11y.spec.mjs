@@ -10,6 +10,7 @@ const ROUTES = [
   "/systems/",
   "/notes/",
   "/notes/#NOTE-2026-005",
+  "/notes/note-2026-005/",
   "/credentials/",
   "/does-not-exist/",
 ];

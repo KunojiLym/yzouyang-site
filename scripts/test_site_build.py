@@ -1153,7 +1153,7 @@ def main() -> None:
         fail("featured system cards must name the employer on a meta line")
     if "NOTE-2026-005" not in home:
         fail("home must feature a governance-aligned note")
-    if f"{with_base(site, '/systems/')}#SYS-" not in home or f"{with_base(site, '/notes/')}#NOTE-" not in home:
+    if f"{with_base(site, '/systems/')}#SYS-" not in home or f"{with_base(site, '/notes/')}note-" not in home:
         fail("home featured records must deep-link to catalogue records, not section indexes")
     if 'data-library-deck' in home or has_html_class(home, "library-slide"):
         fail("home must not ship the library slide deck")
@@ -1251,8 +1251,8 @@ def main() -> None:
         fail("home must not surface legacy competency cards")
     if 'class="home-practice-proof"' in home:
         fail("home practice areas must not show catalogue id proof links")
-    if f"{with_base(site, '/notes/')}#NOTE-" not in home:
-        fail("home featured records must link into notes catalogue records")
+    if f"{with_base(site, '/notes/')}note-" not in home:
+        fail("home featured records must link to permanent article pages")
     if "folio-toolbar" in home:
         fail("home must not ship an inert folio-toolbar")
     if 'class="operating-themes"' in home:

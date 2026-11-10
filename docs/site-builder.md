@@ -35,6 +35,8 @@ data/site.json  +  data/export_public.json  (+  data/career-journey.yaml retaine
 | `uv run python scripts/build.py` | Write pages + assets; runs Pagefind unless `--skip-pagefind` |
 | `uv run python scripts/preview.py` | Lint → build → local `http.server` |
 | `uv run python scripts/test_site_build.py` | Contract checks on `dist/` |
+| `uv run python scripts/test_article_routes.py` | Article identity, metadata, sitemap and legacy redirect contracts |
+| `uv run python scripts/test_release_workflow.py` | Main-only release policy, deployment boundaries and artifact fingerprint checks |
 | `npm run test:e2e` | Playwright usability + theme (`tests/e2e/usability.spec.mjs`, `tests/e2e/theme.spec.mjs`) |
 | `npm run test:a11y` | axe-core WCAG2A/AA on live routes |
 | `npm run test:visual` | Screenshot regression (non-blocking in CI until baselines exist) |
@@ -77,7 +79,8 @@ CI derives the Pages asset prefix from `deploy.preview_origin` (do not also set 
 |---|---|---|
 | `/` | `build_home` | Token entrance + thesis + CTAs + featured record strip + operating principle + practice areas + split context/platform meta + library-card footer |
 | `/systems/` | `build_systems` | Library shell from export + overlays; Pagefind “Search catalogue” |
-| `/notes/` | `build_notes` | Library shell from PUBLIC writing; Pagefind |
+| `/notes/` | `build_perspectives` | Existing library shell from PUBLIC writing; links to permanent article pages |
+| `/notes/note-*/` | `build_article` | One PUBLIC essay per document; article metadata and Pagefind |
 | `/credentials/` | `build_credentials` | Library shell + VERIFY + Pagefind |
 | `/about/`, `/contact/` | redirect stubs | 301 → `/` |
 | `/portfolio/`, `/work/`, `/systems/catalogue/` | redirect stubs | 301 → `/systems/` |
@@ -164,7 +167,7 @@ CI rebuilds with empty `SITE_BASE_PATH` before e2e so assets and Pagefind resolv
 |---|---|
 | `tests/e2e/usability.spec.mjs` | 28 cases × desktop/mobile (56 runs; 12 project-gated skips → **44 passed / 12 skipped**). Smoke, legacy redirect stubs, chrome, home IA guardrails, library shell, Pagefind, layout |
 | `tests/e2e/theme.spec.mjs` | Dark/light token paint without FOUC; `localStorage` theme persistence across reload; axe on themed routes |
-| `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/credentials/` (Pagefind `#search` excluded as third-party chrome) |
+| `tests/e2e/a11y.spec.mjs` | axe WCAG2A/AA on `/`, `/systems/`, `/notes/`, `/notes/note-2026-005/`, `/credentials/` (Pagefind `#search` excluded as third-party chrome) |
 | `tests/e2e/visual.spec.mjs` | Full-page screenshots for `/`, `/systems/`, `/notes/`, `/credentials/` — **non-blocking** in CI until `__snapshots__/` is committed |
 
 Redirect assertions use Playwright `baseURL`: home stubs must match the full origin + `/`; `/systems/` and `/notes/` destinations allow optional panel hashes because library JS may call `applyHash()` after navigation.
@@ -179,7 +182,7 @@ Redirect assertions use Playwright `baseURL`: home stubs must match the full ori
 
 ## Related ops docs
 
-- [preview-uat.md](preview-uat.md) — offline + UAT publish
+- [preview-uat.md](preview-uat.md) — offline preview, downloadable artifacts, main-only Pages release
 - [redirects.md](redirects.md) — WP → static map
 - [cutover.md](cutover.md) — DNS operator gate
 - [diy-tracking.md](diy-tracking.md) — first-party beacon

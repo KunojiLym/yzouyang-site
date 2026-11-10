@@ -1,6 +1,6 @@
 # Preview & UAT
 
-Three ways to review the static site **before** promoting to `main` / apex cutover.
+Review the static site **before** promoting to `main` / apex cutover. Pages is a release destination; UAT builds are downloadable artifacts until a separate preview host is configured.
 
 ## 1. Offline local preview (no publish)
 
@@ -21,7 +21,7 @@ Contract checks: `python scripts/test_site_build.py` after build. Playwright: `n
 
 ## 2. PR artifact (downloadable dist)
 
-Every PR CI run uploads artifact **`site-preview`** (built `dist/` with `/yzouyang-site` base path).
+Every successful PR, `uat` push, and manual preview run uploads **`site-preview`**. Its base path follows the configured origin (currently `/yzouyang-site`). Preview builds set `noindex, nofollow`. The artifact includes `release.json` with the source revision, run ID and SHA-256 hashes of the packaged files.
 
 1. Open the PR → Checks → `lint-build`
 2. Download **site-preview**
@@ -29,42 +29,38 @@ Every PR CI run uploads artifact **`site-preview`** (built `dist/` with `/yzouya
    - `python scripts/preview.py` from a branch checkout, or
    - serve the unzipped tree behind a path prefix `/yzouyang-site/`
 
-## 3. Publish to UAT (GitHub Pages, not `main`)
+## 3. Release to Pages from main
 
 GitHub allows **one** Pages URL per repo: https://kunojilym.github.io/yzouyang-site/
 
 | Action | Result |
 |---|---|
-| Push / merge to **`uat`** | Deploys that tree to Pages (UAT) |
-| Push / merge to **`main`** | Deploys that tree to the **same** Pages URL (promote) |
-| Actions → **ci** → Run workflow → `deploy_target=uat` | Deploy current branch ref as UAT |
+| Push / merge to **`uat`** or a PR | Build and test; downloadable preview only |
+| Push / merge to **`main`** | Deploy that revision after required build checks |
+| Manual `deploy_target=production`, branch **main** | Release only if that revision is still main HEAD |
+| Manual `deploy_target=production`, another branch | Fail before publishing |
+| Manual `deploy_target=none` | Downloadable preview only |
+
+Manual runs pass `deploy_target` through `github.event.inputs`. Push and pull_request events leave that input empty, so the build resolves to `none` and does not publish.
 
 Recommended flow:
 
 ```text
-feature branch → draft PR → merge to uat  → review Pages URL
-uat → PR into main         → merge main   → Pages = signed-off build
+feature branch → draft PR → review downloaded artifact / local preview
+reviewed changes → main   → build, test, serialize release → Pages
 apex DNS cutover only after main Pages parity (see cutover.md)
 ```
 
-Create `uat` once (from `main` or from the Phase 1 PR):
+The deploy job alone has Pages/OIDC write permissions. All releases share the `github-pages` concurrency group, never cancel an active deployment, and check main HEAD after entering that group. New build jobs can cancel obsolete builds without interrupting an active deploy. Pages receives the artifact captured before the separate root-path browser-test rebuild.
 
-```bash
-git fetch origin
-git checkout -b uat origin/main   # or from the feature branch after review
-git push -u origin uat
-```
+### Rollout and independent controls still required
 
-### Environments
+- Apply this workflow to **both main and any existing UAT branch**; an old workflow on UAT can still contain the previous deploy job. Cancel obsolete queued runs before enabling releases.
+- Restrict the `github-pages` environment to main and require the intended independent approval. Retire the old UAT deployment environment and audit other workflow versions/branches that retain Pages permissions. Source changes alone do not enforce repository settings.
+- Compare deployed `release.json` with the reviewed run and inspect important deployed file hashes. The manifest records artifact identity; it is not a signature or proof of independent approval.
+- A shared hosted UAT URL remains outstanding. Give it a separate repository/site destination and credentials before enabling publication there. An environment named `uat` does not create another Pages site.
 
-- **`uat`** — Pages deploy from `uat` / manual `deploy_target=uat`
-- **`github-pages`** — Pages deploy from `main` / manual `deploy_target=production`
-
-Add required reviewers on the `uat` environment in GitHub settings if you want a human gate before UAT goes live on Pages.
-
-### Note
-
-UAT and production **share** the Pages hostname until you add a second host (e.g. Cloudflare Pages project). Apex `yzouyang.com` stays on WordPress until [cutover.md](cutover.md).
+The source-level guard and offline previews are prepared locally; successful GitHub runs and deployed-artifact verification are still required. Apex `yzouyang.com` stays on WordPress until [cutover.md](cutover.md). See [GitHub's custom Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) for deployment permissions and environment controls.
 
 ## 4. CI / Pages failure → ntfy
 

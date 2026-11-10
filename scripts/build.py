@@ -263,7 +263,7 @@ LIBRARY_HASH_BOOT_SCRIPT = """<script>
   }
   var target = hash ? findPanel(hash) : null;
   if (!target && hash) target = findLegacy(hash);
-  if (!target && wide) {
+  if (!target && (wide || document.querySelector('[data-standalone-article="true"]'))) {
     var firstItem = split.querySelector(".library-index [data-panel-id]");
     target = (firstItem && findPanel(firstItem.getAttribute("data-panel-id"))) || panels[0];
   }
@@ -550,7 +550,10 @@ def article_json_ld(site: dict, row: dict, note_id: str) -> str:
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": str(row.get("title") or "").strip(),
-        "url": str(row.get("url") or "").strip(),
+        "url": canonical_url(site, article_path(note_id)),
+        "mainEntityOfPage": canonical_url(site, article_path(note_id)),
+        "description": article_description(row),
+        "image": og_image_url(site),
         "identifier": note_id,
         "datePublished": str(row.get("date") or "").strip() or None,
         "author": {
@@ -559,7 +562,7 @@ def article_json_ld(site: dict, row: dict, note_id: str) -> str:
         },
     }
     data = {k: v for k, v in data.items() if v}
-    payload = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
+    payload = json.dumps(data, ensure_ascii=True, separators=(",", ":")).replace("<", "\\u003c")
     return f'  <script type="application/ld+json">{payload}</script>'
 
 
@@ -1226,12 +1229,17 @@ def layout(
     data_library_route: str | None = None,
     home_route: bool = False,
     extra_head: str = "",
+    article: dict | None = None,
 ) -> str:
     person = site["person"]
     brand = esc(person.get("brand", "yzouyang"))
     full_name = person_full_name(site)
     page_title = esc(document_title(site, active, title))
     description = esc(page_description(site, active, title))
+    if article is not None:
+        page_title = esc(f"{article['title']} — {full_name}")
+        description = esc(article_description(article))
+    og_type = "article" if article is not None else "website"
     canonical = esc(canonical_url(site, path))
     og_image = esc(og_image_url(site))
     og_size = og_image_dimensions()
@@ -1311,7 +1319,7 @@ def layout(
 {robots_tag}{canonical_tag}  <meta property="og:site_name" content="{person_attr}" />
   <meta property="og:title" content="{page_title}" />
   <meta property="og:description" content="{description}" />
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content="{og_type}" />
 {og_url_tag}  <meta property="og:image" content="{og_image}" />
 {og_size_meta}  <meta property="og:image:alt" content="{og_alt}" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -1593,7 +1601,49 @@ def _writing_also_links(row: dict) -> list[tuple[str, str]]:
 
 
 def _note_href(site: dict, note_id: str) -> str:
-    return with_base(site, f"/notes/#{note_id}")
+    return with_base(site, article_path(note_id))
+
+
+def article_path(note_id: str) -> str:
+    """Stable publication identity, independent of an editable title or category."""
+    if not re.fullmatch(r"NOTE-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*", note_id):
+        raise ValueError(f"Invalid article identity: {note_id!r}")
+    return f"/notes/{note_id.lower()}/"
+
+
+def article_description(row: dict) -> str:
+    text = str(row.get("teaser") or row.get("summary") or row.get("title") or "").strip()
+    return " ".join(text.split())
+
+
+def publication_routes(rows: list[dict]) -> tuple[list[tuple[dict, str]], dict[str, str]]:
+    """Validate stable IDs and legacy paths before writing any output files."""
+    assigned: list[tuple[dict, str]] = []
+    used: set[str] = set()
+    redirects: dict[str, str] = {}
+    reserved = {"notes", "systems", "credentials", "assets", "data", "pagefind",
+                "about", "contact", "portfolio", "perspectives", "work", "blog", "career-journey"}
+    for row in rows:
+        note_id = str(row.get("id") or "")
+        target = article_path(note_id)
+        if target in used:
+            raise ValueError(f"Duplicate article identity: {note_id}")
+        used.add(target)
+        assigned.append((row, note_id))
+        wp = str((row.get("syndication") or {}).get("wordpress") or "").strip()
+        if not wp:
+            continue
+        parsed = urlparse(wp)
+        path = parsed.path.rstrip("/") + "/"
+        if (parsed.scheme not in {"http", "https"}
+                or parsed.netloc not in {"www.yzouyang.com", "yzouyang.com"}
+                or parsed.query or parsed.fragment
+                or not re.fullmatch(r"/(?:[A-Za-z0-9_-]+/)+", path)
+                or path.split("/")[1].lower() in reserved
+                or path.lower() in {p.lower() for p in redirects}):
+            raise ValueError(f"Invalid or colliding WordPress redirect for {note_id}")
+        redirects[path] = target
+    return assigned, redirects
 
 _TOC_LINK_RE = re.compile(r"^\s*-\s*\[([^\]]+)\]\(#([^)]+)\)\s*$")
 _TOC_HEADING_RE = re.compile(r"^Table\s+[Oo]f\s+[Cc]ontents\s*$")
@@ -2197,7 +2247,7 @@ def _compose_current_index_rows(site: dict, export: dict) -> list[dict]:
                 {
                     "topic": "notes",
                     "label": note_label,
-                    "href": f"/notes/#{note_id}",
+                    "href": article_path(note_id),
                 }
             )
 
@@ -4180,8 +4230,10 @@ def _append_note_panel(
     panels: list[str],
     ssr_gate: list[bool],
     uncaptioned: list[dict] | None = None,
+    standalone: bool = False,
 ) -> None:
-    heading = esc(str(row.get("title") or note_id).strip())
+    title = str(row.get("title") or note_id).strip()
+    heading = esc(title)
     body_md = str(row.get("body_md") or "").strip()
     toc_attr = _inarticle_toc_attr(body_md, note_id=note_id, scope_anchors=True)
     category = esc(_note_category(row))
@@ -4194,6 +4246,17 @@ def _append_note_panel(
         f'            <p class="note-dek">{esc(teaser)}</p>\n' if teaser else ""
     )
     byline_html = _note_byline_html(row, note_id, read_mins=read_mins)
+    if not standalone:
+        # The visible label and the title have to be separate nodes, but the
+        # accessible name must be one string: "Open article: {title}". Putting
+        # the colon in an absolutely positioned .visually-hidden span makes
+        # browsers compute "Open article : {title}" instead.
+        article_name = esc(f"Open article: {title}")
+        byline_html += (
+            f'<p class="links"><a href="{esc(_note_href(site, note_id))}">'
+            f'<span class="visually-hidden">{article_name}</span>'
+            f'<span aria-hidden="true">Open article</span></a></p>\n'
+        )
     append_library_panel(
         panels,
         note_id,
@@ -4206,6 +4269,21 @@ def _append_note_panel(
         header_lead=header_lead,
         header_trail=f"{dek_html}{byline_html}",
     )
+
+
+def build_article(site: dict, row: dict, note_id: str) -> str:
+    """One article per document, using the existing Notes reading components."""
+    panels: list[str] = []
+    _append_note_panel(site, row=row, note_id=note_id, panels=panels,
+                       ssr_gate=[True], standalone=True)
+    back = f'<p class="links"><a href="{esc(with_base(site, "/notes/"))}">All notes</a></p>'
+    body = library_shell(
+        site=site, title=str(row["title"]), overview_html="",
+        toc=[_note_index_entry(row, note_id)], panels=panels,
+        strip_html=f'<footer class="library-strip">{back}</footer>',
+        index_footer_html=back, index_default="collapsed",
+    )
+    return body.replace('id="library-shell"', 'id="library-shell" data-standalone-article="true"', 1)
 
 
 def build_perspectives(
@@ -4386,6 +4464,7 @@ def main() -> None:
         raise SystemExit(1) from exc
     export = _merge_preview_drafts(load_json(DATA / "export_public.json"))
     site["_export"] = export
+    note_assigned, article_redirects = publication_routes(_writing_rows(export))
     if DIST.exists():
         # On Windows, a running preview server may lock the dist directory itself.
         for child in DIST.iterdir():
@@ -4399,12 +4478,6 @@ def main() -> None:
     DIST.mkdir(parents=True, exist_ok=True)
 
     uncaptioned_figures: list[dict] = []
-    writing_rows = _writing_rows(export)
-    note_assigned = _unique_note_catalog_ids(writing_rows)
-    start_notes = [(r, nid) for r, nid in note_assigned if r.get("start_here")]
-    if not start_notes:
-        start_notes = note_assigned[:1]
-    featured_note_row, featured_note_id = start_notes[0]
 
     pages = [
         (
@@ -4431,8 +4504,8 @@ def main() -> None:
             "Notes",
             "Notes",
             build_perspectives(site, export, uncaptioned_figures),
-            True,
-            article_json_ld(site, featured_note_row, featured_note_id),
+            False,
+            "",
         ),
         (
             "credentials/index.html",
@@ -4477,6 +4550,26 @@ def main() -> None:
             ),
         )
 
+    for row, note_id in note_assigned:
+        path = article_path(note_id)
+        write(
+            DIST / path.strip("/") / "index.html",
+            layout(site, str(row["title"]), "Notes", build_article(site, row, note_id),
+                   pagefind=True, path=path, header_search=True, library_route=True,
+                   data_library_route="notes", article=row,
+                   extra_head=article_json_ld(site, row, note_id)),
+        )
+    sitemap_paths = ["/", "/systems/", "/notes/", "/credentials/"] + [
+        article_path(nid) for _, nid in note_assigned
+    ]
+    write(DIST / "sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n'
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+          + "".join(f"  <url><loc>{esc(canonical_url(site, path))}</loc></url>\n" for path in sitemap_paths)
+          + '</urlset>\n')
+    # Keep previews crawlable so their page-level noindex directives can be read.
+    write(DIST / "robots.txt", "User-agent: *\nAllow: /\nSitemap: "
+          + canonical_url(site, "/sitemap.xml") + "\n")
+
     write(
         DIST / "404.html",
         layout(
@@ -4508,23 +4601,14 @@ def main() -> None:
             ),
         )
 
-    for row in _writing_rows(export):
-        synd = row.get("syndication") if isinstance(row.get("syndication"), dict) else {}
-        wp = str(synd.get("wordpress") or "").strip()
-        if not wp:
-            continue
-        slug = wp.rstrip("/").split("/")[-1]
-        if not slug:
-            continue
-        note_id = _note_catalog_id(row, 0)
-        target_path = f"/notes/#{note_id}"
-        href = f"{with_base(site, '/notes/')}#{note_id}"
+    for old_path, target_path in article_redirects.items():
+        href = with_base(site, target_path)
         write(
-            DIST / slug / "index.html",
+            DIST / old_path.strip("/") / "index.html",
             _redirect_document(
                 site,
                 target_path,
-                str(row.get("title") or slug),
+                "Article moved",
                 f'  <p>Moved to <a href="{esc(href)}">{esc(href)}</a>.</p>',
             ),
         )
@@ -4579,10 +4663,19 @@ def main() -> None:
 {base}/blog {base}/notes/ 301
 {base}/blog/ {base}/notes/ 301
 """
+    for old_path, target_path in article_redirects.items():
+        redirects += f"{base}{old_path} {base}{target_path} 301\n"
+        redirects += f"{base}{old_path.rstrip('/')} {base}{target_path} 301\n"
     write(DIST / "_redirects", redirects)
+    write(DIST / "url-map.json", json.dumps({
+        "articles": [{"id": nid, "path": article_path(nid),
+                      "url": canonical_url(site, article_path(nid)),
+                      "legacy_fragment": f"/notes/#{nid}"} for _, nid in note_assigned],
+        "redirects": article_redirects,
+    }, indent=2) + "\n")
 
     print(f"uncaptioned-figures {len(uncaptioned_figures)}")
-    print(f"built {len(pages)} pages + 404 + work redirect -> {DIST} (base_path={base or '/'})")
+    print(f"built {len(pages)} pages + {len(note_assigned)} articles + redirects + 404 -> {DIST} (base_path={base or '/'})")
 
     if not args.skip_pagefind:
         run_pagefind()
