@@ -4232,7 +4232,8 @@ def _append_note_panel(
     uncaptioned: list[dict] | None = None,
     standalone: bool = False,
 ) -> None:
-    heading = esc(str(row.get("title") or note_id).strip())
+    title = str(row.get("title") or note_id).strip()
+    heading = esc(title)
     body_md = str(row.get("body_md") or "").strip()
     toc_attr = _inarticle_toc_attr(body_md, note_id=note_id, scope_anchors=True)
     category = esc(_note_category(row))
@@ -4246,9 +4247,15 @@ def _append_note_panel(
     )
     byline_html = _note_byline_html(row, note_id, read_mins=read_mins)
     if not standalone:
+        # The visible label and the title have to be separate nodes, but the
+        # accessible name must be one string: "Open article: {title}". Putting
+        # the colon in an absolutely positioned .visually-hidden span makes
+        # browsers compute "Open article : {title}" instead.
+        article_name = esc(f"Open article: {title}")
         byline_html += (
             f'<p class="links"><a href="{esc(_note_href(site, note_id))}">'
-            f'Open article<span class="visually-hidden">: {heading}</span></a></p>\n'
+            f'<span class="visually-hidden">{article_name}</span>'
+            f'<span aria-hidden="true">Open article</span></a></p>\n'
         )
     append_library_panel(
         panels,
